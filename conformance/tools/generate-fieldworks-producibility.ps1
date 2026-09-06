@@ -17,13 +17,19 @@
   cannot name (MorphologicalPhonologicalRuleFeatureGroup: HCLoader only ever builds three fixed,
   hardcoded groups and never sets a group's output policy away from its Overwrite default, so no
   custom-named group and no append-policy group can come from a FieldWorks project regardless of
-  what any single IDREF attribute on it says), or a host-configuration value with no IDREF/IDREFS
+  what any single IDREF attribute on it says), a host-configuration value with no IDREF/IDREFS
   attribute of its own at all (morphologicalRuleOrder: HCLoader hardcodes every Stratum it builds
   to Unordered -- HCLoader.cs:227,230,374 -- and can never emit `linear`, even though the DTD
   defaults this attribute to `linear`, so "the fixture declares linear" is the wrong test; see the
-  verdict's own notes for the measurement that IS the right test). Unlike the two mechanical lists,
-  $LoaderGapSubjects below has no repo-internal source to re-derive it from -- it is pinned by
-  literal count, exactly like every verdict's own research is.
+  verdict's own notes for the measurement that IS the right test), a structural position fact about
+  two IDREF attributes taken TOGETHER rather than either alone (MetathesisSwitchPositionInversion:
+  HCLoader always binds HC's LeftSwitchName to the pattern group at LibLCM's own RIGHT-switch
+  index, so a FieldWorks-authored MetathesisRule can never have its leftSwitch name the
+  structurally earlier of its two pattern groups), or a shape carried entirely inside a Form
+  string rather than any attribute at all (LexicalPatternRootAllomorph: a bracketed natural-class
+  pattern like "b[Vowel]t" or "[Any]*" is producible, detected from the raw form text itself).
+  Unlike the two mechanical lists, $LoaderGapSubjects below has no repo-internal source to
+  re-derive it from -- it is pinned by literal count, exactly like every verdict's own research is.
 
   The VERDICT for each subject (producible / hcloader_sites / notes) is NOT something a script can
   derive -- it required reading the whole of HCLoader.cs (FieldWorks repo, ~2837 lines) and cross-
@@ -475,7 +481,48 @@ Add-Verdict "loader-gap" "morphologicalRuleOrder" "No" @(
     "re-run the C# founding oracle): a fixture is HC-engine-only for this reason only if that flip changes some " +
     "word's found-analysis set -- a spurious extra parse, a lost one, or a duplicate -- not merely " +
     "the search order or timing. Six fixtures were measured this way and found genuinely dependent; " +
-    "most linear/absent fixtures measured were inert under the flip and are unaffected by this row."
+    "most linear/absent fixtures measured were inert under the flip and are unaffected by this row. " +
+    "See conformance/docs/morphological-rule-order-measurement.md for the per-fixture ledger."
+)
+
+Add-Verdict "loader-gap" "MetathesisSwitchPositionInversion" "No" @(
+    "HCLoader.cs:2122 (LoadMetathesisRule, unconditional MetathesisRule.LeftSwitchName = `"r`")"
+    "HCLoader.cs:2134-2135 (names the pattern group at LibLCM's kidxRightSwitch index `"r`")"
+) (
+    "HCLoader always binds HC's LeftSwitchName to the group at LibLCM's own RIGHT-switch index, " +
+    "never its left. LoadMetathesisRule (HCLoader.cs:2103-2161) sets LeftSwitchName = `"r`" " +
+    "unconditionally at :2122, then assigns that same name `"r`" to the group found at " +
+    "indices[kidxRightSwitch] (:2134-2135) -- so the group in LibLCM's own LeftSwitch slot ends up " +
+    "named `"l`" (RightSwitchName) instead. The engine's own reference loader " +
+    "(engine repo XmlLanguageLoader.cs:826-840) maps grammar.xml's leftSwitch/rightSwitch attributes " +
+    "to LeftSwitchName/RightSwitchName directly, with no such inversion, so this is a " +
+    "FieldWorks-specific fact, not an engine-wide one. FieldWorks' own metathesis-rule editor " +
+    "(FieldWorks repo Src/LexText/Morphology/MetaRuleFormulaControl.cs, GetNextCell/GetPrevCell, " +
+    "around lines 211-242) hard-codes cell order LeftEnv->LeftSwitch->RightSwitch->RightEnv, so the " +
+    "group a user places in LibLCM's LeftSwitch cell is always structurally EARLIER than the group " +
+    "in its RightSwitch cell. Composed with HCLoader's inversion, the always-earlier group ends up " +
+    "bound to HC's RightSwitchName and the always-later group to LeftSwitchName -- so a " +
+    "FieldWorks-authored MetathesisRule can never have its leftSwitch name the structurally earlier " +
+    "of its two pattern groups. That is exactly the shape edge-cases/metathesis-comparison-crash " +
+    "pins (a C# array-comparison-invariant crash, fixed upstream by sillsdev/machine#471), so the " +
+    "crash it regression-tests is unreachable from a real FieldWorks project."
+)
+
+Add-Verdict "loader-gap" "LexicalPatternRootAllomorph" "Yes" @(
+    "HCLoader.cs:2532-2571 (Segment/IsLexicalPattern: a Form containing `"[`"/`"]`" -- e.g. " +
+    "`"b[Vowel]t`", `"[Any]*`" -- is routed through natural-class-aware pattern loading rather " +
+    "than literal segmentation)"
+    "HCLoader.cs:2731-2740 (LoadCharacterDefinitionTable adds every NaturalClass to the table " +
+    "specifically `"for lexical patterns`")"
+) (
+    "A FieldWorks user's own lexical-entry or affix form containing a bracketed natural-class " +
+    "pattern -- a literal segment class like `"b[Vowel]t`" or a Kleene-star guess pattern like " +
+    "`"[Any]*`" -- is ordinary, producible input: IsLexicalPattern (HCLoader.cs:2567-2571) detects " +
+    "the shape from the raw form string alone, and LoadCharacterDefinitionTable " +
+    "(HCLoader.cs:2731-2740) unconditionally registers every natural class the pattern could " +
+    "reference. This is the same Guesser/LexicalGuess mechanism several fixtures already exercise " +
+    "(RootAllomorph.IsPattern, engine repo Allomorph.cs) -- covering it elsewhere in this suite says " +
+    "something about real FieldWorks use, unlike the four No-verdict loader-gap subjects above."
 )
 
 Add-Verdict "interface-attribute" "MorphologicalRule.outputObligatoryFeatures" "No" @() (
@@ -600,8 +647,14 @@ foreach ($attr in $interfaceAttrs) {
 
 # loader-gap subjects have no repo-internal source to enumerate them from (see header comment) --
 # this literal list IS the enumeration, pinned by count the same way the verdicts themselves are.
-$loaderGapSubjects = @("RealizationalRule", "MorphologicalPhonologicalRuleFeatureGroup", "morphologicalRuleOrder")
-if ($loaderGapSubjects.Count -ne 3) { throw "Expected 3 loader-gap subjects, found $($loaderGapSubjects.Count)" }
+$loaderGapSubjects = @(
+    "RealizationalRule",
+    "MorphologicalPhonologicalRuleFeatureGroup",
+    "morphologicalRuleOrder",
+    "MetathesisSwitchPositionInversion",
+    "LexicalPatternRootAllomorph"
+)
+if ($loaderGapSubjects.Count -ne 5) { throw "Expected 5 loader-gap subjects, found $($loaderGapSubjects.Count)" }
 foreach ($subject in $loaderGapSubjects) {
     $key = "loader-gap|$subject"
     if (-not $Verdicts.ContainsKey($key)) { throw "No verdict recorded for loader-gap subject $subject -- add one to `$Verdicts before regenerating." }
@@ -627,7 +680,7 @@ if ($staleKeys) { throw "Verdict table has entries with no matching subject (sta
 $dupes = $rows | Group-Object subject_kind, subject | Where-Object { $_.Count -gt 1 }
 if ($dupes) { throw "Duplicate subjects in output: $($dupes.Name -join '; ')" }
 
-if ($rows.Count -ne 86) { throw "Expected 86 total rows (23 failure-reason + 60 interface-attribute + 3 loader-gap), got $($rows.Count)" }
+if ($rows.Count -ne 88) { throw "Expected 88 total rows (23 failure-reason + 60 interface-attribute + 5 loader-gap), got $($rows.Count)" }
 
 # ---------------------------------------------------------------------------
 # 5. Emit the TSV.
@@ -635,15 +688,16 @@ if ($rows.Count -ne 86) { throw "Expected 86 total rows (23 failure-reason + 60 
 $lines = New-Object System.Collections.Generic.List[string]
 $lines.Add("# GENERATED by conformance/tools/generate-fieldworks-producibility.ps1. One row per subject,")
 $lines.Add("# where subjects are every SIL.Machine.Morphology.HermitCrab.FailureReason enum member (except")
-$lines.Add("# None) plus every (element, attribute) row in conformance/interface-inventory.tsv, plus three")
+$lines.Add("# None) plus every (element, attribute) row in conformance/interface-inventory.tsv, plus five")
 $lines.Add("# hand-curated loader-gap subjects that are neither shape (a whole construct HCLoader never")
-$lines.Add("# builds, or a structural fact no single attribute names -- see the generator's own header")
-$lines.Add("# comment). Authority: FieldWorks' HCLoader.cs (Src/LexText/ParserCore/HCLoader.cs) -- the")
-$lines.Add("# component that turns a real FieldWorks/LibLCM project into an HC grammar. producible=No means")
-$lines.Add("# no FieldWorks user can ever produce this construct, so covering it elsewhere in this suite")
-$lines.Add("# proves nothing about real use. See conformance/docs/how-it-is-computed.md for the full")
-$lines.Add("# explanation, including why this ledger is a point-in-time snapshot of an external repo that")
-$lines.Add("# cannot be drift-checked here.")
+$lines.Add("# builds, a structural fact no single attribute names, a positional fact about two attributes")
+$lines.Add("# taken together, nor a shape carried in a Form string rather than any attribute -- see the")
+$lines.Add("# generator's own header comment). Authority: FieldWorks' HCLoader.cs (Src/LexText/ParserCore/")
+$lines.Add("# HCLoader.cs) -- the component that turns a real FieldWorks/LibLCM project into an HC grammar.")
+$lines.Add("# producible=No means no FieldWorks user can ever produce this construct, so covering it")
+$lines.Add("# elsewhere in this suite proves nothing about real use. See conformance/docs/how-it-is-computed.md")
+$lines.Add("# for the full explanation, including why this ledger is a point-in-time snapshot of an external")
+$lines.Add("# repo that cannot be drift-checked here.")
 $lines.Add("subject_kind`tsubject`tproducible`thcloader_sites`tnotes")
 foreach ($row in $rows) {
     $lines.Add(("{0}`t{1}`t{2}`t{3}`t{4}" -f $row.subject_kind, $row.subject, $row.producible, $row.hcloader_sites, $row.notes))

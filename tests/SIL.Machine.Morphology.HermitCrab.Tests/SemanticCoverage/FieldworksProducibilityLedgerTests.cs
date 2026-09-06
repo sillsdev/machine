@@ -40,6 +40,8 @@ public sealed class FieldworksProducibilityLedgerTests
         "RealizationalRule",
         "MorphologicalPhonologicalRuleFeatureGroup",
         "morphologicalRuleOrder",
+        "MetathesisSwitchPositionInversion",
+        "LexicalPatternRootAllomorph",
     };
 
     private sealed record Row(
@@ -205,9 +207,9 @@ public sealed class FieldworksProducibilityLedgerTests
 
         TestContext.Out.WriteLine($"producible: Yes={yes} No={no} Conditional={conditional}");
 
-        Assert.That(rows, Has.Count.EqualTo(86));
-        Assert.That(yes, Is.EqualTo(61));
-        Assert.That(no, Is.EqualTo(25));
+        Assert.That(rows, Has.Count.EqualTo(88));
+        Assert.That(yes, Is.EqualTo(62));
+        Assert.That(no, Is.EqualTo(26));
         Assert.That(conditional, Is.EqualTo(0));
     }
 }

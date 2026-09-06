@@ -391,11 +391,12 @@ the verdict in place.
 
 The verdict is human-authored, not mechanically re-derived the way `requires` is. It rests on
 `conformance/fieldworks-producibility.tsv` (a hand-researched, point-in-time snapshot of `HCLoader.cs`
-described in `conformance/docs/how-it-is-computed.md`) plus four usage-level checks no per-row TSV
+described in `conformance/docs/how-it-is-computed.md`) plus five usage-level checks no per-row TSV
 entry can express on its own — three because each depends on *where* or *how* an otherwise-producible
-attribute is used, not merely on whether HCLoader ever writes it at all, and a fourth because it
-depends on whether a fixture's own committed ground truth is sensitive to a value HCLoader can never
-produce:
+attribute is used, not merely on whether HCLoader ever writes it at all; a fourth because it depends
+on whether a fixture's own committed ground truth is sensitive to a value HCLoader can never produce;
+and a fifth because it depends on *what shape* the construct an otherwise-producible attribute sits
+on takes, not on the attribute in isolation:
 
 - A rule reached only through an `AffixTemplate` `Slot` is necessarily inflectional, and
   `LoadInflAffixProcessRule` never sets `MorphologicalOutput`'s MPR features on an inflectional
@@ -419,6 +420,22 @@ produce:
   founding oracle. Only if some word's found-analysis set changes — a spurious extra parse, a lost
   one, or a duplicate, never merely a different search order or timing — does the fixture's ground
   truth actually depend on the ordering, and only then is it HC-engine-only for this reason.
+- `Environments` (`RequiredEnvironments`/`ExcludedEnvironments`) is producible only when the
+  `MorphologicalSubrule` it sits on has an output expressible as a single literal-form affix — a
+  `RootAllomorph`'s own environment, a paired circumfix built from two separate literal-form
+  allomorphs (HCLoader combines an independent prefix environment and an independent suffix
+  environment into one boundary-anchored condition), or an ordinary single-piece `Form` (a lone
+  prefix or suffix) — never a genuinely discontinuous, multi-piece process-rule output (e.g. an
+  `InsertSegments`+`CopyFromInput`+`InsertSegments` circumfix authored directly as a process rule,
+  where the SAME environment condition is checked independently at each piece: HC's own
+  per-occurrence checking on a discontinuous morph). HCLoader's generic multi-action path for a
+  rule shaped like that, `LoadAffixProcessAllomorph`, never touches `.Environments` at all — only
+  `LoadRootAllomorph`, `LoadCircumfixAffixProcessAllomorph`, and `LoadFormAffixProcessAllomorph` do.
+  Boundary case that keeps this check from being read over-broadly: `edge-cases/strrep-identity`'s
+  `msubI` also carries a `RequiredEnvironments` on a subrule built from
+  `InsertSegments`+`CopyFromInput`, but its output is a single contiguous piece (one prefix, never
+  wrapped), so it is the ordinary single-piece `Form` case above and stays producible — the
+  condition is discontinuous/multi-piece output, not "an environment on a subrule" in general.
 
 Because the verdict is authored, not derived, any mechanical checker built against it may only
 prove a `true` verdict **wrong** — by finding a construct in a `true` fixture's `grammar.xml` that
