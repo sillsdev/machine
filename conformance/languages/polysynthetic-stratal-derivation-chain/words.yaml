@@ -34,6 +34,22 @@
 # construct it exercises (mrCompoundHN's headPartsOfSpeech) was already declared.
 #   silaaku -> mrCompoundHN attempted with SILA (posN2) as HEAD, mismatching headPartsOfSpeech="posN1"
 #     -> zero parses (HeadRequiredSyntacticFeatureStruct, conformance/gate-obligations.tsv).
+#
+# CONVERSION HISTORY (fieldworks_producible: false -> true). Both CompoundingRules (mrCompoundHN,
+# mrCompoundNH -- grammar.xml:320,343) declared blockable="false"; that attribute is now dropped
+# entirely (reverting to the engine's own CompoundingRule default of Blockable=true), because the
+# non-default value could never be observed regardless: this grammar declares no Family at all
+# (grep-confirmed zero hits for "amily" across grammar.xml), and Word.CheckBlocking
+# (src/SIL.Machine.Morphology.HermitCrab/Word.cs:573-575) returns false unconditionally whenever
+# RootAllomorph.Morpheme.Family is null -- so CheckBlocking's family-iteration loop, the only place
+# Blockable's value would ever be read, is dead code on every word this fixture parses, with or
+# without the attribute. Re-run against the C# founding oracle after the drop: 35/35 fixtures still
+# pass, this fixture's own signatures byte-for-byte unchanged (hc-conformance.exe --propose printed
+# no patch). Behavior is provably identical, not merely expected to be. FieldWorks-HCLoader.cs
+# (Src/LexText/ParserCore/HCLoader.cs) confirms the other half of the argument: a full-file search
+# for "lockable" returns zero hits, so CompoundingRule.Blockable can never be written by a real
+# FieldWorks project either way -- there was never a FieldWorks-producible way to express the
+# false value this fixture used to declare.
 
 language: PolysyntheticStratalDerivationChain
 inspired_by: ["polysynthetic derivation-then-inflection across strata, with noun-incorporation-style compounding and recursive postbase-style suffixation (typological pattern, not any specific language)"]
@@ -42,15 +58,7 @@ sources:
   - "typological literature on derivation strata and noun incorporation"
   - "typological literature on recursive derivational suffixation and postbase ordering"
 requires: [phonology]
-fieldworks_producible: false
-fieldworks_producible_notes: >-
-  Both CompoundingRules (mrCompoundHN, mrCompoundNH -- grammar.xml:320,343) declare
-  blockable="false". HCLoader.cs never touches CompoundingRule.Blockable at all -- a full-file
-  search for "lockable" returns zero hits -- and the engine's own CompoundingRule constructor
-  (src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/CompoundingRule.cs:20) defaults it to
-  true, so every FieldWorks-produced compounding rule is Blockable whether or not that is what a
-  user intended. The non-blockable behavior this fixture exercises throughout the akutat/akupitat/
-  akutas and silaaku/silanuk/silamanuk/silamak sets cannot come from a real project.
+fieldworks_producible: true
 words:
   - word: nuna
     note: NUNA ("land", posN) bare noun root -- no rule touches it, trivially valid.

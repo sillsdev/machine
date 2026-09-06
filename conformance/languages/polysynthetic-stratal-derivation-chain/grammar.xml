@@ -317,7 +317,7 @@
           </MorphologicalRule>
           <!-- compounding/nonhead-not-root (Set 1: mrCompoundHN head+nonHead + mrPrefixPi1). Disjoint
                head/nonhead POS (posN1 / posN1 posV1) so the two CompoundingRules never double-count. -->
-          <CompoundingRule id="mrCompoundHN" blockable="false" headPartsOfSpeech="posN1" nonHeadPartsOfSpeech="posN1 posV1">
+          <CompoundingRule id="mrCompoundHN" headPartsOfSpeech="posN1" nonHeadPartsOfSpeech="posN1 posV1">
             <Name>compoundHeadNonHead</Name>
             <CompoundingSubrules>
               <CompoundingSubrule>
@@ -340,7 +340,7 @@
           <!-- compounding/prefix-commute (Set 2: mrCompoundNH nonHead+head + mrPrefixMa2). Disjoint
                head/nonhead POS (posN2 posV2 / posN2). The homophone pair sits on the HEAD this time,
                so mrPrefixMa2 (posV2) attaches to the head span (prefix commutes with compounding). -->
-          <CompoundingRule id="mrCompoundNH" blockable="false" headPartsOfSpeech="posN2 posV2" nonHeadPartsOfSpeech="posN2">
+          <CompoundingRule id="mrCompoundNH" headPartsOfSpeech="posN2 posV2" nonHeadPartsOfSpeech="posN2">
             <Name>compoundNonHeadHead</Name>
             <CompoundingSubrules>
               <CompoundingSubrule>
