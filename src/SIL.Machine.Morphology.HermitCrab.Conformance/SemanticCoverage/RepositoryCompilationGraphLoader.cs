@@ -227,6 +227,7 @@ internal sealed class RepositoryCompilationGraphLoader
         start.ArgumentList.Add("/nologo");
         start.ArgumentList.Add("/nr:false");
         start.ArgumentList.Add("/v:quiet");
+        ChildProcessEnvironment.StripCoverageProfiler(start);
         return start;
     }
 

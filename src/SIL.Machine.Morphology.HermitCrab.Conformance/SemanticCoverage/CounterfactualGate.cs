@@ -216,6 +216,7 @@ public static class CounterfactualGate
             // Keep the whole child pinned alongside ConformanceMorpherFactory's sequential engine so
             // any parallel work outside Morpher cannot make a mutant outcome race-dependent.
             start.EnvironmentVariables["DOTNET_PROCESSOR_COUNT"] = "1";
+            ChildProcessEnvironment.StripCoverageProfiler(start);
 
             using System.Diagnostics.Process child =
                 System.Diagnostics.Process.Start(start) ?? throw new InvalidOperationException("could not start child");
