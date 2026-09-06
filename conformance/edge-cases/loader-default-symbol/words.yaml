@@ -29,6 +29,9 @@ sources:
 requires: [phonology]
 fieldworks_producible: false
 fieldworks_producible_notes: >-
+  PERMANENTLY KEEP-ENGINE-ONLY, not a temporary or deferred verdict: HCLoader has no writer for this
+  property at all, full stop -- there is no future conversion pending here, and deleting this
+  fixture would leave SymbolicFeature.defaultSymbol completely unwitnessed anywhere in the suite.
   Exercises SymbolicFeature.defaultSymbol; LoadFeatureSystem (HCLoader.cs:2650-2667) never sets a
   default value on any SymbolicFeature it builds -- the engine's DefaultSymbolID/DefaultValue has no
   HCLoader writer.

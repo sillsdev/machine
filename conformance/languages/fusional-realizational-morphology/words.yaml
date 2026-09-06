@@ -104,8 +104,11 @@ fieldworks_producible_notes: >-
   MorphologicalRule version has -- so that material is REMOVED outright, not converted; see
   conformance/docs/engine-only-fixture-retirement.md.
 
-  What still blocks this fixture, unconverted (out of scope for this task -- converting either would
-  gut what "fusional-realizational-morphology" is actually testing):
+  PERMANENTLY KEEP-ENGINE-ONLY for what remains, not merely deferred: every remaining blocker below
+  has no FieldWorks-producible substitute at all (each cites the specific HCLoader gap), so there is
+  no future conversion this fixture is waiting on -- converting any of them away would also gut what
+  "fusional-realizational-morphology" is actually testing, which is the second, independent reason
+  none is a CONVERT candidate. What still blocks this fixture, permanently:
   - RealizationalRule (rrPast, ferid/feresid): never constructed by any HCLoader rule loader (all
     five Load*AffixProcessRule methods build AffixProcessRule only).
   - mrCompoundConstrained's two CompoundingSubrules (mitlav/ficlav) set HeadMorphologicalInput

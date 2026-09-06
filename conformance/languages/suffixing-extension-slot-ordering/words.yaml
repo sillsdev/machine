@@ -59,7 +59,11 @@ sources:
 requires: [phonology]
 fieldworks_producible: false
 fieldworks_producible_notes: >-
-  Same three defects as fusional-realizational-morphology (LexicalEntry.family, RealizationalRule,
+  PERMANENTLY KEEP-ENGINE-ONLY, not a temporary or deferred verdict: this fixture is also this
+  suite's sole remaining witness of Word.CheckBlocking's family+stratum precondition (see
+  conformance/docs/engine-only-fixture-retirement.md's own revision note on this row), so even the
+  one convertible-looking share (family-blocking) must stay unconverted, permanently, to avoid
+  destroying that witness suite-wide. Same three defects as fusional-realizational-morphology (LexicalEntry.family, RealizationalRule,
   and CompoundingRule.outputObligatoryFeatures -- HCLoader never sets ObligatorySyntacticFeatures on
   a CompoundingRule, HCLoader.cs:1842-2001), plus a MorphologicalOutput MPRFeatures write from inside
   an AffixTemplate slot (same HCLoader.cs:976-1006 gap as prefixal-discontinuous-slot-dependency).

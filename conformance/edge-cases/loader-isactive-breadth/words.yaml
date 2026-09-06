@@ -30,6 +30,11 @@ sources:
 requires: []
 fieldworks_producible: false
 fieldworks_producible_notes: >-
+  PERMANENTLY KEEP-ENGINE-ONLY, not a temporary or deferred verdict: this fixture's whole point is a
+  census of isActive tolerance across many collection kinds together, and most of those kinds have
+  no "present but inactive" state a FieldWorks project can ever produce -- there is no future
+  conversion pending here, and narrowing it to only the producible kinds would both gut the census
+  and duplicate fixtures that already cover those kinds individually.
   Probes isActive="no" on 13 collection kinds; HCLoader has a Disabled-filter equivalent for only
   CompoundRule/AffixTemplate/PhonologicalRule+MetathesisRule/AllomorphCoOccurrenceRule/
   MorphemeCoOccurrenceRule (HCLoader.cs:241,295,302,342,348) -- for every other kind this fixture

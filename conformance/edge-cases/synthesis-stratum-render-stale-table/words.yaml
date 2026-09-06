@@ -28,6 +28,9 @@ sources:
 requires: [phonology]
 fieldworks_producible: false
 fieldworks_producible_notes: >-
+  PERMANENTLY KEEP-ENGINE-ONLY, not a temporary or deferred verdict: LibLCM itself has exactly one
+  character-definition table per project, so no FieldWorks project can ever produce this fixture's
+  core premise -- there is no future conversion pending here.
   Core premise requires two distinct CharacterDefinitionTables (tRoot/tFace) across strata; same
   HCLoader single-table gap (HCLoader.cs:204,227-233,374,2669-2742) as
   edge-cases/bistratal-overlapping-segment-representation.

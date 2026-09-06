@@ -91,6 +91,9 @@ sources:
 requires: [phonology]
 fieldworks_producible: false
 fieldworks_producible_notes: >-
+  PERMANENTLY KEEP-ENGINE-ONLY, not a temporary or deferred verdict: the DTD/engine fully support a
+  genuinely discontinuous process-rule output with a per-occurrence environment check, but no
+  HCLoader code path can ever emit that shape (below) -- there is no future conversion pending here.
   ruleCollective (grammar.xml:438-454) carries one RequiredEnvironments condition on a single
   MorphologicalSubrule whose MorphologicalOutput is genuinely discontinuous: InsertSegments("e") +
   CopyFromInput(stem) + InsertSegments("ik"). Of HCLoader's four .Environments.Add sites

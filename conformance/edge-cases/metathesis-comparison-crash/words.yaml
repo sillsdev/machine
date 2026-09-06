@@ -21,6 +21,11 @@ sources:
 requires: [phonology]
 fieldworks_producible: false
 fieldworks_producible_notes: >-
+  PERMANENTLY KEEP-ENGINE-ONLY, not a temporary or deferred verdict: this is not merely a missing
+  HCLoader feature but a STRUCTURAL impossibility -- HCLoader's own inversion combined with
+  FieldWorks' own metathesis-rule editor UI (cited below) together guarantee the opposite shape on
+  every real project, so there is no future conversion pending here; this is a genuine engine defect
+  that happens to be permanently unreachable from FieldWorks, not a gap that could ever close.
   grammar.xml:51 declares leftSwitch="mtLeft" rightSwitch="mtRight" with mtLeft structurally EARLIER
   in the PhoneticTemplate than mtRight -- the crash trigger this fixture pins is specifically
   leftSwitch naming the earlier of the rule's two pattern groups (see grammar.xml's own header).

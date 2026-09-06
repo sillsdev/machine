@@ -52,6 +52,11 @@ sources:
 requires: [phonology]
 fieldworks_producible: false
 fieldworks_producible_notes: >-
+  PERMANENTLY KEEP-ENGINE-ONLY, not a temporary or deferred verdict: this fixture's whole point is a
+  census across every feature-system collection kind together, and most of those kinds have no
+  "present but inactive" state a FieldWorks project can ever produce -- there is no future
+  conversion pending here, and narrowing it to only the producible kinds would gut the census
+  itself (see conformance/docs/engine-only-fixture-retirement.md's own row for that reasoning).
   Most of its isActive="no" decoys (SymbolicFeature, ComplexFeature, FeatureValue,
   SegmentNaturalClass, FeatureNaturalClass, LexicalEntry) sit on collection kinds HCLoader has no
   Disabled/isActive filter for at all -- LoadFeatureSystem (HCLoader.cs:2650-2667) adds every feature

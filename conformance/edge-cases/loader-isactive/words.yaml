@@ -18,6 +18,9 @@ sources:
 requires: []
 fieldworks_producible: false
 fieldworks_producible_notes: >-
+  PERMANENTLY KEEP-ENGINE-ONLY, not a temporary or deferred verdict: LibLCM has exactly one
+  phonological feature system per project, so no FieldWorks project can ever produce a second,
+  inactive one -- there is no future conversion pending here.
   Exercises PhonologicalFeatureSystem isActive="no" via a SECOND PhonologicalFeatureSystem block;
   HCLoader loads exactly one phonological feature system per grammar directly from LibLCM
   (HCLoader.cs:198, LoadFeatureSystem at :2650-2667, unconditional over FeaturesOC) -- there is no
