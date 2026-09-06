@@ -202,13 +202,9 @@ public static class CounterfactualGate
             // resolve to the test host, not this assembly, and re-launching the test host with
             // --evaluate-mutant would run the wrong program. This assembly's own location is
             // correct regardless of what process is hosting the caller.
-            var start = new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "dotnet",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-            };
+            var start = ChildProcessEnvironment.CreateStartInfo("dotnet");
+            start.RedirectStandardOutput = true;
+            start.RedirectStandardError = true;
             start.ArgumentList.Add(typeof(CounterfactualGate).Assembly.Location);
             start.ArgumentList.Add("--evaluate-mutant");
             start.ArgumentList.Add(grammarPath);
@@ -216,7 +212,6 @@ public static class CounterfactualGate
             // Keep the whole child pinned alongside ConformanceMorpherFactory's sequential engine so
             // any parallel work outside Morpher cannot make a mutant outcome race-dependent.
             start.EnvironmentVariables["DOTNET_PROCESSOR_COUNT"] = "1";
-            ChildProcessEnvironment.StripCoverageProfiler(start);
 
             using System.Diagnostics.Process child =
                 System.Diagnostics.Process.Start(start) ?? throw new InvalidOperationException("could not start child");

@@ -51,13 +51,9 @@ public class AdapterEngine : IEngine
                 );
             }
 
-            var psi = new ProcessStartInfo
-            {
-                FileName = tokens[0],
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-            };
+            var psi = SemanticCoverage.ChildProcessEnvironment.CreateStartInfo(tokens[0]);
+            psi.RedirectStandardOutput = true;
+            psi.RedirectStandardError = true;
             for (int i = 1; i < tokens.Count; i++)
                 psi.ArgumentList.Add(tokens[i]);
 

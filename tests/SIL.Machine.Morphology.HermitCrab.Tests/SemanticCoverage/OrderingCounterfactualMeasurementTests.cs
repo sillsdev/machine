@@ -331,13 +331,9 @@ public sealed class OrderingCounterfactualMeasurementTests
         TimeSpan timeout
     )
     {
-        var start = new ProcessStartInfo
-        {
-            FileName = "dotnet",
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-        };
+        var start = ChildProcessEnvironment.CreateStartInfo("dotnet");
+        start.RedirectStandardOutput = true;
+        start.RedirectStandardError = true;
         start.ArgumentList.Add(dllPath);
         start.ArgumentList.Add("--evaluate-mutant");
         start.ArgumentList.Add(grammarPath);

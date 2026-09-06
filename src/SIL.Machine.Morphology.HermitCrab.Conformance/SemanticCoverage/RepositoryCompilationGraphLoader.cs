@@ -212,22 +212,17 @@ internal sealed class RepositoryCompilationGraphLoader
 
     private static ProcessStartInfo CreateStartInfo(string repositoryRoot, string projectFile)
     {
-        var start = new ProcessStartInfo
-        {
-            FileName = "dotnet",
-            WorkingDirectory = repositoryRoot,
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true,
-        };
+        var start = ChildProcessEnvironment.CreateStartInfo("dotnet");
+        start.WorkingDirectory = repositoryRoot;
+        start.RedirectStandardOutput = true;
+        start.RedirectStandardError = true;
+        start.CreateNoWindow = true;
         start.ArgumentList.Add("msbuild");
         start.ArgumentList.Add(projectFile);
         start.ArgumentList.Add("--noAutoResponse");
         start.ArgumentList.Add("/nologo");
         start.ArgumentList.Add("/nr:false");
         start.ArgumentList.Add("/v:quiet");
-        ChildProcessEnvironment.StripCoverageProfiler(start);
         return start;
     }
 

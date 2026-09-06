@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using NUnit.Framework;
 using SIL.Machine.Morphology.HermitCrab.Conformance.SemanticCoverage;
 
@@ -185,13 +184,9 @@ public sealed class CoverageCliAuthorityTests
     {
         string tool = Path.Combine(TestContext.CurrentContext.TestDirectory, "hc-conformance.dll");
         Assert.That(File.Exists(tool), Is.True, $"missing test-side CLI at {tool}");
-        var start = new ProcessStartInfo
-        {
-            FileName = "dotnet",
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-        };
+        var start = ChildProcessEnvironment.CreateStartInfo("dotnet");
+        start.RedirectStandardOutput = true;
+        start.RedirectStandardError = true;
         start.ArgumentList.Add(tool);
         start.ArgumentList.Add(mode);
         start.ArgumentList.Add("--repository-root");

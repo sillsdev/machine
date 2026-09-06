@@ -445,14 +445,10 @@ public sealed class DotnetMsbuildCompilationGraphLoaderTests
     [Test]
     public void ProcessRunnerEnforcesTheOutputLimitWithoutUsingAShell()
     {
-        var start = new ProcessStartInfo
-        {
-            FileName = "dotnet",
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true,
-        };
+        var start = ChildProcessEnvironment.CreateStartInfo("dotnet");
+        start.RedirectStandardOutput = true;
+        start.RedirectStandardError = true;
+        start.CreateNoWindow = true;
         start.ArgumentList.Add("--info");
 
         Assert.That(
