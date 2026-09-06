@@ -98,9 +98,16 @@
       </FeatureNaturalClass>
     </NaturalClasses>
     <PhonologicalRuleDefinitions>
-      <!-- Ports RewriteRuleTests.EpenthesisRules sub-case (1) (RewriteRuleTests.cs:1191-1202)
-           verbatim: insert an HFU vowel ("i") after any high vowel, tagged simultaneous, no
-           RightEnvironment. C#'s own unit test proves "buibui" <- "bubu" under Simultaneous. -->
+      <!-- Ports RewriteRuleTests.EpenthesisRules sub-case (1) (RewriteRuleTests.cs:1191-1251, rule4's
+           first subrule): insert an HFU vowel ("i") after any high vowel, no RightEnvironment. That
+           C# unit test runs this exact shape tagged simultaneous (RewriteApplicationMode.Simultaneous,
+           :1240) and proves "buibui" <- "bubu" completes cleanly under Simultaneous. This port
+           DELIBERATELY drops the tag rather than carrying it over: no multipleApplicationOrder
+           attribute is declared below, so PhonologicalRule takes the DTD default,
+           leftToRightIterative (HermitCrabInput.dtd:179), which is the OTHER direction of the
+           Simultaneous vs. Iterative divergence this fixture exists to pin (see words.yaml's own
+           header for the resulting self-feeding cascade and why Iterative crashes here where
+           Simultaneous cannot). -->
       <PhonologicalRule id="prule4">
         <Name>rule4</Name>
         <PhoneticInput />
