@@ -90,6 +90,9 @@
            features on HeadMorphologicalInput, previously zero coverage on the CompoundingRule side). -->
       <MorphologicalPhonologicalRuleFeature id="mprCompReq">CompReq</MorphologicalPhonologicalRuleFeature>
       <MorphologicalPhonologicalRuleFeature id="mprSubA">CompSubA</MorphologicalPhonologicalRuleFeature>
+      <!-- realizational/family-blocking, CONVERTED: see mrPast2's own comment. A lexically-preset
+           exception flag (mpr-gated-exception's own pattern), read by mrPast2's excludedMPRFeatures. -->
+      <MorphologicalPhonologicalRuleFeature id="mprSuppletivePast">SuppletivePast</MorphologicalPhonologicalRuleFeature>
       <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="any" outputType="overwrite" features="mprPedA mprPedB"><Name>ThemeGroup</Name></MorphologicalPhonologicalRuleFeatureGroup>
       <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="all" outputType="overwrite" features="mprConjA mprConjB"><Name>AllGroup</Name></MorphologicalPhonologicalRuleFeatureGroup>
       <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="any" outputType="overwrite" features="mprConjC mprConjD"><Name>AnyGroup</Name></MorphologicalPhonologicalRuleFeatureGroup>
@@ -162,21 +165,29 @@
       <FeatureNaturalClass id="ncAblautI"><Name>AblautI</Name><FeatureValue feature="featId" symbolValues="fI" /></FeatureNaturalClass>
       <FeatureNaturalClass id="ncAblautA"><Name>AblautA</Name><FeatureValue feature="featId" symbolValues="fA" /></FeatureNaturalClass>
     </NaturalClasses>
-    <Families>
-      <!-- realizational/family-blocking: DUC (regular) and TUL (irregular, suppletive perfect of a
-           "carry" verb, fero/tuli-plausible) share this family so the regular form is blocked
-           from also analyzing once its features collide with TUL's own lexically-fixed tense. -->
-      <Family id="famCarry">FamCarry</Family>
-      <!-- G5 (code-coverage-driven): GEN (regular compounding head) and NOV (suppletive) share this
-           family so CompoundingRule's OWN Blockable/CheckBlocking path (SynthesisCompoundingRule.cs)
-           gets exercised; previously only ever exercised through an ordinary MorphologicalRule
-           (famCarry above), never through a compound. -->
-      <Family id="famCompBlock">FamCompBlock</Family>
-      <!-- CompoundingRule@blockable="false" probe for mrCompoundHN. Neither member declares any
-           AssignedHeadFeatures, so an empty SyntacticFeatureStruct trivially subsumes an empty one:
-           blocking here depends only on family membership, not on any particular feature value. -->
-      <Family id="famHNBlock">FamHNBlock</Family>
-    </Families>
+    <!-- No Families element: LexicalEntry.family has zero hits anywhere in HCLoader.cs, so a real
+         FieldWorks project can never produce one; see fieldworks-producibility.tsv and
+         PROTOCOL.md's FieldWorks producibility section. The pre-conversion grammar declared three
+         (famCarry, famCompBlock, famHNBlock):
+
+         - famCarry (DUC/TUL) is CONVERTED, not removed. See mrPast2's own comment: the same
+           observable behavior (DUC's regular past tense is refused once a suppletive alternative
+           exists) now comes from ruleFeatures + excludedMPRFeatures instead.
+         - famCompBlock (GEN/NOV) and famHNBlock (BLOCKHEAD/BLOCKSIB/BLOCKNON) are REMOVED outright,
+           not converted: both exist purely to make CompoundingRule's own Blockable/CheckBlocking path
+           observable, and unlike the ordinary-MorphologicalRule case, there is no FieldWorks-
+           producible substitute on the compounding side. A CompoundingSubrule's own
+           requiredMPRFeatures/excludedMPRFeatures (the mechanism that would otherwise stand in) is
+           itself never populated by either compounding-rule loader (HeadMorphologicalInput.
+           excludedMPRFeatures / .requiredMPRFeatures are both "No" in fieldworks-producibility.tsv,
+           unconditionally, with no template-placement carve-out the way MorphologicalInput's version
+           has). See conformance/docs/engine-only-fixture-retirement.md. genlav, corriv, and the
+           eGen/eNov/eBlockHeadHN/eBlockSibHN/eBlockNonHN lexical entries that existed only to probe
+           this are removed with it; mrCompoundHN/mrCompoundNH's own blockable="false" declarations
+           (never producible either; HCLoader never touches Blockable at all, grep-confirmed zero
+           hits, and, for mrCompoundNH, never even exercised by a word in this fixture to begin
+           with) are dropped too, reverting to the engine's own default (true), which is what HCLoader
+           always implicitly leaves in place. -->
     <!-- Two strata, not one, because morphologicalRuleOrder is a per-stratum setting and two
          constructs here have genuinely CONFLICTING requirements on it: mpr-groups/output-overwrite
          needs "linear" order to be observable at all (see that section's own comment), but
@@ -191,7 +202,7 @@
       <Stratum
         characterDefinitionTable="table1"
         morphologicalRuleOrder="unordered"
-        morphologicalRules="mrPers1 mrPers2 mrPers3 mrTense rrPast mrPast2 mrPl2 mrCircumfixGeT mrSuffixS3 mrNasalInfix mrCompoundHN mrPrefixBe1 mrCompoundNH mrPrefixBe2 mrAblaut mrCompoundConstrained"
+        morphologicalRules="mrPers1 mrPers2 mrPers3 mrTense rrPast mrPl2 mrCircumfixGeT mrSuffixS3 mrNasalInfix mrCompoundHN mrPrefixBe1 mrCompoundNH mrPrefixBe2 mrAblaut mrCompoundConstrained"
       >
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
@@ -256,12 +267,29 @@
             <RealizationalFeatures><FeatureValue feature="featTense" symbolValues="symPast" /></RealizationalFeatures>
             <MorphemeId>RPAST</MorphemeId>
           </RealizationalRule>
-          <!-- ===================== realizational/family-blocking ===================== -->
+          <!-- ===================== realizational/family-blocking, CONVERTED =====================
+               Was: eDuc/eTul sharing Family "famCarry", mrPast2 undeclared for blocking (relying on
+               Word.CheckBlocking's own family-collision path). LexicalEntry.family has zero hits in
+               HCLoader.cs, so that mechanism is unreachable from any FieldWorks project regardless of
+               what else is true of the surrounding rule (see fieldworks-producibility.tsv). Converted
+               to the mpr-gated-exception pattern (edge-cases/mpr-gated-exception; see also
+               edge-cases/morphotactic-attribute-breadth's own conversion): eDuc now carries
+               ruleFeatures="mprSuppletivePast" directly (a lexically-preset exception flag, the same
+               shape as mpr-gated-exception's eVokad), and mrPast2's own MorphologicalInput excludes
+               it. TUL needs no family and no rule at all: it is simply a separate lexical entry whose
+               own AssignedHeadFeatures already supplies the suppletive past form directly.
+
+               excludedMPRFeatures is producible ONLY on a rule reached through an AffixTemplate Slot
+               (HCLoader.cs:1717, LoadAffixTemplate's own slot-blocking loop; a stratum-level rule's
+               excludedMPRFeatures has no HCLoader path at all; confirmed by mpr-gated-exception's
+               own mrSuf, which is exactly the stratum-level shape and stays HC-engine-only for it).
+               This grammar previously had NO AffixTemplate anywhere, so mrPast2 moves into a new,
+               minimal pastTemplate below and is removed from Main's own stratum-level rule list. -->
           <MorphologicalRule id="mrPast2" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
             <Name>past2</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subPast2">
-                <MorphologicalInput><PhoneticSequence id="stemPast2"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalInput excludedMPRFeatures="mprSuppletivePast"><PhoneticSequence id="stemPast2"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
                 <MorphologicalOutput><CopyFromInput index="stemPast2" /><InsertSegments><PhoneticShape>it</PhoneticShape></InsertSegments></MorphologicalOutput>
               </MorphologicalSubrule>
             </MorphologicalSubrules>
@@ -337,7 +365,7 @@
                as the non-head span). mrCompoundNH (nonhead+head order) pairs with mrPrefixBe2 to pin
                prefix-commute (the prefix attaches to the HEAD instead, which compounding does not
                require to be a bare root, so it succeeds where the nonhead-prefixed case failed). -->
-          <CompoundingRule id="mrCompoundHN" blockable="false" headPartsOfSpeech="posN1" nonHeadPartsOfSpeech="posN1 posV1">
+          <CompoundingRule id="mrCompoundHN" headPartsOfSpeech="posN1" nonHeadPartsOfSpeech="posN1 posV1">
             <Name>compoundHeadNonHead</Name>
             <CompoundingSubrules>
               <CompoundingSubrule>
@@ -358,7 +386,7 @@
             <OutputHeadFeatures><FeatureValue feature="featTense" symbolValues="symPast" /></OutputHeadFeatures>
             <MorphemeId>BEPFX1</MorphemeId>
           </MorphologicalRule>
-          <CompoundingRule id="mrCompoundNH" blockable="false" headPartsOfSpeech="posN2 posV2" nonHeadPartsOfSpeech="posN2">
+          <CompoundingRule id="mrCompoundNH" headPartsOfSpeech="posN2 posV2" nonHeadPartsOfSpeech="posN2">
             <Name>compoundNonHeadHead</Name>
             <CompoundingSubrules>
               <CompoundingSubrule>
@@ -410,7 +438,6 @@
                compound can itself satisfy headProdRestrictionsMprFeatures for a further application. -->
           <CompoundingRule
             id="mrCompoundConstrained"
-            blockable="true"
             headPartsOfSpeech="posCompH"
             nonHeadPartsOfSpeech="posCompNH"
             outputPartOfSpeech="posCompH"
@@ -433,6 +460,16 @@
             <OutputHeadFeatures><FeatureValue feature="featTense" symbolValues="symPres" /></OutputHeadFeatures>
           </CompoundingRule>
         </MorphologicalRuleDefinitions>
+        <!-- pastTemplate: exists solely so mrPast2's own excludedMPRFeatures is producible (see its
+             comment above); this grammar had no AffixTemplate at all before this conversion. The
+             slot is optional and posV-gated, matching every other posV rule's own freedom to apply or
+             not; nothing else in this grammar goes through a template. -->
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posV">
+            <Name>pastTemplate</Name>
+            <Slot optional="true" morphologicalRules="mrPast2"><Name>past2Slot</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
         <LexicalEntries>
           <!-- realizational/stem-name: three distinct-shape allomorphs of one "bring" verb. -->
           <LexicalEntry id="eFerre" partOfSpeech="posV">
@@ -450,16 +487,18 @@
             <MorphemeId>FER</MorphemeId>
             <Gloss>carry</Gloss>
           </LexicalEntry>
-          <!-- realizational/family-blocking: regular "duc" (lead) vs irregular suppletive "tul"
-               (tuli-plausible perfect of fero), sharing famCarry; TUL's tense is lexically fixed
-               to past, so a regular past-tense synthesis of DUC gets blocked in favor of (and
-               rejected against) TUL's own shape. -->
-          <LexicalEntry id="eDuc" partOfSpeech="posV" family="famCarry">
+          <!-- realizational/family-blocking, CONVERTED: regular "duc" (lead) vs irregular suppletive
+               "tul" (tuli-plausible perfect of fero). eDuc now carries ruleFeatures directly (the
+               lexically-preset exception flag mrPast2's own excludedMPRFeatures reads) instead of
+               sharing a Family with eTul; see mrPast2's own comment for the full conversion. TUL
+               needs no rule and no family: it is simply a separate root whose own AssignedHeadFeatures
+               already supplies the suppletive past form. -->
+          <LexicalEntry id="eDuc" partOfSpeech="posV" ruleFeatures="mprSuppletivePast">
             <Allomorphs><Allomorph id="aDuc"><PhoneticShape>duc</PhoneticShape></Allomorph></Allomorphs>
             <MorphemeId>DUC</MorphemeId>
             <Gloss>lead</Gloss>
           </LexicalEntry>
-          <LexicalEntry id="eTul" partOfSpeech="posV" family="famCarry">
+          <LexicalEntry id="eTul" partOfSpeech="posV">
             <Allomorphs><Allomorph id="aTul"><PhoneticShape>tul</PhoneticShape></Allomorph></Allomorphs>
             <AssignedHeadFeatures><FeatureValue feature="featTense" symbolValues="symPast" /></AssignedHeadFeatures>
             <MorphemeId>TUL</MorphemeId>
@@ -495,25 +534,10 @@
             <MorphemeId>NOXV</MorphemeId>
             <Gloss>harm</Gloss>
           </LexicalEntry>
-          <!-- CompoundingRule@blockable="false" probe: mrCompoundHN's own head, sharing famHNBlock
-               with eBlockSibHN below. -->
-          <LexicalEntry id="eBlockHeadHN" partOfSpeech="posN1" family="famHNBlock">
-            <Allomorphs><Allomorph id="aBlockHeadHN"><PhoneticShape>cor</PhoneticShape></Allomorph></Allomorphs>
-            <MorphemeId>BLOCKHEAD</MorphemeId>
-            <Gloss>heart</Gloss>
-          </LexicalEntry>
-          <!-- Family sibling: were mrCompoundHN blockable, CheckBlocking would substitute this whole
-               entry in place of any compound built on eBlockHeadHN. -->
-          <LexicalEntry id="eBlockSibHN" partOfSpeech="posN1" family="famHNBlock">
-            <Allomorphs><Allomorph id="aBlockSibHN"><PhoneticShape>zon</PhoneticShape></Allomorph></Allomorphs>
-            <MorphemeId>BLOCKSIB</MorphemeId>
-            <Gloss>zone</Gloss>
-          </LexicalEntry>
-          <LexicalEntry id="eBlockNonHN" partOfSpeech="posN1">
-            <Allomorphs><Allomorph id="aBlockNonHN"><PhoneticShape>riv</PhoneticShape></Allomorph></Allomorphs>
-            <MorphemeId>BLOCKNON</MorphemeId>
-            <Gloss>river</Gloss>
-          </LexicalEntry>
+          <!-- eBlockHeadHN/eBlockSibHN/eBlockNonHN (the CompoundingRule@blockable="false" +
+               famHNBlock probe, "corriv") are REMOVED: see the comment where <Families> used to be
+               declared, above, for why compound-side family-blocking has no FieldWorks-producible
+               substitute. -->
           <!-- compounding/prefix-commute (Set 2: mrCompoundNH + mrPrefixBe2) - disjoint lexical
                material from Set 1 so the two CompoundingRules never cross-fire on the same word. The
                homophone pair sits on the HEAD this time (not the non-head, per Set 1): mrPrefixBe2
@@ -540,20 +564,8 @@
             <MorphemeId>SING</MorphemeId>
             <Gloss>sing</Gloss>
           </LexicalEntry>
-          <LexicalEntry id="eGen" partOfSpeech="posCompH" ruleFeatures="mprCompReq" family="famCompBlock">
-            <Allomorphs><Allomorph id="aGen"><PhoneticShape>gen</PhoneticShape></Allomorph></Allomorphs>
-            <MorphemeId>GEN</MorphemeId>
-            <Gloss>kind</Gloss>
-          </LexicalEntry>
-          <!-- Suppletive partner for GEN (famCompBlock): CheckBlocking substitutes this whole entry
-               in wherever GEN's own compounding output would otherwise surface, so a candidate word
-               built from GEN's compound has no valid resynthesis matching its own input shape. -->
-          <LexicalEntry id="eNov" partOfSpeech="posCompH" family="famCompBlock">
-            <Allomorphs><Allomorph id="aNov"><PhoneticShape>nov</PhoneticShape></Allomorph></Allomorphs>
-            <AssignedHeadFeatures><FeatureValue feature="featTense" symbolValues="symPres" /></AssignedHeadFeatures>
-            <MorphemeId>NOV</MorphemeId>
-            <Gloss>new</Gloss>
-          </LexicalEntry>
+          <!-- eGen/eNov (the CompoundingRule Blockable/CheckBlocking + famCompBlock probe, "genlav")
+               are REMOVED: see the comment where <Families> used to be declared, above. -->
           <LexicalEntry id="eMit" partOfSpeech="posCompH" ruleFeatures="mprCompReq mprSubA">
             <Allomorphs><Allomorph id="aMit"><PhoneticShape>mit</PhoneticShape></Allomorph></Allomorphs>
             <MorphemeId>MIT</MorphemeId>

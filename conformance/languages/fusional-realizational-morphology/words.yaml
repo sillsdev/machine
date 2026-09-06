@@ -1,8 +1,15 @@
+# CONVERSION NOTE (added when this fixture's family-blocking section was converted to a
+# FieldWorks-producible mechanism; see fieldworks_producible_notes below for the full account): the
+# paragraph immediately below is the ORIGINAL hand-derivation narrative and predates that conversion.
+# "no AffixTemplate at all" was true THEN; this grammar now has exactly one (pastTemplate, holding
+# only mrPast2), added solely so mrPast2's own excludedMPRFeatures gate is producible. "a Family
+# collision" is also historical: family-based blocking is gone (see fieldworks_producible_notes).
+#
 # HAND DERIVATION (authored BEFORE running the oracle -- see grammar.xml for the rule definitions
-# these derivations reason from). This grammar has no phonological rules and no
-# AffixTemplate at all (every MorphologicalRule/RealizationalRule/CompoundingRule applies freely,
-# unordered) -- so a bare root is a valid word whenever nothing else (a StemName region, a Family
-# collision, an IsBlocked check) specifically forbids it.
+# these derivations reason from). This grammar has no phonological rules and (at the time this was
+# written) no AffixTemplate at all (every MorphologicalRule/RealizationalRule/CompoundingRule applies
+# freely, unordered) -- so a bare root is a valid word whenever nothing else (a StemName region, a
+# Family collision, an IsBlocked check) specifically forbids it.
 #
 #   1. mun -> STEM's default (unrestricted) allomorph, bare, no person feature assigned at all. The
 #      default allomorph carries no stemName, so it has no region to fail to satisfy.
@@ -83,11 +90,37 @@ sources:
 requires: []
 fieldworks_producible: false
 fieldworks_producible_notes: >-
-  LexicalEntry.family (famCarry/famHNBlock/famCompBlock) has zero hits anywhere in HCLoader.cs;
-  RealizationalRule (rrPast) is never constructed by any HCLoader rule loader (all five
-  Load*AffixProcessRule methods build AffixProcessRule only); mrCompoundConstrained's two
-  CompoundingSubrules set HeadMorphologicalInput requiredMPRFeatures/excludedMPRFeatures, never
-  populated by LoadEndoCompoundingRule/LoadExoCompoundingRule (HCLoader.cs:1842-2001).
+  CONVERSION HISTORY: the pre-conversion grammar named three blockers here (LexicalEntry.family;
+  RealizationalRule; mrCompoundConstrained's per-subrule HeadMorphologicalInput requiredMPRFeatures/
+  excludedMPRFeatures). Per this task's triage, only the FIRST is converted -- the
+  realizational/family-blocking section (duc/tul/ducit/ducunt) now uses ruleFeatures +
+  excludedMPRFeatures (the edge-cases/mpr-gated-exception pattern; the excluding rule, mrPast2, moved
+  into a new AffixTemplate Slot so the exclusion is genuinely producible, not merely relocated) --
+  see mrPast2's own grammar.xml comment for the full mechanism and edge-cases/morphotactic-attribute-
+  breadth's own conversion for the same pattern applied elsewhere. Family-blocking on the COMPOUNDING
+  side (the former genlav/corriv words, famCompBlock/famHNBlock) had no available substitute --
+  CompoundingSubrule's own requiredMPRFeatures/excludedMPRFeatures is unconditionally "No" in
+  fieldworks-producibility.tsv, with no template-placement carve-out the way the ordinary-
+  MorphologicalRule version has -- so that material is REMOVED outright, not converted; see
+  conformance/docs/engine-only-fixture-retirement.md.
+
+  What still blocks this fixture, unconverted (out of scope for this task -- converting either would
+  gut what "fusional-realizational-morphology" is actually testing):
+  - RealizationalRule (rrPast, ferid/feresid): never constructed by any HCLoader rule loader (all
+    five Load*AffixProcessRule methods build AffixProcessRule only).
+  - mrCompoundConstrained's two CompoundingSubrules (mitlav/ficlav) set HeadMorphologicalInput
+    requiredMPRFeatures/excludedMPRFeatures, never populated by LoadEndoCompoundingRule/
+    LoadExoCompoundingRule (HCLoader.cs:1842-2001), and the two subrules' MPR features differ (one
+    requires mprSubA, the other excludes it) -- also non-producible under PROTOCOL.md section 9's
+    "requiredMPRFeatures must be identical across every subrule of one rule" usage check.
+  - mrCompoundConstrained's own outputObligatoryFeatures="featTense": CompoundingRule.
+    outputObligatoryFeatures is "No" in fieldworks-producibility.tsv (HCLoader never touches
+    CompoundingRule.ObligatorySyntacticFeatures either).
+  - ThemeGroup/AllGroup/AnyGroup (the mpr-groups section): all three are custom-named
+    MorphologicalPhonologicalRuleFeatureGroup elements; HCLoader only ever builds three hardcoded
+    groups ("inflClasses", "exceptionFeatures", "lexEntryInflTypes") -- see
+    edge-cases/morphotactic-attribute-breadth's own conversion for a fixture that DOES use one of the
+    three real names.
 words:
   - word: mun
     note: STEM's default (unrestricted) allomorph, bare -- no person feature assigned, so there is no StemName region to fail.
@@ -236,15 +269,29 @@ words:
 
   - word: ducit
     note: >-
-      DUC + PAST2 ("-it", sets tense=past) attempted -- the synthesized candidate's tense=past FS
-      subsumes TUL's own lexically-fixed FS (family collision), so Word.CheckBlocking fires and
-      substitutes in TUL's own shape; since that substituted shape ("tul") does not match the surface
-      "ducit", the candidate is discarded. Zero parses.
+      DUC + PAST2 ("-it", sets tense=past) attempted -- CONVERTED mechanism (see grammar.xml's own
+      mrPast2 comment): DUC carries ruleFeatures="mprSuppletivePast" directly (no Family involved any
+      more), and mrPast2's own MorphologicalInput excludes that same feature, so the rule simply never
+      applies to DUC at all. Zero parses, same observable outcome as the pre-conversion
+      Family+CheckBlocking mechanism, different (FieldWorks-producible) cause.
     expect_fail: true
     blocked_by: [mrPast2]
-    provenance: "W5, LexFamily blocks a more-general family member (Word.CheckBlocking)"
+    provenance: "W5 (pre-conversion: LexFamily/Word.CheckBlocking); converted to ruleFeatures + excludedMPRFeatures per this task's triage"
     exercises:
       - "RealizationalAffixProcessRule"
+
+  - word: ferit
+    note: >-
+      FER + PAST2 ("-it") -- added by this conversion to prove mrPast2's own excludedMPRFeatures gate
+      is specific to DUC's own lexically-preset mprSuppletivePast, not a blanket refusal now that the
+      rule lives in an AffixTemplate Slot: FER carries no ruleFeatures at all, so PAST2 applies to it
+      normally.
+    parses:
+      - signature: "FER+PAST2|ferit"
+        gloss: carry-PST2
+        rules: [mrPast2]
+        exercises:
+          - "RealizationalAffixProcessRule"
 
   - word: ducunt
     note: DUC + PL2 ("-unt", sets num=pl only, never touches tense) -- never collides with TUL's tense-only lexical fixing, so not blocked.
@@ -707,21 +754,6 @@ words:
     exercises:
       - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
 
-  - word: genlav
-    note: >-
-      GEN (head, mprCompReq, family famCompBlock) + LAV (nonhead) -- the compounding rule itself
-      applies successfully, but GEN's family also contains the suppletive NOV, and CheckBlocking
-      substitutes NOV's own entry in wherever GEN's compound output would surface; the resulting
-      resynthesis ("nov") no longer matches this word's own input shape ("gen+lav"), so the overall
-      analysis has zero parses. G5 (code-coverage-driven): previously zero coverage for
-      CompoundingRule's own Blockable/CheckBlocking path (only ever exercised through an ordinary
-      MorphologicalRule elsewhere in this file, via famCarry).
-    provenance: "G5 coverage sweep, SynthesisCompoundingRule Blockable/CheckBlocking"
-    expect_fail: true
-    blocked_by: [mrCompoundConstrained]
-    exercises:
-      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
-
   - word: mitlavlav
     note: >-
       MIT+LAV (mitlav, above) attempted as the HEAD of a further application of the same
@@ -739,22 +771,12 @@ words:
     exercises:
       - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
 
-  - word: corriv
-    note: >-
-      CompoundingRule@blockable="false" probe for mrCompoundHN (mrCompoundConstrained's own
-      blockable="true" is already pinned by genlav above, but neither of the OTHER two
-      CompoundingRules -- mrCompoundHN, mrCompoundNH -- had a family sibling to make their own
-      declared "false" value observable; rewriting it to "true" changed nothing until now).
-      BLOCKHEAD (head, family famHNBlock) + BLOCKNON (nonhead) compound normally. BLOCKHEAD's family
-      also contains the sibling BLOCKSIB, which declares no AssignedHeadFeatures at all -- an empty
-      SyntacticFeatureStruct trivially subsumes an empty one, so were mrCompoundHN blockable,
-      CheckBlocking would fire on family membership alone and substitute BLOCKSIB's own bare entry
-      wherever this compound's output would surface, and the resulting resynthesis ("zon") would not
-      match this word's own input shape ("cor+riv"). Because mrCompoundHN declares blockable="false",
-      that substitution never happens and the ordinary compound analysis stands.
-    parses:
-      - signature: "BLOCKHEAD+BLOCKNON|cor+?riv"
-        gloss: heart-river
-        rules: [mrCompoundHN]
-        exercises:
-          - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+  # genlav (CompoundingRule Blockable/CheckBlocking + famCompBlock) and corriv (CompoundingRule
+  # blockable="false" + famHNBlock) are REMOVED by this conversion, not converted: both probed
+  # compound-side family-blocking, which has no FieldWorks-producible substitute (see this file's own
+  # fieldworks_producible_notes and conformance/docs/engine-only-fixture-retirement.md). Neither
+  # coverage gap is silent: mitlav/ficlav/seclav above still exercise mrCompoundConstrained's
+  # producible constructs (per-subrule MPR gating and headProdRestrictionsMprFeatures respectively,
+  # both left unconverted -- see fieldworks_producible_notes), and pannox/panbenox/pandex/lexdom/
+  # lexbedom/lexbex above still exercise mrCompoundHN/mrCompoundNH's ordinary head/nonhead/prefix
+  # mechanics with no family or blockable involved at all.
