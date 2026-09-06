@@ -36,10 +36,10 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### `languages/fusional-realizational-morphology/grammar.xml`
 
-- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:411` = "posCompH"
-- Reader (gate declared here) `CompoundingRule.headPartsOfSpeech`: `grammar.xml:340` = "posN1"
-- Reader (gate declared here) `CompoundingRule.headPartsOfSpeech`: `grammar.xml:361` = "posN2 posV2"
-- Reader (gate declared here) `CompoundingRule.headPartsOfSpeech`: `grammar.xml:411` = "posCompH"
+- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:439` = "posCompH"
+- Reader (gate declared here) `CompoundingRule.headPartsOfSpeech`: `grammar.xml:368` = "posN1"
+- Reader (gate declared here) `CompoundingRule.headPartsOfSpeech`: `grammar.xml:389` = "posN2 posV2"
+- Reader (gate declared here) `CompoundingRule.headPartsOfSpeech`: `grammar.xml:439` = "posCompH"
 
 ## Author's prose
 

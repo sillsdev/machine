@@ -343,6 +343,39 @@
             <MorphemeId>EXB</MorphemeId>
             <Gloss>exb</Gloss>
           </MorphologicalRule>
+          <!-- mrExC/mrExD: a SECOND isolated exclude pair, added specifically to restore
+               dtd:enum/AllomorphCoOccurrenceRule/adjacency/{adjacentToLeft,adjacentToRight,
+               somewhereToLeft,somewhereToRight} coverage. The mrExA/mrExB pair above only exercises
+               "anywhere" (Allomorph) and "adjacentToRight" (Morpheme, a separate DTD surface); the
+               other four AllomorphCoOccurrenceRule adjacency values had no other witness anywhere in
+               this suite once the pre-conversion type="require" material (four different adjacency
+               values, on mrCoA-D) was removed. See the AllomorphCoOccurrenceRules element below:
+               ExC/ExD are always adjacent when both present (fixed Slot order, no rule between their
+               two slots), so one word ("toplane") exercises all four non-default adjacency values at
+               once via four separate rule declarations over the SAME underlying fact, exactly as
+               mrConferExcl/mrExclReader already model a single fact two ways elsewhere in this file. -->
+          <MorphologicalRule id="mrExC" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>exC</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subExC">
+                <MorphologicalInput><PhoneticSequence id="stemExC"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemExC" /><InsertSegments><PhoneticShape>la</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>EXC</MorphemeId>
+            <Gloss>exc</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrExD" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>exD</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subExD">
+                <MorphologicalInput><PhoneticSequence id="stemExD"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemExD" /><InsertSegments><PhoneticShape>ne</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>EXD</MorphemeId>
+            <Gloss>exd</Gloss>
+          </MorphologicalRule>
         </MorphologicalRuleDefinitions>
         <AffixTemplates>
           <!-- The FINAL template. A stratum whose only template is non-final admits no complete word
@@ -359,6 +392,8 @@
             <Slot optional="true" morphologicalRules="mrExclReader"><Name>exclReaderSlot</Name></Slot>
             <Slot optional="true" morphologicalRules="mrExA"><Name>exASlot</Name></Slot>
             <Slot optional="true" morphologicalRules="mrExB"><Name>exBSlot</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrExC"><Name>exCSlot</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrExD"><Name>exDSlot</Name></Slot>
           </AffixTemplate>
           <!-- final="false": a non-final template. Its output is not a complete word on its own. -->
           <AffixTemplate requiredPartsOfSpeech="posN" final="false">
@@ -446,13 +481,24 @@
       <!-- type="exclude": HCLoader-producible (its two co-occurrence loaders build Exclude
            constraints only). EXA immediately right of EXB forbidden. -->
       <MorphemeCoOccurrenceRule type="exclude" primaryMorpheme="mrExA" otherMorphemes="mrExB" adjacency="adjacentToRight" />
+      <!-- isActive="no" decoy: HCLoader DOES have a Disabled-filter equivalent for
+           MorphemeCoOccurrenceRule (unlike LexicalEntry/Allomorph/Stratum/etc.), so this is
+           producible. Reuses CoA/CoC harmlessly (inactive, so it never actually fires). -->
+      <MorphemeCoOccurrenceRule isActive="no" type="exclude" primaryMorpheme="mrCoA" otherMorphemes="mrCoC" adjacency="anywhere" />
     </MorphemeCoOccurrenceRules>
     <AllomorphCoOccurrenceRules>
       <!-- type="exclude": EXA and EXB may never co-occur anywhere in the same word. -->
       <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="subExA" otherAllomorphs="subExB" adjacency="anywhere" />
+      <!-- ExC/ExD are always adjacent when both present (fixed Slot order, nothing declared
+           between exCSlot/exDSlot): one underlying fact, stated four ways, to cover all four
+           non-default AllomorphCoOccurrenceRule adjacency values (see mrExC/mrExD's own comment). -->
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="subExD" otherAllomorphs="subExC" adjacency="adjacentToLeft" />
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="subExC" otherAllomorphs="subExD" adjacency="adjacentToRight" />
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="subExD" otherAllomorphs="subExC" adjacency="somewhereToLeft" />
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="subExC" otherAllomorphs="subExD" adjacency="somewhereToRight" />
       <!-- isActive="no" decoy, preserved from the pre-conversion grammar's own isActive-toggle
            coverage: on unrelated material (CoA/CoC), so activating it would invalidate topsakatana
-           without touching exASlot/exBSlot's own words. -->
+           without touching exASlot/exBSlot/exCSlot/exDSlot's own words. -->
       <AllomorphCoOccurrenceRule isActive="no" type="exclude" primaryAllomorph="subCoA" otherAllomorphs="subCoC" adjacency="anywhere" />
     </AllomorphCoOccurrenceRules>
   </Language>

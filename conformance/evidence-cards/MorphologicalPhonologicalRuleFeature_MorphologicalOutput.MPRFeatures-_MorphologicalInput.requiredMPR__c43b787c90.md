@@ -36,14 +36,14 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### `languages/fusional-realizational-morphology/grammar.xml`
 
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:204` = "mprConjA"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:425` = "mprCompReq"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:430` = "mprCompReq"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:595` = "mprPedA"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:605` = "mprPedB"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:614` = "mprPedA"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:625` = "mprConjA mprConjB"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:635` = "mprConjC mprConjD"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:215` = "mprConjA"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:452` = "mprCompReq"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:457` = "mprCompReq"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:607` = "mprPedA"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:617` = "mprPedB"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:626` = "mprPedA"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:637` = "mprConjA mprConjB"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:647` = "mprConjC mprConjD"
 
 ## Author's prose
 

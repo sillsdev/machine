@@ -324,15 +324,12 @@ edge-cases/morphotactic-attribute-breadth	Interface	AffixTemplate.requiredPartsO
 edge-cases/morphotactic-attribute-breadth	Interface	AllomorphCoOccurrenceRule.otherAllomorphs	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Interface	AllomorphCoOccurrenceRule.primaryAllomorph	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
-edge-cases/morphotactic-attribute-breadth	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
-edge-cases/morphotactic-attribute-breadth	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
-edge-cases/morphotactic-attribute-breadth	Interface	LexicalEntry.family	present-but-inert	Unobservable
 edge-cases/morphotactic-attribute-breadth	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
 edge-cases/morphotactic-attribute-breadth	Interface	LexicalEntry.ruleFeatures	present-but-inert	Unobservable
 edge-cases/morphotactic-attribute-breadth	Interface	MorphemeCoOccurrenceRule.otherMorphemes	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Interface	MorphemeCoOccurrenceRule.primaryMorpheme	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Interface	MorphologicalInput.excludedMPRFeatures	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Interface	MorphologicalInput.requiredMPRFeatures	present-but-inert	Unobservable
+edge-cases/morphotactic-attribute-breadth	Interface	MorphologicalInput.requiredMPRFeatures	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Interface	MorphologicalOutput.MPRFeatures	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Interface	MorphologicalPhonologicalRuleFeatureGroup.features	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
@@ -341,14 +338,6 @@ edge-cases/morphotactic-attribute-breadth	Interface	SimpleContext.naturalClass	r
 edge-cases/morphotactic-attribute-breadth	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Interface	Stratum.morphologicalRules	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	5 claim(s)
-edge-cases/morphotactic-attribute-breadth	Construct	Disjunctive allomorphs / free-fluctuation	claimed-unmapped	1 claim(s)
-edge-cases/morphotactic-attribute-breadth	Construct	Element deactivation (isActive) across loader collections	claimed-confirmed	1 claim(s)
-edge-cases/morphotactic-attribute-breadth	Construct	MPR features/groups	claimed-unmapped	2 claim(s)
-edge-cases/morphotactic-attribute-breadth	Construct	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	claimed-confirmed	2 claim(s)
-edge-cases/morphotactic-attribute-breadth	Construct	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	claimed-contradicted	15 claim(s)
-edge-cases/morphotactic-attribute-breadth	Construct	RealizationalAffixProcessRule	claimed-unmapped	1 claim(s)
-edge-cases/morphotactic-attribute-breadth	Construct	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	claimed-confirmed	3 claim(s)
 edge-cases/mpr-gated-exception	Surface	dtd:element/Environment	witnessed	Evidenced
 edge-cases/mpr-gated-exception	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/mpr-gated-exception	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
@@ -489,6 +478,7 @@ languages/fusional-realizational-morphology	Surface	dtd:enum/CompoundingRule/blo
 languages/fusional-realizational-morphology	Surface	dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/isActive/yes	witnessed	Evidenced
 languages/fusional-realizational-morphology	Surface	dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/matchType/all	witnessed	Evidenced
 languages/fusional-realizational-morphology	Surface	dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/matchType/any	witnessed	Evidenced
+languages/fusional-realizational-morphology	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 languages/fusional-realizational-morphology	Interface	Allomorph.stemName	witnessed	Evidenced
 languages/fusional-realizational-morphology	Interface	CompoundingRule.headPartsOfSpeech	present-but-inert	Unobservable
 languages/fusional-realizational-morphology	Interface	CompoundingRule.headProdRestrictionsMprFeatures	witnessed	Evidenced
@@ -500,25 +490,26 @@ languages/fusional-realizational-morphology	Interface	FeatureValue.feature	requi
 languages/fusional-realizational-morphology	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
 languages/fusional-realizational-morphology	Interface	HeadMorphologicalInput.excludedMPRFeatures	present-but-inert	Unobservable
 languages/fusional-realizational-morphology	Interface	HeadMorphologicalInput.requiredMPRFeatures	present-but-inert	Unobservable
-languages/fusional-realizational-morphology	Interface	LexicalEntry.family	witnessed	Evidenced
 languages/fusional-realizational-morphology	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
 languages/fusional-realizational-morphology	Interface	LexicalEntry.ruleFeatures	witnessed	Evidenced
 languages/fusional-realizational-morphology	Interface	ModifyFromInput.index	required-by-dtd	RequiredByDtd
+languages/fusional-realizational-morphology	Interface	MorphologicalInput.excludedMPRFeatures	witnessed	Evidenced
 languages/fusional-realizational-morphology	Interface	MorphologicalInput.requiredMPRFeatures	witnessed	Evidenced
 languages/fusional-realizational-morphology	Interface	MorphologicalOutput.MPRFeatures	witnessed	Evidenced
 languages/fusional-realizational-morphology	Interface	MorphologicalPhonologicalRuleFeatureGroup.features	required-by-dtd	RequiredByDtd
 languages/fusional-realizational-morphology	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
 languages/fusional-realizational-morphology	Interface	MorphologicalRule.requiredPartsOfSpeech	witnessed	Evidenced
 languages/fusional-realizational-morphology	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+languages/fusional-realizational-morphology	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
 languages/fusional-realizational-morphology	Interface	StemName.partsOfSpeech	required-by-dtd	RequiredByDtd
 languages/fusional-realizational-morphology	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 languages/fusional-realizational-morphology	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 languages/fusional-realizational-morphology	Construct	AffixProcessRule: prefix/suffix/circumfix/infix	claimed-unmapped	6 claim(s)
 languages/fusional-realizational-morphology	Construct	CompoundingRule	claimed-confirmed	8 claim(s)
-languages/fusional-realizational-morphology	Construct	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	claimed-confirmed	6 claim(s)
+languages/fusional-realizational-morphology	Construct	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	claimed-confirmed	4 claim(s)
 languages/fusional-realizational-morphology	Construct	MPR features/groups	claimed-unmapped	16 claim(s)
 languages/fusional-realizational-morphology	Construct	MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext	claimed-confirmed	1 claim(s)
-languages/fusional-realizational-morphology	Construct	RealizationalAffixProcessRule	claimed-unmapped	6 claim(s)
+languages/fusional-realizational-morphology	Construct	RealizationalAffixProcessRule	claimed-unmapped	7 claim(s)
 languages/fusional-realizational-morphology	Construct	Stem names	claimed-unmapped	12 claim(s)
 languages/metathesis-phase-isolation	Surface	dtd:enum/MorphologicalOutput/redupMorphType/prefix	witnessed	Evidenced
 languages/metathesis-phase-isolation	Interface	BoundaryMarker.boundary	required-by-dtd	RequiredByDtd

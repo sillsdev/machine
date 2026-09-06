@@ -17,11 +17,11 @@ no mutator sits between the write and the read: blocking (Word.CheckBlocking reb
 
 **Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: languages/fusional-realizational-morphology declares >=2 LexicalEntry sharing a family under the same Stratum (Word.CheckBlocking's family+stratum precondition, Word.cs:475-485); FeatureStruct subsumption and word-level witness of an actual block are not checked here
+Ledger evidence: no exercising fixture declares >=2 LexicalEntry sharing a family under the same Stratum -- Word.CheckBlocking (Word.cs:475-477) requires LexEntry.Family != null, so blocking cannot fire in any exercising fixture as authored
 
 ## Fixture and word
 
-- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/fusional-realizational-morphology` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
+- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.
 
 ## Exact mutation and before/after parse
 
@@ -29,44 +29,11 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`LexicalEntry.partOfSpeech` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed partOfSpeech from 27 <LexicalEntry> element(s)", example: 'mint': ok::STEM+P3|mint -> ok::MIT+PRESSTEM|mint;STEM+P3|mint
-- Reader (`CompoundingRule.nonHeadPartsOfSpeech` in `languages/fusional-realizational-morphology`): verdict=Unobservable, mutation="removed nonHeadPartsOfSpeech from 3 <CompoundingRule> element(s)"
+No fixture is identified for this cell, so no witness row can be looked up.
 
 ## Grammar citations
 
-### `languages/fusional-realizational-morphology/grammar.xml`
-
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:438` = "posV"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:448` = "posV"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:457` = "posV"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:462` = "posV"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:469` = "posV"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:476` = "posV"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:483` = "posN1"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:488` = "posN1"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:493` = "posV1"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:500` = "posN1"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:507` = "posN1"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:512` = "posN1"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:522` = "posN2"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:527` = "posN2"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:532` = "posV2"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:538` = "posAblautV"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:543` = "posCompH"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:551` = "posCompH"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:557` = "posCompH"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:562` = "posCompH"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:568` = "posCompH"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:573` = "posCompNH"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:644` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:652` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:657` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:662` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:670` = "posN"
-- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:340` = "posN1 posV1"
-- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:361` = "posN2"
-- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:411` = "posCompNH"
-
+No fixture is identified for this cell, so no `grammar.xml` lines can be cited.
 ## Author's prose
 
 - No prose recorded: no claim, and no word is identified for this cell.

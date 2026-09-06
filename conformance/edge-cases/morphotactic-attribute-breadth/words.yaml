@@ -56,6 +56,24 @@
 #   - The Slot-adjacency ordering discriminators that depended on the removed rules (kulgimo's
 #     unblockableSlot~partialSlot, kulmoru's partialSlot~realSlot) -- the ordering-discriminator
 #     CONSTRUCT itself survives via topsakanabu's coDSlot~mbSlot pair, which needed no changes.
+#   - Raw DTD-enum coverage (conformance/semantic-coverage-baseline.txt), checked after this
+#     conversion by regenerating it: dtd:enum/MorphologicalRule/blockable/false,
+#     dtd:enum/RealizationalRule/blockable/false, dtd:enum/RealizationalRule/isActive/no,
+#     dtd:enum/AllomorphCoOccurrenceRule/type/require, and
+#     dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/isActive/no all went from covered (only by
+#     this fixture) to uncovered anywhere in the whole corpus -- each is the direct, unavoidable
+#     mechanical consequence of removing the ONE non-producible construct that used to carry it (no
+#     value declaring blockable="false" survives once family-blocking is gone; no RealizationalRule
+#     survives at all; AllomorphCoOccurrenceRule@type="require" has no producible substitute, unlike
+#     its Morpheme-level counterpart which stays covered via languages/suffixing-evidential-
+#     adjacency-chain; a custom-named MorphologicalPhonologicalRuleFeatureGroup is non-producible
+#     even isActive="no", since its mere PRESENCE, not its active behavior, is what HCLoader can
+#     never emit). This is a raw HC-engine coverage question, distinct from FieldWorks producibility;
+#     the four AllomorphCoOccurrenceRule adjacency VALUES (adjacentToLeft/adjacentToRight/
+#     somewhereToLeft/somewhereToRight) were also initially lost by this conversion and were
+#     DELIBERATELY restored (topla/toplane, mrExC/mrExD) rather than left as a silent gap -- these
+#     five could not be, because restoring any of them would reintroduce the non-producible
+#     construct that carried them and undo this fixture's own conversion.
 #   - outputType="append" specifically (see above) -- no fixture in this suite has a producible
 #     substitute for it; conformance/edge-cases/mpr-group-overwrite-without-realizational and
 #     conformance/edge-cases/mpr-overwrite-order-dependence remain the only fixtures exercising it,
@@ -178,6 +196,12 @@ words:
       - signature: "TOP+COA+COB+COD+MB|topsakanabu"
         rules: [mrCoA, mrCoB, mrCoD, mrMB]
 
+  - word: kulge
+    note: kul + mrGrpSetA ("ge") alone -- positive control showing GrpSetA attaches normally on its own.
+    parses:
+      - signature: "KUL+GRPA|kulge"
+        rules: [mrGrpSetA]
+
   - word: kulgago
     note: >-
       Positive baseline for the MPR-group construct: kul + mrGrpSetB ("ga", confers mprB) +
@@ -204,11 +228,39 @@ words:
       - signature: "TOP+EXA|topke"
         rules: [mrExA]
 
+  - word: topko
+    note: top + mrExB ("ko") alone, no mrExA -- positive control showing ExB attaches normally with no exclusion active.
+    parses:
+      - signature: "TOP+EXB|topko"
+        rules: [mrExB]
+
   - word: topkeko
     note: >-
       top + mrExA ("ke") + mrExB ("ko"), adjacent. Both the AllomorphCoOccurrenceRule (anywhere) and
       the MorphemeCoOccurrenceRule (adjacentToRight) exclude this pair, so it is refused twice over --
       this fixture does not attempt to isolate the two reasons independently.
+    expect_fail: true
+
+  - word: topla
+    note: >-
+      top + mrExC ("la") alone, no mrExD -- positive control showing ExC attaches normally with
+      none of the four adjacency exclusions active (ExD absent).
+    parses:
+      - signature: "TOP+EXC|topla"
+        rules: [mrExC]
+
+  - word: topne
+    note: top + mrExD ("ne") alone, no mrExC -- positive control showing ExD attaches normally with none of the four exclusions active (ExC absent).
+    parses:
+      - signature: "TOP+EXD|topne"
+        rules: [mrExD]
+
+  - word: toplane
+    note: >-
+      top + mrExC ("la") + mrExD ("ne"), adjacent (fixed Slot order, nothing declared between
+      exCSlot/exDSlot). Restores dtd:enum/AllomorphCoOccurrenceRule/adjacency/{adjacentToLeft,
+      adjacentToRight,somewhereToLeft,somewhereToRight} coverage: all four rules key on this same
+      ExC/ExD-adjacent fact, so this one word is excluded four separate ways at once.
     expect_fail: true
 
   - word: pog

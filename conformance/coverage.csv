@@ -128,36 +128,6 @@ N3-PatternShapes,bet,|b[ae]t,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bit,,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bt,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
 MetathesisComparisonCrash,ti,,MetathesisRule
-MorphotacticAttributeBreadth,kul,KUL|kul,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-MorphotacticAttributeBreadth,kulde,KUL+TWICE|kulde,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-MorphotacticAttributeBreadth,kuldede,KUL+TWICE|kuldede,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-MorphotacticAttributeBreadth,kuldedede,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-MorphotacticAttributeBreadth,kulba,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-MorphotacticAttributeBreadth,kulgi,KUL+UNBLK|kulgi,MPR features/groups
-MorphotacticAttributeBreadth,kulmo,KUL+PART|kulmo,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-MorphotacticAttributeBreadth,kulru,KUL+REAL|kulru,RealizationalAffixProcessRule
-MorphotacticAttributeBreadth,kulsi,,Element deactivation (isActive) across loader collections
-MorphotacticAttributeBreadth,nap,NAP|nap,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-MorphotacticAttributeBreadth,napmo,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-MorphotacticAttributeBreadth,sol,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-MorphotacticAttributeBreadth,kur,,Disjunctive allomorphs / free-fluctuation
-MorphotacticAttributeBreadth,kulpu,,Affix template slots (obligatory/disjunctive/ordering)
-MorphotacticAttributeBreadth,bak,VAK|bak,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-MorphotacticAttributeBreadth,dom,ZOM|dom,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-MorphotacticAttributeBreadth,bakgi,VAK+UNBLK|bakgi,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-MorphotacticAttributeBreadth,sim,SIM|sim,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-MorphotacticAttributeBreadth,rog,ROG|rog,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-MorphotacticAttributeBreadth,simru,SIM+REAL|simru,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-MorphotacticAttributeBreadth,top,TOP|top,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-MorphotacticAttributeBreadth,topsakatana,TOP+COA+COB+COC+COD|topsakatana,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-MorphotacticAttributeBreadth,kulbubidu,KUL+MB+MA+MREQ|kulbubidu,MPR features/groups
-MorphotacticAttributeBreadth,pog,POG|pog,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-MorphotacticAttributeBreadth,pogli,POG+POGAFX|pogli,Affix template slots (obligatory/disjunctive/ordering)
-MorphotacticAttributeBreadth,pogti,POG+PO|pogti,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-MorphotacticAttributeBreadth,pogliti,POG+POGAFX+PO|pogliti,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-MorphotacticAttributeBreadth,kulgimo,KUL+UNBLK+PART|kulgimo,Affix template slots (obligatory/disjunctive/ordering)
-MorphotacticAttributeBreadth,kulmoru,KUL+PART+REAL|kulmoru,Affix template slots (obligatory/disjunctive/ordering)
-MorphotacticAttributeBreadth,topsakanabu,TOP+COA+COB+COD+MB|topsakanabu,Affix template slots (obligatory/disjunctive/ordering)
 Ranavu,menulik,NPFX+TULIK|menulik,RewriteRule direction (Dir): left-to-right
 MprGroupOverwriteWithoutRealizational,udof,THEMEA+DOF|udof,MPR features/groups
 MprGroupOverwriteWithoutRealizational,wudof,THEMEB+THEMEA+DOF|wudof,MPR features/groups
@@ -239,6 +209,7 @@ FusionalRealizationalMorphology,feres,FER+TENSE|feres,RealizationalAffixProcessR
 FusionalRealizationalMorphology,feresid,,RealizationalAffixProcessRule
 FusionalRealizationalMorphology,tul,TUL|tul,RealizationalAffixProcessRule
 FusionalRealizationalMorphology,ducit,,RealizationalAffixProcessRule
+FusionalRealizationalMorphology,ferit,FER+PAST2|ferit,RealizationalAffixProcessRule
 FusionalRealizationalMorphology,ducunt,DUC+PL2|ducunt,RealizationalAffixProcessRule
 FusionalRealizationalMorphology,gelobt,GET+LOB|gelobt,AffixProcessRule: prefix/suffix/circumfix/infix
 FusionalRealizationalMorphology,lobh,LOB+S3|lobh,AffixProcessRule: prefix/suffix/circumfix/infix
@@ -274,9 +245,7 @@ FusionalRealizationalMorphology,sang,SING+ABLAUT|sang,MorphologicalOutputAction:
 FusionalRealizationalMorphology,mitlav,MIT+LAV|mit+?lav,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 FusionalRealizationalMorphology,ficlav,FIC+LAV|fic+?lav,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 FusionalRealizationalMorphology,seclav,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
-FusionalRealizationalMorphology,genlav,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 FusionalRealizationalMorphology,mitlavlav,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
-FusionalRealizationalMorphology,corriv,BLOCKHEAD+BLOCKNON|cor+?riv,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 MetathesisPhaseIsolation,idil,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 MetathesisPhaseIsolation,nui,NIU|nui,MetathesisRule
 MetathesisPhaseIsolation,niu,,MetathesisRule

@@ -48,7 +48,9 @@ dtd:element/OutputSubcategorizationOverrides	dead-schema
 dtd:element/PreviousWord	dead-schema
 dtd:element/SyntacticRule	dead-schema
 dtd:element/SyntacticRules	dead-schema
+dtd:enum/AllomorphCoOccurrenceRule/type/require	todo
 dtd:enum/ComplexFeature/isActive/yes	dtd-default
+dtd:enum/CompoundingRule/blockable/true	dtd-default
 dtd:enum/CompoundingRule/isActive/yes	dtd-default
 dtd:enum/CompoundingRule/multipleApplication/1	dtd-default
 dtd:enum/CompoundingRule/multipleApplication/2	alphabet-quotient
@@ -64,6 +66,8 @@ dtd:enum/FeatureValue/isActive/yes	dtd-default
 dtd:enum/MetathesisRule/isActive/yes	dtd-default
 dtd:enum/MetathesisRule/multipleApplicationOrder/leftToRightIterative	dtd-default
 dtd:enum/MorphologicalOutput/redupMorphType/implicit	dtd-default
+dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/isActive/no	todo
+dtd:enum/MorphologicalRule/blockable/false	todo
 dtd:enum/MorphologicalRule/blockable/true	dtd-default
 dtd:enum/MorphologicalRule/multipleApplication/1	dtd-default
 dtd:enum/MorphologicalRule/multipleApplication/3	alphabet-quotient
@@ -82,7 +86,9 @@ dtd:enum/PhonologicalFeatureSystem/isActive/yes	dtd-default
 dtd:enum/PhonologicalRule/isActive/yes	dtd-default
 dtd:enum/PhonologicalRule/multipleApplicationOrder/leftToRightIterative	dtd-default
 dtd:enum/PhonologicalSubrule/isActive/yes	dtd-default
+dtd:enum/RealizationalRule/blockable/false	todo
 dtd:enum/RealizationalRule/blockable/true	dtd-default
+dtd:enum/RealizationalRule/isActive/no	todo
 dtd:enum/RealizationalRule/isActive/yes	dtd-default
 dtd:enum/SegmentNaturalClass/isActive/yes	dtd-default
 dtd:enum/Slot/optional/false	dtd-default

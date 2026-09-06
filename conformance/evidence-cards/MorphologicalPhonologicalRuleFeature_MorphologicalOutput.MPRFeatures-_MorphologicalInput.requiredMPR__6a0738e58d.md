@@ -17,11 +17,11 @@ a mutator sits between the write and the read: blocking (Word.CheckBlocking rebu
 
 **Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: edge-cases/morphotactic-attribute-breadth declares >=2 LexicalEntry sharing a family under the same Stratum (Word.CheckBlocking's family+stratum precondition, Word.cs:475-485); FeatureStruct subsumption and word-level witness of an actual block are not checked here
+Ledger evidence: structurally hazardous: languages/suffixing-extension-slot-ordering declares >=2 LexicalEntry sharing a family under the same Stratum (Word.CheckBlocking's family+stratum precondition, Word.cs:475-485); FeatureStruct subsumption and word-level witness of an actual block are not checked here
 
 ## Fixture and word
 
-- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `edge-cases/morphotactic-attribute-breadth` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
+- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/suffixing-extension-slot-ordering` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
 
 ## Exact mutation and before/after parse
 
@@ -29,18 +29,21 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`MorphologicalOutput.MPRFeatures` in `edge-cases/morphotactic-attribute-breadth`): verdict=Evidenced, mutation="removed MPRFeatures from 4 <MorphologicalOutput> element(s)", example: 'topdori': ok::- -> ok::TOP+CONFEREXCL+EXCLREADER|topdori
-- Reader (`MorphologicalInput.requiredMPRFeatures` in `edge-cases/morphotactic-attribute-breadth`): verdict=Unobservable, mutation="removed requiredMPRFeatures from 1 <MorphologicalInput> element(s)"
+- Writer (`MorphologicalOutput.MPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed MPRFeatures from 4 <MorphologicalOutput> element(s)", example: 'nbael': ok::- -> ok::PPO+PHDESTROY|nbael
+- Reader (`MorphologicalInput.requiredMPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=RequiredByLoader, mutation="removed requiredMPRFeatures from 4 <MorphologicalInput> element(s)", example: 'mbe': ok::- -> InvalidOperationException: Stack overflow.    at SIL.Machine.FeatureModel.FeatureStruct.New()    at SIL.Machine.Morpholo...
 
 ## Grammar citations
 
-### `edge-cases/morphotactic-attribute-breadth/grammar.xml`
+### `languages/suffixing-extension-slot-ordering/grammar.xml`
 
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:142` = "mprA"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:243` = "mprB"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:254` = "mprA"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:281` = "mprExclFlag"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:264` = "mprB"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:387` = "mprExtA"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:397` = "mprExtB"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:568` = "mprPhY"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:586` = "mprPhX"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:406` = "mprExtA"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:417` = "mprConcA mprConcB"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:427` = "mprConcC mprConcD"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:550` = "mprRRealTest"
 
 ## Author's prose
 

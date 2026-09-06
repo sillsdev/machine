@@ -17,11 +17,11 @@ no mutator sits between the write and the read: blocking (Word.CheckBlocking reb
 
 **Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: edge-cases/morphotactic-attribute-breadth declares >=2 LexicalEntry sharing a family under the same Stratum (Word.CheckBlocking's family+stratum precondition, Word.cs:475-485); FeatureStruct subsumption and word-level witness of an actual block are not checked here
+Ledger evidence: structurally hazardous: languages/suffixing-extension-slot-ordering declares >=2 LexicalEntry sharing a family under the same Stratum (Word.CheckBlocking's family+stratum precondition, Word.cs:475-485); FeatureStruct subsumption and word-level witness of an actual block are not checked here
 
 ## Fixture and word
 
-- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `edge-cases/morphotactic-attribute-breadth` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
+- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/suffixing-extension-slot-ordering` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
 
 ## Exact mutation and before/after parse
 
@@ -29,32 +29,30 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`MorphologicalRule.outputPartOfSpeech` in `edge-cases/morphotactic-attribute-breadth`): verdict=Unobservable, mutation="removed outputPartOfSpeech from 16 <MorphologicalRule> element(s)"
-- Reader (`AffixTemplate.requiredPartsOfSpeech` in `edge-cases/morphotactic-attribute-breadth`): verdict=Unobservable, mutation="removed requiredPartsOfSpeech from 3 <AffixTemplate> element(s)"
+- Writer (`MorphologicalRule.outputPartOfSpeech` in `languages/suffixing-extension-slot-ordering`): verdict=Unobservable, mutation="removed outputPartOfSpeech from 16 <MorphologicalRule> element(s)"
+- Reader (`AffixTemplate.requiredPartsOfSpeech` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 1 <AffixTemplate> element(s)", example: 'mpe': ok::PPE|mpe -> ok::-
 
 ## Grammar citations
 
-### `edge-cases/morphotactic-attribute-breadth/grammar.xml`
+### `languages/suffixing-extension-slot-ordering/grammar.xml`
 
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:102` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:114` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:125` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:137` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:150` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:188` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:199` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:210` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:221` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:238` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:249` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:260` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:276` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:287` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:396` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:409` = "posN"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:303` = "posN"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:318` = "posN"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:422` = "posN"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:359` = "posV2"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:382` = "posV3"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:392` = "posV3"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:402` = "posV3"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:413` = "posV3"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:423` = "posV3"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:438` = "posV5"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:450` = "posV4"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:460` = "posV4"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:470` = "posV4"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:486` = "posV6"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:498` = "posV6"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:514` = "posV7"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:527` = "posV7"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:563` = "posV3req"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:581` = "posV3req"
+- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:593` = "posV4"
 
 ## Author's prose
 

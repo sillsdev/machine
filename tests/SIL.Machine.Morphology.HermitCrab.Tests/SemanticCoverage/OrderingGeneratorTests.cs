@@ -462,7 +462,10 @@ public sealed class OrderingGeneratorTests
     }
 
     // Pins measured numbers across the real corpus: 32 lists with >= 2 members, 146 adjacent pairs
-    // total.
+    // total. 154 -> 155 with this branch's own conformance/fieldworks-witnesses conversions:
+    // edge-cases/morphotactic-attribute-breadth's finalTemplate slot list is one longer net (added
+    // exclReaderSlot/exASlot/exBSlot/exCSlot/exDSlot, removed unblockableSlot/realSlot/
+    // realDecoySlot/maSlot/mreqSlot) and its Stratum-level rule list grew from 4 to 6 members.
     [Test]
     public void RealCorpusProducesTheDesignDocsMeasuredListAndPairCounts()
     {
@@ -501,8 +504,8 @@ public sealed class OrderingGeneratorTests
             $"lists={totalLists} pairs={totalPairs} disjoint={disjoint} overlaps={overlaps} undetermined={undetermined}"
         );
         Assert.That(totalLists, Is.EqualTo(33));
-        Assert.That(totalPairs, Is.EqualTo(154));
-        Assert.That(disjoint + overlaps + undetermined, Is.EqualTo(154));
+        Assert.That(totalPairs, Is.EqualTo(155));
+        Assert.That(disjoint + overlaps + undetermined, Is.EqualTo(155));
     }
 
     // Structural-only census (no engine parsing, so it is safe to run while the corpus is being edited
@@ -720,15 +723,17 @@ public sealed class OrderingGeneratorTests
         foreach (var kv in rows.GroupBy(r => r.Relation))
             TestContext.Out.WriteLine($"  {kv.Key}: {kv.Count()}");
 
-        // 1461 -> 1464 with edge-cases/cross-table-root-respelling: one Final-stratum morphological rule against
-        // the corpus-wide pipeline yields three SameStage pairs (two Overlaps, one Undetermined).
-        Assert.That(rows, Has.Count.EqualTo(1464));
-        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(1270));
+        // 1464 -> 1492 with this branch's own conformance/fieldworks-witnesses conversions: converting
+        // edge-cases/morphotactic-attribute-breadth and languages/fusional-realizational-morphology's
+        // family-blocking share to FieldWorks-producible mechanisms added rules/AffixTemplate slots to
+        // both grammars (net +28 SameStage pairs), with no change to CrossStage/CrossStratum.
+        Assert.That(rows, Has.Count.EqualTo(1492));
+        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(1298));
         Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStage), Is.EqualTo(166));
         Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStratum), Is.EqualTo(28));
         Assert.That(rows.Count(r => r.Relation == DomainRelation.Disjoint), Is.EqualTo(30));
         Assert.That(rows.Count(r => r.Relation == DomainRelation.Overlaps), Is.EqualTo(65));
-        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(1369));
+        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(1397));
     }
 
     // Mirrors ConformanceFixtureGateTests.CheckedInCoverageTablesAreUpToDate: regenerate the ledger from the

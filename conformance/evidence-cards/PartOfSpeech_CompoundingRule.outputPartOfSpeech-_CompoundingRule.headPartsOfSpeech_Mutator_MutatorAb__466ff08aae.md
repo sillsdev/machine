@@ -17,11 +17,11 @@ no mutator sits between the write and the read: blocking (Word.CheckBlocking reb
 
 **Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: languages/fusional-realizational-morphology declares >=2 LexicalEntry sharing a family under the same Stratum (Word.CheckBlocking's family+stratum precondition, Word.cs:475-485); FeatureStruct subsumption and word-level witness of an actual block are not checked here
+Ledger evidence: no exercising fixture declares >=2 LexicalEntry sharing a family under the same Stratum -- Word.CheckBlocking (Word.cs:475-477) requires LexEntry.Family != null, so blocking cannot fire in any exercising fixture as authored
 
 ## Fixture and word
 
-- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/fusional-realizational-morphology` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
+- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.
 
 ## Exact mutation and before/after parse
 
@@ -29,18 +29,11 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`CompoundingRule.outputPartOfSpeech` in `languages/fusional-realizational-morphology`): verdict=Unobservable, mutation="removed outputPartOfSpeech from 1 <CompoundingRule> element(s)"
-- Reader (`CompoundingRule.headPartsOfSpeech` in `languages/fusional-realizational-morphology`): verdict=Unobservable, mutation="removed headPartsOfSpeech from 3 <CompoundingRule> element(s)"
+No fixture is identified for this cell, so no witness row can be looked up.
 
 ## Grammar citations
 
-### `languages/fusional-realizational-morphology/grammar.xml`
-
-- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:411` = "posCompH"
-- Reader (gate declared here) `CompoundingRule.headPartsOfSpeech`: `grammar.xml:340` = "posN1"
-- Reader (gate declared here) `CompoundingRule.headPartsOfSpeech`: `grammar.xml:361` = "posN2 posV2"
-- Reader (gate declared here) `CompoundingRule.headPartsOfSpeech`: `grammar.xml:411` = "posCompH"
-
+No fixture is identified for this cell, so no `grammar.xml` lines can be cited.
 ## Author's prose
 
 - No prose recorded: no claim, and no word is identified for this cell.

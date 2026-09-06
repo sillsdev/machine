@@ -17,11 +17,11 @@ a mutator sits between the write and the read: blocking (Word.CheckBlocking rebu
 
 **Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: languages/fusional-realizational-morphology declares >=2 LexicalEntry sharing a family under the same Stratum (Word.CheckBlocking's family+stratum precondition, Word.cs:475-485); FeatureStruct subsumption and word-level witness of an actual block are not checked here
+Ledger evidence: no exercising fixture declares >=2 LexicalEntry sharing a family under the same Stratum -- Word.CheckBlocking (Word.cs:475-477) requires LexEntry.Family != null, so blocking cannot fire in any exercising fixture as authored
 
 ## Fixture and word
 
-- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/fusional-realizational-morphology` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
+- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.
 
 ## Exact mutation and before/after parse
 
@@ -29,20 +29,11 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`MorphologicalOutput.MPRFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed MPRFeatures from 5 <MorphologicalOutput> element(s)", example: 'ygofz': ok::- -> ok::THEMEY+GOF+ENDZ|ygofz
-- Reader (`CompoundingRule.headProdRestrictionsMprFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed headProdRestrictionsMprFeatures from 1 <CompoundingRule> element(s)", example: 'seclav': ok::- -> ok::SEC+LAV|sec+?lav
+No fixture is identified for this cell, so no witness row can be looked up.
 
 ## Grammar citations
 
-### `languages/fusional-realizational-morphology/grammar.xml`
-
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:204` = "mprConjA"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:425` = "mprCompReq"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:430` = "mprCompReq"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:595` = "mprPedA"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:605` = "mprPedB"
-- Reader (gate declared here) `CompoundingRule.headProdRestrictionsMprFeatures`: `grammar.xml:411` = "mprCompReq"
-
+No fixture is identified for this cell, so no `grammar.xml` lines can be cited.
 ## Author's prose
 
 - No prose recorded: no claim, and no word is identified for this cell.

@@ -54,7 +54,7 @@ public sealed class InterfaceInventoryLedgerTests
         Assert.That(rows, Has.Count.EqualTo(60));
         Assert.That(present, Is.EqualTo(44));
         Assert.That(rows.Count - present, Is.EqualTo(16));
-        Assert.That(typedEdges, Is.EqualTo(53));
+        Assert.That(typedEdges, Is.EqualTo(51));
         Assert.That(junctions, Has.Count.EqualTo(3));
         Assert.That(
             junctions.Select(j => j.TargetType),

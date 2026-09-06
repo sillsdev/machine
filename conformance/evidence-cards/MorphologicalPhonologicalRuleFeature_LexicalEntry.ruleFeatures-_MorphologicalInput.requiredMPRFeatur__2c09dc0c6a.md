@@ -29,22 +29,22 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`LexicalEntry.ruleFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed ruleFeatures from 6 <LexicalEntry> element(s)", example: 'gofz': ok::GOF+ENDZ|gofz -> ok::-
+- Writer (`LexicalEntry.ruleFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed ruleFeatures from 6 <LexicalEntry> element(s)", example: 'ducit': ok::- -> ok::DUC+PAST2|ducit
 - Reader (`MorphologicalInput.requiredMPRFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed requiredMPRFeatures from 3 <MorphologicalInput> element(s)", example: 'ygofz': ok::- -> ok::THEMEY+GOF+ENDZ|ygofz
 
 ## Grammar citations
 
 ### `languages/fusional-realizational-morphology/grammar.xml`
 
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:543` = "mprCompReq"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:557` = "mprCompReq mprSubA"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:562` = "mprCompReq"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:652` = "mprConjA mprConjB"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:657` = "mprConjA mprConjC"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:670` = "mprPedA mprConjA mprConjB mprConjC"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:614` = "mprPedA"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:625` = "mprConjA mprConjB"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:635` = "mprConjC mprConjD"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:496` = "mprSuppletivePast"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:569` = "mprCompReq mprSubA"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:574` = "mprCompReq"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:664` = "mprConjA mprConjB"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:669` = "mprConjA mprConjC"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:682` = "mprPedA mprConjA mprConjB mprConjC"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:626` = "mprPedA"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:637` = "mprConjA mprConjB"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:647` = "mprConjC mprConjD"
 
 ## Author's prose
 

@@ -21,35 +21,30 @@ Ledger evidence: paired witness: severing writer and reader both flip 'topdori' 
 
 ## Fixture and word
 
-- Claimed by word **'topdori'** in `edge-cases/morphotactic-attribute-breadth` (a `claimed_cells` entry in `words.yaml`).
+- No `claimed_cells` entry names this cell. The ledger's own evidence names word **'topdori'** in `edge-cases/morphotactic-attribute-breadth` (extracted from this cell's dataflow-obligations.tsv evidence text).
 
 ## Exact mutation and before/after parse
 
-### Author's claim (edge-cases/morphotactic-attribute-breadth / 'topdori')
-
-- Severing: either mrConferExcl's own MorphologicalOutput.MPRFeatures="mprExclFlag" write (the writer) or mrExclReader's own MorphologicalInput.excludedMPRFeatures="mprExclFlag" gate (the reader) -- severing either alone unblocks this word
-- Before: `ok::-`
-- After: `ok::TOP+CONFEREXCL+EXCLREADER|topdori`
+No `claimed_cells` entry recorded an author-reviewed severing/before/after for this cell.
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`MorphologicalOutput.MPRFeatures` in `edge-cases/morphotactic-attribute-breadth`): verdict=Evidenced, mutation="removed MPRFeatures from 4 <MorphologicalOutput> element(s)", example: 'topdori': ok::- -> ok::TOP+CONFEREXCL+EXCLREADER|topdori
+- Writer (`MorphologicalOutput.MPRFeatures` in `edge-cases/morphotactic-attribute-breadth`): verdict=Evidenced, mutation="removed MPRFeatures from 3 <MorphologicalOutput> element(s)", example: 'topdori': ok::- -> ok::TOP+CONFEREXCL+EXCLREADER|topdori
 - Reader (`MorphologicalInput.excludedMPRFeatures` in `edge-cases/morphotactic-attribute-breadth`): verdict=Evidenced, mutation="removed excludedMPRFeatures from 1 <MorphologicalInput> element(s)", example: 'topdori': ok::- -> ok::TOP+CONFEREXCL+EXCLREADER|topdori
 
 ## Grammar citations
 
 ### `edge-cases/morphotactic-attribute-breadth/grammar.xml`
 
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:142` = "mprA"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:243` = "mprB"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:254` = "mprA"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:281` = "mprExclFlag"
-- Reader (gate declared here) `MorphologicalInput.excludedMPRFeatures`: `grammar.xml:291` = "mprExclFlag"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:261` = "mprExclFlag"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:289` = "mprB"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:300` = "mprA"
+- Reader (gate declared here) `MorphologicalInput.excludedMPRFeatures`: `grammar.xml:271` = "mprExclFlag"
 
 ## Author's prose
 
-- `proof:` (claimed_cells, 'topdori' in edge-cases/morphotactic-attribute-breadth): topdori is TOP run through mrConferExcl (which confers mprExclFlag) then attempting mrExclReader; with both constructs intact the exclusion blocks it, so this has zero parses. Removing either the writer (mrConferExcl's own MorphologicalOutput.MPRFeatures) or the reader (mrExclReader's excludedMPRFeatures) lets mrExclReader apply anyway, producing TOP+CONFEREXCL+EXCLREADER|topdori -- the PresentGatedForm arm: the feature is PRESENT (conferred by mrConferExcl, never a lexical property of TOP itself) and mrExclReader's exclusion GATES on it.
+- No claim exists for this cell. This is the witnessing word's `note:` ('topdori' in edge-cases/morphotactic-attribute-breadth): THE distinguishing row: TOP + mrConferExcl ("-do") + mrExclReader ("-ri", now reached through finalTemplate's own exclReaderSlot). mrConferExcl's own MorphologicalOutput MPRFeatures write is exactly what mrExclReader's own excludedMPRFeatures excludes, so mrExclReader can never apply once mrConferExcl has -- zero parses.
 
 ## `distinct_from` counterpart
 
-- 'topdori' in edge-cases/morphotactic-attribute-breadth: `distinct_from` **'topdo'** (expect_fail=False) vs. this word (expect_fail=True).
+No claim exists for this cell, so no `distinct_from` counterpart is recorded.

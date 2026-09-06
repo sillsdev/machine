@@ -17,11 +17,11 @@ a mutator sits between the write and the read: blocking (Word.CheckBlocking rebu
 
 **Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: languages/fusional-realizational-morphology declares >=2 LexicalEntry sharing a family under the same Stratum (Word.CheckBlocking's family+stratum precondition, Word.cs:475-485); FeatureStruct subsumption and word-level witness of an actual block are not checked here
+Ledger evidence: structurally hazardous: languages/suffixing-extension-slot-ordering declares >=2 LexicalEntry sharing a family under the same Stratum (Word.CheckBlocking's family+stratum precondition, Word.cs:475-485); FeatureStruct subsumption and word-level witness of an actual block are not checked here
 
 ## Fixture and word
 
-- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/fusional-realizational-morphology` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
+- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/suffixing-extension-slot-ordering` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
 
 ## Exact mutation and before/after parse
 
@@ -29,22 +29,24 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`LexicalEntry.ruleFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed ruleFeatures from 6 <LexicalEntry> element(s)", example: 'gofz': ok::GOF+ENDZ|gofz -> ok::-
-- Reader (`MorphologicalInput.requiredMPRFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed requiredMPRFeatures from 3 <MorphologicalInput> element(s)", example: 'ygofz': ok::- -> ok::THEMEY+GOF+ENDZ|ygofz
+- Writer (`LexicalEntry.ruleFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed ruleFeatures from 7 <LexicalEntry> element(s)", example: 'mbe': ok::- -> ok::PPE|mbe
+- Reader (`MorphologicalInput.requiredMPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=RequiredByLoader, mutation="removed requiredMPRFeatures from 4 <MorphologicalInput> element(s)", example: 'mbe': ok::- -> InvalidOperationException: Stack overflow.    at SIL.Machine.FeatureModel.FeatureStruct.New()    at SIL.Machine.Morpholo...
 
 ## Grammar citations
 
-### `languages/fusional-realizational-morphology/grammar.xml`
+### `languages/suffixing-extension-slot-ordering/grammar.xml`
 
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:543` = "mprCompReq"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:557` = "mprCompReq mprSubA"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:562` = "mprCompReq"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:652` = "mprConjA mprConjB"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:657` = "mprConjA mprConjC"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:670` = "mprPedA mprConjA mprConjB mprConjC"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:614` = "mprPedA"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:625` = "mprConjA mprConjB"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:635` = "mprConjC mprConjD"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:617` = "mprConcA mprConcB"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:622` = "mprConcA mprConcC"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:645` = "mprPhX"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:650` = "mprPhExcl"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:658` = "mprExtA mprConcA mprConcB mprConcC"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:714` = "mprRRealTest"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:720` = "mprRRealTest"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:406` = "mprExtA"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:417` = "mprConcA mprConcB"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:427` = "mprConcC mprConcD"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:550` = "mprRRealTest"
 
 ## Author's prose
 
