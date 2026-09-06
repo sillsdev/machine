@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
 <!-- Compounding breadth. Closes the last coverage-ledger entries: the head and non-head required
-     head/foot feature elements, CompoundingRule's repetition cap and deactivation, and
-     CompoundingSubrule deactivation.
+     head/foot feature elements, and CompoundingRule's repetition cap and deactivation.
 
      BOUNDED PATTERNS ARE THE WHOLE TRICK. An earlier attempt put compounding in
      edge-cases/morphotactic-attribute-breadth with OptionalSegmentSequence min="1" max="-1" on both
@@ -17,11 +16,14 @@
      also need a word with a non-matching HEAD, not just a satisfied one, so eKu and ePa exist to
      violate HeadRequiredHeadFeatures and HeadRequiredFootFeatures respectively.
 
-     CompoundingSubrule@isActive="no" cannot be pinned by a second, decoy subrule inside crJoin
-     itself: hand-mutating a copy showed that when a CompoundingRule has two active subrules,
-     analysis only ever finds an unapplication through the FIRST one declared, so activating a
-     second subrule in place changed nothing regardless of which literal it inserted. crJoinInsert
-     exists so that decoy subrule can sit alone as the only subrule of its own rule instead. -->
+     CONVERSION HISTORY (fieldworks_producible: false -> true): this fixture used to also carry
+     crJoinInsert, a CompoundingRule whose sole CompoundingSubrule was marked isActive="no" to probe
+     per-subrule deactivation. HCLoader's compounding-rule loaders always synthesize exactly one
+     CompoundingSubrule per CompoundingRule with no per-subrule Disabled/isActive filter, so that
+     construct could never come from a real FieldWorks project. crJoinInsert (and its sole negative
+     control, "kaitu") is removed outright rather than converted; see words.yaml for what that costs
+     the corpus. -->
+
 <HermitCrabInput>
   <Language>
     <Name>CompoundingBreadth</Name>
@@ -68,7 +70,7 @@
       <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
     </NaturalClasses>
     <Strata>
-      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="linear" morphologicalRules="crJoin crJoinInsert crNever crDecoy mrTplSuf">
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="linear" morphologicalRules="crJoin crNever crDecoy mrTplSuf">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
           <!-- multipleApplication is deliberately NOT written here. Verified against the C# oracle
@@ -92,31 +94,6 @@
                   </PhoneticSequence>
                 </NonHeadMorphologicalInput>
                 <MorphologicalOutput><CopyFromInput index="hd" /><CopyFromInput index="nh" /></MorphologicalOutput>
-              </CompoundingSubrule>
-            </CompoundingSubrules>
-            <HeadRequiredHeadFeatures><FeatureValue feature="hfNum" symbolValues="numSg" /></HeadRequiredHeadFeatures>
-            <NonHeadRequiredHeadFeatures><FeatureValue feature="hfNum" symbolValues="numPl" /></NonHeadRequiredHeadFeatures>
-            <HeadRequiredFootFeatures><FeatureValue feature="ffCls" symbolValues="clsA" /></HeadRequiredFootFeatures>
-            <NonHeadRequiredFootFeatures><FeatureValue feature="ffCls" symbolValues="clsA" /></NonHeadRequiredFootFeatures>
-          </CompoundingRule>
-          <!-- The isolated CompoundingSubrule@isActive="no" decoy: see grammar.xml's header for why it
-               needs to be the only subrule of its own rule rather than a second subrule inside crJoin. -->
-          <CompoundingRule id="crJoinInsert" headPartsOfSpeech="posN" nonHeadPartsOfSpeech="posN" outputPartOfSpeech="posN">
-            <Name>joinInsert</Name>
-            <CompoundingSubrules>
-              <CompoundingSubrule isActive="no">
-                <HeadMorphologicalInput>
-                  <PhoneticSequence id="hdD">
-                    <OptionalSegmentSequence min="2" max="6"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence>
-                  </PhoneticSequence>
-                </HeadMorphologicalInput>
-                <NonHeadMorphologicalInput>
-                  <PhoneticSequence id="nhD">
-                    <SimpleContext naturalClass="ncAny" />
-                    <SimpleContext naturalClass="ncAny" />
-                  </PhoneticSequence>
-                </NonHeadMorphologicalInput>
-                <MorphologicalOutput><CopyFromInput index="hdD" /><InsertSegments><PhoneticShape>i</PhoneticShape></InsertSegments><CopyFromInput index="nhD" /></MorphologicalOutput>
               </CompoundingSubrule>
             </CompoundingSubrules>
             <HeadRequiredHeadFeatures><FeatureValue feature="hfNum" symbolValues="numSg" /></HeadRequiredHeadFeatures>
