@@ -32,7 +32,7 @@
   re-derive it from -- it is pinned by literal count, exactly like every verdict's own research is.
 
   The VERDICT for each subject (producible / hcloader_sites / notes) is NOT something a script can
-  derive -- it required reading the whole of HCLoader.cs (FieldWorks repo, ~2510 lines) and cross-
+  derive -- it required reading the whole of HCLoader.cs (FieldWorks repo, ~2,510 non-blank lines (2,837 total)) and cross-
   referencing this repo's own engine source (property definitions, XmlLanguageLoader.cs as the
   ground truth for which runtime property a DTD attribute maps to, and InteractionChainLedger.cs's
   own "dead" annotations). That research is embedded below as $Verdicts. Re-deriving it requires a
