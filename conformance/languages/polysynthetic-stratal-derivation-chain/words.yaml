@@ -42,7 +42,15 @@ sources:
   - "typological literature on derivation strata and noun incorporation"
   - "typological literature on recursive derivational suffixation and postbase ordering"
 requires: [phonology]
-fieldworks_producible: true
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  Both CompoundingRules (mrCompoundHN, mrCompoundNH -- grammar.xml:320,343) declare
+  blockable="false". HCLoader.cs never touches CompoundingRule.Blockable at all -- a full-file
+  search for "lockable" returns zero hits -- and the engine's own CompoundingRule constructor
+  (src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/CompoundingRule.cs:20) defaults it to
+  true, so every FieldWorks-produced compounding rule is Blockable whether or not that is what a
+  user intended. The non-blockable behavior this fixture exercises throughout the akutat/akupitat/
+  akutas and silaaku/silanuk/silamanuk/silamak sets cannot come from a real project.
 words:
   - word: nuna
     note: NUNA ("land", posN) bare noun root -- no rule touches it, trivially valid.

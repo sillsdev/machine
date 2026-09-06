@@ -21,7 +21,21 @@ inspired_by: ["synthetic agglutinative-Austronesian nasal-assimilation/deletion 
 sources:
   - "docs/conformance-staging-plan.md pathology catalog (agglutinative-Austronesian row)"
 requires: [phonology]
-fieldworks_producible: true
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  mrSuf (grammar.xml:218-227) is a plain stratum-level MorphologicalRule -- this grammar declares no
+  AffixTemplate/Slot at all -- and its subrule's MorphologicalInput carries
+  excludedMPRFeatures="mprException" (grammar.xml:222). HCLoader.cs:1717 is the sole site that ever
+  sets AffixProcessAllomorph.ExcludedMprFeatures, and it fires only inside LoadAffixTemplate's own
+  slot-blocking loop (adding ILexEntryInflType-derived features to a rule already reached through an
+  AffixTemplate Slot, to block irregularly-inflected forms) -- a stratum-level rule reached outside
+  any template has no HCLoader path to this property at all. The fixture's OTHER
+  excludedMPRFeatures, on prObstruentDeletion's PhonologicalSubrule (grammar.xml:192), is a different
+  attribute on a different element and stays producible: HCLoader.cs:2058 sets
+  PhonologicalSubrule.ExcludedMprFeatures unconditionally inside LoadRewriteRule, gated on no
+  template shape at all. So vokad/vokadan/vokadi (mrSuf's own excludedMPRFeatures pair) are the
+  HC-engine-only half of this fixture; menanukam/mentanukam (prObstruentDeletion's own
+  excludedMPRFeatures pair) are not -- do not "fix" the wrong one.
 words:
   - word: tulik
     note: TULIK bare root, no prefix -- a plain control.

@@ -89,7 +89,27 @@ sources:
   - "WALS - Vowel Harmony chapters (backness harmony typology)"
   - "WALS - consonant gradation / alternation typology"
 requires: [phonology]
-fieldworks_producible: true
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  ruleCollective (grammar.xml:438-454) carries one RequiredEnvironments condition on a single
+  MorphologicalSubrule whose MorphologicalOutput is genuinely discontinuous: InsertSegments("e") +
+  CopyFromInput(stem) + InsertSegments("ik"). Of HCLoader's four .Environments.Add sites
+  (HCLoader.cs:821 LoadRootAllomorph; :1322 LoadCircumfixAffixProcessAllomorph; :1577,:1604
+  LoadFormAffixProcessAllomorph), the generic multi-action path a rule shaped like this one routes
+  through, LoadAffixProcessAllomorph (:1334-1439), never touches .Environments at all -- confirmed
+  by reading the whole method body. HCLoader's only path to a producible circumfix,
+  LoadCircumfixAffixProcessAllomorph, is reached solely when entry.IsCircumfix() combines TWO
+  separate literal-form allomorphs (a prefix entry and a suffix entry, each with its OWN
+  environment) into one boundary-anchored AllomorphEnvironment (HCLoader.cs:1048-1082) -- not the
+  mechanism this rule exercises, where the SAME single RequiredEnvironments condition is checked
+  independently at EACH contiguous piece of one discontinuous morph (HC's own per-occurrence
+  checking; see grammar.xml's own comment on ruleCollective). Boundary check that must be
+  preserved: edge-cases/strrep-identity's msubI also carries a RequiredEnvironments on an
+  Insert+Copy subrule, but its output is a single contiguous piece (one InsertSegments prefix, one
+  CopyFromInput, never wrapped), exactly LoadFormAffixProcessAllomorph's ordinary single-piece
+  prefix shape (HCLoader.cs:1580-1605, environments included) -- so strrep-identity's construct is
+  unaffected and stays producible. The condition is discontinuous/multi-piece output, not
+  "environment on a subrule" in general.
 words:
   - word: semitide
     note: >-

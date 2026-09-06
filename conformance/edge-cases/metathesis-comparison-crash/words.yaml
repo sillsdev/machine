@@ -19,7 +19,25 @@ inspired_by: ["synthetic metathesis-ordering crash reduction (not modeling any r
 sources:
   - "reduced from conformance/edge-cases/feature-system-breadth while covering MetathesisRule@multipleApplicationOrder"
 requires: [phonology]
-fieldworks_producible: true
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  grammar.xml:51 declares leftSwitch="mtLeft" rightSwitch="mtRight" with mtLeft structurally EARLIER
+  in the PhoneticTemplate than mtRight -- the crash trigger this fixture pins is specifically
+  leftSwitch naming the earlier of the rule's two pattern groups (see grammar.xml's own header).
+  LoadMetathesisRule (HCLoader.cs:2103-2161) unconditionally sets LeftSwitchName = "r" (:2122) and
+  names the group at LibLCM's kidxRightSwitch index "r" (:2134-2135) -- so HC's LeftSwitchName is
+  always bound to LibLCM's RIGHT switch, never its left. The engine's own reference loader
+  (XmlLanguageLoader.cs:826-840) maps grammar.xml's leftSwitch/rightSwitch attributes to
+  LeftSwitchName/RightSwitchName directly, with no such inversion. FieldWorks' own UI
+  (Src/LexText/Morphology/MetaRuleFormulaControl.cs, GetNextCell/GetPrevCell ~211-242) hard-codes
+  cell order LeftEnv->LeftSwitch->RightSwitch->RightEnv, so the group a user places in LibLCM's
+  LeftSwitch cell is always structurally EARLIER than the one in the RightSwitch cell. Combined
+  with HCLoader's inversion, that always-earlier group ends up bound to HC's RightSwitchName, and
+  the always-later group to LeftSwitchName -- the opposite of this fixture's shape. A real
+  FieldWorks project can therefore never produce a MetathesisRule whose leftSwitch names the
+  structurally earlier group, so the crash this fixture regression-tests is unreachable from
+  FieldWorks. See fieldworks-producibility.tsv's metathesis switch-name/position inversion
+  loader-gap row.
 words:
   - word: ti
     note: >-
