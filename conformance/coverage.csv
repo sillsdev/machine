@@ -14,7 +14,6 @@ CompoundingBreadth,kaki,,CompoundingRule constraints (MaxApplicationCount/Blocka
 CompoundingBreadth,kati,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,kamtu,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,kaptu,,Element deactivation (isActive) across loader collections
-CompoundingBreadth,kaitu,,Element deactivation (isActive) across loader collections
 CompoundingBreadth,kutu,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,patu,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CrossTableRootRespelling,t,ROOT1|m,"CharacterDefinitionTable: more than one table, one per stratum"

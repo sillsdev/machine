@@ -33,18 +33,17 @@ Ledger evidence: paired witness: severing writer and reader both flip 'katumi' f
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`CompoundingRule.outputPartOfSpeech` in `edge-cases/compounding-breadth`): verdict=Evidenced, mutation="removed outputPartOfSpeech from 4 <CompoundingRule> element(s)", example: 'katumi': ok::- -> ok::KA+TU+TPLSUF|katumi
+- Writer (`CompoundingRule.outputPartOfSpeech` in `edge-cases/compounding-breadth`): verdict=Evidenced, mutation="removed outputPartOfSpeech from 3 <CompoundingRule> element(s)", example: 'katumi': ok::- -> ok::KA+TU+TPLSUF|katumi
 - Reader (`MorphologicalRule.requiredPartsOfSpeech` in `edge-cases/compounding-breadth`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 1 <MorphologicalRule> element(s)", example: 'katumi': ok::- -> ok::KA+TU+TPLSUF|katumi
 
 ## Grammar citations
 
 ### `edge-cases/compounding-breadth/grammar.xml`
 
-- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:79` = "posOther"
-- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:104` = "posN"
-- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:128` = "posN"
-- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:148` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:178` = "posN"
+- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:81` = "posOther"
+- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:105` = "posN"
+- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:125` = "posN"
+- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:155` = "posN"
 
 ## Author's prose
 

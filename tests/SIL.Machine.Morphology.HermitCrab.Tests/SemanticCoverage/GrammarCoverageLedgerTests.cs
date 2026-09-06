@@ -69,10 +69,15 @@ public sealed class GrammarCoverageLedgerTests
         // ConformanceFixtureGateTests.EveryFixtureContributesAtLeastOneCoverageRow): its 10 new claims
         // of "MPR features/groups" collapse into the fixture's one existing claimed-unmapped
         // Construct row, a net +1 (the row itself, not one per claim).
-        Assert.That(rows, Has.Count.EqualTo(673));
+        //
+        // 673 -> 675 (interface 391 -> 393) after edge-cases/mpr-gated-exception's own
+        // fieldworks_producible conversion (this session): the same two newly-present interfaces
+        // InterfaceWitnessLedgerTests pins (AffixTemplate.requiredPartsOfSpeech, Slot.morphologicalRules
+        // -- this fixture's first AffixTemplate/Slot) each add one interface-layer row here too.
+        Assert.That(rows, Has.Count.EqualTo(675));
         Assert.That(distinctFixtures, Is.EqualTo(36));
         Assert.That(surface, Is.EqualTo(189));
-        Assert.That(@interface, Is.EqualTo(391));
+        Assert.That(@interface, Is.EqualTo(393));
         Assert.That(construct, Is.EqualTo(93));
     }
 

@@ -58,6 +58,15 @@ public sealed class ConstructClaimCorroborationTests
     // ConformanceFixtureGateTests.EveryFixtureContributesAtLeastOneCoverageRow and that fixture's own
     // words.yaml "COVERAGE.CSV GAP" note): all 10 new claims name the prose construct "MPR
     // features/groups", Unmapped like every other claim of it in this ledger.
+    //
+    // 483/211/12/260 -> 482/210/12/260 after edge-cases/compounding-breadth's own fieldworks_producible
+    // conversion (this session) removed crJoinInsert and its sole negative control, "kaitu" -- the only
+    // word in the corpus claiming "Element deactivation (isActive) across loader collections" whose
+    // parenthetical "isActive" token happens to mechanically resolve to the real DTD attribute name
+    // (Confirmed), rather than staying prose (Unmapped) like most claims of that construct text. kaptu
+    // (the surviving isActive negative control, on crDecoy) claims the identical construct string, so
+    // the construct itself is still claimed and still Confirmed by a row -- only kaitu's own row is
+    // gone, taking exactly one row and one Confirmed count with it.
     [Test]
     public void CheckedInLedgerHasTheMeasuredClaimAndStatusCounts()
     {
@@ -72,8 +81,8 @@ public sealed class ConstructClaimCorroborationTests
             $"rows={rows.Count} confirmed={confirmed} contradicted={contradicted} unmapped={unmapped}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(483));
-        Assert.That(confirmed, Is.EqualTo(211));
+        Assert.That(rows, Has.Count.EqualTo(482));
+        Assert.That(confirmed, Is.EqualTo(210));
         Assert.That(contradicted, Is.EqualTo(12));
         Assert.That(unmapped, Is.EqualTo(260));
     }

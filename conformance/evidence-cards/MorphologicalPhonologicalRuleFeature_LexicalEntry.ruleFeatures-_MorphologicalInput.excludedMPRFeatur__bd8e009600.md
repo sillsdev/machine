@@ -40,7 +40,7 @@ Ledger evidence: paired witness: severing writer and reader both flip 'vokadan' 
 
 ### `edge-cases/mpr-gated-exception/grammar.xml`
 
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:282` = "mprException"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:299` = "mprException"
 - Reader (gate declared here) `MorphologicalInput.excludedMPRFeatures`: `grammar.xml:222` = "mprException"
 
 ## Author's prose

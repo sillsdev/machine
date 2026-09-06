@@ -50,6 +50,7 @@ dtd:element/SyntacticRule	dead-schema
 dtd:element/SyntacticRules	dead-schema
 dtd:enum/AllomorphCoOccurrenceRule/type/require	todo
 dtd:enum/ComplexFeature/isActive/yes	dtd-default
+dtd:enum/CompoundingRule/blockable/false	todo
 dtd:enum/CompoundingRule/blockable/true	dtd-default
 dtd:enum/CompoundingRule/isActive/yes	dtd-default
 dtd:enum/CompoundingRule/multipleApplication/1	dtd-default
@@ -61,6 +62,7 @@ dtd:enum/CompoundingRule/multipleApplication/6	alphabet-quotient
 dtd:enum/CompoundingRule/multipleApplication/7	alphabet-quotient
 dtd:enum/CompoundingRule/multipleApplication/8	alphabet-quotient
 dtd:enum/CompoundingRule/multipleApplication/9	alphabet-quotient
+dtd:enum/CompoundingSubrule/isActive/no	todo
 dtd:enum/CompoundingSubrule/isActive/yes	dtd-default
 dtd:enum/FeatureValue/isActive/yes	dtd-default
 dtd:enum/MetathesisRule/isActive/yes	dtd-default

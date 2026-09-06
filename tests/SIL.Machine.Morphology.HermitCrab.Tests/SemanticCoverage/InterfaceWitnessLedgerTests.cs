@@ -61,12 +61,19 @@ public sealed class InterfaceWitnessLedgerTests
         // touched (excludedMPRFeatures moving into a template slot, requiredMPRFeatures's kulgagego) pick
         // up new Evidenced verdicts -- net one fewer row, one more Evidenced, one fewer each of
         // RequiredByLoader/Unobservable.
-        Assert.That(rows, Has.Count.EqualTo(391));
+        // 391 -> 393 (requiredByDtd 182 -> 183, unobservable 94 -> 95) after
+        // edge-cases/mpr-gated-exception's own fieldworks_producible conversion (this session) moved
+        // mrSuf/mrSufAlt off the Stratum's own morphologicalRules attribute and into one Slot of a new
+        // AffixTemplate -- this fixture's first AffixTemplate/Slot, so it newly PRESENTS two interfaces
+        // it never declared before (AffixTemplate.requiredPartsOfSpeech, Slot.morphologicalRules), each
+        // now getting its own severance row. Neither is Evidenced here (one is RequiredByDtd, one
+        // Unobservable), so evidenced/requiredByLoader/distinctInterfacesEvidenced are all unchanged.
+        Assert.That(rows, Has.Count.EqualTo(393));
         Assert.That(evidenced, Is.EqualTo(89));
-        Assert.That(requiredByDtd, Is.EqualTo(182));
+        Assert.That(requiredByDtd, Is.EqualTo(183));
         Assert.That(requiredByLoader, Is.EqualTo(26));
         Assert.That(timeout, Is.EqualTo(0));
-        Assert.That(unobservable, Is.EqualTo(94));
+        Assert.That(unobservable, Is.EqualTo(95));
         Assert.That(distinctInterfacesEverEvidenced, Is.EqualTo(19));
     }
 

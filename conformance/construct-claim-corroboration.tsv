@@ -15,7 +15,6 @@ edge-cases/bistratal-overlapping-segment-representation	des	ROOT3|des	CharacterD
 edge-cases/bistratal-overlapping-segment-representation	eds	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/bistratal-overlapping-segment-representation	sed	ROOT4|sed	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/compounding-breadth	ka	KA|ka	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
-edge-cases/compounding-breadth	kaitu	-	Element deactivation (isActive) across loader collections	Confirmed	isActive
 edge-cases/compounding-breadth	kaki	-	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
 edge-cases/compounding-breadth	kamtu	-	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
 edge-cases/compounding-breadth	kaptu	-	Element deactivation (isActive) across loader collections	Confirmed	isActive

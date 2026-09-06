@@ -160,12 +160,20 @@ public sealed class GrammarCoverageGateTests
     // dtd:enum/RealizationalRule/blockable/false lose their only Trace witness suite-wide -- confirmed
     // by re-running this test with a temporary per-item dump: no fixture's grammar.xml still sets
     // blockable="false" on a MorphologicalRule or RealizationalRule that fires in a verified parse
-    // (languages/polysynthetic-stratal-derivation-chain's CompoundingRule@blockable="false" is a
-    // different DTD attribute and is untouched, still traced via mrCompoundHN). This is the exact,
-    // named, and already-disclosed consequence of removing a construct with no FieldWorks-producible
-    // substitute -- see that fixture's own words.yaml conversion-history note -- not an accidental
-    // regression from anything else on this branch.
-    private const int TraceFloor = 69;
+    // (at the time, languages/polysynthetic-stratal-derivation-chain's CompoundingRule@blockable="false"
+    // was a different DTD attribute and was untouched, still traced via mrCompoundHN). This was the
+    // exact, named, and already-disclosed consequence of removing a construct with no
+    // FieldWorks-producible substitute -- see that fixture's own words.yaml conversion-history note --
+    // not an accidental regression from anything else on this branch.
+    //
+    // 69 -> 68 after languages/polysynthetic-stratal-derivation-chain's OWN fieldworks_producible
+    // conversion (this session) dropped blockable="false" from both its CompoundingRules (mrCompoundHN,
+    // mrCompoundNH) outright, having verified the value could never be observed regardless (this
+    // grammar declares no Family, so Word.CheckBlocking's family-iteration loop is dead code either
+    // way -- see that fixture's own words.yaml conversion-history note). That was this suite's last
+    // remaining Trace witness for dtd:enum/CompoundingRule/blockable/false (semantic-coverage-baseline.txt
+    // now records it as a fresh gap), so the floor drops by exactly the one item this session removed.
+    private const int TraceFloor = 68;
 
     [Test]
     public void TheMeasuredDenominatorIsPinned()

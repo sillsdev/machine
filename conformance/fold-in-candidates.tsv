@@ -95,7 +95,7 @@ Interface	MorphologicalPhonologicalRuleFeatureGroup.features	NeverWitnessed	pres
 Interface	MorphologicalRule.outputObligatoryFeatures	NeverWitnessed	present in 1 fixture(s), witnessed by none
 Interface	Segment.segment	NeverWitnessed	present in 19 fixture(s), witnessed by none
 Interface	SimpleContext.naturalClass	NeverWitnessed	present in 33 fixture(s), witnessed by none
-Interface	Slot.morphologicalRules	NeverWitnessed	present in 9 fixture(s), witnessed by none
+Interface	Slot.morphologicalRules	NeverWitnessed	present in 10 fixture(s), witnessed by none
 Interface	StemName.partsOfSpeech	NeverWitnessed	present in 4 fixture(s), witnessed by none
 Interface	Stratum.characterDefinitionTable	NeverWitnessed	present in 36 fixture(s), witnessed by none
 Interface	SymbolicFeature.defaultSymbol	NeverWitnessed	present in 1 fixture(s), witnessed by none

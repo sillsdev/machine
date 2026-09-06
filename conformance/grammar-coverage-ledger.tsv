@@ -96,7 +96,7 @@ edge-cases/compounding-breadth	Interface	Stratum.characterDefinitionTable	requir
 edge-cases/compounding-breadth	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/compounding-breadth	Construct	CompoundingRule	claimed-confirmed	2 claim(s)
 edge-cases/compounding-breadth	Construct	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	claimed-confirmed	7 claim(s)
-edge-cases/compounding-breadth	Construct	Element deactivation (isActive) across loader collections	claimed-confirmed	2 claim(s)
+edge-cases/compounding-breadth	Construct	Element deactivation (isActive) across loader collections	claimed-confirmed	1 claim(s)
 edge-cases/cross-table-root-respelling	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/cross-table-root-respelling	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/cross-table-root-respelling	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
@@ -344,6 +344,7 @@ edge-cases/morphotactic-attribute-breadth	Construct	MPR features/groups	claimed-
 edge-cases/morphotactic-attribute-breadth	Construct	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	claimed-confirmed	6 claim(s)
 edge-cases/morphotactic-attribute-breadth	Construct	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	claimed-contradicted	12 claim(s)
 edge-cases/mpr-gated-exception	Surface	dtd:element/Environment	witnessed	Evidenced
+edge-cases/mpr-gated-exception	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/mpr-gated-exception	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/mpr-gated-exception	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/mpr-gated-exception	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
@@ -357,6 +358,7 @@ edge-cases/mpr-gated-exception	Interface	PhonologicalSubrule.excludedMPRFeatures
 edge-cases/mpr-gated-exception	Interface	PhonologicalSubrule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/mpr-gated-exception	Interface	Segment.segment	required-by-dtd	RequiredByDtd
 edge-cases/mpr-gated-exception	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/mpr-gated-exception	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
 edge-cases/mpr-gated-exception	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/mpr-gated-exception	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/mpr-gated-exception	Interface	Stratum.phonologicalRules	witnessed	Evidenced

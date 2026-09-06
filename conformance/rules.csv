@@ -2,7 +2,6 @@ language,rule_id,words
 AlphaVariableNameCollision,prDoubleAlpha,ia
 CompoundingBreadth,crDecoy,!kaptu
 CompoundingBreadth,crJoin,katu;!katumi
-CompoundingBreadth,crJoinInsert,
 CompoundingBreadth,crNever,!kamtu
 CompoundingBreadth,mrTplSuf,
 CrossTableRootRespelling,mrSuffix,tu

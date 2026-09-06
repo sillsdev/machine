@@ -133,7 +133,19 @@ public sealed class CoverageGapRatchetTests
     // separately confirms 18's exact prior composition) -- only that responsibility for them, whichever
     // way that resolves, lies outside this task's own conversions. Left named here rather than silently
     // absorbed into "18 -> 21", and left for separate follow-up, not this task's to close.
-    private const int PinnedGapCount = 21;
+    //
+    // Lowered 21 -> 20: this session's own edge-cases/compounding-breadth fieldworks_producible
+    // conversion removed crJoinInsert (a CompoundingRule that existed solely to host one
+    // isActive="no" CompoundingSubrule probe HCLoader can never produce), dropping it from the
+    // Stratum's own morphologicalRules list. That list is exactly what this pipeline's Ordering
+    // enumeration walks for adjacent-rule pairs, and this comment's own "Raised 18 -> 21" entry
+    // above already names "two in edge-cases/compounding-breadth" among the un-evidenced Ordering
+    // gaps -- removing crJoinInsert removes the pairs naming it from the inventory outright rather
+    // than resolving them, which is what shrinks the denominator and the gap count together. Not
+    // independently re-traced row-by-row (this test reads checked-in/fresh-grammar state, not a
+    // diff), but the mechanism is the fixture this session actually touched, not an unexplained
+    // drift.
+    private const int PinnedGapCount = 20;
 
     [Test]
     public void CorpusWideGapCountNeverIncreasesFromThePinnedValue()

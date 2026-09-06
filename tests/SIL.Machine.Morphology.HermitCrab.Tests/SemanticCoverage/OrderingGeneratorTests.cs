@@ -466,6 +466,13 @@ public sealed class OrderingGeneratorTests
     // edge-cases/morphotactic-attribute-breadth's finalTemplate slot list is one longer net (added
     // exclReaderSlot/exASlot/exBSlot/exCSlot/exDSlot, removed unblockableSlot/realSlot/
     // realDecoySlot/maSlot/mreqSlot) and its Stratum-level rule list grew from 4 to 6 members.
+    //
+    // 155 -> 152 after this session's own two mechanical fieldworks_producible conversions that shrank
+    // a Stratum-level rule list (totalLists unchanged -- a Slot's own morphologicalRules IDREFS lists
+    // alternatives for ONE position, not a sequence, so it contributes no adjacent pair of its own):
+    // edge-cases/compounding-breadth removed crJoinInsert from its 5-member list (4 pairs -> 3, -1);
+    // edge-cases/mpr-gated-exception moved mrSuf/mrSufAlt off its 4-member list into an AffixTemplate
+    // Slot, leaving 2 members (3 pairs -> 1, -2). Net -3, 155 -> 152.
     [Test]
     public void RealCorpusProducesTheDesignDocsMeasuredListAndPairCounts()
     {
@@ -504,8 +511,8 @@ public sealed class OrderingGeneratorTests
             $"lists={totalLists} pairs={totalPairs} disjoint={disjoint} overlaps={overlaps} undetermined={undetermined}"
         );
         Assert.That(totalLists, Is.EqualTo(33));
-        Assert.That(totalPairs, Is.EqualTo(155));
-        Assert.That(disjoint + overlaps + undetermined, Is.EqualTo(155));
+        Assert.That(totalPairs, Is.EqualTo(152));
+        Assert.That(disjoint + overlaps + undetermined, Is.EqualTo(152));
     }
 
     // Structural-only census (no engine parsing, so it is safe to run while the corpus is being edited
@@ -727,13 +734,27 @@ public sealed class OrderingGeneratorTests
         // edge-cases/morphotactic-attribute-breadth and languages/fusional-realizational-morphology's
         // family-blocking share to FieldWorks-producible mechanisms added rules/AffixTemplate slots to
         // both grammars (net +28 SameStage pairs), with no change to CrossStage/CrossStratum.
-        Assert.That(rows, Has.Count.EqualTo(1492));
-        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(1298));
-        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStage), Is.EqualTo(166));
+        //
+        // 1492 -> 1473 after this session's own two mechanical fieldworks_producible conversions, both
+        // of which shrink EnumerateStratumPairs' own morphology-unit count for a Stratum (read straight
+        // off the Stratum's own morphologicalRules attribute, per this method's own doc comment -- a
+        // rule's continued existence in MorphologicalRuleDefinitions does not count if it is no longer
+        // stratum-listed). edge-cases/compounding-breadth: removing crJoinInsert drops 5 morphology
+        // units to 4 (self-pairs included: 5^2=25 -> 4^2=16, -9 SameStage). edge-cases/mpr-gated-
+        // exception: moving mrSuf/mrSufAlt off the Stratum list into an AffixTemplate Slot drops 4
+        // units to 2 stratum-listed rules PLUS the new AffixTemplate itself (one unit regardless of its
+        // own Slot count) = 3 units (4^2=16 -> 3^2=9, -7 SameStage; this fixture's 3 phonological rules
+        // are unchanged, so CrossStage = morphology-units x phonology-units drops with it: 4x3=12 ->
+        // 3x3=9, -3). SameStage: -9 + -7 = -16 (1298 -> 1282). CrossStage: -3 (166 -> 163). CrossStratum
+        // is untouched (28, no Stratum added or removed). Disjoint/Overlaps are unchanged (30/65); every
+        // removed or altered pair was already Undetermined, which absorbs the full -19 (1397 -> 1378).
+        Assert.That(rows, Has.Count.EqualTo(1473));
+        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(1282));
+        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStage), Is.EqualTo(163));
         Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStratum), Is.EqualTo(28));
         Assert.That(rows.Count(r => r.Relation == DomainRelation.Disjoint), Is.EqualTo(30));
         Assert.That(rows.Count(r => r.Relation == DomainRelation.Overlaps), Is.EqualTo(65));
-        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(1397));
+        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(1378));
     }
 
     // Mirrors ConformanceFixtureGateTests.CheckedInCoverageTablesAreUpToDate: regenerate the ledger from the
