@@ -30,7 +30,7 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 ### Machine witness (`conformance/interface-witness.tsv`)
 
 - Writer (`MorphologicalOutput.MPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed MPRFeatures from 4 <MorphologicalOutput> element(s)", example: 'nbael': ok::- -> ok::PPO+PHDESTROY|nbael
-- Reader (`MorphologicalInput.requiredMPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=RequiredByLoader, mutation="removed requiredMPRFeatures from 4 <MorphologicalInput> element(s)", example: 'mbe': ok::- -> InvalidOperationException: Stack overflow.    at SIL.Machine.FeatureModel.FeatureStruct.New()    at SIL.Machine.Morpholo...
+- Reader (`MorphologicalInput.requiredMPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=RequiredByLoader, mutation="removed requiredMPRFeatures from 4 <MorphologicalInput> element(s)", example: 'mbe': ok::- -> InvalidOperationException: Stack overflow.    at SIL.Machine.DataStructures.BidirListNode`1[[System.__Canon, System.Priv...
 
 ## Grammar citations
 

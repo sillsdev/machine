@@ -128,6 +128,35 @@ N3-PatternShapes,bet,|b[ae]t,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bit,,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bt,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
 MetathesisComparisonCrash,ti,,MetathesisRule
+MorphotacticAttributeBreadth,topdori,,MPR features/groups
+MorphotacticAttributeBreadth,topdo,TOP+CONFEREXCL|topdo,MPR features/groups
+MorphotacticAttributeBreadth,topri,TOP+EXCLREADER|topri,MPR features/groups
+MorphotacticAttributeBreadth,kul,KUL|kul,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+MorphotacticAttributeBreadth,kulde,KUL+TWICE|kulde,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+MorphotacticAttributeBreadth,kuldede,KUL+TWICE|kuldede,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+MorphotacticAttributeBreadth,kuldedede,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+MorphotacticAttributeBreadth,kulba,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+MorphotacticAttributeBreadth,kulmo,KUL+PART|kulmo,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+MorphotacticAttributeBreadth,nap,NAP|nap,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+MorphotacticAttributeBreadth,napmo,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+MorphotacticAttributeBreadth,kur,,Disjunctive allomorphs / free-fluctuation
+MorphotacticAttributeBreadth,kulpu,,Affix template slots (obligatory/disjunctive/ordering)
+MorphotacticAttributeBreadth,top,TOP|top,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+MorphotacticAttributeBreadth,topsakatana,TOP+COA+COB+COC+COD|topsakatana,Affix template slots (obligatory/disjunctive/ordering)
+MorphotacticAttributeBreadth,topsakanabu,TOP+COA+COB+COD+MB|topsakanabu,Affix template slots (obligatory/disjunctive/ordering)
+MorphotacticAttributeBreadth,kulge,KUL+GRPA|kulge,MPR features/groups
+MorphotacticAttributeBreadth,kulgago,KUL+GRPB+GRPREQ|kulgago,MPR features/groups
+MorphotacticAttributeBreadth,kulgagego,,MPR features/groups
+MorphotacticAttributeBreadth,topke,TOP+EXA|topke,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+MorphotacticAttributeBreadth,topko,TOP+EXB|topko,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+MorphotacticAttributeBreadth,topkeko,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+MorphotacticAttributeBreadth,topla,TOP+EXC|topla,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+MorphotacticAttributeBreadth,topne,TOP+EXD|topne,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+MorphotacticAttributeBreadth,toplane,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+MorphotacticAttributeBreadth,pog,POG|pog,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+MorphotacticAttributeBreadth,pogli,POG+POGAFX|pogli,Affix template slots (obligatory/disjunctive/ordering)
+MorphotacticAttributeBreadth,pogti,POG+PO|pogti,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+MorphotacticAttributeBreadth,pogliti,POG+POGAFX+PO|pogliti,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
 Ranavu,menulik,NPFX+TULIK|menulik,RewriteRule direction (Dir): left-to-right
 MprGroupOverwriteWithoutRealizational,udof,THEMEA+DOF|udof,MPR features/groups
 MprGroupOverwriteWithoutRealizational,wudof,THEMEB+THEMEA+DOF|wudof,MPR features/groups

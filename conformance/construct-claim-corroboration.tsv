@@ -136,6 +136,35 @@ edge-cases/loader-pattern-shapes	bet	|b[ae]t	Boundary markers (CharacterDefiniti
 edge-cases/loader-pattern-shapes	bit	-	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/loader-pattern-shapes	bt	-	CharacterDefinitionTable pattern shapes: optional group / Kleene star	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/metathesis-comparison-crash	ti	-	MetathesisRule	Confirmed	MetathesisRule
+edge-cases/morphotactic-attribute-breadth	kul	KUL|kul	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	Contradicted	requiredStemName
+edge-cases/morphotactic-attribute-breadth	kulba	-	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	Contradicted	requiredStemName
+edge-cases/morphotactic-attribute-breadth	kulde	KUL+TWICE|kulde	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	Contradicted	requiredStemName
+edge-cases/morphotactic-attribute-breadth	kuldede	KUL+TWICE|kuldede	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	Contradicted	requiredStemName
+edge-cases/morphotactic-attribute-breadth	kuldedede	-	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	Contradicted	requiredStemName
+edge-cases/morphotactic-attribute-breadth	kulgagego	-	MPR features/groups	Unmapped	-
+edge-cases/morphotactic-attribute-breadth	kulgago	KUL+GRPB+GRPREQ|kulgago	MPR features/groups	Unmapped	-
+edge-cases/morphotactic-attribute-breadth	kulge	KUL+GRPA|kulge	MPR features/groups	Unmapped	-
+edge-cases/morphotactic-attribute-breadth	kulmo	KUL+PART|kulmo	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	Contradicted	requiredStemName
+edge-cases/morphotactic-attribute-breadth	kulpu	-	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/morphotactic-attribute-breadth	kur	-	Disjunctive allomorphs / free-fluctuation	Unmapped	-
+edge-cases/morphotactic-attribute-breadth	nap	NAP|nap	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	Contradicted	requiredStemName
+edge-cases/morphotactic-attribute-breadth	napmo	-	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	Contradicted	requiredStemName
+edge-cases/morphotactic-attribute-breadth	pog	POG|pog	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	Contradicted	requiredStemName
+edge-cases/morphotactic-attribute-breadth	pogli	POG+POGAFX|pogli	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/morphotactic-attribute-breadth	pogliti	POG+POGAFX+PO|pogliti	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	Contradicted	requiredStemName
+edge-cases/morphotactic-attribute-breadth	pogti	POG+PO|pogti	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	Contradicted	requiredStemName
+edge-cases/morphotactic-attribute-breadth	top	TOP|top	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	Contradicted	requiredStemName
+edge-cases/morphotactic-attribute-breadth	topdo	TOP+CONFEREXCL|topdo	MPR features/groups	Unmapped	-
+edge-cases/morphotactic-attribute-breadth	topdori	-	MPR features/groups	Unmapped	-
+edge-cases/morphotactic-attribute-breadth	topke	TOP+EXA|topke	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	Confirmed	AllomorphCoOccurrenceRule,MorphemeCoOccurrenceRule
+edge-cases/morphotactic-attribute-breadth	topkeko	-	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	Confirmed	AllomorphCoOccurrenceRule,MorphemeCoOccurrenceRule
+edge-cases/morphotactic-attribute-breadth	topko	TOP+EXB|topko	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	Confirmed	AllomorphCoOccurrenceRule,MorphemeCoOccurrenceRule
+edge-cases/morphotactic-attribute-breadth	topla	TOP+EXC|topla	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	Confirmed	AllomorphCoOccurrenceRule,MorphemeCoOccurrenceRule
+edge-cases/morphotactic-attribute-breadth	toplane	-	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	Confirmed	AllomorphCoOccurrenceRule,MorphemeCoOccurrenceRule
+edge-cases/morphotactic-attribute-breadth	topne	TOP+EXD|topne	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	Confirmed	AllomorphCoOccurrenceRule,MorphemeCoOccurrenceRule
+edge-cases/morphotactic-attribute-breadth	topri	TOP+EXCLREADER|topri	MPR features/groups	Unmapped	-
+edge-cases/morphotactic-attribute-breadth	topsakanabu	TOP+COA+COB+COD+MB|topsakanabu	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/morphotactic-attribute-breadth	topsakatana	TOP+COA+COB+COC+COD|topsakatana	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/mpr-gated-exception	menulik	NPFX+TULIK|menulik	RewriteRule direction (Dir): left-to-right	Unmapped	-
 edge-cases/mpr-group-overwrite-without-realizational	udof	THEMEA+DOF|udof	MPR features/groups	Unmapped	-
 edge-cases/mpr-group-overwrite-without-realizational	udofq	THEMEA+DOF+ENDC|udofq	MPR features/groups	Unmapped	-

@@ -78,6 +78,16 @@
 #     substitute for it; conformance/edge-cases/mpr-group-overwrite-without-realizational and
 #     conformance/edge-cases/mpr-overwrite-order-dependence remain the only fixtures exercising it,
 #     both still fieldworks_producible: false.
+#
+# COVERAGE.CSV REGRESSION, FOUND AND FIXED separately from the conversion itself: the conversion (and
+# its later WIP expansion) never re-added per-word/per-parse "exercises:" tags, so every word in this
+# fixture silently stopped contributing to conformance/coverage.csv -- the whole MorphotacticAttributeBreadth
+# block (28 rows) vanished with no replacement and no test caught it (parity-check.py and
+# CheckedInCoverageTablesAreUpToDate both only check that coverage.csv matches what WordsYamlLoader
+# actually finds, and a fixture with zero "exercises:" tags matches that trivially). Every word below
+# now carries an "exercises:" tag reflecting what it ACTUALLY tests post-conversion (not a blind copy
+# of the pre-conversion label): topsakatana in particular is relabeled from the removed co-occurrence
+# construct to "Affix template slots", since mrCoA-D no longer carry any co-occurrence rule.
 
 language: MorphotacticAttributeBreadth
 inspired_by: ["synthetic morphotactic-attribute probe (not modeling any real language)"]
@@ -93,40 +103,47 @@ words:
       exactly what mrExclReader's own excludedMPRFeatures excludes, so mrExclReader can never apply
       once mrConferExcl has -- zero parses.
     expect_fail: true
+    exercises: ["MPR features/groups"]
 
   - word: topdo
     note: TOP + mrConferExcl ("-do") alone -- the control for topdori (above), showing mrConferExcl attaches normally.
     parses:
       - signature: "TOP+CONFEREXCL|topdo"
         rules: [mrConferExcl]
+        exercises: ["MPR features/groups"]
 
   - word: topri
     note: TOP + mrExclReader ("-ri") alone, no mrConferExcl -- TOP carries no mprExclFlag on its own, so mrExclReader's exclusion is vacuously satisfied.
     parses:
       - signature: "TOP+EXCLREADER|topri"
         rules: [mrExclReader]
+        exercises: ["MPR features/groups"]
 
   - word: kul
     note: Bare free root. The control that the grammar loads and admits a complete word at all.
     parses:
       - signature: "KUL|kul"
         rules: []
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
 
   - word: kulde
     note: mrRep2 applied once, well inside its cap of two.
     parses:
       - signature: "KUL+TWICE|kulde"
         rules: [mrRep2]
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
 
   - word: kuldede
     note: mrRep2 applied twice, exactly at its cap.
     parses:
       - signature: "KUL+TWICE|kuldede"
         rules: [mrRep2]
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
 
   - word: kuldedede
     note: Three copies exceed multipleApplication="2". The upper boundary of the cap.
     expect_fail: true
+    exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
 
   - word: kulba
     note: >-
@@ -136,18 +153,21 @@ words:
     blocked_by: [mrRep0]
     neutralizes:
       - mrRep0
+    exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
 
   - word: kulmo
     note: mrPartial carries partial="true", reached through finalTemplate's own slot.
     parses:
       - signature: "KUL+PART|kulmo"
         rules: [mrPartial]
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
 
   - word: nap
     note: eNap carries partial="true" and still parses as a free root (no template involved at all).
     parses:
       - signature: "NAP|nap"
         rules: []
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
 
   - word: napmo
     note: >-
@@ -157,10 +177,12 @@ words:
     expect_fail: true
     neutralizes:
       - eNap
+    exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
 
   - word: kur
     note: Negative control for Allomorph@isBound="true". aKulBound is not a free word.
     expect_fail: true
+    exercises: ["Disjunctive allomorphs / free-fluctuation"]
 
   - word: kulpu
     note: >-
@@ -170,6 +192,7 @@ words:
     blocked_by: [mrNF]
     neutralizes:
       - nonFinalTemplate
+    exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
 
   - word: top
     note: >-
@@ -178,6 +201,7 @@ words:
     parses:
       - signature: "TOP|top"
         rules: []
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
 
   - word: topsakatana
     note: >-
@@ -187,6 +211,7 @@ words:
     parses:
       - signature: "TOP+COA+COB+COC+COD|topsakatana"
         rules: [mrCoA, mrCoB, mrCoC, mrCoD]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
 
   - word: topsakanabu
     note: >-
@@ -195,12 +220,14 @@ words:
     parses:
       - signature: "TOP+COA+COB+COD+MB|topsakanabu"
         rules: [mrCoA, mrCoB, mrCoD, mrMB]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
 
   - word: kulge
     note: kul + mrGrpSetA ("ge") alone -- positive control showing GrpSetA attaches normally on its own.
     parses:
       - signature: "KUL+GRPA|kulge"
         rules: [mrGrpSetA]
+        exercises: ["MPR features/groups"]
 
   - word: kulgago
     note: >-
@@ -209,6 +236,7 @@ words:
     parses:
       - signature: "KUL+GRPB+GRPREQ|kulgago"
         rules: [mrGrpSetB, mrGrpReq]
+        exercises: ["MPR features/groups"]
 
   - word: kulgagego
     note: >-
@@ -219,6 +247,7 @@ words:
       the analogous chain succeeded) -- see the conversion-history note above.
     expect_fail: true
     blocked_by: [mrGrpReq]
+    exercises: ["MPR features/groups"]
 
   - word: topke
     note: >-
@@ -227,12 +256,14 @@ words:
     parses:
       - signature: "TOP+EXA|topke"
         rules: [mrExA]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
 
   - word: topko
     note: top + mrExB ("ko") alone, no mrExA -- positive control showing ExB attaches normally with no exclusion active.
     parses:
       - signature: "TOP+EXB|topko"
         rules: [mrExB]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
 
   - word: topkeko
     note: >-
@@ -240,6 +271,7 @@ words:
       the MorphemeCoOccurrenceRule (adjacentToRight) exclude this pair, so it is refused twice over --
       this fixture does not attempt to isolate the two reasons independently.
     expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
 
   - word: topla
     note: >-
@@ -248,12 +280,14 @@ words:
     parses:
       - signature: "TOP+EXC|topla"
         rules: [mrExC]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
 
   - word: topne
     note: top + mrExD ("ne") alone, no mrExC -- positive control showing ExD attaches normally with none of the four exclusions active (ExC absent).
     parses:
       - signature: "TOP+EXD|topne"
         rules: [mrExD]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
 
   - word: toplane
     note: >-
@@ -262,18 +296,21 @@ words:
       adjacentToRight,somewhereToLeft,somewhereToRight} coverage: all four rules key on this same
       ExC/ExD-adjacent fact, so this one word is excluded four separate ways at once.
     expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
 
   - word: pog
     note: Bare root of the second (Unordered) stratum, used for the MorphologicalRule@partial="true" control below.
     parses:
       - signature: "POG|pog"
         rules: []
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
 
   - word: pogli
     note: pogTemplate's own slot (mrPogAffix) filled, template-final.
     parses:
       - signature: "POG+POGAFX|pogli"
         rules: [mrPogAffix]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
 
   - word: pogti
     note: >-
@@ -282,6 +319,7 @@ words:
     parses:
       - signature: "POG+PO|pogti"
         rules: [mrPO]
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
 
   - word: pogliti
     note: >-
@@ -291,3 +329,4 @@ words:
     parses:
       - signature: "POG+POGAFX+PO|pogliti"
         rules: [mrPO, mrPogAffix]
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]

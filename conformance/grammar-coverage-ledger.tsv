@@ -338,6 +338,11 @@ edge-cases/morphotactic-attribute-breadth	Interface	SimpleContext.naturalClass	r
 edge-cases/morphotactic-attribute-breadth	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/morphotactic-attribute-breadth	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	4 claim(s)
+edge-cases/morphotactic-attribute-breadth	Construct	Disjunctive allomorphs / free-fluctuation	claimed-unmapped	1 claim(s)
+edge-cases/morphotactic-attribute-breadth	Construct	MPR features/groups	claimed-unmapped	6 claim(s)
+edge-cases/morphotactic-attribute-breadth	Construct	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	claimed-confirmed	6 claim(s)
+edge-cases/morphotactic-attribute-breadth	Construct	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	claimed-contradicted	12 claim(s)
 edge-cases/mpr-gated-exception	Surface	dtd:element/Environment	witnessed	Evidenced
 edge-cases/mpr-gated-exception	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/mpr-gated-exception	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd

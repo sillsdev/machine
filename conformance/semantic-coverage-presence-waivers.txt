@@ -28,14 +28,17 @@ dtd:enum/Family/isActive/no
 dtd:enum/FeatureNaturalClass/isActive/no
 dtd:enum/MorphologicalPhonologicalRuleFeature/isActive/no
 
-# Three inactive declarations in edge-cases/morphotactic-attribute-breadth that no word can observe.
+# Two inactive declarations in edge-cases/morphotactic-attribute-breadth that no word can observe.
 # Each would need a word combining two roots, and that fixture has no compounding rule: unconstrained
 # head/non-head patterns made the analyser non-terminating there (the C# oracle did not finish in ten
 # minutes on three words), so compounding is deliberately elsewhere. Giving these discriminating words
-# means adding a bounded compounding rule to that grammar.
+# means adding a bounded compounding rule to that grammar. (A third line formerly here,
+# MorphologicalPhonologicalRuleFeatureGroup/isActive/no, was deleted: this fixture's custom-named
+# group was removed outright by the fieldworks_producible conversion, not merely left unobserved --
+# see words.yaml's own conversion-history note. That surface is now genuinely uncovered, not
+# presence-only, and semantic-coverage-baseline.txt's own "todo" line reflects that.)
 dtd:enum/AllomorphCoOccurrenceRule/isActive/no
 dtd:enum/MorphemeCoOccurrenceRule/isActive/no
-dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/isActive/no
 
 # Three inactive declarations in edge-cases/feature-system-breadth that are deliberately referenced by
 # nothing, because a reference would dangle when the declaration is correctly dropped, and that same

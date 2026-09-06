@@ -3,6 +3,18 @@
 # explicit so CoverageCompletenessGate reads structure, never Delta's free-text prose.
 # counterexample_kind is Word or LoadFailure and the two are never summed into one
 # count -- see CoverageCompletenessGate. Absent fields are "-".
+#
+# MANUALLY PRUNED (not a full --write-coverage-evidence regeneration): edge-cases/morphotactic-
+# attribute-breadth's fieldworks_producible conversion removed the unblockableSlot/maSlot/mbSlot/
+# mreqSlot/realSlot AffixTemplate slots (and the words that exercised their ordering, kulbubidu/
+# kulgimo/kulmoru), so the four "ordering:.../slots/maSlot~mreqSlot" etc. rows that used to evidence
+# their adjacency became orphaned -- CorpusWideGapCountNeverIncreasesFromThePinnedValue's own
+# orphaned-row check caught this. Deleted rather than regenerated because the full Surface+Ordering
+# sweep (--write-counterfactual, --write-coverage-evidence) takes on the order of hours over this
+# corpus, one child process per item; a targeted prune of exactly the rows the conversion invalidated
+# is the same class of fix as this branch's semantic-coverage-presence-waivers.txt correction. A full
+# re-sweep to pick up any NEW evidence this branch's conversions or expansion made available (e.g. for
+# the fixture's new Slot pairs) is still owed as follow-on work.
 item_id	kind	fixture	example_word	example_outcome	counterexample_kind	counterexample_outcome	mutation	verdict
 dtd:element/AffixTemplate	Surface	edge-cases/diacritic-segments	año	ok::YEAR|año	LoadFailure	InvalidOperationException: Unhandled exception. System.Xml.Schema.XmlSchemaValidationException: The element 'AffixTemplates' has incomplete content...	removed 1 <AffixTemplate> element(s)	RequiredByDtd
 dtd:element/AffixTemplates	Surface	edge-cases/loader-isactive-breadth	takul	ok::TA+KUL|takul	Word	ok::-	removed 1 <AffixTemplates> element(s)	Evidenced
@@ -212,10 +224,6 @@ ordering:edge-cases/morphotactic-attribute-breadth/slots/coASlot~coBSlot	Orderin
 ordering:edge-cases/morphotactic-attribute-breadth/slots/coBSlot~coCSlot	Ordering	edge-cases/morphotactic-attribute-breadth	topsakatana	ok::TOP+COA+COB+COC+COD|topsakatana	Word	ok::-	swapped adjacent Slot elements "coBSlot" and "coCSlot" on AffixTemplate#0 ("finalTemplate")	Evidenced
 ordering:edge-cases/morphotactic-attribute-breadth/slots/coCSlot~coDSlot	Ordering	edge-cases/morphotactic-attribute-breadth	topsakatana	ok::TOP+COA+COB+COC+COD|topsakatana	Word	ok::-	swapped adjacent Slot elements "coCSlot" and "coDSlot" on AffixTemplate#0 ("finalTemplate")	Evidenced
 ordering:edge-cases/morphotactic-attribute-breadth/slots/coDSlot~mbSlot	Ordering	edge-cases/morphotactic-attribute-breadth	topsakanabu	ok::TOP+COA+COB+COD+MB|topsakanabu	Word	ok::-	swapped adjacent Slot elements "coDSlot" and "mbSlot" on AffixTemplate#0 ("finalTemplate")	Evidenced
-ordering:edge-cases/morphotactic-attribute-breadth/slots/maSlot~mreqSlot	Ordering	edge-cases/morphotactic-attribute-breadth	kulbubidu	ok::KUL+MB+MA+MREQ|kulbubidu	Word	ok::-	swapped adjacent Slot elements "maSlot" and "mreqSlot" on AffixTemplate#0 ("finalTemplate")	Evidenced
-ordering:edge-cases/morphotactic-attribute-breadth/slots/mbSlot~maSlot	Ordering	edge-cases/morphotactic-attribute-breadth	kulbubidu	ok::KUL+MB+MA+MREQ|kulbubidu	Word	ok::-	swapped adjacent Slot elements "mbSlot" and "maSlot" on AffixTemplate#0 ("finalTemplate")	Evidenced
-ordering:edge-cases/morphotactic-attribute-breadth/slots/partialSlot~realSlot	Ordering	edge-cases/morphotactic-attribute-breadth	kulmoru	ok::KUL+PART+REAL|kulmoru	Word	ok::-	swapped adjacent Slot elements "partialSlot" and "realSlot" on AffixTemplate#0 ("finalTemplate")	Evidenced
-ordering:edge-cases/morphotactic-attribute-breadth/slots/unblockableSlot~partialSlot	Ordering	edge-cases/morphotactic-attribute-breadth	kulgimo	ok::KUL+UNBLK+PART|kulgimo	Word	ok::-	swapped adjacent Slot elements "unblockableSlot" and "partialSlot" on AffixTemplate#0 ("finalTemplate")	Evidenced
 ordering:edge-cases/mpr-gated-exception/phonologicalRules/prNasalAssimAlveolar~prObstruentDeletion	Ordering	edge-cases/mpr-gated-exception	menulik	ok::NPFX+TULIK|menulik	Word	ok::-	swapped adjacent phonologicalRules entries "prNasalAssimAlveolar" and "prObstruentDeletion" on Stratum#0 ("Main")	Evidenced
 ordering:edge-cases/mpr-group-overwrite-without-realizational/morphologicalRules/mrThemeA~mrThemeB	Ordering	edge-cases/mpr-group-overwrite-without-realizational	wudof	ok::THEMEB+THEMEA+DOF|wudof	Word	ok::-	swapped adjacent morphologicalRules entries "mrThemeA" and "mrThemeB" on Stratum#0 ("S")	Evidenced
 ordering:edge-cases/mpr-group-overwrite-without-realizational/morphologicalRules/mrThemeB~mrEndC	Ordering	edge-cases/mpr-group-overwrite-without-realizational	wudofq	ok::-	Word	ok::THEMEB+THEMEA+DOF+ENDC|wudofq	swapped adjacent morphologicalRules entries "mrThemeB" and "mrEndC" on Stratum#0 ("S")	Evidenced
