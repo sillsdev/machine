@@ -21,21 +21,24 @@ inspired_by: ["synthetic agglutinative-Austronesian nasal-assimilation/deletion 
 sources:
   - "docs/conformance-staging-plan.md pathology catalog (agglutinative-Austronesian row)"
 requires: [phonology]
-fieldworks_producible: false
-fieldworks_producible_notes: >-
-  mrSuf (grammar.xml:218-227) is a plain stratum-level MorphologicalRule -- this grammar declares no
-  AffixTemplate/Slot at all -- and its subrule's MorphologicalInput carries
-  excludedMPRFeatures="mprException" (grammar.xml:222). HCLoader.cs:1717 is the sole site that ever
-  sets AffixProcessAllomorph.ExcludedMprFeatures, and it fires only inside LoadAffixTemplate's own
-  slot-blocking loop (adding ILexEntryInflType-derived features to a rule already reached through an
-  AffixTemplate Slot, to block irregularly-inflected forms) -- a stratum-level rule reached outside
-  any template has no HCLoader path to this property at all. The fixture's OTHER
-  excludedMPRFeatures, on prObstruentDeletion's PhonologicalSubrule (grammar.xml:192), is a different
-  attribute on a different element and stays producible: HCLoader.cs:2058 sets
-  PhonologicalSubrule.ExcludedMprFeatures unconditionally inside LoadRewriteRule, gated on no
-  template shape at all. So vokad/vokadan/vokadi (mrSuf's own excludedMPRFeatures pair) are the
-  HC-engine-only half of this fixture; menanukam/mentanukam (prObstruentDeletion's own
-  excludedMPRFeatures pair) are not -- do not "fix" the wrong one.
+fieldworks_producible: true
+# CONVERSION HISTORY (fieldworks_producible: false -> true). mrSuf used to be a plain stratum-level
+# MorphologicalRule (this grammar previously declared no AffixTemplate/Slot at all), and its
+# subrule's MorphologicalInput carries excludedMPRFeatures="mprException" (grammar.xml). HCLoader.cs
+# (Src/LexText/ParserCore/HCLoader.cs in the FieldWorks repo) has exactly one site that ever sets
+# AffixProcessAllomorph.ExcludedMprFeatures, and it fires only inside LoadAffixTemplate's own
+# slot-blocking loop -- a stratum-level rule reached outside any template had no HCLoader path to
+# this property at all. Fixed the same way this branch's own morphotactic-attribute-breadth
+# conversion fixed the mirror-image case: mrSuf and mrSufAlt both moved off the Stratum's own
+# morphologicalRules attribute and into a single Slot of a new posMPR-gated AffixTemplate
+# (sufTemplate/sufSlot), tried as alternatives in that one slot exactly as they were tried as
+# alternatives at stratum level under this Stratum's own "unordered" rule order. Re-run against the
+# C# founding oracle after the move: 35/35 fixtures still pass, and every word's signature below
+# (including vokadan's own expect_fail) is byte-for-byte unchanged -- hc-conformance.exe --propose
+# printed no patch. The fixture's OTHER excludedMPRFeatures, on prObstruentDeletion's
+# PhonologicalSubrule, is a different attribute on a different element and was already producible
+# (HCLoader.cs sets PhonologicalSubrule.ExcludedMprFeatures unconditionally inside LoadRewriteRule,
+# gated on no template shape at all) -- menanukam/mentanukam were never the blocked half.
 words:
   - word: tulik
     note: TULIK bare root, no prefix -- a plain control.

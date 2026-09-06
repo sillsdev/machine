@@ -200,7 +200,7 @@
     </PhonologicalRuleDefinitions>
     <Strata>
       <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered"
-        morphologicalRules="mrNPfx mrSuf mrSufAlt mrDelExclSrc"
+        morphologicalRules="mrNPfx mrDelExclSrc"
         phonologicalRules="prNasalAssimBilabial prNasalAssimAlveolar prObstruentDeletion">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
@@ -251,8 +251,25 @@
             <MorphemeId>DELEXCLSRC</MorphemeId>
           </MorphologicalRule>
         </MorphologicalRuleDefinitions>
+        <!-- CONVERSION HISTORY (fieldworks_producible: false -> true). mrSuf/mrSufAlt used to be
+             stratum-level (listed directly on the Stratum's own morphologicalRules attribute above),
+             which is exactly why mrSuf's MorphologicalInput.excludedMPRFeatures could never come from
+             a real FieldWorks project: AffixProcessAllomorph.ExcludedMprFeatures is set at exactly one
+             site, inside LoadAffixTemplate's own slot-blocking loop, so it is producible only on a
+             rule reached THROUGH an AffixTemplate Slot, never on a stratum-level rule. Moving both
+             rules into one Slot of a posMPR-gated template (mirroring what this branch's own
+             morphotactic-attribute-breadth conversion did for mrExclReader) makes that half producible
+             without changing which rule wins: mrSuf and mrSufAlt are still tried as alternatives in
+             one slot position, exactly as they were tried as alternatives at stratum level under this
+             Stratum's own "unordered" rule order. -->
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posMPR">
+            <Name>sufTemplate</Name>
+            <Slot optional="true" morphologicalRules="mrSuf mrSufAlt"><Name>sufSlot</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
         <LexicalEntries>
-          
+
           <LexicalEntry id="eTulik" partOfSpeech="posNasal">
             <Allomorphs><Allomorph id="aTulik"><PhoneticShape>tulik</PhoneticShape></Allomorph></Allomorphs>
             <MorphemeId>TULIK</MorphemeId>
