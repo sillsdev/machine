@@ -52,11 +52,22 @@ public sealed class GrammarCoverageLedgerTests
         // claimed-unmapped row (3 claims) is gone, and kalid/kalmuid/kalidmu merge into the fixture's
         // existing "Syntactic feature agreement (...)" claimed-confirmed row (11 -> 14 claims) instead
         // of adding a new one -- a net row removed, not replaced.
-        Assert.That(rows, Has.Count.EqualTo(676));
+        //
+        // 676 -> 672 (interface 392 -> 391, construct 95 -> 92) after edge-cases/morphotactic-attribute-
+        // breadth's and languages/fusional-realizational-morphology's family-blocking fieldworks_producible
+        // conversions (this branch). Interface: LexicalEntry.family drops to 2 present fixtures (from 4),
+        // netting one fewer distinct present-interface row suite-wide (InterfaceWitnessLedgerTests pins
+        // the same -1). Construct: of this fixture's own 8 pre-conversion claimed-construct rows, 3
+        // disappear entirely (RealizationalAffixProcessRule; Syntactic feature agreement, which only its
+        // now-removed family+blockable material claimed; Element deactivation, claimed only by the removed
+        // MPR-group isActive decoy); the other 5 persist with revised claim counts, once the fixture's
+        // words.yaml regained the "exercises:" tags the conversion had silently dropped (see that file's
+        // own "COVERAGE.CSV REGRESSION" note) -- net -3, no category added.
+        Assert.That(rows, Has.Count.EqualTo(672));
         Assert.That(distinctFixtures, Is.EqualTo(36));
         Assert.That(surface, Is.EqualTo(189));
-        Assert.That(@interface, Is.EqualTo(392));
-        Assert.That(construct, Is.EqualTo(95));
+        Assert.That(@interface, Is.EqualTo(391));
+        Assert.That(construct, Is.EqualTo(92));
     }
 
     // This is a JOIN over three already-checked-in ledgers (EvidenceLedger, InterfaceInventoryLedger +

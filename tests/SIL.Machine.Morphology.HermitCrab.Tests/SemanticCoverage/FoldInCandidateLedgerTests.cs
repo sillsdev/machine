@@ -37,6 +37,13 @@ public sealed class FoldInCandidateLedgerTests
     // by the tie-break. Fixed by recording every tied fixture (CounterfactualResult.WitnessingFixtures,
     // the ledger's witnessed_by column) and having FoldInCandidateLedger check that full set instead of
     // the single recorded fixture.
+    //
+    // 92 -> 91 (interfaceEdgeCaseOnly 2 -> 1) after languages/fusional-realizational-morphology's
+    // family-blocking fieldworks_producible conversion (this branch) moved mrPast2's
+    // excludedMPRFeatures reader into a new AffixTemplate slot: MorphologicalInput.excludedMPRFeatures
+    // is now present in a `languages/*` grammar, not just the edge-cases-only fixtures that used to be
+    // its sole witnesses, so it is no longer an edge-case-only interface. The other pinned edge case,
+    // CompoundingRule.outputPartOfSpeech, is untouched.
     [Test]
     public void CheckedInLedgerHasTheMeasuredCategoryCounts()
     {
@@ -62,13 +69,16 @@ public sealed class FoldInCandidateLedgerTests
                 + $"surfacePresentElsewhere={surfacePresentElsewhere}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(92));
-        Assert.That(interfaceEdgeCaseOnly, Is.EqualTo(2));
+        Assert.That(rows, Has.Count.EqualTo(91));
+        Assert.That(interfaceEdgeCaseOnly, Is.EqualTo(1));
         Assert.That(interfaceNeverWitnessed, Is.EqualTo(25));
         Assert.That(surfaceEdgeCaseOnly, Is.EqualTo(57));
         Assert.That(surfacePresentElsewhere, Is.EqualTo(8));
     }
 
+    // Was CompoundingRule.outputPartOfSpeech and MorphologicalInput.excludedMPRFeatures; now just the
+    // former -- see CheckedInLedgerHasTheMeasuredCategoryCounts's own comment on why the latter dropped
+    // out.
     [Test]
     public void InterfaceFoldInCandidatesAreTheEdgeCaseOnlyMprAndCompoundOutput()
     {
@@ -80,10 +90,10 @@ public sealed class FoldInCandidateLedgerTests
             )
             .ToArray();
 
-        Assert.That(candidates, Has.Length.EqualTo(2));
+        Assert.That(candidates, Has.Length.EqualTo(1));
         Assert.That(
             candidates.Select(r => r.Obligation),
-            Is.EquivalentTo(new[] { "CompoundingRule.outputPartOfSpeech", "MorphologicalInput.excludedMPRFeatures" })
+            Is.EquivalentTo(new[] { "CompoundingRule.outputPartOfSpeech" })
         );
     }
 

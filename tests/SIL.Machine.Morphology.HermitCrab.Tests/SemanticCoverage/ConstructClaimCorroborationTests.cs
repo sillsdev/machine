@@ -41,6 +41,17 @@ public sealed class ConstructClaimCorroborationTests
     // RealizationalAffixProcessRule claims (prose, Unmapped) became "Syntactic feature agreement (...)"
     // claims instead, which corroborate on OutputHeadFeatures (Confirmed) -- three rows move status,
     // none are added or removed.
+    //
+    // 475/213/15/247 -> 473/211/12/250 after edge-cases/morphotactic-attribute-breadth's and
+    // languages/fusional-realizational-morphology's family-blocking fieldworks_producible conversions
+    // (this branch): the fixture's removed words (bak/dom/bakgi/sim/rog/simru/kulgi/kulru/kulsi/sol/
+    // kulbubidu/kulgimo/kulmoru -- family+blockable, RealizationalRule, the require-type co-occurrence
+    // rule, the append-mode MPR group, and their Slot-ordering discriminators) took 2 Confirmed and 3
+    // Contradicted claims with them (all 3 Contradicted were among the 15 pinned by
+    // AllContradictedClaimsTraceToTheKnownBundledConstructLimitation, which is why that count also
+    // drops, 15 -> 12); its new/kept words (topdori/topdo/topri/kulge/topko/topla/topne/toplane, plus
+    // the words that already existed) reclaim coverage.csv rows the conversion had silently dropped
+    // (see the fixture's own words.yaml "COVERAGE.CSV REGRESSION" note) at a net of -2 rows overall.
     [Test]
     public void CheckedInLedgerHasTheMeasuredClaimAndStatusCounts()
     {
@@ -55,21 +66,24 @@ public sealed class ConstructClaimCorroborationTests
             $"rows={rows.Count} confirmed={confirmed} contradicted={contradicted} unmapped={unmapped}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(475));
-        Assert.That(confirmed, Is.EqualTo(213));
-        Assert.That(contradicted, Is.EqualTo(15));
-        Assert.That(unmapped, Is.EqualTo(247));
+        Assert.That(rows, Has.Count.EqualTo(473));
+        Assert.That(confirmed, Is.EqualTo(211));
+        Assert.That(contradicted, Is.EqualTo(12));
+        Assert.That(unmapped, Is.EqualTo(250));
     }
 
-    // All 15 Contradicted claims trace to one (fixture, construct) pair: edge-cases/morphotactic-
+    // All 12 Contradicted claims trace to one (fixture, construct) pair: edge-cases/morphotactic-
     // attribute-breadth claiming the bundled construct "Ordinary/realizational rule constraints
-    // (MaxApplicationCount/RequiredStemName/Blockable)". Manually verified (see the task report) that
-    // this is a corroboration-heuristic limitation, not a false claim by the fixture author: the
-    // fixture genuinely exercises multipleApplication and blockable (2 of the 3 bundled things), but
-    // "MaxApplicationCount" names no real DTD identifier (the real attribute is multipleApplication)
-    // and "Blockable" is filtered out by the internal-capital heuristic (a bare English word) -- so the
-    // only token this mapping could ever check for this construct is requiredStemName, which this
-    // fixture indeed never uses. Pinned so a change here is investigated, not silently re-baselined.
+    // (MaxApplicationCount/RequiredStemName/Blockable)" (was 15, before this fixture's own
+    // fieldworks_producible conversion (this branch) removed its family+blockable material -- 3 of the
+    // 15 claims went with the removed words; see CheckedInLedgerHasTheMeasuredClaimAndStatusCounts's own
+    // comment). Manually verified (see the task report) that this is a corroboration-heuristic
+    // limitation, not a false claim by the fixture author: the fixture genuinely exercises
+    // multipleApplication and (pre-conversion) blockable, but "MaxApplicationCount" names no real DTD
+    // identifier (the real attribute is multipleApplication) and "Blockable" is filtered out by the
+    // internal-capital heuristic (a bare English word) -- so the only token this mapping could ever
+    // check for this construct is requiredStemName, which this fixture indeed never uses. Pinned so a
+    // change here is investigated, not silently re-baselined.
     [Test]
     public void AllContradictedClaimsTraceToTheKnownBundledConstructLimitation()
     {
@@ -78,7 +92,7 @@ public sealed class ConstructClaimCorroborationTests
         ConstructClaimCorroboration.Row[] contradicted = rows.Where(r => r.Status == ConstructClaimStatus.Contradicted)
             .ToArray();
 
-        Assert.That(contradicted, Has.Length.EqualTo(15));
+        Assert.That(contradicted, Has.Length.EqualTo(12));
         Assert.That(
             contradicted.Select(r => r.Fixture).Distinct(),
             Is.EquivalentTo(new[] { "edge-cases/morphotactic-attribute-breadth" })

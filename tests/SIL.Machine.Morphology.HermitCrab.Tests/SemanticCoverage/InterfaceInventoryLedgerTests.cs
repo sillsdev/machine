@@ -32,6 +32,14 @@ public sealed class InterfaceInventoryLedgerTests
     // corpus-statistic denominator, the "60 declared" figure here cannot move by adding a fixture;
     // only "present" and "typed edges" can. "Present" is STRUCTURAL ONLY (see Row's own doc comment)
     // -- InterfaceWitnessLedgerTests pins the separate, strictly weaker WITNESSED counts.
+    //
+    // 53 -> 51 when edge-cases/morphotactic-attribute-breadth's fieldworks_producible conversion
+    // removed its only two declarations of each: Slot.morphologicalRules->RealizationalRule (mrReal/
+    // mrRealDecoy sat in a Slot; RealizationalRule material was removed outright, no FieldWorks
+    // substitute exists) and AllomorphCoOccurrenceRule.otherAllomorphs->Allomorph (the require-type
+    // rule keying on allomorph id "aNap" was replaced by exclude-type rules keying on
+    // MorphologicalSubrule ids only). No other fixture in the suite declares either edge, so both
+    // typed edges are gone suite-wide, not merely narrowed to this fixture.
     [Test]
     public void RealCorpusProducesTheDeclaredPresentEdgeAndJunctionCounts()
     {

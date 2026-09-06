@@ -153,7 +153,19 @@ public sealed class GrammarCoverageGateTests
     /// <summary>Ratchet floors. Raise them when coverage improves; never lower them silently.</summary>
     private const int ObservableSurfaces = 264;
     private const int GeneratedSurfaces = 1059;
-    private const int TraceFloor = 71;
+
+    // 71 -> 69 after edge-cases/morphotactic-attribute-breadth's family-blocking fieldworks_producible
+    // conversion (this branch) removed mrUnblockable and mrReal (its only firing words, kulgi and
+    // kulru, are gone too): dtd:enum/MorphologicalRule/blockable/false and
+    // dtd:enum/RealizationalRule/blockable/false lose their only Trace witness suite-wide -- confirmed
+    // by re-running this test with a temporary per-item dump: no fixture's grammar.xml still sets
+    // blockable="false" on a MorphologicalRule or RealizationalRule that fires in a verified parse
+    // (languages/polysynthetic-stratal-derivation-chain's CompoundingRule@blockable="false" is a
+    // different DTD attribute and is untouched, still traced via mrCompoundHN). This is the exact,
+    // named, and already-disclosed consequence of removing a construct with no FieldWorks-producible
+    // substitute -- see that fixture's own words.yaml conversion-history note -- not an accidental
+    // regression from anything else on this branch.
+    private const int TraceFloor = 69;
 
     [Test]
     public void TheMeasuredDenominatorIsPinned()

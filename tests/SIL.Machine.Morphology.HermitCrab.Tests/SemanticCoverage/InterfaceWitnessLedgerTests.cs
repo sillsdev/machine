@@ -50,12 +50,23 @@ public sealed class InterfaceWitnessLedgerTests
 
         // 383 -> 392 with edge-cases/cross-table-root-respelling's nine present interfaces: one witnessed
         // (Stratum.morphologicalRules), four required by the DTD, one by the loader, three inert.
-        Assert.That(rows, Has.Count.EqualTo(392));
-        Assert.That(evidenced, Is.EqualTo(88));
+        //
+        // 392 -> 391 (evidenced 88 -> 89, requiredByLoader 27 -> 26, unobservable 95 -> 94) after
+        // edge-cases/morphotactic-attribute-breadth's and languages/fusional-realizational-morphology's
+        // family-blocking fieldworks_producible conversions (this branch): LexicalEntry.family's present
+        // fixtures drop from 4 to 2 (only edge-cases/loader-isactive-breadth and
+        // languages/suffixing-extension-slot-ordering still declare it -- see this repo's
+        // conformance/docs/engine-only-fixture-retirement.md for why the latter must stay unconverted),
+        // removing rows for the two no-longer-present fixtures while other interfaces this conversion
+        // touched (excludedMPRFeatures moving into a template slot, requiredMPRFeatures's kulgagego) pick
+        // up new Evidenced verdicts -- net one fewer row, one more Evidenced, one fewer each of
+        // RequiredByLoader/Unobservable.
+        Assert.That(rows, Has.Count.EqualTo(391));
+        Assert.That(evidenced, Is.EqualTo(89));
         Assert.That(requiredByDtd, Is.EqualTo(182));
-        Assert.That(requiredByLoader, Is.EqualTo(27));
+        Assert.That(requiredByLoader, Is.EqualTo(26));
         Assert.That(timeout, Is.EqualTo(0));
-        Assert.That(unobservable, Is.EqualTo(95));
+        Assert.That(unobservable, Is.EqualTo(94));
         Assert.That(distinctInterfacesEverEvidenced, Is.EqualTo(19));
     }
 
