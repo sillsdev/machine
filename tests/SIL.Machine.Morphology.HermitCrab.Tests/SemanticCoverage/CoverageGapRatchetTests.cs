@@ -122,9 +122,12 @@ public sealed class CoverageGapRatchetTests
     // Ordering: two in edge-cases/compounding-breadth, one in edge-cases/right-to-left-anchor-
     // environment, one in languages/suffixing-vowel-harmony, six in languages/suffixing-extension-slot-
     // ordering including the two this file already named in its "Raised 14 -> 18" entry above) are NOT
-    // attributable to this branch in the sense that matters here -- git log confirms none of those five
-    // fixtures, nor this test file, has been touched by any commit since 43af40e4/f42d9591, well before
-    // this branch or that entry. Whatever their gap status is, this branch did not change it. What this
+    // attributable to this branch in the sense that matters here -- git log confirms this test file and
+    // four of those five fixtures were untouched by any commit since 43af40e4/f42d9591, well before this
+    // branch or that entry; the fifth, languages/suffixing-vowel-harmony, was touched since then only by
+    // f730e29f (metadata-only: fieldworks_producible front matter), which itself predates this branch's
+    // own start at 2c87903f, so the conclusion below is unaffected. Whatever their gap status is, this
+    // branch did not change it. What this
     // comment does NOT claim is that all 15 were already inside the old "18" pin (this test could not
     // have measured them itself while blocked on the orphaned-row failure, and nothing else in this repo
     // separately confirms 18's exact prior composition) -- only that responsibility for them, whichever

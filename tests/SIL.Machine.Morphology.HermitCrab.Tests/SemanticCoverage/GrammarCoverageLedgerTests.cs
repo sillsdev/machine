@@ -63,11 +63,17 @@ public sealed class GrammarCoverageLedgerTests
         // MPR-group isActive decoy); the other 5 persist with revised claim counts, once the fixture's
         // words.yaml regained the "exercises:" tags the conversion had silently dropped (see that file's
         // own "COVERAGE.CSV REGRESSION" note) -- net -3, no category added.
-        Assert.That(rows, Has.Count.EqualTo(672));
+        //
+        // 672 -> 673 (construct 92 -> 93) after adding "exercises:" tags to
+        // edge-cases/mpr-overwrite-order-dependence (previously zero rows here too -- see
+        // ConformanceFixtureGateTests.EveryFixtureContributesAtLeastOneCoverageRow): its 10 new claims
+        // of "MPR features/groups" collapse into the fixture's one existing claimed-unmapped
+        // Construct row, a net +1 (the row itself, not one per claim).
+        Assert.That(rows, Has.Count.EqualTo(673));
         Assert.That(distinctFixtures, Is.EqualTo(36));
         Assert.That(surface, Is.EqualTo(189));
         Assert.That(@interface, Is.EqualTo(391));
-        Assert.That(construct, Is.EqualTo(92));
+        Assert.That(construct, Is.EqualTo(93));
     }
 
     // This is a JOIN over three already-checked-in ledgers (EvidenceLedger, InterfaceInventoryLedger +

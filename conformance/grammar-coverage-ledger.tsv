@@ -384,6 +384,7 @@ edge-cases/mpr-overwrite-order-dependence	Interface	MorphologicalRule.requiredPa
 edge-cases/mpr-overwrite-order-dependence	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/mpr-overwrite-order-dependence	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/mpr-overwrite-order-dependence	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/mpr-overwrite-order-dependence	Construct	MPR features/groups	claimed-unmapped	10 claim(s)
 edge-cases/process-morphology-in-place-mutation	Surface	dtd:element/ModifyFromInput	witnessed	Evidenced
 edge-cases/process-morphology-in-place-mutation	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/process-morphology-in-place-mutation	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader

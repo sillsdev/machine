@@ -355,7 +355,7 @@ multi-piece process-rule output),
 fixture by fixture — naming which fixtures are HC-engine-only regression
 tests rather than evidence of FieldWorks-facing coverage.
 
-**Method.** Every verdict required reading the whole of `HCLoader.cs` (~2837 lines) and tracing each
+**Method.** Every verdict required reading the whole of `HCLoader.cs` (~2510 lines) and tracing each
 subject to the specific runtime property it would need to set on this repo's own engine classes,
 using `XmlLanguageLoader.cs` (this repo's reference HC-XML loader) as ground truth for which property
 a DTD attribute maps to where the mapping isn't obvious from the name alone, and this repo's own

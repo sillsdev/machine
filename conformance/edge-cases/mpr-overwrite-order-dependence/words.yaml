@@ -33,6 +33,11 @@
 #                       outputType="overwrite" itself, not to some incidental difference between the
 #                       two probes' rule shapes (which are otherwise identical apart from the group's
 #                       outputType and the gate's matchType).
+#
+# COVERAGE.CSV GAP, FOUND AND FIXED alongside the new EveryFixtureContributesAtLeastOneCoverageRow
+# gate: this fixture never carried "exercises:" tags (present since f42d9591), so every word here
+# silently contributed zero rows to conformance/coverage.csv. Every word/parse below now carries
+# exercises: ["MPR features/groups"], the one construct this fixture's whole premise is about.
 
 language: MprOverwriteOrderDependence
 inspired_by: ["synthetic MPR-overwrite-group order-dependence probe (not modeling any real language)"]
@@ -51,12 +56,14 @@ words:
     parses:
       - signature: "DABO|dabo"
         rules: []
+        exercises: ["MPR features/groups"]
 
   - word: femo
     note: Bare free root. The append probe's own control, isolated from dabo (no shared letters, no shared rule).
     parses:
       - signature: "FEMO|femo"
         rules: []
+        exercises: ["MPR features/groups"]
 
   - word: daboxayu
     note: >-
@@ -66,12 +73,14 @@ words:
     parses:
       - signature: "DABO+SETX+SETY|daboxayu"
         rules: [mrSetX, mrSetY]
+        exercises: ["MPR features/groups"]
 
   - word: daboyuxa
     note: mrSetY then mrSetX, the reverse order of daboxayu, no gate yet.
     parses:
       - signature: "DABO+SETY+SETX|daboyuxa"
         rules: [mrSetX, mrSetY]
+        exercises: ["MPR features/groups"]
 
   - word: daboxayuzi
     note: >-
@@ -82,6 +91,7 @@ words:
       this.
     expect_fail: true
     blocked_by: [mrGateX]
+    exercises: ["MPR features/groups"]
 
   - word: daboyuxazi
     note: >-
@@ -92,18 +102,21 @@ words:
     parses:
       - signature: "DABO+SETY+SETX+GATEX|daboyuxazi"
         rules: [mrGateX, mrSetX, mrSetY]
+        exercises: ["MPR features/groups"]
 
   - word: femopiqu
     note: mrSetP then mrSetQ, no gate yet -- the appendGroup mirror of daboxayu.
     parses:
       - signature: "FEMO+SETP+SETQ|femopiqu"
         rules: [mrSetP, mrSetQ]
+        exercises: ["MPR features/groups"]
 
   - word: femoqupi
     note: mrSetQ then mrSetP, the reverse order of femopiqu, no gate yet.
     parses:
       - signature: "FEMO+SETQ+SETP|femoqupi"
         rules: [mrSetP, mrSetQ]
+        exercises: ["MPR features/groups"]
 
   - word: femopiquvo
     note: >-
@@ -112,6 +125,7 @@ words:
     parses:
       - signature: "FEMO+SETP+SETQ+GATEPQ|femopiquvo"
         rules: [mrGatePQ, mrSetP, mrSetQ]
+        exercises: ["MPR features/groups"]
 
   - word: femoqupivo
     note: >-
@@ -122,3 +136,4 @@ words:
     parses:
       - signature: "FEMO+SETQ+SETP+GATEPQ|femoqupivo"
         rules: [mrGatePQ, mrSetP, mrSetQ]
+        exercises: ["MPR features/groups"]

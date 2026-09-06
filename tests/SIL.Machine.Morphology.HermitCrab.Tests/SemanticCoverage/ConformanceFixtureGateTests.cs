@@ -122,6 +122,85 @@ public sealed class ConformanceFixtureGateTests
         }
     }
 
+    // A words.yaml with no 'exercises:' tag anywhere silently contributes ZERO rows to coverage.csv,
+    // and nothing else here catches it: parity-check.py and CheckedInCoverageTablesAreUpToDate above
+    // both only check that coverage.csv matches what WordsYamlLoader finds, and a fixture with zero
+    // exercises tags matches that trivially. This is exactly how
+    // edge-cases/morphotactic-attribute-breadth's whole 28-row block vanished, undetected, until
+    // fixed by hand (see that fixture's own words.yaml "COVERAGE.CSV REGRESSION" note).
+    [Test]
+    public void EveryFixtureContributesAtLeastOneCoverageRow()
+    {
+        // Fixtures that legitimately contribute zero coverage.csv rows, named with the reason a real
+        // 'exercises:' tag cannot exist for them. Every other fixture must contribute >=1 row; a
+        // blanket "skip if empty" would hide the exact regression this test exists to catch.
+        var noExerciseByDesign = new HashSet<string>(StringComparer.Ordinal)
+        {
+            // expect_crash: true, one word, expect_fail with no parses: the whole point is that the
+            // oracle crashes partway through parsing this word, so there is no completed parse (or
+            // word-level exercise) left to attribute any construct to -- see this fixture's own
+            // words.yaml header.
+            "edge-cases/simultaneous-epenthesis-cascade",
+        };
+
+        List<Fixture> fixtures = Discover();
+        Assert.That(
+            fixtures,
+            Has.Count.GreaterThanOrEqualTo(MinimumFixtures),
+            "the discovery walk must find fixtures, not silently see zero"
+        );
+
+        HashSet<string> discoveredIds = fixtures.Select(f => f.Id).ToHashSet(StringComparer.Ordinal);
+        string[] staleAllowlistEntries = noExerciseByDesign
+            .Where(id => !discoveredIds.Contains(id))
+            .OrderBy(id => id, StringComparer.Ordinal)
+            .ToArray();
+        Assert.That(
+            staleAllowlistEntries,
+            Is.Empty,
+            "these allowlist entries name no discovered fixture (renamed or typo'd?):\n  "
+                + string.Join("\n  ", staleAllowlistEntries)
+        );
+
+        string temp = Path.Combine(Path.GetTempPath(), $"hc-exercise-gate-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(temp);
+        try
+        {
+            string coverage = Path.Combine(temp, "coverage.csv");
+            string rules = Path.Combine(temp, "rules.csv");
+            CoverageReport.WriteCsvs(fixtures, coverage, rules);
+
+            string[] lines = File.ReadAllLines(coverage);
+            Assert.That(
+                lines,
+                Has.Length.GreaterThan(1),
+                "coverage.csv must have a header plus at least one data row -- an empty table proves nothing"
+            );
+
+            HashSet<string> languagesWithRows = lines
+                .Skip(1)
+                .Select(line => line[..line.IndexOf(',')])
+                .ToHashSet(StringComparer.Ordinal);
+
+            string[] silent = fixtures
+                .Where(f => !languagesWithRows.Contains(f.Words.Language) && !noExerciseByDesign.Contains(f.Id))
+                .Select(f => f.Id)
+                .OrderBy(id => id, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.That(
+                silent,
+                Is.Empty,
+                "these fixtures contribute ZERO rows to coverage.csv (no 'exercises:' tag anywhere) and "
+                    + $"are not in the named allowlist above:\n  {string.Join("\n  ", silent)}"
+            );
+        }
+        finally
+        {
+            Directory.Delete(temp, recursive: true);
+        }
+    }
+
     // Every construct a fixture claims must be a real line in the checklist, and every checklist line
     // must be claimed. parity-check.py enforces the second half; nothing enforced the first.
     [Test]

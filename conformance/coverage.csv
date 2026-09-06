@@ -162,6 +162,16 @@ MprGroupOverwriteWithoutRealizational,udof,THEMEA+DOF|udof,MPR features/groups
 MprGroupOverwriteWithoutRealizational,wudof,THEMEB+THEMEA+DOF|wudof,MPR features/groups
 MprGroupOverwriteWithoutRealizational,udofq,THEMEA+DOF+ENDC|udofq,MPR features/groups
 MprGroupOverwriteWithoutRealizational,wudofq,,MPR features/groups
+MprOverwriteOrderDependence,dabo,DABO|dabo,MPR features/groups
+MprOverwriteOrderDependence,femo,FEMO|femo,MPR features/groups
+MprOverwriteOrderDependence,daboxayu,DABO+SETX+SETY|daboxayu,MPR features/groups
+MprOverwriteOrderDependence,daboyuxa,DABO+SETY+SETX|daboyuxa,MPR features/groups
+MprOverwriteOrderDependence,daboxayuzi,,MPR features/groups
+MprOverwriteOrderDependence,daboyuxazi,DABO+SETY+SETX+GATEX|daboyuxazi,MPR features/groups
+MprOverwriteOrderDependence,femopiqu,FEMO+SETP+SETQ|femopiqu,MPR features/groups
+MprOverwriteOrderDependence,femoqupi,FEMO+SETQ+SETP|femoqupi,MPR features/groups
+MprOverwriteOrderDependence,femopiquvo,FEMO+SETP+SETQ+GATEPQ|femopiquvo,MPR features/groups
+MprOverwriteOrderDependence,femoqupivo,FEMO+SETQ+SETP+GATEPQ|femoqupivo,MPR features/groups
 ProcessMorphologyInPlaceMutation,a,ROOT+ABLAUT|a,MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
 RewriteAnalysisFeatureNeutralization,d,ROOT1|b,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 RewriteAnalysisFeatureNeutralization,d,ROOT1|b,"CharacterDefinitionTable: more than one table, one per stratum"

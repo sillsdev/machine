@@ -52,6 +52,12 @@ public sealed class ConstructClaimCorroborationTests
     // drops, 15 -> 12); its new/kept words (topdori/topdo/topri/kulge/topko/topla/topne/toplane, plus
     // the words that already existed) reclaim coverage.csv rows the conversion had silently dropped
     // (see the fixture's own words.yaml "COVERAGE.CSV REGRESSION" note) at a net of -2 rows overall.
+    //
+    // 473/211/12/250 -> 483/211/12/260 after adding "exercises:" tags to
+    // edge-cases/mpr-overwrite-order-dependence (previously zero -- see
+    // ConformanceFixtureGateTests.EveryFixtureContributesAtLeastOneCoverageRow and that fixture's own
+    // words.yaml "COVERAGE.CSV GAP" note): all 10 new claims name the prose construct "MPR
+    // features/groups", Unmapped like every other claim of it in this ledger.
     [Test]
     public void CheckedInLedgerHasTheMeasuredClaimAndStatusCounts()
     {
@@ -66,10 +72,10 @@ public sealed class ConstructClaimCorroborationTests
             $"rows={rows.Count} confirmed={confirmed} contradicted={contradicted} unmapped={unmapped}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(473));
+        Assert.That(rows, Has.Count.EqualTo(483));
         Assert.That(confirmed, Is.EqualTo(211));
         Assert.That(contradicted, Is.EqualTo(12));
-        Assert.That(unmapped, Is.EqualTo(250));
+        Assert.That(unmapped, Is.EqualTo(260));
     }
 
     // All 12 Contradicted claims trace to one (fixture, construct) pair: edge-cases/morphotactic-
