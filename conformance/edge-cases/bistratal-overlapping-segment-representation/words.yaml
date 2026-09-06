@@ -1,7 +1,17 @@
-# Synthetic construct-shaped mimic -- see STAGING.md and grammar.xml's own header comment. Oracle:
-# pangloss (`pg_parse::Morpher`, driven directly -- see STAGING.md's "Verification" section), NOT the
-# C# founding oracle -- authored and verified against this repo's own Rust engine only. Signatures
-# below are transcribed verbatim from that run, not hand-derived.
+# Synthetic construct-shaped mimic -- see STAGING.md and grammar.xml's own header comment. Originally
+# authored and verified only against PanGloss's Rust engine (`pg_parse::Morpher`, driven directly --
+# see STAGING.md's "Verification" section), NOT the C# founding oracle; signatures below were
+# transcribed verbatim from that run, not hand-derived.
+#
+# RE-VERIFIED against the C# founding oracle (this task's own oracle-discipline follow-up): run in
+# isolation (a scratch copy of this fixture alone, `hc-conformance.exe --fixtures <scratch>
+# --propose`, self-check mode -- in-process XmlLanguageLoader + Morpher, the same binary named in
+# this repo's own oracle-discipline rule) and also as part of the full corpus's ordinary self-check
+# sweep, both PASS with no --propose patch. NO DIVERGENCE FOUND: every signature below --
+# des/sed's ordinary parses, basi/abis's SKIPPED (InvalidShapeException) status, and eds's
+# expect_fail -- holds exactly as originally transcribed from pg_parse. HC-Rust's own authoring of
+# this fixture was correct; this is not an instance of the divergence hazard the oracle-discipline
+# rule warns about.
 
 language: BistratalOverlappingSegmentRepresentation
 inspired_by: ["synthetic bistratal shared-representation probe (not modeling any real language)"]
@@ -10,12 +20,17 @@ sources:
 requires: []
 fieldworks_producible: false
 fieldworks_producible_notes: >-
+  PERMANENTLY KEEP-ENGINE-ONLY, not a temporary or deferred verdict: LibLCM itself has exactly one
+  character-definition table per project, so no FieldWorks project can ever produce this fixture's
+  core premise, below -- there is no future conversion pending here. (Separately from this
+  producibility verdict: see this fixture's own header for its own oracle-verification status.)
   Core premise is two strata assigned two DISTINCT CharacterDefinitionTables (t1/t2); HCLoader
   builds exactly one CharacterDefinitionTable per grammar (LoadCharacterDefinitionTable,
   HCLoader.cs:2669-2742, invoked once at :204) and assigns that SAME table to every Stratum it
   constructs (HCLoader.cs:227,230,233,374) -- two genuinely different tables in one grammar cannot
-  arise from a FieldWorks project. Also authored/verified only against pg_parse::Morpher (HC-Rust),
-  not the C# founding oracle -- see this fixture's own header note.
+  arise from a FieldWorks project. Originally authored/verified only against pg_parse::Morpher
+  (HC-Rust); now RE-VERIFIED against the C# founding oracle with no divergence found -- see this
+  fixture's own header note for the re-verification record.
 words:
   - word: des
     note: >-
