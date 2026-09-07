@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Extensions;
@@ -362,9 +363,9 @@ namespace SIL.Machine.Corpora
                 }
             }
 
-            int[] hypotheses = new int[] { 0, 1, 2 };
+            int[] hypotheses = { 0, 1, 2 };
             int bestHypothesis = -1;
-            int bestNumCrossings = 200 ^ 2;
+            int bestNumCrossings = 40_000; // A large number
             var checkedHypotheses = new HashSet<int>();
             foreach (int hypothesis in hypotheses)
             {
@@ -380,7 +381,7 @@ namespace SIL.Machine.Corpora
                     {
                         // If aligning with a source token that precedes the marker,
                         // the target token predicted to be closest to the marker is the last aligned token rather than the first
-                        targetHypothesis = alignedTargetTokens[hypothesis < 0 ? -1 : 0];
+                        targetHypothesis = alignedTargetTokens[hypothesis < 0 ? alignedTargetTokens.Count - 1 : 0];
                     }
                     else
                     {
