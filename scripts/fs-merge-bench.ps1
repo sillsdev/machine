@@ -145,7 +145,7 @@ $report.Add("| " + ($headerCells -join ' | ') + " |")
 $report.Add("|" + (("---|") * $headerCells.Count))
 foreach ($row in $summaryRows) {
     $cells = @($row.Grammar, $row.Mode, $row.Words, $row.Completed, $row.Timeouts, $row.Errors, $row.TotalMs)
-    foreach ($c in $counterNames) { $cells += $row[$c] }
+    foreach ($c in $counterNames) { $cells += $row.$c }
     $report.Add("| " + ($cells -join ' | ') + " |")
 }
 

@@ -58,19 +58,20 @@ public class FsMergeBench
 
             // Run on a worker thread so a pathological word times out instead of hanging the whole bench;
             // ParseWord has no cooperative-cancellation hook, so a timed-out word keeps running in the
-            // background (same caveat as MemoCorpusVerification.RunWithTimeout).
+            // background (same caveat as MemoCorpusVerification.RunWithTimeout). Task.Wait(int) rethrows a
+            // faulted task's exception (wrapped in an AggregateException) rather than just returning true,
+            // so the exception path has to be a catch here, not an IsFaulted check after the fact.
             Task<List<Word>> task = Task.Run(() => morpher.ParseWord(word).ToList());
-            if (!task.Wait(timeoutMs))
+            try
             {
-                timedOut = true;
+                if (!task.Wait(timeoutMs))
+                    timedOut = true;
+                else
+                    analyses = task.Result;
             }
-            else if (task.IsFaulted)
+            catch (AggregateException ex)
             {
-                error = (task.Exception?.InnerException ?? (Exception)task.Exception!).ToString();
-            }
-            else
-            {
-                analyses = task.Result;
+                error = (ex.InnerException ?? ex).ToString();
             }
             sw.Stop();
 
