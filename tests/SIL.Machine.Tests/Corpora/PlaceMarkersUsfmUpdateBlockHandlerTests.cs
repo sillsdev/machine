@@ -911,6 +911,57 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
         AssertUsfmEquals(target, result);
     }
 
+    [Test]
+    public void UpdateBlock_AnusvaraTokenization()
+    {
+        // The anusvara ("ं") is the third to last character in the update rows string
+        string source =
+            "Like the crushing of my bones, my enemies taunt me, while they say to me all day long, “Where is your God?”";
+        string updateRows =
+            "\"कब च तेरु परमेश्वर?\" इन सवालों के मेरे दूसरे ताना मि पर मरदिन, हर बगत इन लगदु जन व मेरे सर पे ते कटदिन नह ं। ";
+        PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
+            sourceTokens: [.. Tokenizer.Tokenize(source)],
+            translationTokens: [.. Tokenizer.Tokenize(updateRows)],
+            alignment: ToWordAlignmentMatrix(
+                "0-0 1-1 2-2 3-3 4-4 5-5 6-6 7-7 8-8 9-9 10-10 11-11 12-12 13-13 14-14 15-15 16-16 17-17 18-18 19-19 20-20 21-21 22-22 23-23 24-24 24-25 25-26 26-27 26-28 26-29 27-30"
+            ),
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+        );
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("PSA 42:10"),
+                updateRows,
+                new Dictionary<string, object> { { "alignment_info", alignInfo } }
+            ),
+        ];
+        string usfm =
+            @"\id PSA
+\c 42
+\q1
+\v 10 Like the crushing of my bones, my enemies taunt me,
+\q2 while they say to me all day long, “Where is your God?”
+";
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
+        );
+
+        string result =
+            @"\id PSA
+\c 42
+\q1
+\v 10 ""कब च तेरु परमेश्वर?"" इन सवालों के मेरे दूसरे
+\q2 ताना मि पर मरदिन, हर बगत इन लगदु जन व मेरे सर पे ते कटदिन नह ं।
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
     private static ScriptureRef[] ScrRef(params string[] refs)
     {
         return refs.Select(r => ScriptureRef.Parse(r)).ToArray();
