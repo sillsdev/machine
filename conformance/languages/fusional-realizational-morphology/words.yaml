@@ -99,29 +99,39 @@ fieldworks_producible_notes: >-
   see mrPast2's own grammar.xml comment for the full mechanism and edge-cases/morphotactic-attribute-
   breadth's own conversion for the same pattern applied elsewhere. Family-blocking on the COMPOUNDING
   side (the former genlav/corriv words, famCompBlock/famHNBlock) had no available substitute --
-  CompoundingSubrule's own requiredMPRFeatures/excludedMPRFeatures is unconditionally "No" in
-  fieldworks-producibility.tsv, with no template-placement carve-out the way the ordinary-
-  MorphologicalRule version has -- so that material is REMOVED outright, not converted; see
-  conformance/docs/engine-only-fixture-retirement.md.
+  CompoundingSubrule's own requiredMPRFeatures/excludedMPRFeatures is "No" in
+  fieldworks-producibility.tsv (the required half a LOADER GAP: LibLCM models a head inflection-class
+  requirement on the compound rule's Left/Right MSA that HCLoader never reads; the excluded half a
+  DATA-MODEL LIMIT: LibLCM has no excluded-class concept for a compound head), with no
+  template-placement carve-out the way the ordinary-MorphologicalRule version has -- so that material
+  is REMOVED outright, not converted; see conformance/docs/engine-only-fixture-retirement.md.
 
-  PERMANENTLY KEEP-ENGINE-ONLY for what remains, not merely deferred: every remaining blocker below
-  has no FieldWorks-producible substitute at all (each cites the specific HCLoader gap), so there is
-  no future conversion this fixture is waiting on -- converting any of them away would also gut what
-  "fusional-realizational-morphology" is actually testing, which is the second, independent reason
-  none is a CONVERT candidate. What still blocks this fixture, permanently:
+  KEEP-ENGINE-ONLY for what remains. Each blocker below is classified as a LOADER GAP (LibLCM models
+  the construct and HCLoader never projects it -- a future loader could close it) or a DATA-MODEL
+  LIMIT (LibLCM has no such concept at all). Because at least one data-model limit remains
+  (outputObligatoryFeatures), no loader change on its own would make this fixture producible; and
+  converting any blocker away would also gut what "fusional-realizational-morphology" is actually
+  testing, which is the second, independent reason none is a CONVERT candidate. What still blocks
+  this fixture:
   - RealizationalRule (rrPast, ferid/feresid): never constructed by any HCLoader rule loader (all
-    five Load*AffixProcessRule methods build AffixProcessRule only).
+    five Load*AffixProcessRule methods build AffixProcessRule only). LOADER GAP -- HCLoader.cs:977's
+    own TODO says "use realizational affix process rules".
   - mrCompoundConstrained's two CompoundingSubrules (mitlav/ficlav) set HeadMorphologicalInput
     requiredMPRFeatures/excludedMPRFeatures, never populated by LoadEndoCompoundingRule/
-    LoadExoCompoundingRule (HCLoader.cs:1842-2001), and the two subrules' MPR features differ (one
-    requires mprSubA, the other excludes it) -- also non-producible under PROTOCOL.md section 9's
-    "requiredMPRFeatures must be identical across every subrule of one rule" usage check.
+    LoadExoCompoundingRule (HCLoader.cs:1842-2001): the required half is a LOADER GAP (MoStemMsa.
+    InflectionClass on LeftMsa/RightMsa, UI-exposed, never read), the excluded half a DATA-MODEL
+    LIMIT. Independently, the two subrules' MPR features differ (one requires mprSubA, the other
+    excludes it) -- also non-producible under PROTOCOL.md section 9's "requiredMPRFeatures must be
+    identical across every subrule of one rule" usage check.
   - mrCompoundConstrained's own outputObligatoryFeatures="featTense": CompoundingRule.
-    outputObligatoryFeatures is "No" in fieldworks-producibility.tsv (HCLoader never touches
-    CompoundingRule.ObligatorySyntacticFeatures either).
+    outputObligatoryFeatures is "No" in fieldworks-producibility.tsv. DATA-MODEL LIMIT -- LibLCM has
+    no output-obligatory-feature concept anywhere (nearest is PartOfSpeech.InflectableFeats, a
+    percolation filter, not an obligation), and HCLoader never touches
+    CompoundingRule.ObligatorySyntacticFeatures either.
   - ThemeGroup/AllGroup/AnyGroup (the mpr-groups section): all three are custom-named
     MorphologicalPhonologicalRuleFeatureGroup elements; HCLoader only ever builds three hardcoded
-    groups ("inflClasses", "exceptionFeatures", "lexEntryInflTypes") -- see
+    groups ("inflClasses", "exceptionFeatures", "lexEntryInflTypes") -- the three LibLCM sources of
+    MPR features; there is no user-defined group concept to project (DATA-MODEL LIMIT). See
     edge-cases/morphotactic-attribute-breadth's own conversion for a fixture that DOES use one of the
     three real names.
 words:

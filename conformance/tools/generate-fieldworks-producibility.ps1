@@ -123,7 +123,15 @@ Add-Verdict "failure-reason" "ObligatorySyntacticFeatures" "No" @() (
     "ObligatorySyntacticFeatures, OutputObligatoryFeatures, obligatoryHeadFeatures, " +
     "obligatoryFootFeatures, Obligatory -- zero hits beyond unrelated identifiers. Matches this " +
     "task's stated known data point exactly, and is the same underlying gap behind interface rows " +
-    "CompoundingRule.outputObligatoryFeatures and MorphologicalRule.outputObligatoryFeatures (also No)."
+    "CompoundingRule.outputObligatoryFeatures and MorphologicalRule.outputObligatoryFeatures (also No). " +
+    "DATA-MODEL LIMIT, not merely a loader gap: LibLCM has no notion of a feature the OUTPUT word must " +
+    "end up specified for (zero hits for 'Obligat' in MasterLCModel.xml). The nearest concept, " +
+    "PartOfSpeech.InflectableFeats ('a morphosyntactic feature which a word of this part of speech is " +
+    "inflected for'), is a filter on which features may percolate -- MoDerivAffMsa.ToMsFeatures' own " +
+    "model comment: 'provided the features are included in PartOfSpeech.BearableFeatures or " +
+    "PartOfSpeech.InflectableFeatures' -- not an obligation, and HCLoader does not read it either. " +
+    "FieldWorks expresses obligatoriness through non-Optional template slots (MoInflAffixSlot.Optional), " +
+    "a different mechanism the engine already models as Slot optionality."
 )
 
 Add-Verdict "failure-reason" "AllomorphCoOccurrenceRules" "Yes" @(
@@ -303,7 +311,10 @@ Add-Verdict "interface-attribute" "CompoundingRule.outputObligatoryFeatures" "No
     "CompoundingRule.ObligatorySyntacticFeatures. The engine fully implements this " +
     "(CompoundingRule.cs:54-57, XmlLanguageLoader.cs:1227-1231), so this is a FieldWorks-specific " +
     "gap, not dead schema -- the same absence drives FailureReason.ObligatorySyntacticFeatures=No. " +
-    "Searched: ObligatorySyntacticFeatures, outputObligatoryFeatures, Obligatory."
+    "Searched: ObligatorySyntacticFeatures, outputObligatoryFeatures, Obligatory. 'FieldWorks-specific' " +
+    "here means the FieldWorks DATA MODEL, not merely its loader: LibLCM has no field carrying an " +
+    "output-obligatory feature on MoCompoundRule or anywhere else (see the " +
+    "FailureReason.ObligatorySyntacticFeatures row for the nearest, non-equivalent concept)."
 )
 
 Add-Verdict "interface-attribute" "CompoundingRule.outputPartOfSpeech" "Yes" @(
@@ -312,10 +323,20 @@ Add-Verdict "interface-attribute" "CompoundingRule.outputPartOfSpeech" "Yes" @(
 
 Add-Verdict "interface-attribute" "CompoundingRule.outputProdRestrictionsMprFeatures" "No" @() (
     "Property OutputProdRestrictionsMprFeatures exists on CompoundingRule (engine repo " +
-    "CompoundingRule.cs:25,50) and is never set by HCLoader (checked LoadEndoCompoundingRule " +
-    "HCLoader.cs:1842-1912 and LoadExoCompoundingRule 1922-2001; grep-confirmed zero hits for " +
-    "'OutputProdRestrictionsMprFeatures' across all of HCLoader.cs). Only OutMprFeatures, " +
-    "HeadProdRestrictionsMprFeatures and NonHeadProdRestrictionsMprFeatures are ever populated."
+    "CompoundingRule.cs:25,50), is added to the output word at SynthesisCompoundingRule.cs:179, and " +
+    "is never set by HCLoader (checked LoadEndoCompoundingRule HCLoader.cs:1842-1912 and " +
+    "LoadExoCompoundingRule 1922-2001; grep-confirmed zero hits for 'OutputProdRestrictionsMprFeatures' " +
+    "across all of HCLoader.cs). Only OutMprFeatures, HeadProdRestrictionsMprFeatures and " +
+    "NonHeadProdRestrictionsMprFeatures are ever populated. LOADER GAP, not a data-model limit: LibLCM " +
+    "models exactly this as MoCompoundRule.ToProdRestrict (MasterLCModel.xml, class MoCompoundRule " +
+    "prop 8: 'the stem resulting from this rule will have these restriction classes as the value of " +
+    "its ProductivityRestrictions (overriding any restriction classes borne by the daughter stems)'), " +
+    "the UI exposes it on both compound-rule kinds as 'To Exception `"Features`"' (FieldWorks " +
+    "DistFiles/Language Explorer/Configuration/Parts/MorphologyParts.xml, parts " +
+    "MoExoCompound-Detail-ToProdRestrict and MoEndoCompound-Detail-ToProdRestrict), and HCLoader " +
+    "already projects the same-named field for derivational affixes (msa.ToProdRestrictRC -> " +
+    "outMprFeatures, HCLoader.cs:957) -- it simply never reads compoundRule.ToProdRestrictRC. A " +
+    "FieldWorks author can enter the data today; the loader drops it."
 )
 
 Add-Verdict "interface-attribute" "CompoundingRule.outputSubcategorization" "No" @() "Subcategorization, dead."
@@ -337,12 +358,28 @@ Add-Verdict "interface-attribute" "HeadMorphologicalInput.excludedMPRFeatures" "
     "1959-1971/1986-1998 Exo) -- CompoundingSubrule.ExcludedMprFeatures (engine repo " +
     "CompoundingSubrule.cs:48-51) is never set by HCLoader; grep-confirmed only OutMprFeatures is " +
     "ever touched on a CompoundingSubrule. Ground truth for which runtime property this DTD " +
-    "attribute maps to: engine repo XmlLanguageLoader.cs:1278-1279."
+    "attribute maps to: engine repo XmlLanguageLoader.cs:1278-1279. DATA-MODEL LIMIT as well as a " +
+    "loader gap: nothing in LibLCM expresses an EXCLUDED inflection class or exception feature on a " +
+    "compound's head (MoStemMsa carries only PartOfSpeech, InflectionClass, ProdRestrict, MsFeatures, " +
+    "FromPartsOfSpeech, Slots and Stratum), and the irregular-form exclusion path HCLoader uses for " +
+    "affixes (:1717) exists only inside LoadAffixTemplate. Contrast requiredMPRFeatures (next row), " +
+    "which LibLCM DOES model."
 )
 
 Add-Verdict "interface-attribute" "HeadMorphologicalInput.requiredMPRFeatures" "No" @() (
     "Same absence and citations as HeadMorphologicalInput.excludedMPRFeatures (CompoundingSubrule." +
-    "RequiredMprFeatures is likewise never set; XmlLanguageLoader.cs:1278 is the ground-truth mapping)."
+    "RequiredMprFeatures is likewise never set; XmlLanguageLoader.cs:1278 is the ground-truth mapping). " +
+    "Unlike excludedMPRFeatures, this is a LOADER GAP, not a data-model limit: the engine checks it " +
+    "against the HEAD word's MPR features (SynthesisCompoundingRule.cs:136-137, where input is the " +
+    "head), and LibLCM models a head inflection-class requirement as MoStemMsa.InflectionClass on the " +
+    "compound rule's LeftMsa/RightMsa (MasterLCModel.xml class MoStemMsa prop 3; the class comment says " +
+    "the MSA 'is also used in MoBinaryCompoundRules to specify the morphosyntactic properties required " +
+    "of the daughters'), exposed in the UI through the MoStemMsa 'Category' detail layout (Category + " +
+    "InflectionClass + ProdRestrict, Morphology.fwlayout:43-47) that " +
+    "MoBinaryCompoundRule-Detail-LeftMember/RightMember render. HCLoader reads those MSAs' " +
+    "PartOfSpeechRA and ProdRestrictRC (:1850-1868,1925-1941) but never their InflectionClassRA -- " +
+    "the exact analogue of the FromInflectionClassRA -> RequiredMprFeatures projection it does perform " +
+    "for derivational affixes (:947-948)."
 )
 
 Add-Verdict "interface-attribute" "InsertSegments.characterDefinitionTable" "No" @() (
@@ -482,7 +519,14 @@ Add-Verdict "loader-gap" "morphologicalRuleOrder" "No" @(
     "word's found-analysis set -- a spurious extra parse, a lost one, or a duplicate -- not merely " +
     "the search order or timing. Six fixtures were measured this way and found genuinely dependent; " +
     "most linear/absent fixtures measured were inert under the flip and are unaffected by this row. " +
-    "See conformance/docs/morphological-rule-order-measurement.md for the per-fixture ledger."
+    "See conformance/docs/morphological-rule-order-measurement.md for the per-fixture ledger. " +
+    "DATA-MODEL LIMIT, not a loader gap: MoStratum carries only Abbreviation, Description, Name and " +
+    "Phonemes (MasterLCModel.xml class MoStratum), and the HC section of MoMorphData.ParserParameters " +
+    "-- the only other place a per-project HC setting lives -- exposes exactly NotOnClitics, " +
+    "NoDefaultCompounding, AcceptUnspecifiedGraphemes, GuessRoots and Strata (FieldWorks " +
+    "Src/LexText/ParserUI/ParserParametersDlg.cs:30-37,307-322; HCLoader.cs:92-102 reads the same " +
+    "set). No LibLCM field or parser parameter carries a rule-order value, so closing this needs a " +
+    "model or parameter addition on the FieldWorks side, not merely a loader read."
 )
 
 Add-Verdict "loader-gap" "MetathesisSwitchPositionInversion" "No" @(
@@ -529,7 +573,9 @@ Add-Verdict "interface-attribute" "MorphologicalRule.outputObligatoryFeatures" "
     "Absence confirmed across all four AffixProcessRule loaders (HCLoader.cs:926-1046). " +
     "AffixProcessRule.ObligatorySyntacticFeatures (engine repo AffixProcessRule.cs:68) is never " +
     "set. Same underlying gap as CompoundingRule.outputObligatoryFeatures and " +
-    "FailureReason.ObligatorySyntacticFeatures (both also No)."
+    "FailureReason.ObligatorySyntacticFeatures (both also No), and the same classification: a " +
+    "DATA-MODEL LIMIT (no LibLCM field carries an output-obligatory feature on any MSA), not merely " +
+    "a loader gap -- see the FailureReason.ObligatorySyntacticFeatures row."
 )
 
 Add-Verdict "interface-attribute" "MorphologicalRule.outputPartOfSpeech" "Yes" @(
