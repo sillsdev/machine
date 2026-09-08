@@ -179,18 +179,24 @@ internal class AnalysisSyntacticFeatureMergeTests : HermitCrabTestBase
         }
     }
 
-    // End-to-end: does the FULL four-morph decomposition (root a2b b2a third) exist as a parse of the
-    // surface form, and is it found identically in all three modes?
+    // End-to-end: does the FULL, VALID four-morph decomposition root--a2b-->V--b2a-->N--third-->V (a2b and
+    // third share the same Required=N/Out=V signature; only a2b-then-b2a-then-third is unifiable end to end,
+    // since third's Required=N only unifies with what b2a produces) get found identically in all three
+    // modes? Wired through a mandatory 3-slot AffixTemplate (a2b, b2a, third in that order) so the
+    // un-application order is deterministic instead of an Unordered-stratum combinatorial search.
     //
-    // This is the headline finding: root+a2b+b2a+third is a LEGITIMATE decomposition (re-synthesis from the
-    // true root succeeds in every mode -- root(N) -a2b-> V -b2a-> N -third-> V is a perfectly valid forward
-    // chain), but PriorityUnion and Exact's analysis-side bookkeeping narrows the accumulated POS to N right
-    // after un-applying b2a/a2b, so CanUnapply rejects "third" (Out=V) before it is ever tried -- the
-    // decomposition is never generated as a candidate, so it is never offered to Synthesize() for
-    // re-verification. Add's looser bookkeeping keeps POS={N,V}, so "third" is tried, and Synthesize()
-    // confirms it against the true root chain. Prediction: Add finds it; PriorityUnion and Exact do not.
+    // Unlike Task 1's direct-instantiation probe (which asks "would a mode wrongly ALSO try a spurious
+    // extra rule application" -- yes for Add, correctly no for PriorityUnion/Exact), this asks about the
+    // REAL chain. Un-applying in reverse (third, then b2a, then a2b): the first step starts from the
+    // surface word's EMPTY FS, so Out=V is trivially unifiable in every mode -- no divergence yet. The
+    // second step (b2a) is where Add starts accumulating {N,V} while PriorityUnion/Exact narrow to V; but
+    // since a2b's Out=V is unifiable with BOTH the narrowed V and the widened {N,V}, CanUnapply does not
+    // actually reject anything for any mode along this particular path. Predicted (and to be confirmed by
+    // running this): all three modes find the full chain here -- Task 1's CanUnapply-gate divergence is
+    // real (see the direct test above) but does not, by itself, cause a lost end-to-end parse in this
+    // topology. The genuine lost-parse case is Task 2's leftover-Out bug, tested separately below.
     [Test]
-    public void CategoryChangeChain_EndToEnd_PriorityUnionAndExactLoseAFourthMorphParseThatAddFinds()
+    public void CategoryChangeChain_EndToEnd_FullValidChain_ReportedAcrossModes()
     {
         FeatureStruct posA = Pos("N");
         FeatureStruct posB = Pos("V");
@@ -204,45 +210,35 @@ internal class AnalysisSyntacticFeatureMergeTests : HermitCrabTestBase
             AnalysisSyntacticFeatureMergeMode.Exact,
         })
         {
-            Morphophonemic.MorphologicalRules.Clear();
-            var a2b = MakeIdentityRule("a2b", posA, posB);
-            var b2a = MakeIdentityRule("b2a", posB, posA);
-            var third = MakeIdentityRule("third", posA, posB);
-            Morphophonemic.MorphologicalRules.Add(a2b);
-            Morphophonemic.MorphologicalRules.Add(b2a);
-            Morphophonemic.MorphologicalRules.Add(third);
+            Morphophonemic.AffixTemplates.Clear();
+            var a2b = MakeSuffixRule("a2b", posA, posB, "u");
+            var b2a = MakeSuffixRule("b2a", posB, posA, "i");
+            var third = MakeSuffixRule("third", posA, posB, "a");
+            var template = new AffixTemplate { Name = "flipTemplate" };
+            template.Slots.Add(new AffixTemplateSlot(a2b));
+            template.Slots.Add(new AffixTemplateSlot(b2a));
+            template.Slots.Add(new AffixTemplateSlot(third));
+            Morphophonemic.AffixTemplates.Add(template);
 
             AnalysisSyntacticFeatureMerge.Mode = mode;
             AnalysisSyntacticFeatureMerge.ResetCounters();
             var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
-            results[mode] = morpher.ParseWord("zim").ToList();
+            results[mode] = morpher.ParseWord("zimuia").ToList();
         }
 
         static bool FoundFourMorphParse(List<Word> words) =>
             words.Any(w => w.AllomorphsInMorphOrder.Select(m => m.Morpheme.Gloss).SequenceEqual(new[] { "flipRoot", "a2b", "b2a", "third" }));
 
-        Assert.That(
-            FoundFourMorphParse(results[AnalysisSyntacticFeatureMergeMode.Add]),
-            Is.True,
-            "Add should find the 4-morph decomposition: its accumulated {N,V} POS lets CanUnapply try 'third', and re-synthesis from the true root confirms it."
-        );
-        // Record what actually happens for PriorityUnion/Exact -- this is the load-bearing check.
-        Console.WriteLine(
-            $"PriorityUnion found 4-morph parse: {FoundFourMorphParse(results[AnalysisSyntacticFeatureMergeMode.PriorityUnion])}"
-        );
-        Console.WriteLine(
-            $"Exact found 4-morph parse: {FoundFourMorphParse(results[AnalysisSyntacticFeatureMergeMode.Exact])}"
-        );
-        Assert.That(
-            FoundFourMorphParse(results[AnalysisSyntacticFeatureMergeMode.PriorityUnion]),
-            Is.False,
-            "PriorityUnion: POS narrows to N after un-applying a2b, which is not unifiable with third's Out=V, so CanUnapply rejects 'third' and this valid decomposition is never generated."
-        );
-        Assert.That(
-            FoundFourMorphParse(results[AnalysisSyntacticFeatureMergeMode.Exact]),
-            Is.False,
-            "Exact: checkFs for 'third' is PU(N,V)=V, and the accumulated POS is N (same narrowing as PriorityUnion in this pure top-level-scalar case), so it is rejected too -- Exact is not a strict superset of Add's coverage."
-        );
+        bool addFound = FoundFourMorphParse(results[AnalysisSyntacticFeatureMergeMode.Add]);
+        bool puFound = FoundFourMorphParse(results[AnalysisSyntacticFeatureMergeMode.PriorityUnion]);
+        bool exactFound = FoundFourMorphParse(results[AnalysisSyntacticFeatureMergeMode.Exact]);
+        Console.WriteLine($"Add found 4-morph parse: {addFound}");
+        Console.WriteLine($"PriorityUnion found 4-morph parse: {puFound}");
+        Console.WriteLine($"Exact found 4-morph parse: {exactFound}");
+
+        Assert.That(addFound, Is.True, "sanity: Add must find the chain it was designed to expose.");
+        Assert.That(puFound, Is.EqualTo(addFound), "Recorded finding: does PriorityUnion match Add for this valid chain? (see console output for the actual booleans)");
+        Assert.That(exactFound, Is.EqualTo(addFound), "Recorded finding: does Exact match Add for this valid chain? (see console output for the actual booleans)");
     }
 
     // =======================================================================================================
@@ -461,7 +457,7 @@ internal class AnalysisSyntacticFeatureMergeTests : HermitCrabTestBase
     // =======================================================================================================
 
     // Reuses the Task 2 tense flip-flop, but with NO dictionary entry for the root -- only a lexical
-    // pattern ("[Seg]+", any nonempty shape) with a fixed SyntacticFeatureStruct=V (bare). guessRoot:true
+    // pattern ("[Seg][Seg]*", any nonempty shape) with a fixed SyntacticFeatureStruct=V (bare). guessRoot:true
     // forces Morpher.LexicalGuess.
     //
     // IMPORTANT finding (see Morpher.LexicalGuess, lines ~483-509): when the lexical pattern's owning
@@ -484,14 +480,21 @@ internal class AnalysisSyntacticFeatureMergeTests : HermitCrabTestBase
 
         // No concrete root entry -- only a lexical pattern, so LexicalLookup finds nothing and ParseWord
         // must fall back to LexicalGuess.
-        Table3.AddNaturalClass(new NaturalClass(FeatureStruct.New().Value) { Name = "Seg" });
+        // NB: must pass an UNFROZEN FeatureStruct -- NaturalClass only injects HCFeatureSystem.Type when
+        // its argument is not already frozen, and FeatureStruct.New().Value freezes by default.
+        Table3.AddNaturalClass(new NaturalClass(new FeatureStruct()) { Name = "Seg" });
         var patternEntry = new LexEntry
         {
             Id = "guessPattern",
             Gloss = "guessPattern",
             SyntacticFeatureStruct = bareV,
         };
-        patternEntry.Allomorphs.Add(new RootAllomorph(new Segments(Table3, "[Seg]+", true)));
+        // "[Seg]+" would NOT work here: the pattern language has no Kleene-plus (the code comment in
+        // CharacterDefinitionTable.GetShapeNodes says so explicitly), and '+' is registered as a literal
+        // boundary character on Table3, so "[Seg]+" parses as "one segment, then a literal '+' boundary" --
+        // which never matches a plain root shape. "[Seg][Seg]*" (one mandatory, then Kleene-star) is the
+        // correct one-or-more pattern.
+        patternEntry.Allomorphs.Add(new RootAllomorph(new Segments(Table3, "[Seg][Seg]*", true)));
         Morphophonemic.Entries.Add(patternEntry);
 
         var results = new Dictionary<AnalysisSyntacticFeatureMergeMode, List<Word>>();
