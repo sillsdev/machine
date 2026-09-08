@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Annotations;
+using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
 
@@ -11,6 +12,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         private readonly Morpher _morpher;
         private readonly CompoundingRule _rule;
         private readonly List<IRule<Word, ShapeNode>> _rules;
+        private readonly FeatureStruct _checkFs;
 
         public AnalysisCompoundingRule(Morpher morpher, CompoundingRule rule)
         {
@@ -18,6 +20,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             _rule = rule;
 
             _rules = new List<IRule<Word, ShapeNode>>();
+            _checkFs = AnalysisSyntacticFeatureMerge.BuildCheckFeatureStruct(
+                rule.HeadRequiredSyntacticFeatureStruct,
+                rule.OutSyntacticFeatureStruct
+            );
             foreach (CompoundingSubrule sr in rule.Subrules)
             {
                 _rules.Add(
@@ -44,7 +50,11 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             if (
                 input.NonHeadCount + 1 >= _morpher.MaxStemCount
                 || input.GetUnapplicationCount(_rule) >= _rule.MaxApplicationCount
-                || !_rule.OutSyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct)
+                || !AnalysisSyntacticFeatureMerge.CanUnapply(
+                    _rule.OutSyntacticFeatureStruct,
+                    _checkFs,
+                    input.SyntacticFeatureStruct
+                )
             )
             {
                 return Enumerable.Empty<Word>();
@@ -126,10 +136,11 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 bool unapplied = false;
                 foreach (Word outWord in srOutput)
                 {
-                    if (!_rule.HeadRequiredSyntacticFeatureStruct.IsEmpty)
-                        outWord.SyntacticFeatureStruct.Add(_rule.HeadRequiredSyntacticFeatureStruct);
-                    else if (_rule.OutSyntacticFeatureStruct.IsEmpty)
-                        outWord.SyntacticFeatureStruct.Clear();
+                    AnalysisSyntacticFeatureMerge.MergeRequired(
+                        outWord,
+                        _rule.HeadRequiredSyntacticFeatureStruct,
+                        _rule.OutSyntacticFeatureStruct
+                    );
                     outWord.MorphologicalRuleUnapplied(_rule);
 
                     outWord.Freeze();

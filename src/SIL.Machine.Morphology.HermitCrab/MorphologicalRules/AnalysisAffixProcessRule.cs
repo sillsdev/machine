@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Annotations;
+using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
 
@@ -11,6 +12,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         private readonly Morpher _morpher;
         private readonly AffixProcessRule _rule;
         private readonly List<PatternRule<Word, ShapeNode>> _rules;
+        private readonly FeatureStruct _checkFs;
 
         public AnalysisAffixProcessRule(Morpher morpher, AffixProcessRule rule)
         {
@@ -18,6 +20,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             _rule = rule;
 
             _rules = new List<PatternRule<Word, ShapeNode>>();
+            _checkFs = AnalysisSyntacticFeatureMerge.BuildCheckFeatureStruct(
+                rule.RequiredSyntacticFeatureStruct,
+                rule.OutSyntacticFeatureStruct
+            );
             foreach (AffixProcessAllomorph allo in rule.Allomorphs)
             {
                 _rules.Add(
@@ -43,7 +49,11 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
             if (
                 input.GetUnapplicationCount(_rule) >= _rule.MaxApplicationCount
-                || !_rule.OutSyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct)
+                || !AnalysisSyntacticFeatureMerge.CanUnapply(
+                    _rule.OutSyntacticFeatureStruct,
+                    _checkFs,
+                    input.SyntacticFeatureStruct
+                )
             )
             {
                 return Enumerable.Empty<Word>();
@@ -55,10 +65,11 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 bool unapplied = false;
                 foreach (Word outWord in _rules[i].Apply(input).RemoveDuplicates())
                 {
-                    if (!_rule.RequiredSyntacticFeatureStruct.IsEmpty)
-                        outWord.SyntacticFeatureStruct.PriorityUnion(_rule.RequiredSyntacticFeatureStruct);
-                    else if (_rule.OutSyntacticFeatureStruct.IsEmpty)
-                        outWord.SyntacticFeatureStruct.Clear();
+                    AnalysisSyntacticFeatureMerge.MergeRequired(
+                        outWord,
+                        _rule.RequiredSyntacticFeatureStruct,
+                        _rule.OutSyntacticFeatureStruct
+                    );
                     outWord.MorphologicalRuleUnapplied(_rule);
                     outWord.Freeze();
                     if (_morpher.TraceManager.IsTracing)
