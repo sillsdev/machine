@@ -94,6 +94,7 @@ public class FsMergeBench
                 ["analysisUnapplied"] = AnalysisSyntacticFeatureMerge.AnalysisUnapplied,
                 ["lexicalLookupCandidates"] = AnalysisSyntacticFeatureMerge.LexicalLookupCandidates,
                 ["synthesisAffixApplyCalls"] = AnalysisSyntacticFeatureMerge.SynthesisAffixApplyCalls,
+                ["mergedAnalysesWidened"] = AnalysisSyntacticFeatureMerge.MergedAnalysesWidened,
             };
             writer.WriteLine(JsonSerializer.Serialize(record));
             writer.Flush();

@@ -57,7 +57,8 @@ $counterNames = @(
     'analysisAffixApplyCalls',
     'analysisUnapplied',
     'lexicalLookupCandidates',
-    'synthesisAffixApplyCalls'
+    'synthesisAffixApplyCalls',
+    'mergedAnalysesWidened'
 )
 
 if (-not $AggregateOnly) {
