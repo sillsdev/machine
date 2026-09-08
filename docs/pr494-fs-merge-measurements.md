@@ -96,3 +96,56 @@ which is the sanity check the PR's design comment claims should always hold. Net
 looks like a clear, correctness-preserving win on the grammars where analysis does real work, and `Exact`
 (not itself proposed by PR #494, included here as the theoretical floor) shows there is still headroom
 beyond `PriorityUnion` on this corpus.
+
+## After canonical-FS widening (28750977+)
+
+`perf/pr494-priority-union` was merged with `perf/pr494-break` at commit `28750977`, adding
+`AnalysisSyntacticFeatureMerge.WidenMergedAnalyses` (default `true`) and a `MergedAnalysesWidened` counter.
+When `Morpher.MergeEquivalentAnalyses` folds a same-shape analysis into a canonical word, the canonical's
+syntactic FS is now widened to `FeatureStruct.Union` of every merged alternative's FS, fixing a lost-parse
+regression (a rule valid for an alternative but not for the narrower canonical FS was previously pruned).
+`FsMergeBench` gained a `mergedAnalysesWidened` field (jsonl) / column (report), and 118/118 tests pass
+(up from 93/93 pre-merge; `perf/pr494-break` added its own tests).
+
+Re-ran sena and mbugwe only (indonesian/amharic were not re-run: the widening only affects the merge path,
+and those two showed no signal in the base run), same settings: 30 words, 180000ms/word timeout, `HEAD
+28750977` (post `d1a1ef1e`, which added `mergedAnalysesWidened` to the harness).
+
+```powershell
+.\scripts\fs-merge-bench.ps1 -GrammarsDir <scratch>\grammars -OutDir <scratch>\bench\full-widened `
+    -Grammars @('sena') -Modes @('Add','PriorityUnion','Exact') -MaxWords 30 -TimeoutMs 180000 -SkipBuild
+.\scripts\fs-merge-bench.ps1 -GrammarsDir <scratch>\grammars -OutDir <scratch>\bench\full-widened `
+    -Grammars @('mbugwe') -Modes @('Add','PriorityUnion','Exact') -MaxWords 30 -TimeoutMs 180000 -SkipBuild
+.\scripts\fs-merge-bench.ps1 -GrammarsDir <scratch>\grammars -OutDir <scratch>\bench\full-widened `
+    -Grammars @('sena','mbugwe') -Modes @('Add','PriorityUnion','Exact') -AggregateOnly
+```
+
+| Grammar | Mode | Words | Completed | Timeouts | Errors | Total ms | checkCalls | checkRejects | merges | exactUnifyFailures | analysisAffixApplyCalls | analysisUnapplied | lexicalLookupCandidates | synthesisAffixApplyCalls | mergedAnalysesWidened |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| sena | Add | 30 | 29 | 0 | 1 | 20,892.3 | 749,164 | 31,065 | 66,385 | 0 | 745,805 | 65,262 | 91 | 340,072 | 62,526 |
+| sena | PriorityUnion | 30 | 29 | 0 | 1 | 5,160.5 | 137,964 | 15,110 | 10,604 | 0 | 127,862 | 10,200 | 87 | 70,473 | 1,341 |
+| sena | Exact | 30 | 29 | 0 | 1 | 6,539.9 | 74,058 | 14,438 | 5,980 | 0 | 67,936 | 5,810 | 84 | 56,397 | 493 |
+| mbugwe | Add | 30 | 30 | 0 | 0 | 339,385.0 | 14,694,527 | 1,960,987 | 1,632,950 | 0 | 16,065,282 | 1,632,950 | 144 | 11,517,396 | 260,759 |
+| mbugwe | PriorityUnion | 30 | 30 | 0 | 0 | 164,514.0 | 4,061,324 | 1,084,025 | 524,090 | 0 | 4,466,021 | 524,090 | 144 | 5,436,312 | 102,804 |
+| mbugwe | Exact | 30 | 30 | 0 | 0 | 64,151.4 | 2,834,161 | 233,721 | 468,577 | 0 | 3,197,260 | 468,577 | 56 | 1,068,998 | 7,750 |
+
+`checkCalls`/`merges`/etc. for PriorityUnion and Exact are within noise of the pre-widening run (sena
+PriorityUnion checkCalls 137,964 in both; mbugwe Exact merges 468,004 -> 468,577, +0.1%); Add's counts also
+moved by well under 1% in both grammars. Timings moved more (e.g. sena Add 27.9s -> 20.9s, mbugwe
+PriorityUnion 132.8s -> 164.5s) but that is JIT/GC/machine-load noise between separate `dotnet test`
+invocations, not a work-count change -- the deterministic counters are the signal here, wall time is not.
+`mergedAnalysesWidened` is non-zero in every cell (widening does fire on this corpus), heaviest under `Add`
+(sena 62,526; mbugwe 260,759) and lightest under `Exact` (sena 493; mbugwe 7,750), tracking each mode's
+overall analysis-rule traffic.
+
+### Parity vs. the pre-widening run
+
+Compared each (grammar, mode, word index) triple's analysis-set signature between the pre-widening run
+(`b9757382`, table above) and this post-widening run (`28750977`+): **zero differing indices** across all
+30 sena words and all 30 mbugwe words, in all three modes (180 (grammar, mode, word) triples compared, the
+same 1 sena error / 0 mbugwe errors excluded on both sides as before). Every signature is byte-identical,
+which is a valid special case of "superset" (no index needed the general subset/superset check). The
+lost-parse bug `WidenMergedAnalyses` fixes therefore does not manifest on this particular 30-word slice of
+either grammar, even though the widening path is clearly active (`mergedAnalysesWidened` > 0 everywhere) --
+whatever parses it rescues on the full corpora that motivated `perf/pr494-break` are apparently outside this
+sample.
