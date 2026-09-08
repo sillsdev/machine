@@ -28,6 +28,7 @@ internal class AnalysisSyntacticFeatureMergeTests : HermitCrabTestBase
     public void RestoreMode()
     {
         AnalysisSyntacticFeatureMerge.Mode = _savedMode;
+        AnalysisSyntacticFeatureMerge.WidenMergedAnalyses = true;
         AnalysisSyntacticFeatureMerge.ResetCounters();
     }
 
@@ -693,5 +694,153 @@ internal class AnalysisSyntacticFeatureMergeTests : HermitCrabTestBase
         // this test is to characterise, not to prescribe, what actually happens for the other two modes
         // when a CompoundingRule sits in the middle of a flip-flop chain.
         Assert.That(FoundChain(results[AnalysisSyntacticFeatureMergeMode.Add]), Is.True, "sanity: Add should find the chain it was designed to expose.");
+    }
+
+    // =======================================================================================================
+    // Template-level override loss (KNOWN LIMITATION, all modes). Same tense flip-flop as Task 2, but the
+    // override happens in a NON-FINAL template slot, the tense:past requirement comes from a non-template
+    // suffix un-applied BEFORE the template, and the overridden inner derivation is a non-template rule
+    // un-applied AFTER the template. AnalysisAffixTemplateRule re-Adds Unify(input FS, template required)
+    // to every slot output, which puts the stale tense:past back even after Exact's slot merge removed it.
+    // Folding in only the template's own required FS would fix this, but is unsound while the template
+    // battery dedups outputs FS-blind (see AnalysisSyntacticFeatureMerge.MergeTemplateRequired), so the
+    // parse is lost in every mode today. This test pins that down so a future FS-aware dedup can flip it.
+    // =======================================================================================================
+
+    [Test]
+    public void OverrideLoss_ThroughNonFinalTemplate_LostInAllModes_KnownLimitation()
+    {
+        FeatureStruct bareV = Pos("V");
+        FeatureStruct tensePres = FeatureStruct.New(Language.SyntacticFeatureSystem).Feature(Head).EqualTo(head => head.Feature("tense").EqualTo("pres")).Value;
+        FeatureStruct tensePast = FeatureStruct.New(Language.SyntacticFeatureSystem).Feature(Head).EqualTo(head => head.Feature("tense").EqualTo("past")).Value;
+
+        AddEntry("tlRoot", bareV, Morphophonemic, "zud");
+
+        var results = new Dictionary<AnalysisSyntacticFeatureMergeMode, List<Word>>();
+        foreach (AnalysisSyntacticFeatureMergeMode mode in new[]
+        {
+            AnalysisSyntacticFeatureMergeMode.Add,
+            AnalysisSyntacticFeatureMergeMode.PriorityUnion,
+            AnalysisSyntacticFeatureMergeMode.Exact,
+        })
+        {
+            Morphophonemic.AffixTemplates.Clear();
+            Morphophonemic.MorphologicalRules.Clear();
+            var inner = MakeSuffixRule("tlInner", bareV, tensePres, "i");
+            var outerSlot = MakeSuffixRule("tlOuter", bareV, tensePast, "u");
+            var suffix = MakeSuffixRule("tlSuffix", tensePast, Empty, "a");
+            var template = new AffixTemplate
+            {
+                Name = "tlTemplate",
+                IsFinal = false,
+                RequiredSyntacticFeatureStruct = bareV,
+            };
+            template.Slots.Add(new AffixTemplateSlot(outerSlot));
+            Morphophonemic.AffixTemplates.Add(template);
+            Morphophonemic.MorphologicalRules.Add(inner);
+            Morphophonemic.MorphologicalRules.Add(suffix);
+
+            AnalysisSyntacticFeatureMerge.Mode = mode;
+            AnalysisSyntacticFeatureMerge.ResetCounters();
+            var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+            results[mode] = morpher.ParseWord("zudiua").ToList();
+        }
+
+        static bool FoundChain(List<Word> words) =>
+            words.Any(w => w.AllomorphsInMorphOrder.Select(m => m.Morpheme.Gloss).SequenceEqual(new[] { "tlRoot", "tlInner", "tlOuter", "tlSuffix" }));
+
+        Assert.That(FoundChain(results[AnalysisSyntacticFeatureMergeMode.Add]), Is.False, "Add: stale tense:past survives the template -- pre-existing master bug.");
+        Assert.That(FoundChain(results[AnalysisSyntacticFeatureMergeMode.PriorityUnion]), Is.False, "PriorityUnion: same as Add; PR #494 does not touch the template merge.");
+        Assert.That(FoundChain(results[AnalysisSyntacticFeatureMergeMode.Exact]), Is.False, "Exact: slot removes tense:past but the template merge re-Adds it (known limitation, needs FS-aware dedup).");
+    }
+
+    // =======================================================================================================
+    // Shape-merge probe. Morpher.MergeEquivalentAnalyses (default true) merges same-shape outputs of a stratum
+    // into one canonical word plus Alternatives; lower strata are un-applied against the CANONICAL word's FS
+    // only (Word.ExpandAlternatives replays the alternatives' trails onto the canonical's descendants).
+    // Two upper-stratum paths reach shape "zudz": P1 = R1 (req V, out N, "t") then R0 (req N, out V, "i"),
+    // P2 = R2 (req V, out N, "it"). P1's FS is {V,N} under Add but N under PriorityUnion/Exact; P2's is V.
+    // The lower-stratum rule R3 (req V, out V, "z") is gated on the canonical FS. The only valid parse is
+    // root + R3 + R2. If P1 is canonical, Add still lets R3 through (accidental looseness) while
+    // PriorityUnion/Exact prune it and the valid P2 parse is lost with it.
+    // =======================================================================================================
+
+    // With AnalysisSyntacticFeatureMerge.WidenMergedAnalyses the canonical FS is generalised (FeatureStruct.Union)
+    // over every merged alternative, so the gate is sound in every mode and rule order. With widening off,
+    // order 1 makes P1 canonical and PriorityUnion/Exact lose the only valid parse while Add finds it: a
+    // PR #494 regression relative to master that the widening fixes.
+
+    [TestCase(0, true, true, TestName = "ShapeMerge_TwoRulePathFirst_Widened")]
+    [TestCase(1, true, true, TestName = "ShapeMerge_OneRulePathFirst_Widened")]
+    [TestCase(0, false, true, TestName = "ShapeMerge_TwoRulePathFirst_NoWidening")]
+    [TestCase(1, false, false, TestName = "ShapeMerge_OneRulePathFirst_NoWidening_PriorityUnionLosesParse")]
+    public void ShapeMerge_LowerStratumGateUsesCanonicalFsOnly(int order, bool widen, bool narrowModesFind)
+    {
+        AnalysisSyntacticFeatureMerge.WidenMergedAnalyses = widen;
+        FeatureStruct v = Pos("V");
+        FeatureStruct n = Pos("N");
+        AddEntry("smRoot", v, Morphophonemic, "zud");
+
+        var found = new Dictionary<AnalysisSyntacticFeatureMergeMode, bool>();
+        foreach (AnalysisSyntacticFeatureMergeMode mode in new[]
+        {
+            AnalysisSyntacticFeatureMergeMode.Add,
+            AnalysisSyntacticFeatureMergeMode.PriorityUnion,
+            AnalysisSyntacticFeatureMergeMode.Exact,
+        })
+        {
+            Allophonic.MorphologicalRules.Clear();
+            Morphophonemic.MorphologicalRules.Clear();
+            var r3 = MakeSuffixRuleIn(Table3, "smR3", v, v, "z");
+            var r0 = MakeSuffixRuleIn(Table1, "smR0", n, v, "i");
+            var r1 = MakeSuffixRuleIn(Table1, "smR1", v, n, "t");
+            var r2 = MakeSuffixRuleIn(Table1, "smR2", v, n, "it");
+            Morphophonemic.MorphologicalRules.Add(r3);
+            if (order == 0)
+            {
+                Allophonic.MorphologicalRules.Add(r0);
+                Allophonic.MorphologicalRules.Add(r1);
+                Allophonic.MorphologicalRules.Add(r2);
+            }
+            else
+            {
+                Allophonic.MorphologicalRules.Add(r2);
+                Allophonic.MorphologicalRules.Add(r0);
+                Allophonic.MorphologicalRules.Add(r1);
+            }
+
+            AnalysisSyntacticFeatureMerge.Mode = mode;
+            AnalysisSyntacticFeatureMerge.ResetCounters();
+            var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+            List<Word> results = morpher.ParseWord("zudzit").ToList();
+            found[mode] = results.Any(w =>
+                w.AllomorphsInMorphOrder.Select(m => m.Morpheme.Gloss).SequenceEqual(new[] { "smRoot", "smR3", "smR2" })
+            );
+            Console.WriteLine($"order={order} mode={mode} found={found[mode]} analyses={results.Count}");
+        }
+
+        Assert.That(found[AnalysisSyntacticFeatureMergeMode.Add], Is.True, "master (Add) finds root+R3+R2 in every configuration");
+        Assert.That(found[AnalysisSyntacticFeatureMergeMode.PriorityUnion], Is.EqualTo(narrowModesFind), "PriorityUnion (PR #494)");
+        Assert.That(found[AnalysisSyntacticFeatureMergeMode.Exact], Is.EqualTo(narrowModesFind), "Exact");
+    }
+
+    private static AffixProcessRule MakeSuffixRuleIn(CharacterDefinitionTable table, string name, FeatureStruct required, FeatureStruct outFs, string insert)
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var rule = new AffixProcessRule
+        {
+            Name = name,
+            Gloss = name,
+            RequiredSyntacticFeatureStruct = required,
+            OutSyntacticFeatureStruct = outFs,
+        };
+        rule.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(table, insert) },
+            }
+        );
+        return rule;
     }
 }
