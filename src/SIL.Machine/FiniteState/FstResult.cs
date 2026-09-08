@@ -7,7 +7,7 @@ namespace SIL.Machine.FiniteState
 {
     public class FstResult<TData, TOffset> : IEquatable<FstResult<TData, TOffset>>
     {
-        private readonly IEqualityComparer<Register<TOffset>[,]> _registersEqualityComparer;
+        private readonly IEqualityComparer<TOffset> _offsetEqualityComparer;
         private readonly Register<TOffset>[,] _registers;
         private readonly TData _output;
         private readonly VariableBindings _varBindings;
@@ -19,7 +19,7 @@ namespace SIL.Machine.FiniteState
         private readonly int _order;
 
         internal FstResult(
-            IEqualityComparer<Register<TOffset>[,]> registersEqualityComparer,
+            IEqualityComparer<TOffset> offsetEqualityComparer,
             string id,
             Register<TOffset>[,] registers,
             TData output,
@@ -31,7 +31,7 @@ namespace SIL.Machine.FiniteState
             int order
         )
         {
-            _registersEqualityComparer = registersEqualityComparer;
+            _offsetEqualityComparer = offsetEqualityComparer;
             _id = id;
             _registers = registers;
             _output = output;
@@ -101,7 +101,7 @@ namespace SIL.Machine.FiniteState
             if (_id != other._id)
                 return false;
 
-            if (!_registersEqualityComparer.Equals(_registers, other._registers))
+            if (!RegistersEqual(_registers, other._registers, _offsetEqualityComparer))
                 return false;
 
             return EqualityComparer<TData>.Default.Equals(_output, other._output);
@@ -111,8 +111,51 @@ namespace SIL.Machine.FiniteState
         {
             int code = 23;
             code = code * 31 + (_id == null ? 0 : _id.GetHashCode());
-            code = code * 31 + _registersEqualityComparer.GetHashCode(_registers);
+            code = code * 31 + RegistersGetHashCode(_registers, _offsetEqualityComparer);
             code = code * 31 * EqualityComparer<TData>.Default.GetHashCode(_output);
+            return code;
+        }
+
+        // The public Registers property keeps the Register<TOffset>[,] shape for API compatibility, so equality
+        // is compared inline here rather than via the internal (flat-array) RegistersEqualityComparer.
+        private static bool RegistersEqual(
+            Register<TOffset>[,] x,
+            Register<TOffset>[,] y,
+            IEqualityComparer<TOffset> offsetEqualityComparer
+        )
+        {
+            for (int i = 0; i < x.GetLength(0); i++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    if (!x[i, j].ValueEquals(y[i, j], offsetEqualityComparer))
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        private static int RegistersGetHashCode(
+            Register<TOffset>[,] registers,
+            IEqualityComparer<TOffset> offsetEqualityComparer
+        )
+        {
+            int code = 23;
+            for (int i = 0; i < registers.GetLength(0); i++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    if (registers[i, j].HasOffset)
+                    {
+                        code = code * 31 + offsetEqualityComparer.GetHashCode(registers[i, j].Offset);
+                        code = code * 31 + registers[i, j].IsStart.GetHashCode();
+                    }
+                    else
+                    {
+                        code = code * 31 + 0;
+                    }
+                }
+            }
             return code;
         }
     }

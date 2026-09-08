@@ -100,7 +100,17 @@ namespace SIL.Machine.Annotations
             }
         }
 
-        public Range<TOffset> Range { get; internal set; }
+        private Range<TOffset> _range;
+
+        public Range<TOffset> Range
+        {
+            get { return _range; }
+            internal set
+            {
+                CheckFrozen();
+                _range = value;
+            }
+        }
 
         public FeatureStruct FeatureStruct
         {

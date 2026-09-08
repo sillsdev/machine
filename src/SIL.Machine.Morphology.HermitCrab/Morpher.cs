@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +34,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             _lang = lang;
             _traceManager = traceManager;
+            ShareSyntacticFeatureStructs = DefaultShareSyntacticFeatureStructs;
             // Must be set before CompileAnalysisRule: AnalysisStratumRule picks a sequential vs. parallel
             // cascade for Unordered-order analysis strata at construction time based on this value.
             MaxDegreeOfParallelism = maxDegreeOfParallelism;
@@ -117,6 +118,23 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>
+        /// When false, analysis skips the compile-time edge-segment prefilter before invoking each
+        /// allomorph's full pattern matcher. Test and benchmark harnesses use this for same-binary A/B runs.
+        /// </summary>
+        internal bool EdgePrefilterEnabled { get; set; } = true;
+
+        /// <summary>
+        /// Construction default captured by each new Morpher. Test and benchmark harnesses may temporarily
+        /// change it before constructing a Morpher without affecting existing instances.
+        /// </summary>
+        internal static bool DefaultShareSyntacticFeatureStructs { get; set; } = true;
+
+        /// <summary>
+        /// When true, internal Word clones may share a frozen syntactic feature structure until mutation.
+        /// </summary>
+        internal bool ShareSyntacticFeatureStructs { get; set; }
+
+        /// <summary>
         /// Memo-hit totals over the parses this Morpher has completed; a parse that throws discards its
         /// counts. Per-Morpher rather than per-process so one test's counts cannot leak into another's.
         /// </summary>
@@ -164,7 +182,10 @@ namespace SIL.Machine.Morphology.HermitCrab
             // convert the word to its phonetic shape
             Shape shape = _lang.SurfaceStratum.CharacterDefinitionTable.Segment(word);
 
-            var input = new Word(_lang.SurfaceStratum, shape);
+            var input = new Word(_lang.SurfaceStratum, shape)
+            {
+                ShareSyntacticFeatureStructs = ShareSyntacticFeatureStructs,
+            };
             // Installing a scope is what enables the memo. Never while tracing: traces must stay
             // byte-identical to the unmemoized engine.
             AnalysisScope scope = !_traceManager.IsTracing && MaxDegreeOfParallelism == 1 ? new AnalysisScope() : null;
@@ -257,12 +278,20 @@ namespace SIL.Machine.Morphology.HermitCrab
                 {
                     try
                     {
-                        var synthesisWord = new Word(synthesisInfo.Allomorph, realizationalFS);
+                        var synthesisWord = new Word(synthesisInfo.Allomorph, realizationalFS)
+                        {
+                            ShareSyntacticFeatureStructs = ShareSyntacticFeatureStructs,
+                        };
                         foreach (Tuple<IMorphologicalRule, RootAllomorph> rule in synthesisInfo.RulePermutation)
                         {
                             synthesisWord.MorphologicalRuleUnapplied(rule.Item1);
                             if (rule.Item2 != null)
-                                synthesisWord.NonHeadUnapplied(new Word(rule.Item2, new FeatureStruct()));
+                                synthesisWord.NonHeadUnapplied(
+                                    new Word(rule.Item2, new FeatureStruct())
+                                    {
+                                        ShareSyntacticFeatureStructs = ShareSyntacticFeatureStructs,
+                                    }
+                                );
                         }
 
                         synthesisWord.CurrentTrace = rootTrace;
@@ -434,7 +463,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 foreach (RootAllomorph allomorph in entry.Allomorphs)
                 {
-                    Word newWord = input.Clone();
+                    Word newWord = input.CloneForEngine();
                     // Synthesis never reads the memo, and keeping the reference would pin both tables for
                     // as long as the caller holds the returned words.
                     newWord.AnalysisScope = null;
@@ -509,7 +538,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                             }
                         }
                         // Create a new word that uses the root allomorph.
-                        Word newWord = input.Clone();
+                        Word newWord = input.CloneForEngine();
                         // Synthesis never reads the memo; see LexicalLookup.
                         newWord.AnalysisScope = null;
                         newWord.RootAllomorph = root;

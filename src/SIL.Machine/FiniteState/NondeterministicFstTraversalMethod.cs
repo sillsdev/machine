@@ -25,7 +25,7 @@ namespace SIL.Machine.FiniteState
 
         public override IEnumerable<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
-            Register<TOffset>[,] initRegisters,
+            Register<TOffset>[] initRegisters,
             IList<TagMapCommand> initCmds,
             ISet<int> initAnns
         )
@@ -39,10 +39,10 @@ namespace SIL.Machine.FiniteState
 
             var curResults = new List<FstResult<TData, TOffset>>();
             var traversed = new HashSet<
-                Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]>
+                Tuple<State<TData, TOffset>, int, Register<TOffset>[], Output<TData, TOffset>[]>
             >(
                 AnonymousEqualityComparer.Create<
-                    Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]>
+                    Tuple<State<TData, TOffset>, int, Register<TOffset>[], Output<TData, TOffset>[]>
                 >(KeyEquals, KeyGetHashCode)
             );
             while (instStack.Count != 0)
@@ -85,7 +85,7 @@ namespace SIL.Machine.FiniteState
                                 arc,
                                 curResults
                             );
-                            Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]> key =
+                            Tuple<State<TData, TOffset>, int, Register<TOffset>[], Output<TData, TOffset>[]> key =
                                 Tuple.Create(
                                     newInst.State,
                                     newInst.AnnotationIndex,
@@ -129,7 +129,7 @@ namespace SIL.Machine.FiniteState
                             )
                             {
                                 newInst.Visited.Clear();
-                                Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]> key =
+                                Tuple<State<TData, TOffset>, int, Register<TOffset>[], Output<TData, TOffset>[]> key =
                                     Tuple.Create(
                                         newInst.State,
                                         newInst.AnnotationIndex,
@@ -165,29 +165,29 @@ namespace SIL.Machine.FiniteState
         }
 
         private bool KeyEquals(
-            Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]> x,
-            Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]> y
+            Tuple<State<TData, TOffset>, int, Register<TOffset>[], Output<TData, TOffset>[]> x,
+            Tuple<State<TData, TOffset>, int, Register<TOffset>[], Output<TData, TOffset>[]> y
         )
         {
             return x.Item1.Equals(y.Item1)
                 && x.Item2.Equals(y.Item2)
-                && Fst.RegistersEqualityComparer.Equals(x.Item3, y.Item3)
+                && Fst.FlatRegistersEqualityComparer.Equals(x.Item3, y.Item3)
                 && x.Item4.SequenceEqual(y.Item4);
         }
 
-        private int KeyGetHashCode(Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]> m)
+        private int KeyGetHashCode(Tuple<State<TData, TOffset>, int, Register<TOffset>[], Output<TData, TOffset>[]> m)
         {
             int code = 23;
             code = code * 31 + m.Item1.GetHashCode();
             code = code * 31 + m.Item2.GetHashCode();
-            code = code * 31 + Fst.RegistersEqualityComparer.GetHashCode(m.Item3);
+            code = code * 31 + Fst.FlatRegistersEqualityComparer.GetHashCode(m.Item3);
             code = code * 31 + m.Item4.GetSequenceHashCode();
             return code;
         }
 
         private Stack<NondeterministicFstTraversalInstance<TData, TOffset>> InitializeStack(
             ref int annIndex,
-            Register<TOffset>[,] registers,
+            Register<TOffset>[] registers,
             IList<TagMapCommand> cmds,
             ISet<int> initAnns
         )

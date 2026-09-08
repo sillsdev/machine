@@ -89,13 +89,13 @@ namespace SIL.Machine.FiniteState
 
         public abstract IEnumerable<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
-            Register<TOffset>[,] initRegisters,
+            Register<TOffset>[] initRegisters,
             IList<TagMapCommand> initCmds,
             ISet<int> initAnns
         );
 
         protected static void ExecuteCommands(
-            Register<TOffset>[,] registers,
+            Register<TOffset>[] registers,
             IEnumerable<TagMapCommand> cmds,
             Register<TOffset> start,
             Register<TOffset> end
@@ -105,13 +105,17 @@ namespace SIL.Machine.FiniteState
             {
                 if (cmd.Src == TagMapCommand.CurrentPosition)
                 {
-                    registers[cmd.Dest, 0] = start;
-                    registers[cmd.Dest, 1] = end;
+                    registers[RegisterArray.Idx(cmd.Dest, RegisterArray.Start)] = start;
+                    registers[RegisterArray.Idx(cmd.Dest, RegisterArray.End)] = end;
                 }
                 else
                 {
-                    registers[cmd.Dest, 0] = registers[cmd.Src, 0];
-                    registers[cmd.Dest, 1] = registers[cmd.Src, 1];
+                    registers[RegisterArray.Idx(cmd.Dest, RegisterArray.Start)] = registers[
+                        RegisterArray.Idx(cmd.Src, RegisterArray.Start)
+                    ];
+                    registers[RegisterArray.Idx(cmd.Dest, RegisterArray.End)] = registers[
+                        RegisterArray.Idx(cmd.Src, RegisterArray.End)
+                    ];
                 }
             }
         }
@@ -129,7 +133,7 @@ namespace SIL.Machine.FiniteState
 
         private void CheckAccepting(
             int annIndex,
-            Register<TOffset>[,] registers,
+            Register<TOffset>[] registers,
             TData output,
             VariableBindings varBindings,
             State<TData, TOffset> state,
@@ -141,8 +145,12 @@ namespace SIL.Machine.FiniteState
             {
                 Annotation<TOffset> ann =
                     annIndex < _annotations.Count ? _annotations[annIndex] : _data.Annotations.GetEnd(_fst.Direction);
-                var matchRegisters = (Register<TOffset>[,])registers.Clone();
+                // Clone (flat, fast) first and run the finishers on the flat copy, then convert to the 2-D shape
+                // only once here, at accept time -- this is far rarer than every traversal step, which is where
+                // the flat representation earns its keep.
+                var matchRegisters = (Register<TOffset>[])registers.Clone();
                 ExecuteCommands(matchRegisters, state.Finishers, new Register<TOffset>(), new Register<TOffset>());
+                Register<TOffset>[,] matchRegisters2D = ToRegisters2D(matchRegisters);
                 if (state.AcceptInfos.Count > 0)
                 {
                     foreach (AcceptInfo<TData, TOffset> acceptInfo in state.AcceptInfos)
@@ -152,9 +160,9 @@ namespace SIL.Machine.FiniteState
                             resOutput = cloneable.Clone();
 
                         var candidate = new FstResult<TData, TOffset>(
-                            _fst.RegistersEqualityComparer,
+                            _fst.OffsetEqualityComparer,
                             acceptInfo.ID,
-                            matchRegisters,
+                            matchRegisters2D,
                             resOutput,
                             varBindings?.Clone(),
                             acceptInfo.Priority,
@@ -174,9 +182,9 @@ namespace SIL.Machine.FiniteState
                         resOutput = cloneable.Clone();
                     curResults.Add(
                         new FstResult<TData, TOffset>(
-                            _fst.RegistersEqualityComparer,
+                            _fst.OffsetEqualityComparer,
                             null,
-                            matchRegisters,
+                            matchRegisters2D,
                             resOutput,
                             varBindings?.Clone(),
                             -1,
@@ -190,9 +198,20 @@ namespace SIL.Machine.FiniteState
             }
         }
 
+        private Register<TOffset>[,] ToRegisters2D(Register<TOffset>[] flatRegisters)
+        {
+            var registers2D = new Register<TOffset>[flatRegisters.Length / 2, 2];
+            for (int r = 0; r < registers2D.GetLength(0); r++)
+            {
+                registers2D[r, RegisterArray.Start] = flatRegisters[RegisterArray.Idx(r, RegisterArray.Start)];
+                registers2D[r, RegisterArray.End] = flatRegisters[RegisterArray.Idx(r, RegisterArray.End)];
+            }
+            return registers2D;
+        }
+
         protected IEnumerable<TInst> Initialize(
             ref int annIndex,
-            Register<TOffset>[,] registers,
+            Register<TOffset>[] registers,
             IList<TagMapCommand> cmds,
             ISet<int> initAnns
         )
@@ -214,7 +233,7 @@ namespace SIL.Machine.FiniteState
                         if (nextIndex != _annotations.Count)
                         {
                             insts.AddRange(
-                                Initialize(ref nextIndex, (Register<TOffset>[,])registers.Clone(), cmds, initAnns)
+                                Initialize(ref nextIndex, (Register<TOffset>[])registers.Clone(), cmds, initAnns)
                             );
                         }
                     }
@@ -384,7 +403,7 @@ namespace SIL.Machine.FiniteState
 
         protected void CheckAcceptingStartState(
             ISet<int> anns,
-            Register<TOffset>[,] registers,
+            Register<TOffset>[] registers,
             ICollection<FstResult<TData, TOffset>> curResults
         )
         {

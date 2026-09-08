@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using SIL.Machine.Annotations;
@@ -38,29 +39,49 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (!input.SyntacticFeatureStruct.Unify(_template.RequiredSyntacticFeatureStruct, out fs))
                 return Enumerable.Empty<Word>();
 
-            if (_morpher.TraceManager.IsTracing)
-                _morpher.TraceManager.BeginUnapplyTemplate(_template, input);
+            Debug.Assert(input.IsFrozen, "AnalysisAffixTemplateRule.Apply requires a frozen input");
 
-            Word inWord = input.Clone();
-            inWord.Freeze();
+            bool tracing = _morpher.TraceManager.IsTracing;
+            Word inWord;
+            if (tracing)
+            {
+                // Tracing must stay byte-identical to the unmemoized engine, so keep the eager clone: the
+                // trace manager mutates CurrentTrace on whatever word it is handed, and every recursive call
+                // below must see a word that is safe to stamp that way, never the caller's shared input.
+                _morpher.TraceManager.BeginUnapplyTemplate(_template, input);
+                inWord = input.CloneForEngine();
+                inWord.Freeze();
+            }
+            else
+            {
+                inWord = input;
+            }
 
             var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
             if (_morpher.MaxDegreeOfParallelism == 1)
-                ApplySlots(inWord, _rules.Count - 1, output);
+                ApplySlots(inWord, input, _rules.Count - 1, output);
             else
-                ParallelApplySlots(inWord, output);
+                ParallelApplySlots(inWord, input, output);
 
             foreach (Word outWord in output)
+            {
+                outWord.EnsureOwnSyntacticFeatureStruct();
                 outWord.SyntacticFeatureStruct.Add(fs);
+            }
             return output;
         }
 
-        private void ApplySlots(Word inWord, int index, HashSet<Word> output)
+        // originalInput is the word Apply was called with. Every word the DFS produces along the way is a
+        // fresh clone (from an underlying rule's ApplyRhs, or -- in the traced case -- the eager clone above),
+        // except the word reaching the "every remaining slot was skipped" terminal, which is only ever the
+        // untraced inWord passed in from the top: it may still be the same object as originalInput. Apply then
+        // mutates every emitted word's SyntacticFeatureStruct, so that one case must be cloned on the way out.
+        private void ApplySlots(Word inWord, Word originalInput, int index, HashSet<Word> output)
         {
             for (int i = index; i >= 0; i--)
             {
                 foreach (Word outWord in _rules[i].Apply(inWord))
-                    ApplySlots(outWord, i - 1, output);
+                    ApplySlots(outWord, originalInput, i - 1, output);
 
                 if (!_template.Slots[i].Optional)
                 {
@@ -72,10 +93,10 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, true);
-            output.Add(inWord);
+            output.Add(ReferenceEquals(inWord, originalInput) ? CloneFrozen(inWord) : inWord);
         }
 
-        private void ParallelApplySlots(Word inWord, HashSet<Word> output)
+        private void ParallelApplySlots(Word inWord, Word originalInput, HashSet<Word> output)
         {
             ParallelOptions parallelOptions = _morpher.CreateParallelOptions();
             var outStack = new ConcurrentStack<Word>();
@@ -113,7 +134,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                         {
                             if (_morpher.TraceManager.IsTracing)
                                 _morpher.TraceManager.EndUnapplyTemplate(_template, work.Item1, true);
-                            outStack.Push(work.Item1);
+                            outStack.Push(
+                                ReferenceEquals(work.Item1, originalInput) ? CloneFrozen(work.Item1) : work.Item1
+                            );
                         }
                     }
                 );
@@ -123,6 +146,13 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
 
             output.UnionWith(outStack);
+        }
+
+        private static Word CloneFrozen(Word word)
+        {
+            Word clone = word.CloneForEngine();
+            clone.Freeze();
+            return clone;
         }
     }
 }

@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace SIL.Machine.FiniteState
 {
-    internal class RegistersEqualityComparer<TOffset> : IEqualityComparer<Register<TOffset>[,]>
+    internal class RegistersEqualityComparer<TOffset> : IEqualityComparer<Register<TOffset>[]>
     {
         private readonly IEqualityComparer<TOffset> _offsetEqualityComparer;
 
@@ -11,35 +11,29 @@ namespace SIL.Machine.FiniteState
             _offsetEqualityComparer = offsetEqualityComparer;
         }
 
-        public bool Equals(Register<TOffset>[,] x, Register<TOffset>[,] y)
+        public bool Equals(Register<TOffset>[] x, Register<TOffset>[] y)
         {
-            for (int i = 0; i < x.GetLength(0); i++)
+            for (int i = 0; i < x.Length; i++)
             {
-                for (int j = 0; j < 2; j++)
-                {
-                    if (!x[i, j].ValueEquals(y[i, j], _offsetEqualityComparer))
-                        return false;
-                }
+                if (!x[i].ValueEquals(y[i], _offsetEqualityComparer))
+                    return false;
             }
             return true;
         }
 
-        public int GetHashCode(Register<TOffset>[,] obj)
+        public int GetHashCode(Register<TOffset>[] obj)
         {
             int code = 23;
-            for (int i = 0; i < obj.GetLength(0); i++)
+            for (int i = 0; i < obj.Length; i++)
             {
-                for (int j = 0; j < 2; j++)
+                if (obj[i].HasOffset)
                 {
-                    if (obj[i, j].HasOffset)
-                    {
-                        code = code * 31 + _offsetEqualityComparer.GetHashCode(obj[i, j].Offset);
-                        code = code * 31 + obj[i, j].IsStart.GetHashCode();
-                    }
-                    else
-                    {
-                        code = code * 31 + 0;
-                    }
+                    code = code * 31 + _offsetEqualityComparer.GetHashCode(obj[i].Offset);
+                    code = code * 31 + obj[i].IsStart.GetHashCode();
+                }
+                else
+                {
+                    code = code * 31 + 0;
                 }
             }
             return code;

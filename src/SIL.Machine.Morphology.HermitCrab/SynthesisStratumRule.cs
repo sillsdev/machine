@@ -77,7 +77,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                 }
                 else
                 {
-                    Word newWord = mruleOutWord.Clone();
+                    Word newWord = mruleOutWord.CloneForEngine();
+                    // See AnalysisStratumRule.Apply: the phonological-rule cascade mutates the shape in
+                    // place, so it must be unshared before matching begins.
+                    newWord.EnsureOwnShape();
                     _prulesRule.Apply(newWord);
                     newWord.IsLastAppliedRuleFinal = null;
                     newWord.Freeze();

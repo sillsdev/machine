@@ -24,7 +24,7 @@ namespace SIL.Machine.FiniteState
 
         public override IEnumerable<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
-            Register<TOffset>[,] initRegisters,
+            Register<TOffset>[] initRegisters,
             IList<TagMapCommand> initCmds,
             ISet<int> initAnns
         )
@@ -137,7 +137,7 @@ namespace SIL.Machine.FiniteState
 
         private Stack<DeterministicFstTraversalInstance<TData, TOffset>> InitializeStack(
             ref int annIndex,
-            Register<TOffset>[,] registers,
+            Register<TOffset>[] registers,
             IList<TagMapCommand> cmds,
             ISet<int> initAnns
         )

@@ -136,8 +136,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         public Word ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match)
         {
-            Word output = match.Input.Clone();
-            output.Shape.Clear();
+            Word output = match.Input.CloneForEngine();
+            output.ResetShape();
             var existingMorphNodes = new Dictionary<Annotation<ShapeNode>, List<ShapeNode>>();
             var newMorphNodes = new List<ShapeNode>();
             foreach (MorphologicalOutputAction outputAction in _allomorph.Rhs)

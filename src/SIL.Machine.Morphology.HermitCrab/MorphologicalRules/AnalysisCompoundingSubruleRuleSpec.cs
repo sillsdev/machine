@@ -19,13 +19,19 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         public override Word ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match)
         {
-            Word output = match.Input.Clone();
+            Word output = match.Input.CloneForEngine();
+            output.ResetShape();
             GenerateShape(_subrule.HeadLhs, output.Shape, match);
             var nonHeadShape = new Shape(begin => new ShapeNode(
                 begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor
             ));
             GenerateShape(_subrule.NonHeadLhs, nonHeadShape, match);
-            output.NonHeadUnapplied(new Word(output.Stratum, nonHeadShape));
+            output.NonHeadUnapplied(
+                new Word(output.Stratum, nonHeadShape)
+                {
+                    ShareSyntacticFeatureStructs = output.ShareSyntacticFeatureStructs,
+                }
+            );
             return output;
         }
     }

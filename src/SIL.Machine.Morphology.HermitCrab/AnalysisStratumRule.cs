@@ -122,7 +122,11 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _morpher.TraceManager.BeginUnapplyStratum(_stratum, input);
 
             Word origInput = input;
-            input = input.Clone();
+            input = input.CloneForEngine();
+            // The phonological-rule cascade mutates the shape in place (AddAfter, node feature structs,
+            // etc.) and holds node references obtained by matching, so the shape must be unshared before
+            // matching begins.
+            input.EnsureOwnShape();
             input.Stratum = _stratum;
 
             _prulesRule.Apply(input);

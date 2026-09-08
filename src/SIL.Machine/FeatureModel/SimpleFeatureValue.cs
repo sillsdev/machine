@@ -456,10 +456,12 @@ namespace SIL.Machine.FeatureModel
             return sb.ToString();
         }
 
-        internal override int FreezeImpl(ISet<FeatureValue> visited)
+        internal override int FreezeImpl(ref ISet<FeatureValue> visited)
         {
-            if (visited.Contains(this))
+            if (visited != null && visited.Contains(this))
                 return 1;
+            if (visited == null)
+                visited = new HashSet<FeatureValue>();
             visited.Add(this);
 
             return GetValuesHashCode();
@@ -478,9 +480,9 @@ namespace SIL.Machine.FeatureModel
 
         internal override bool ValueEqualsImpl(
             FeatureValue other,
-            ISet<FeatureValue> visitedSelf,
-            ISet<FeatureValue> visitedOther,
-            IDictionary<FeatureValue, FeatureValue> visitedPairs
+            ref ISet<FeatureValue> visitedSelf,
+            ref ISet<FeatureValue> visitedOther,
+            ref IDictionary<FeatureValue, FeatureValue> visitedPairs
         )
         {
             if (other == null)
@@ -493,7 +495,7 @@ namespace SIL.Machine.FeatureModel
             if (this == otherSfv)
                 return true;
 
-            if (visitedSelf.Contains(this) || visitedOther.Contains(otherSfv))
+            if (visitedSelf != null && (visitedSelf.Contains(this) || visitedOther.Contains(otherSfv)))
             {
                 FeatureValue fv;
                 if (visitedPairs.TryGetValue(this, out fv))
@@ -501,6 +503,12 @@ namespace SIL.Machine.FeatureModel
                 return false;
             }
 
+            if (visitedSelf == null)
+            {
+                visitedSelf = new HashSet<FeatureValue>();
+                visitedOther = new HashSet<FeatureValue>();
+                visitedPairs = new Dictionary<FeatureValue, FeatureValue>();
+            }
             visitedSelf.Add(this);
             visitedOther.Add(otherSfv);
             visitedPairs[this] = otherSfv;

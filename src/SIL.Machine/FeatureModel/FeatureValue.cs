@@ -23,13 +23,23 @@ namespace SIL.Machine.FeatureModel
             IDictionary<FeatureStruct, ISet<FeatureStruct>> visited
         );
         internal abstract FeatureValue CloneImpl(IDictionary<FeatureValue, FeatureValue> copies);
+
+        // visitedSelf/visitedOther/visitedPairs guard against infinite recursion on cyclic/reentrant FeatureStruct
+        // graphs. They are passed by ref and start out null: the overwhelming majority of comparisons never need
+        // them at all (an identity match or a hash-code mismatch short-circuits first), so allocating eagerly here
+        // wasted a HashSet/HashSet/Dictionary triple on every call. The first override that actually needs to
+        // record a visited value (right before it would otherwise call Add) allocates them; every recursive call
+        // downstream shares that same instance via the ref.
         internal abstract bool ValueEqualsImpl(
             FeatureValue other,
-            ISet<FeatureValue> visitedSelf,
-            ISet<FeatureValue> visitedOther,
-            IDictionary<FeatureValue, FeatureValue> visitedPairs
+            ref ISet<FeatureValue> visitedSelf,
+            ref ISet<FeatureValue> visitedOther,
+            ref IDictionary<FeatureValue, FeatureValue> visitedPairs
         );
-        internal abstract int FreezeImpl(ISet<FeatureValue> visited);
+
+        // Same lazy-allocation rationale as ValueEqualsImpl above, for the single "visited" set used to guard
+        // Freeze/GetFrozenHashCode's recursive walk.
+        internal abstract int FreezeImpl(ref ISet<FeatureValue> visited);
         internal abstract string ToStringImpl(ISet<FeatureValue> visited, IDictionary<FeatureValue, int> reentranceIds);
 
         internal abstract bool IsUnifiableImpl(FeatureValue other, bool useDefaults, VariableBindings varBindings);

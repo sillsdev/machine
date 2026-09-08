@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Extensions;
 using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
 using SIL.ObjectModel;
@@ -108,6 +107,10 @@ namespace SIL.Machine.Annotations
         {
             ShapeNode startNode = null;
             ShapeNode endNode = null;
+            // Built in the same loop that clones the nodes, instead of a second Zip/ToDictionary pass over both
+            // shapes: node/newNode are already paired up right here. Left null (no allocation at all) when the
+            // range is empty, since there is then nothing for CopyAnnotations to map either.
+            Dictionary<ShapeNode, ShapeNode> mapping = null;
             foreach (ShapeNode node in GetNodes(srcRange))
             {
                 ShapeNode newNode = node.Clone();
@@ -115,14 +118,18 @@ namespace SIL.Machine.Annotations
                     startNode = newNode;
                 endNode = newNode;
                 dest.Add(newNode);
+
+                if (mapping == null)
+                    mapping = new Dictionary<ShapeNode, ShapeNode>();
+                mapping[node] = newNode;
             }
 
             Range<ShapeNode> destRange = Range<ShapeNode>.Create(startNode, endNode);
-            Dictionary<ShapeNode, ShapeNode> mapping = GetNodes(srcRange)
-                .Zip(dest.GetNodes(destRange))
-                .ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
-            foreach (Annotation<ShapeNode> ann in _annotations.GetNodes(srcRange))
-                CopyAnnotations(dest._annotations, ann, mapping);
+            if (mapping != null)
+            {
+                foreach (Annotation<ShapeNode> ann in _annotations.GetNodes(srcRange))
+                    CopyAnnotations(dest._annotations, ann, mapping);
+            }
 
             return destRange;
         }
@@ -413,6 +420,16 @@ namespace SIL.Machine.Annotations
         public Shape Clone()
         {
             return new Shape(this);
+        }
+
+        /// <summary>
+        /// Creates a new, empty, unfrozen shape configured with the same margin-node selector as this one,
+        /// without copying any of this shape's nodes or annotations. Used to rebuild a shape from scratch
+        /// (e.g. <c>Word.ResetShape</c>) when a full deep copy would immediately be discarded.
+        /// </summary>
+        public Shape CreateEmptyLike()
+        {
+            return new Shape(_marginSelector);
         }
     }
 }

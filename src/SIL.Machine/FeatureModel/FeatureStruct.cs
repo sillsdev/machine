@@ -54,6 +54,75 @@ namespace SIL.Machine.FeatureModel
         private readonly IDBearerDictionary<Feature, FeatureValue> _definite;
         private int? _hashCode;
 
+        // Computed once, at freeze time, by FreezeImpl: true iff this structure contains no nested FeatureStruct
+        // and no FeatureValue instance reachable from it is visited more than once (see FreezeImpl). Always
+        // false until Freeze()/GetFrozenHashCode() has run; a new (unfrozen) instance -- including one produced
+        // by Clone() -- always starts with the default false, so there is no stale-flag carryover to worry
+        // about. Read only in combination with IsFrozen (see ValueEquals) since it has no meaning otherwise.
+        private bool _isTree;
+
+        // Thread-local pool of the scratch collections that guard FeatureStruct's recursive top-level walks
+        // (ValueEquals/Freeze/GetFrozenHashCode) against cyclic/reentrant graphs. A CPU profile of a heavy parse
+        // found these HashSet/Dictionary allocations -- and the resizes they triggered -- among the largest
+        // GC-triggering allocators, even after 325f8419 made them lazily-allocated (they still get allocated on
+        // the first non-identical comparison). Each thread now reuses one instance across calls instead of
+        // allocating a fresh HashSet/HashSet/Dictionary triple (ValueEquals) or HashSet (Freeze) every time.
+        //
+        // A single InUse flag guards the whole pool: if a top-level call is already using it -- e.g. re-entered
+        // from inside another comparison, such as a custom IEqualityComparer or an overridden ValueEquals
+        // invoked mid-walk -- the nested call falls back to fresh, unpooled allocations, exactly the behavior
+        // this code had before pooling existed. Correctness never depends on the pool being available.
+        private sealed class VisitedSetsPool
+        {
+            public readonly HashSet<FeatureValue> Self = new HashSet<FeatureValue>();
+            public readonly HashSet<FeatureValue> Other = new HashSet<FeatureValue>();
+            public readonly Dictionary<FeatureValue, FeatureValue> Pairs = new Dictionary<FeatureValue, FeatureValue>(
+                64
+            );
+            public readonly HashSet<FeatureValue> FreezeVisited = new HashSet<FeatureValue>();
+            public bool InUse;
+        }
+
+        [ThreadStatic]
+        private static VisitedSetsPool Pool;
+
+        private static VisitedSetsPool GetPool()
+        {
+            VisitedSetsPool pool = Pool;
+            if (pool == null)
+            {
+                pool = new VisitedSetsPool();
+                Pool = pool;
+            }
+            return pool;
+        }
+
+        // Thread-local pool of the "copies" dictionary used by the top-level Clone() entry point to preserve
+        // sharing (reentrant/shared sub-structures and leaves) during a deep copy. Same InUse-guarded, fall-back-
+        // to-fresh-allocation design as VisitedSetsPool above, for the same reason: a profile of a heavy parse
+        // found this dictionary's resizes among the largest GC-triggering allocators.
+        private sealed class CopiesPool
+        {
+            public readonly Dictionary<FeatureValue, FeatureValue> Copies = new Dictionary<FeatureValue, FeatureValue>(
+                64
+            );
+            public bool InUse;
+        }
+
+        [ThreadStatic]
+        private static CopiesPool CopiesPoolInstance;
+
+        private static CopiesPool GetCopiesPool()
+        {
+            CopiesPool pool = CopiesPoolInstance;
+            if (pool == null)
+            {
+                pool = new CopiesPool();
+                CopiesPoolInstance = pool;
+            }
+            return pool;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FeatureStruct"/> class.
         /// </summary>
@@ -62,20 +131,66 @@ namespace SIL.Machine.FeatureModel
             _definite = new IDBearerDictionary<Feature, FeatureValue>();
         }
 
+        /// <summary>
+        /// Top-level copy constructor, used only by <see cref="Clone"/>. Unlike the private copy constructor
+        /// below (used for recursive cloning within an already-in-progress, externally-supplied copies map),
+        /// this is always a self-contained clone operation with no outside sharing context, so it is free to
+        /// skip the copies map entirely when <paramref name="other"/> is frozen and <c>_isTree</c> -- proven, at
+        /// <paramref name="other"/>'s own freeze time, to contain no nested FeatureStruct and no repeated
+        /// FeatureValue instance anywhere reachable from it (see FreezeImpl), a proof that still holds since
+        /// frozen structures are immutable. With nothing to preserve, cloning each value independently (no map)
+        /// produces an identical result to using one, since the map could never have found a match anyway.
+        /// Otherwise, falls back to a pooled (or, if already in use, freshly allocated) copies dictionary.
+        /// </summary>
         protected FeatureStruct(FeatureStruct other)
-            : this(other, new Dictionary<FeatureValue, FeatureValue>()) { }
+            : this()
+        {
+            if (other.IsFrozen && other._isTree)
+            {
+                foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
+                    _definite[featVal.Key] = Dereference(featVal.Value).CloneImpl(null);
+                return;
+            }
+
+            CopiesPool pool = GetCopiesPool();
+            if (pool.InUse)
+            {
+                var fallbackCopies = new Dictionary<FeatureValue, FeatureValue>();
+                PopulateClone(other, fallbackCopies);
+                return;
+            }
+
+            pool.InUse = true;
+            try
+            {
+                PopulateClone(other, pool.Copies);
+            }
+            finally
+            {
+                pool.Copies.Clear();
+                pool.InUse = false;
+            }
+        }
+
+        private void PopulateClone(FeatureStruct other, IDictionary<FeatureValue, FeatureValue> copies)
+        {
+            copies[other] = this;
+            foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
+                _definite[featVal.Key] = Dereference(featVal.Value).CloneImpl(copies);
+        }
 
         /// <summary>
-        /// Copy constructor.
+        /// Copy constructor used for recursive cloning within an already-in-progress deep copy that supplies its
+        /// own <paramref name="copies"/> map (e.g. a parent structure's Clone(), or Unify/PriorityUnion). Always
+        /// uses the caller's map as-is -- it may itself already be shared/reentrant sub-structure state that must
+        /// be preserved, regardless of whether this particular <paramref name="other"/> is individually a tree.
         /// </summary>
         /// <param name="other">The fs.</param>
         /// <param name="copies"></param>
         private FeatureStruct(FeatureStruct other, IDictionary<FeatureValue, FeatureValue> copies)
             : this()
         {
-            copies[other] = this;
-            foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
-                _definite[featVal.Key] = Dereference(featVal.Value).CloneImpl(copies);
+            PopulateClone(other, copies);
         }
 
         /// <summary>
@@ -1104,9 +1219,9 @@ namespace SIL.Machine.FeatureModel
 
         internal override bool ValueEqualsImpl(
             FeatureValue other,
-            ISet<FeatureValue> visitedSelf,
-            ISet<FeatureValue> visitedOther,
-            IDictionary<FeatureValue, FeatureValue> visitedPairs
+            ref ISet<FeatureValue> visitedSelf,
+            ref ISet<FeatureValue> visitedOther,
+            ref IDictionary<FeatureValue, FeatureValue> visitedPairs
         )
         {
             if (other == null)
@@ -1119,7 +1234,7 @@ namespace SIL.Machine.FeatureModel
             if (this == otherFS)
                 return true;
 
-            if (visitedSelf.Contains(this) || visitedOther.Contains(otherFS))
+            if (visitedSelf != null && (visitedSelf.Contains(this) || visitedOther.Contains(otherFS)))
             {
                 FeatureValue fv;
                 if (visitedPairs.TryGetValue(this, out fv))
@@ -1127,6 +1242,12 @@ namespace SIL.Machine.FeatureModel
                 return false;
             }
 
+            if (visitedSelf == null)
+            {
+                visitedSelf = new HashSet<FeatureValue>();
+                visitedOther = new HashSet<FeatureValue>();
+                visitedPairs = new Dictionary<FeatureValue, FeatureValue>();
+            }
             visitedSelf.Add(this);
             visitedOther.Add(otherFS);
             visitedPairs[this] = otherFS;
@@ -1141,7 +1262,7 @@ namespace SIL.Machine.FeatureModel
                 if (!otherFS._definite.TryGetValue(kvp.Key, out otherValue))
                     return false;
                 otherValue = Dereference(otherValue);
-                if (!thisValue.ValueEqualsImpl(otherValue, visitedSelf, visitedOther, visitedPairs))
+                if (!thisValue.ValueEqualsImpl(otherValue, ref visitedSelf, ref visitedOther, ref visitedPairs))
                     return false;
             }
 
@@ -1159,13 +1280,114 @@ namespace SIL.Machine.FeatureModel
             if (_hashCode.HasValue && other._hashCode.HasValue && _hashCode != other._hashCode)
                 return false;
 
-            return ValueEqualsImpl(
-                other,
-                new HashSet<FeatureValue>(),
-                new HashSet<FeatureValue>(),
-                new Dictionary<FeatureValue, FeatureValue>()
-            );
+            // Both sides frozen and known, at freeze time, to be a flat tree (no nested FeatureStruct, no
+            // FeatureValue instance repeated) means neither side's recursive walk could ever hit the
+            // visited-set guard below -- see TreeValueEquals for the full argument -- so we can compare leaves
+            // directly with zero allocation instead of paying for the pool.
+            if (IsFrozen && other.IsFrozen && _isTree && other._isTree)
+                return TreeValueEquals(other);
+
+            return SlowValueEquals(other);
         }
+
+        /// <summary>
+        /// Compares two frozen, tree-shaped (<c>_isTree</c>) feature structures without allocating the
+        /// visited-set collections the general recursive walk needs.
+        ///
+        /// Why this is exactly equivalent to the slow path for tree structures: the slow path
+        /// (<see cref="ValueEqualsImpl"/>) only ever consults the visited sets to answer a *repeat* visit --
+        /// either <c>this</c>/<c>otherFS</c> being reached a second time (reentrancy/cycles) or, for a leaf, the
+        /// same <see cref="SimpleFeatureValue"/> instance being reached a second time (shared leaves). A struct
+        /// flagged <c>_isTree</c> at freeze time was proven, at that moment, to contain no nested
+        /// <see cref="FeatureStruct"/> and no repeated <see cref="FeatureValue"/> instance anywhere reachable
+        /// from it (see <see cref="FreezeImpl"/>). Frozen structures are immutable, so that proof still holds
+        /// here. Requiring <c>_isTree</c> on *both* sides means neither side's walk could ever reach a repeat,
+        /// on either the self or the other side of the pairing, so the slow path's visited-set checks would
+        /// never fire for this comparison -- it would simply walk every feature once, in the same order, doing
+        /// exactly what this method does: compare feature counts, then each leaf value via
+        /// <see cref="SimpleFeatureValue.ValueEquals(SimpleFeatureValue)"/> (the same method the slow path
+        /// bottoms out at, via <see cref="SimpleFeatureValue.ValueEqualsImpl"/>).
+        /// </summary>
+        private bool TreeValueEquals(FeatureStruct other)
+        {
+            if (_definite.Count != other._definite.Count)
+                return false;
+
+            foreach (KeyValuePair<Feature, FeatureValue> kvp in _definite)
+            {
+                FeatureValue otherValue;
+                if (!other._definite.TryGetValue(kvp.Key, out otherValue))
+                    return false;
+
+                // _isTree on both sides guarantees every value is a SimpleFeatureValue; the fallback is a
+                // defensive measure only, never expected to trigger.
+                if (
+                    !(Dereference(kvp.Value) is SimpleFeatureValue thisSfv)
+                    || !(Dereference(otherValue) is SimpleFeatureValue otherSfv)
+                )
+                {
+                    return SlowValueEquals(other);
+                }
+
+                if (!thisSfv.ValueEquals(otherSfv))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private bool SlowValueEquals(FeatureStruct other)
+        {
+            VisitedSetsPool pool = GetPool();
+            if (pool.InUse)
+            {
+                ISet<FeatureValue> fallbackSelf = null;
+                ISet<FeatureValue> fallbackOther = null;
+                IDictionary<FeatureValue, FeatureValue> fallbackPairs = null;
+                return ValueEqualsImpl(other, ref fallbackSelf, ref fallbackOther, ref fallbackPairs);
+            }
+
+            pool.InUse = true;
+            try
+            {
+                ISet<FeatureValue> visitedSelf = pool.Self;
+                ISet<FeatureValue> visitedOther = pool.Other;
+                IDictionary<FeatureValue, FeatureValue> visitedPairs = pool.Pairs;
+                return ValueEqualsImpl(other, ref visitedSelf, ref visitedOther, ref visitedPairs);
+            }
+            finally
+            {
+                pool.Self.Clear();
+                pool.Other.Clear();
+                pool.Pairs.Clear();
+                pool.InUse = false;
+            }
+        }
+
+        /// <summary>
+        /// Test-only: forces the general visited-set-guarded comparison, bypassing the frozen-tree fast path,
+        /// so tests can cross-check the fast path's answer against the ground-truth slow path on the same
+        /// inputs. Not used by production logic.
+        /// </summary>
+        internal bool SlowValueEqualsForTesting(FeatureStruct other)
+        {
+            if (this == other)
+                return true;
+
+            if (other == null)
+                return false;
+
+            if (_hashCode.HasValue && other._hashCode.HasValue && _hashCode != other._hashCode)
+                return false;
+
+            return SlowValueEquals(other);
+        }
+
+        /// <summary>
+        /// Test-only: exposes whether this frozen structure was determined, at freeze time, to be a flat tree
+        /// (see <see cref="FreezeImpl"/>). Not used by production logic.
+        /// </summary>
+        internal bool IsTreeForTesting => _isTree;
 
         public int GetFrozenHashCode()
         {
@@ -1177,7 +1399,7 @@ namespace SIL.Machine.FeatureModel
             }
 
             if (!_hashCode.HasValue)
-                _hashCode = FreezeImpl(new HashSet<FeatureValue>());
+                _hashCode = ComputeFrozenHashCode();
             return _hashCode.Value;
         }
 
@@ -1199,25 +1421,73 @@ namespace SIL.Machine.FeatureModel
             if (IsFrozen)
                 return;
 
-            _hashCode = FreezeImpl(new HashSet<FeatureValue>());
+            _hashCode = ComputeFrozenHashCode();
         }
 
-        internal override int FreezeImpl(ISet<FeatureValue> visited)
+        private int ComputeFrozenHashCode()
         {
-            if (visited.Contains(this))
+            VisitedSetsPool pool = GetPool();
+            if (pool.InUse)
+            {
+                ISet<FeatureValue> fallbackVisited = null;
+                return FreezeImpl(ref fallbackVisited);
+            }
+
+            pool.InUse = true;
+            try
+            {
+                ISet<FeatureValue> visited = pool.FreezeVisited;
+                return FreezeImpl(ref visited);
+            }
+            finally
+            {
+                pool.FreezeVisited.Clear();
+                pool.InUse = false;
+            }
+        }
+
+        internal override int FreezeImpl(ref ISet<FeatureValue> visited)
+        {
+            if (visited != null && visited.Contains(this))
                 return 1;
 
+            if (visited == null)
+                visited = new HashSet<FeatureValue>();
             visited.Add(this);
             IsFrozen = true;
+
+            // Conservatively determine, while we're already walking every reachable value anyway, whether this
+            // structure is a flat tree: no nested FeatureStruct anywhere below it, and no FeatureValue instance
+            // reachable from it is visited a second time (shared leaves, reentrancy, or cycles). A nested
+            // FeatureStruct makes this struct non-tree even if that child is itself a tree -- we don't need to
+            // know, since ValueEquals's fast path never needs to recurse into a nested struct at all. See
+            // TreeValueEquals for how this flag is used.
+            bool isTree = true;
 
             int code = 23;
             foreach (KeyValuePair<Feature, FeatureValue> kvp in _definite.OrderBy(kvp => kvp.Key.ID))
             {
                 code = code * 31 + kvp.Key.GetHashCode();
                 FeatureValue value = Dereference(kvp.Value);
-                code = code * 31 + value.FreezeImpl(visited);
+
+                if (value is FeatureStruct childFS)
+                {
+                    isTree = false;
+                    if (visited.Contains(childFS))
+                    {
+                        code = code * 31 + 1;
+                        continue;
+                    }
+                }
+                else if (visited.Contains(value))
+                {
+                    isTree = false;
+                }
+
+                code = code * 31 + value.FreezeImpl(ref visited);
             }
 
+            _isTree = isTree;
             return code;
         }
 

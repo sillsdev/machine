@@ -80,7 +80,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         {
                             if (_morpher.TraceManager.IsTracing)
                             {
-                                Word tempInput = outWord.Clone();
+                                Word tempInput = outWord.CloneForEngine();
                                 tempInput.CurrentNonHead.RootAllomorph = allo;
                                 tempInput.CurrentTrace = input.CurrentTrace;
                                 _morpher.TraceManager.CompoundingRuleNotUnapplied(
@@ -116,7 +116,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
                         if (add)
                         {
-                            Word newWord = outWord.Clone();
+                            Word newWord = outWord.CloneForEngine();
                             newWord.CurrentNonHead.RootAllomorph = allo;
                             srOutput.Add(newWord);
                         }
@@ -127,9 +127,15 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 foreach (Word outWord in srOutput)
                 {
                     if (!_rule.HeadRequiredSyntacticFeatureStruct.IsEmpty)
+                    {
+                        outWord.EnsureOwnSyntacticFeatureStruct();
                         outWord.SyntacticFeatureStruct.Add(_rule.HeadRequiredSyntacticFeatureStruct);
+                    }
                     else if (_rule.OutSyntacticFeatureStruct.IsEmpty)
+                    {
+                        outWord.EnsureOwnSyntacticFeatureStruct();
                         outWord.SyntacticFeatureStruct.Clear();
+                    }
                     outWord.MorphologicalRuleUnapplied(_rule);
 
                     outWord.Freeze();

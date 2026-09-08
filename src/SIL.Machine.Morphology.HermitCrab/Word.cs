@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
@@ -17,6 +18,44 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly Dictionary<string, Allomorph> _allomorphs;
         private RootAllomorph _rootAllomorph;
         private Shape _shape;
+
+        /// <summary>
+        /// True when <see cref="_shape"/> is a reference shared with another Word (the source this word was
+        /// cloned from) rather than one this word exclusively owns. A shared shape is always frozen -- it is
+        /// only ever adopted from a frozen source -- so any attempted mutation through it throws, which is
+        /// the safety net for a missed <see cref="EnsureOwnShape"/>/<see cref="ResetShape"/> call. See the
+        /// copy constructor below.
+        /// </summary>
+        private bool _shapeShared;
+        private FeatureStruct _syntacticFS;
+
+        /// <summary>
+        /// True when <see cref="_syntacticFS"/> is a reference shared with another Word (the source this
+        /// word was cloned from) rather than one this word exclusively owns. Mirrors <see cref="_shapeShared"/>,
+        /// with one difference driven by <see cref="FreezeImpl"/> deliberately never freezing this field
+        /// (rules mutate <see cref="SyntacticFeatureStruct"/> in place on already-frozen Words -- see
+        /// <see cref="AnalysisAffixTemplateRule"/>,
+        /// <see cref="MorphologicalRules.AnalysisAffixProcessRule"/>,
+        /// <see cref="MorphologicalRules.AnalysisCompoundingRule"/>): the sharing decision below is keyed on
+        /// <c>word.SyntacticFeatureStruct.IsFrozen</c> (the struct's own frozen state), not <c>word.IsFrozen</c>.
+        /// A shared struct is always frozen -- shared only from a source whose SyntacticFeatureStruct was
+        /// already frozen -- so a missed <see cref="EnsureOwnSyntacticFeatureStruct"/> call throws instead of
+        /// corrupting the source word's features. Freezing a struct that is already frozen (e.g.
+        /// <see cref="AnalysisStateKey.PinAndKey"/> freezing a struct a child shares with its still-live
+        /// parent) is a no-op -- <c>FeatureStruct.Freeze</c> returns immediately when <c>IsFrozen</c> is
+        /// already true -- so sharing the same immutable instance onto many Words and re-freezing it from any
+        /// of them is safe.
+        /// </summary>
+        private bool _syntacticFSShared;
+
+        /// <summary>
+        /// Whether the internal engine clone path may share this word's frozen
+        /// <see cref="SyntacticFeatureStruct"/>. A Morpher stamps its instance setting on each parse or
+        /// generation root, and internal clones propagate it. Publicly constructed Words default to false,
+        /// and public <see cref="Clone"/> always deep-copies the struct regardless of this value.
+        /// </summary>
+        internal bool ShareSyntacticFeatureStructs { get; set; }
+
         private readonly List<IMorphologicalRule> _mruleApps;
         private int _mruleAppIndex = -1;
         private readonly Dictionary<IMorphologicalRule, int> _mrulesUnapplied;
@@ -38,6 +77,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _allomorphs = new Dictionary<string, Allomorph>();
             _mprFeatures = new MprFeatureSet();
             _shape = rootAllomorph.Segments.Shape.Clone();
+            _shapeShared = false;
             ResetDirty();
             SetRootAllomorph(rootAllomorph);
             RealizationalFeatureStruct = realizationalFS;
@@ -70,26 +110,57 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         protected Word(Word word)
-            : this(word, cloneNonHeadApps: true) { }
+            : this(word, cloneNonHeadApps: true, useEngineClone: false) { }
 
         // ReplayOnto passes false: it rebuilds the non-head list wholesale, so cloning it here would be
         // discarded work.
-        private Word(Word word, bool cloneNonHeadApps)
+        private Word(Word word, bool cloneNonHeadApps, bool useEngineClone)
         {
             _allomorphs = new Dictionary<string, Allomorph>(word._allomorphs);
             Stratum = word.Stratum;
             Source = word;
             // Don't copy Alternatives.
-            _shape = word._shape.Clone();
+            // A frozen source's shape is immutable, so it is safe to share the reference instead of paying
+            // for a deep copy; the shape is only actually cloned (EnsureOwnShape) or replaced wholesale
+            // (ResetShape) at the few call sites that go on to mutate it. An unfrozen source's shape could
+            // still change out from under us, so it must be deep-copied as before.
+            if (useEngineClone && word._shape.IsFrozen)
+            {
+                _shape = word._shape;
+                _shapeShared = true;
+            }
+            else
+            {
+                _shape = word._shape.Clone();
+                _shapeShared = false;
+            }
             _rootAllomorph = word._rootAllomorph;
-            SyntacticFeatureStruct = word.SyntacticFeatureStruct.Clone();
+            ShareSyntacticFeatureStructs = word.ShareSyntacticFeatureStructs;
+            // Mirrors the Shape sharing above, except keyed on the struct's own IsFrozen (see _syntacticFSShared):
+            // FreezeImpl never freezes SyntacticFeatureStruct, so word.IsFrozen says nothing about it. In the
+            // memoized analysis cascade, AnalysisStateKey.PinAndKey freezes a word's SyntacticFeatureStruct
+            // before using it as a memo key, so most parents are already frozen here by the time they are cloned.
+            if (useEngineClone && ShareSyntacticFeatureStructs && word.SyntacticFeatureStruct.IsFrozen)
+            {
+                _syntacticFS = word.SyntacticFeatureStruct;
+                _syntacticFSShared = true;
+            }
+            else
+            {
+                _syntacticFS = word.SyntacticFeatureStruct.Clone();
+                _syntacticFSShared = false;
+            }
             RealizationalFeatureStruct = word.RealizationalFeatureStruct.Clone();
             _mprFeatures = word.MprFeatures.Clone();
             _mruleApps = new List<IMorphologicalRule>(word._mruleApps);
             _mruleAppIndex = word._mruleAppIndex;
             _mrulesUnapplied = new Dictionary<IMorphologicalRule, int>(word._mrulesUnapplied);
             _mrulesApplied = new Dictionary<IMorphologicalRule, int>(word._mrulesApplied);
-            _nonHeadApps = cloneNonHeadApps ? new List<Word>(word._nonHeadApps.CloneItems()) : new List<Word>();
+            _nonHeadApps = cloneNonHeadApps
+                ? word
+                    ._nonHeadApps.Select(nonHead => useEngineClone ? nonHead.CloneForEngine() : nonHead.Clone())
+                    .ToList()
+                : new List<Word>();
             _nonHeadAppIndex = word._nonHeadAppIndex;
             _obligatorySyntacticFeatures = new IDBearerSet<Feature>(word._obligatorySyntacticFeatures);
             _isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
@@ -136,6 +207,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 CheckFrozen();
                 _shape = value.Segments.Shape.Clone();
+                _shapeShared = false;
                 SetRootAllomorph(value);
             }
         }
@@ -157,7 +229,19 @@ namespace SIL.Machine.Morphology.HermitCrab
             get { return _shape; }
         }
 
-        public FeatureStruct SyntacticFeatureStruct { get; internal set; }
+        public FeatureStruct SyntacticFeatureStruct
+        {
+            get { return _syntacticFS; }
+            // Deliberately no CheckFrozen(): FreezeImpl never freezes this field, so rules assign/mutate it
+            // (via this setter or EnsureOwnSyntacticFeatureStruct + an in-place mutator) on Words that are
+            // already frozen. Any assignment -- a brand-new struct, or one cloned from a shared source -- is
+            // by definition no longer shared with this word's clone source, so the flag is cleared here.
+            internal set
+            {
+                _syntacticFS = value;
+                _syntacticFSShared = false;
+            }
+        }
 
         public FeatureStruct RealizationalFeatureStruct
         {
@@ -456,8 +540,12 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 foreach (Word original in originals)
                 {
-                    Word alternative = original.Clone();
+                    Word alternative = original.CloneForEngine();
+                    // this must be frozen here: its shape is about to be shared onto alternative, and a
+                    // shared shape is only ever safe to hand out because it is immutable.
+                    Debug.Assert(IsFrozen, "ExpandAlternatives requires a frozen word");
                     alternative._shape = this.Shape;
+                    alternative._shapeShared = true;
                     // Add new rules to alternative.
                     int m_start = Source == null ? 0 : Source._mruleApps.Count();
                     for (int i = m_start; i < _mruleApps.Count(); i++)
@@ -515,7 +603,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             IReadOnlyList<Word> queryNonHeadPrefix = null
         )
         {
-            var clone = new Word(this, cloneNonHeadApps: false);
+            var clone = new Word(this, cloneNonHeadApps: false, useEngineClone: true);
 
             List<IMorphologicalRule> mruleSuffix = clone._mruleApps.GetRange(
                 mruleTrailPrefixLength,
@@ -532,9 +620,11 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (queryNonHeadPrefix != null)
                 clone._nonHeadApps.AddRange(queryNonHeadPrefix);
             else
-                clone._nonHeadApps.AddRange(queryNode._nonHeadApps.CloneItems());
+                clone._nonHeadApps.AddRange(queryNode._nonHeadApps.Select(nonHead => nonHead.CloneForEngine()));
             clone._nonHeadApps.AddRange(
-                _nonHeadApps.GetRange(nonHeadPrefixLength, _nonHeadApps.Count - nonHeadPrefixLength).CloneItems()
+                _nonHeadApps
+                    .GetRange(nonHeadPrefixLength, _nonHeadApps.Count - nonHeadPrefixLength)
+                    .Select(nonHead => nonHead.CloneForEngine())
             );
             clone._nonHeadAppIndex = clone._nonHeadApps.Count - 1;
 
@@ -545,7 +635,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         // Hoisted out of the per-result loop by AnalysisScope.TryReplay; see ReplayOnto.
         internal List<Word> CloneNonHeadsForReplay()
         {
-            return new List<Word>(_nonHeadApps.CloneItems());
+            return _nonHeadApps.Select(nonHead => nonHead.CloneForEngine()).ToList();
         }
 
         public Allomorph GetAllomorph(Annotation<ShapeNode> morph)
@@ -585,6 +675,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     word = new Word(entry.PrimaryAllomorph, RealizationalFeatureStruct.Clone())
                     {
                         CurrentTrace = CurrentTrace,
+                        ShareSyntacticFeatureStructs = ShareSyntacticFeatureStructs,
                     };
                     word.Freeze();
                     return true;
@@ -646,6 +737,64 @@ namespace SIL.Machine.Morphology.HermitCrab
         public Word Clone()
         {
             return new Word(this);
+        }
+
+        /// <summary>
+        /// Clones this Word for continued in-assembly processing, allowing a frozen syntactic feature
+        /// structure to be shared when the originating Morpher enabled that optimization.
+        /// </summary>
+        internal Word CloneForEngine()
+        {
+            return new Word(this, cloneNonHeadApps: true, useEngineClone: true);
+        }
+
+        /// <summary>
+        /// Ensures this word owns its <see cref="Shape"/> outright rather than sharing it with the word it
+        /// was cloned from, cloning it (once) if necessary. Callers that clone a word and are about to
+        /// mutate the shape in place -- rather than rebuild it from scratch, see <see cref="ResetShape"/> --
+        /// must call this first, before anything reads a node reference out of the shape to mutate later:
+        /// once shared, the shape is frozen, so any mutation attempted through a missed call throws instead
+        /// of silently corrupting the source word's shape.
+        /// </summary>
+        internal void EnsureOwnShape()
+        {
+            CheckFrozen();
+            if (_shapeShared)
+            {
+                _shape = _shape.Clone();
+                _shapeShared = false;
+            }
+        }
+
+        /// <summary>
+        /// Ensures this word owns its <see cref="SyntacticFeatureStruct"/> outright rather than sharing it
+        /// with the word it was cloned from, cloning it (once) if necessary. Callers that are about to mutate
+        /// it in place (<c>Add</c>/<c>Clear</c>/etc., as opposed to assigning a whole new struct, which the
+        /// property setter already handles) must call this first. Unlike <see cref="EnsureOwnShape"/>, this
+        /// does NOT call <see cref="CheckFrozen"/>: <see cref="FreezeImpl"/> deliberately never freezes
+        /// <see cref="SyntacticFeatureStruct"/>, and several rules mutate it on Words that are already frozen
+        /// (see <see cref="_syntacticFSShared"/>), so this must remain callable on a frozen Word.
+        /// </summary>
+        internal void EnsureOwnSyntacticFeatureStruct()
+        {
+            if (_syntacticFSShared)
+            {
+                _syntacticFS = _syntacticFS.Clone();
+                _syntacticFSShared = false;
+            }
+        }
+
+        /// <summary>
+        /// Replaces this word's <see cref="Shape"/> with a new, empty, unfrozen shape configured the same
+        /// way as the current one, without paying for a deep copy of content that is about to be discarded.
+        /// For call sites that clone a word only to immediately clear and rebuild its shape from other
+        /// input (e.g. <c>GenerateShape</c>, the synthesis rule specs).
+        /// </summary>
+        internal void ResetShape()
+        {
+            CheckFrozen();
+            _shape = _shape.CreateEmptyLike();
+            _shapeShared = false;
         }
 
         public override string ToString()

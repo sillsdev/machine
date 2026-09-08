@@ -31,7 +31,7 @@ namespace SIL.Machine.FiniteState
         private readonly List<State<TData, TOffset>> _states;
         private readonly ReadOnlyCollection<State<TData, TOffset>> _readonlyStates;
         private readonly IFstOperations<TData, TOffset> _operations;
-        private readonly RegistersEqualityComparer<TOffset> _registersEqualityComparer;
+        private readonly RegistersEqualityComparer<TOffset> _flatRegistersEqualityComparer;
         private readonly IEqualityComparer<TOffset> _offsetEqualityComparer;
         private bool _unification;
         private State<TData, TOffset> _startState;
@@ -54,7 +54,7 @@ namespace SIL.Machine.FiniteState
             _initializers = new List<TagMapCommand>();
             _groups = new Dictionary<string, int>();
             _filter = ann => true;
-            _registersEqualityComparer = new RegistersEqualityComparer<TOffset>(offsetEqualityComparer);
+            _flatRegistersEqualityComparer = new RegistersEqualityComparer<TOffset>(offsetEqualityComparer);
             _offsetEqualityComparer = offsetEqualityComparer;
         }
 
@@ -245,9 +245,14 @@ namespace SIL.Machine.FiniteState
             get { return _operations; }
         }
 
-        internal IEqualityComparer<Register<TOffset>[,]> RegistersEqualityComparer
+        internal IEqualityComparer<Register<TOffset>[]> FlatRegistersEqualityComparer
         {
-            get { return _registersEqualityComparer; }
+            get { return _flatRegistersEqualityComparer; }
+        }
+
+        internal IEqualityComparer<TOffset> OffsetEqualityComparer
+        {
+            get { return _offsetEqualityComparer; }
         }
 
         internal int RegisterCount
@@ -370,14 +375,14 @@ namespace SIL.Machine.FiniteState
             var initAnns = new HashSet<int>();
             while (annIndex < traversalMethod.Annotations.Count && annIndex > -1)
             {
-                var initRegisters = new Register<TOffset>[_registerCount, 2];
+                var initRegisters = new Register<TOffset>[_registerCount * 2];
 
                 var cmds = new List<TagMapCommand>();
                 foreach (TagMapCommand cmd in _initializers)
                 {
                     if (cmd.Dest == 0)
                     {
-                        initRegisters[cmd.Dest, 0]
+                        initRegisters[RegisterArray.Idx(cmd.Dest, RegisterArray.Start)]
                             .SetOffset(traversalMethod.Annotations[annIndex].Range.GetStart(_dir), true);
                     }
                     else

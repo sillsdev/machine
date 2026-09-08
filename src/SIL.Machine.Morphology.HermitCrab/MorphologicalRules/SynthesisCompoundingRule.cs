@@ -233,8 +233,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         )
         {
             // TODO: unify the variable bindings from the head and non-head matches
-            Word output = headMatch.Input.Clone();
-            output.Shape.Clear();
+            Word output = headMatch.Input.CloneForEngine();
+            output.ResetShape();
 
             var existingMorphNodes = new Dictionary<Annotation<ShapeNode>, List<ShapeNode>>();
             var newMorphNodes = new List<ShapeNode>();

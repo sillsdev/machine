@@ -45,7 +45,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         bool templateFinal = outWord.IsPartial || _templates[i].IsFinal;
                         if (word.IsLastAppliedRuleFinal != templateFinal)
                         {
-                            word = outWord.Clone();
+                            word = outWord.CloneForEngine();
                             word.IsLastAppliedRuleFinal = templateFinal;
                             word.Freeze();
                         }
@@ -66,7 +66,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     Word word = input;
                     if (!word.IsLastAppliedRuleFinal.HasValue || !word.IsLastAppliedRuleFinal.Value)
                     {
-                        word = input.Clone();
+                        word = input.CloneForEngine();
                         word.IsLastAppliedRuleFinal = true;
                         word.Freeze();
                     }
@@ -100,6 +100,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         best = new Word(relative.PrimaryAllomorph, input.RealizationalFeatureStruct.Clone())
                         {
                             CurrentTrace = input.CurrentTrace,
+                            ShareSyntacticFeatureStructs = input.ShareSyntacticFeatureStructs,
                         };
                         best.Freeze();
                     }

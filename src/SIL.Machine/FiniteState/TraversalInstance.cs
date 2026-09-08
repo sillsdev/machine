@@ -10,12 +10,15 @@ namespace SIL.Machine.FiniteState
     internal abstract class TraversalInstance<TData, TOffset>
         where TData : IAnnotatedData<TOffset>
     {
-        private readonly Register<TOffset>[,] _registers;
+        private readonly Register<TOffset>[] _registers;
         private readonly List<int> _priorities;
 
         protected TraversalInstance(int registerCount, bool deterministic)
         {
-            _registers = new Register<TOffset>[registerCount, 2];
+            // Flat layout: index = RegisterArray.Idx(registerIndex, startOrEnd). A 1-D array is used instead of
+            // Register<TOffset>[,] because multi-dimensional array allocation goes through the slow generic
+            // Array.CreateInstance path, and this array is allocated/cloned on every traversal instance.
+            _registers = new Register<TOffset>[registerCount * 2];
             if (!deterministic)
                 _priorities = new List<int>();
         }
@@ -29,7 +32,7 @@ namespace SIL.Machine.FiniteState
             get { return _priorities; }
         }
 
-        public Register<TOffset>[,] Registers
+        public Register<TOffset>[] Registers
         {
             get { return _registers; }
         }

@@ -9,7 +9,7 @@ namespace SIL.Machine.FiniteState
         IList<Annotation<TOffset>> Annotations { get; }
         IEnumerable<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
-            Register<TOffset>[,] initRegisters,
+            Register<TOffset>[] initRegisters,
             IList<TagMapCommand> initCmds,
             ISet<int> initAnns
         );
