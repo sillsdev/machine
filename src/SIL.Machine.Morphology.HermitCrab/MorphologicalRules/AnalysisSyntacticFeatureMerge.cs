@@ -49,10 +49,15 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         public static long CheckRejects;
         public static long Merges;
         public static long ExactUnifyFailures;
+        public static long AnalysisAffixApplyCalls;
+        public static long AnalysisUnapplied;
+        public static long LexicalLookupCandidates;
+        public static long SynthesisAffixApplyCalls;
 
         public static void ResetCounters()
         {
             CheckCalls = CheckRejects = Merges = ExactUnifyFailures = 0;
+            AnalysisAffixApplyCalls = AnalysisUnapplied = LexicalLookupCandidates = SynthesisAffixApplyCalls = 0;
         }
 
         /// <summary>PU(required, out): the most general syntactic FS synthesis can produce from this rule.</summary>

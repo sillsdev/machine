@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
@@ -40,6 +41,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         public IEnumerable<Word> Apply(Word input)
         {
+            Interlocked.Increment(ref AnalysisSyntacticFeatureMerge.SynthesisAffixApplyCalls);
+
             if (!input.IsMorphologicalRuleApplicable(_rule))
                 return Enumerable.Empty<Word>();
 

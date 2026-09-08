@@ -442,6 +442,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     if (_traceManager.IsTracing)
                         _traceManager.SynthesizeWord(_lang, newWord);
                     newWord.Freeze();
+                    Interlocked.Increment(ref AnalysisSyntacticFeatureMerge.LexicalLookupCandidates);
                     yield return newWord;
                 }
             }

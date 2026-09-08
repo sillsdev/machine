@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
@@ -44,6 +45,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         public IEnumerable<Word> Apply(Word input)
         {
+            Interlocked.Increment(ref AnalysisSyntacticFeatureMerge.AnalysisAffixApplyCalls);
+
             if (!_morpher.RuleSelector(_rule))
                 return Enumerable.Empty<Word>();
 
@@ -75,6 +78,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     if (_morpher.TraceManager.IsTracing)
                         _morpher.TraceManager.MorphologicalRuleUnapplied(_rule, i, input, outWord);
                     output.Add(outWord);
+                    Interlocked.Increment(ref AnalysisSyntacticFeatureMerge.AnalysisUnapplied);
                     unapplied = true;
                 }
 
