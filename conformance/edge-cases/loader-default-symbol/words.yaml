@@ -29,9 +29,7 @@ sources:
 requires: [phonology]
 fieldworks_producible: false
 fieldworks_producible_notes: >-
-  PERMANENTLY KEEP-ENGINE-ONLY, not a temporary or deferred verdict: HCLoader has no writer for this
-  property at all, full stop -- there is no future conversion pending here, and deleting this
-  fixture would leave SymbolicFeature.defaultSymbol completely unwitnessed anywhere in the suite.
+  KEEP-ENGINE-ONLY until the FieldWorks side gains a writer -- a loader gap, NOT a data-model limit. LibLCM CAN express a feature default: FsFeatDefn (base of the FsClosedFeature that stands in for SymbolicFeature) owns a Default property of type FsFeatureSpecification, whose own model comment reads "Feature of number might have a default value of singular" (MasterLCModel.xml:1342-1345). HCLoader simply never reads it. Deleting this fixture would leave SymbolicFeature.defaultSymbol unwitnessed anywhere in the suite, and would also discard the regression that a future writer would need.
   Exercises SymbolicFeature.defaultSymbol; LoadFeatureSystem (HCLoader.cs:2650-2667) never sets a
   default value on any SymbolicFeature it builds -- the engine's DefaultSymbolID/DefaultValue has no
   HCLoader writer.
