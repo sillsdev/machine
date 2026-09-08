@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using SIL.Machine.FeatureModel;
 
@@ -58,6 +59,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         {
             CheckCalls = CheckRejects = Merges = ExactUnifyFailures = 0;
             AnalysisAffixApplyCalls = AnalysisUnapplied = LexicalLookupCandidates = SynthesisAffixApplyCalls = 0;
+            MergedAnalysesWidened = 0;
         }
 
         /// <summary>PU(required, out): the most general syntactic FS synthesis can produce from this rule.</summary>
@@ -74,9 +76,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         {
             Interlocked.Increment(ref CheckCalls);
             bool ok =
-                Mode == AnalysisSyntacticFeatureMergeMode.Exact
-                    ? checkFs.IsUnifiable(input)
-                    : outFs.IsUnifiable(input);
+                Mode == AnalysisSyntacticFeatureMergeMode.Exact ? checkFs.IsUnifiable(input) : outFs.IsUnifiable(input);
             if (!ok)
                 Interlocked.Increment(ref CheckRejects);
             return ok;
@@ -118,6 +118,50 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     }
                     break;
             }
+        }
+
+        /// <summary>
+        /// Fold a template's constraint into the words produced by un-applying its slots. All modes keep
+        /// master's Add of Unify(input FS, template required). An exact variant (unify only the template's own
+        /// required FS) is unsound today: the template battery dedups its outputs with Word equality, which
+        /// ignores the syntactic FS, so two templates that share a slot rule but differ in required POS collapse
+        /// to one word, and only the Add-union keeps the survivor's FS general enough for both (see
+        /// AffixTemplateTests.SameRuleUsedInMultipleTemplates). Fixing that needs FS-aware dedup first.
+        /// </summary>
+        public static IEnumerable<Word> MergeTemplateRequired(
+            IEnumerable<Word> output,
+            FeatureStruct inputUnifiedWithRequired,
+            FeatureStruct templateRequired
+        )
+        {
+            foreach (Word outWord in output)
+                outWord.SyntacticFeatureStruct.Add(inputUnifiedWithRequired);
+            return output;
+        }
+
+        /// <summary>
+        /// When Morpher.MergeEquivalentAnalyses folds a same-shape analysis into a canonical word, lower strata
+        /// are un-applied against the canonical word's syntactic FS only (the alternatives' trails are replayed
+        /// onto the canonical's descendants by Word.ExpandAlternatives). The canonical FS must therefore be the
+        /// generalisation of every merged analysis' FS, or a rule that is valid for an alternative is pruned.
+        /// FeatureStruct.Union is that generalisation: features present in both keep the union of their values,
+        /// features present in only one are dropped (unconstrained).
+        /// </summary>
+        public static bool WidenMergedAnalyses = true;
+        public static long MergedAnalysesWidened;
+
+        public static void WidenMergedAnalysis(Word canonical, Word alternative)
+        {
+            if (!WidenMergedAnalyses)
+                return;
+            FeatureStruct a = canonical.SyntacticFeatureStruct;
+            FeatureStruct b = alternative.SyntacticFeatureStruct;
+            if (a.ValueEquals(b))
+                return;
+            FeatureStruct widened = a.Clone();
+            widened.Union(b);
+            canonical.SyntacticFeatureStruct = widened;
+            Interlocked.Increment(ref MergedAnalysesWidened);
         }
 
         /// <summary>Remove from <paramref name="fs"/> every leaf feature path that <paramref name="paths"/> defines.</summary>

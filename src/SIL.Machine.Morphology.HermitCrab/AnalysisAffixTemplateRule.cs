@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
+using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 using SIL.Machine.Rules;
 using SIL.ObjectModel;
 
@@ -50,9 +51,11 @@ namespace SIL.Machine.Morphology.HermitCrab
             else
                 ParallelApplySlots(inWord, output);
 
-            foreach (Word outWord in output)
-                outWord.SyntacticFeatureStruct.Add(fs);
-            return output;
+            return AnalysisSyntacticFeatureMerge.MergeTemplateRequired(
+                output,
+                fs,
+                _template.RequiredSyntacticFeatureStruct
+            );
         }
 
         private void ApplySlots(Word inWord, int index, HashSet<Word> output)

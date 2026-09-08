@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using SIL.Machine.Annotations;
+using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 using SIL.Machine.Rules;
 using SIL.ObjectModel;
 
@@ -157,6 +158,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     if (shapeWord.TryGetValue(shape, out canonicalWord))
                     {
                         canonicalWord.Alternatives.Add(mruleOutWord);
+                        AnalysisSyntacticFeatureMerge.WidenMergedAnalysis(canonicalWord, mruleOutWord);
                         continue;
                     }
                     shapeWord[shape] = mruleOutWord;

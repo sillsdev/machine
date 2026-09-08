@@ -41,9 +41,7 @@ public class FsMergeBench
 
         (Language language, List<string> words) = Load();
         var morpher = new Morpher(new TraceManager(), language, maxDegreeOfParallelism: 1);
-        int timeoutMs = int.TryParse(Environment.GetEnvironmentVariable("HC_FSM_TIMEOUT_MS"), out int t)
-            ? t
-            : 180000;
+        int timeoutMs = int.TryParse(Environment.GetEnvironmentVariable("HC_FSM_TIMEOUT_MS"), out int t) ? t : 180000;
 
         using var writer = new StreamWriter(outPath!, append: false);
         for (int index = 0; index < words.Count; index++)
