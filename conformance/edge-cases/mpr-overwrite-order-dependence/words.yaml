@@ -1,0 +1,118 @@
+# MPR overwrite-group order dependence. See grammar.xml's own header for the full design; this
+# pins the one consequence of outputType="overwrite" that edge-cases/morphotactic-attribute-breadth
+# leaves untouched: on an UNORDERED stratum, two rules that both write an overwrite group can apply
+# in either relative order, and the group's final content depends on which one wrote LAST. A third
+# rule gated on requiredMPRFeatures naming one of the two members therefore succeeds under one
+# derivation order and fails under the reverse -- the same morpheme set (root + mrSetX + mrSetY +
+# mrGateX), two different outcomes, attributable only to which order the first two rules fired in.
+#
+# Oracle: the C# founding oracle
+# (src/SIL.Machine.Morphology.HermitCrab.Conformance, run directly in this checkout -- this worktree
+# IS the machine repo, so no submodule widening was needed). Every signature below is transcribed
+# verbatim from --propose output, not hand-derived.
+#
+# Design of the word list:
+#   dabo/femo           bare-root controls: the grammar loads and admits a free root on each probe.
+#   daboxayu/daboyuxa   overwriteGroup, both relative orders of mrSetX/mrSetY alone (no gate yet) --
+#                       establishes that both orders are independently reachable and that each
+#                       produces a DIFFERENT surface string (the suffix concatenation order is a
+#                       fingerprint of which rule fired first), before the gate is layered on.
+#   daboxayuzi          mrSetX then mrSetY then mrGateX: mrSetY wrote LAST, so overwriteGroup's
+#                       eviction (MprFeatureSet.AddOutput) removes mprX before mrGateX's
+#                       requiredMPRFeatures="mprX" is checked. THE negative control: no valid
+#                       derivation exists for this exact surface string once the gate is added, even
+#                       though the string differs from daboyuxazi only in affix order.
+#   daboyuxazi          mrSetY then mrSetX then mrGateX: mrSetX wrote LAST, so mprX survives and
+#                       mrGateX succeeds. THE positive control -- same three rules, same root, same
+#                       gate, reversed order, opposite outcome.
+#   femopiqu/femoqupi   appendGroup mirror of daboxayu/daboyuxa: both orders of mrSetP/mrSetQ alone.
+#   femopiquvo          mrSetP then mrSetQ then mrGatePQ: append never evicts, so both mprP and mprQ
+#                       are present and mrGatePQ (requiredMPRFeatures="mprP mprQ") succeeds.
+#   femoqupivo          mrSetQ then mrSetP then mrGatePQ: the reverse order, SAME outcome (succeeds)
+#                       -- the control that attributes daboxayuzi/daboyuxazi's order-sensitivity to
+#                       outputType="overwrite" itself, not to some incidental difference between the
+#                       two probes' rule shapes (which are otherwise identical apart from the group's
+#                       outputType and the gate's matchType).
+
+language: MprOverwriteOrderDependence
+inspired_by: ["synthetic MPR-overwrite-group order-dependence probe (not modeling any real language)"]
+sources:
+  - "conformance/edge-cases/morphotactic-attribute-breadth (outputType coverage this fixture extends: order-dependence on an unordered stratum, not pinned there)"
+requires: []
+words:
+  - word: dabo
+    note: Bare free root. The overwrite probe's own control that the grammar loads and admits a complete word at all.
+    parses:
+      - signature: "DABO|dabo"
+        rules: []
+
+  - word: femo
+    note: Bare free root. The append probe's own control, isolated from dabo (no shared letters, no shared rule).
+    parses:
+      - signature: "FEMO|femo"
+        rules: []
+
+  - word: daboxayu
+    note: >-
+      mrSetX then mrSetY, no gate yet. Establishes that this relative order is reachable and that it
+      produces a surface string distinct from the reverse order (daboyuxa) -- the suffix
+      concatenation order is a fingerprint of which rule fired first on this Unordered stratum.
+    parses:
+      - signature: "DABO+SETX+SETY|daboxayu"
+        rules: [mrSetX, mrSetY]
+
+  - word: daboyuxa
+    note: mrSetY then mrSetX, the reverse order of daboxayu, no gate yet.
+    parses:
+      - signature: "DABO+SETY+SETX|daboyuxa"
+        rules: [mrSetX, mrSetY]
+
+  - word: daboxayuzi
+    note: >-
+      THE negative control: mrSetX then mrSetY then mrGateX. mrSetY wrote overwriteGroup LAST, so
+      MprFeatureSet.AddOutput evicts mprX before mrGateX's requiredMPRFeatures="mprX" is checked --
+      no valid derivation exists for this surface string. An engine that let outputType="overwrite"
+      silently degenerate to "append" (or ignored requiredMPRFeatures entirely) would wrongly accept
+      this.
+    expect_fail: true
+    blocked_by: [mrGateX]
+
+  - word: daboyuxazi
+    note: >-
+      THE positive control: mrSetY then mrSetX then mrGateX -- the same three rules and the same
+      root as daboxayuzi, reversed order. mrSetX wrote overwriteGroup LAST, so mprX survives and
+      mrGateX's requiredMPRFeatures="mprX" succeeds. Same morpheme set as daboxayuzi; opposite
+      outcome, attributable only to which of mrSetX/mrSetY applied last.
+    parses:
+      - signature: "DABO+SETY+SETX+GATEX|daboyuxazi"
+        rules: [mrGateX, mrSetX, mrSetY]
+
+  - word: femopiqu
+    note: mrSetP then mrSetQ, no gate yet -- the appendGroup mirror of daboxayu.
+    parses:
+      - signature: "FEMO+SETP+SETQ|femopiqu"
+        rules: [mrSetP, mrSetQ]
+
+  - word: femoqupi
+    note: mrSetQ then mrSetP, the reverse order of femopiqu, no gate yet.
+    parses:
+      - signature: "FEMO+SETQ+SETP|femoqupi"
+        rules: [mrSetP, mrSetQ]
+
+  - word: femopiquvo
+    note: >-
+      mrSetP then mrSetQ then mrGatePQ. appendGroup's outputType="append" never evicts, so both mprP
+      and mprQ are present and mrGatePQ's requiredMPRFeatures="mprP mprQ" (matchType="all") succeeds.
+    parses:
+      - signature: "FEMO+SETP+SETQ+GATEPQ|femopiquvo"
+        rules: [mrGatePQ, mrSetP, mrSetQ]
+
+  - word: femoqupivo
+    note: >-
+      mrSetQ then mrSetP then mrGatePQ -- the reverse order of femopiquvo. SAME outcome (succeeds):
+      the control that attributes daboxayuzi/daboyuxazi's order-sensitivity to outputType="overwrite"
+      itself, since this probe is identical in shape apart from the group's outputType and the gate's
+      matchType, and order does NOT matter here.
+    parses:
+      - signature: "FEMO+SETQ+SETP+GATEPQ|femoqupivo"
+        rules: [mrGatePQ, mrSetP, mrSetQ]

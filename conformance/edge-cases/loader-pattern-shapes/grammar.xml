@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+	<Language>
+		<Name>N3-PatternShapes</Name>
+		<PartsOfSpeech>
+			<PartOfSpeech id="n">
+				<Name>Noun</Name>
+			</PartOfSpeech>
+		</PartsOfSpeech>
+		<CharacterDefinitionTable id="t1">
+			<Name>N3 Orthography</Name>
+			<SegmentDefinitions>
+				<SegmentDefinition id="cB">
+					<Representations>
+						<Representation>b</Representation>
+					</Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="cT">
+					<Representations>
+						<Representation>t</Representation>
+					</Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="cA">
+					<Representations>
+						<Representation>a</Representation>
+					</Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="cE">
+					<Representations>
+						<Representation>e</Representation>
+					</Representations>
+				</SegmentDefinition>
+			</SegmentDefinitions>
+		</CharacterDefinitionTable>
+		<NaturalClasses>
+			<!-- Referenced from the root allomorph's PhoneticShape below by NAME ("Vowel"), not by
+			     this "ncVowel" id: C# LoadNaturalClass keys _naturalClassLookup by <Name> text
+			     (XmlLanguageLoader.cs:704,713,719), a different key than SimpleContext's id-based
+			     lookup used elsewhere in the DTD. -->
+			<SegmentNaturalClass id="ncVowel">
+				<Name>Vowel</Name>
+				<Segment segment="cA" />
+				<Segment segment="cE" />
+			</SegmentNaturalClass>
+		</NaturalClasses>
+		<Strata>
+			<Stratum characterDefinitionTable="t1">
+				<Name>main</Name>
+				<LexicalEntries>
+					<!-- The pattern-language fallback (audit C finding N3): "b[Vowel]t" has no
+					     literal character definition matching "[", so C# CharacterDefinitionTable.
+					     GetShapeNodes(allowPattern=true) (LoadRootAllomorph's allowPattern=true call,
+					     the ONLY such call site) resolves "[Vowel]" via the natural class instead,
+					     producing a shape node that matches either "a" or "e" at that position. -->
+					<LexicalEntry id="e1" partOfSpeech="n">
+						<Allomorphs>
+							<Allomorph id="a1">
+								<PhoneticShape>b[Vowel]t</PhoneticShape>
+							</Allomorph>
+						</Allomorphs>
+						<Gloss>bVt</Gloss>
+					</LexicalEntry>
+					<!-- G5 (code-coverage-driven): the optional-group "(...)" branch of GetShapeNodes
+					     (allowPattern) was the one pattern-language construct N3 didn't already cover.
+					     "b([Vowel])t" makes the middle position OPTIONAL, so this one lexical entry
+					     matches "bt" (vowel absent) as well as "bat"/"bet" (vowel present). -->
+					<LexicalEntry id="e2" partOfSpeech="n">
+						<Allomorphs>
+							<Allomorph id="a2">
+								<PhoneticShape>b([Vowel])t</PhoneticShape>
+							</Allomorph>
+						</Allomorphs>
+						<Gloss>bt</Gloss>
+					</LexicalEntry>
+				</LexicalEntries>
+			</Stratum>
+		</Strata>
+	</Language>
+</HermitCrabInput>

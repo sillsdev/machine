@@ -1,0 +1,107 @@
+# oracle-provenance: founding-oracle
+# Verified against the C# founding oracle (hc.dll, via hc-conformance.exe self-check,
+# `dotnet run --project src/SIL.Machine.Morphology.HermitCrab.Conformance -c Release -- --fixtures
+# conformance --propose --include-pathological`) built from this worktree. Signatures below are
+# transcribed verbatim from that run, not hand-derived.
+#
+# Isolates cross-table RESPELLING with NO phonological rule anywhere in the grammar -- see
+# grammar.xml's own header comment for the full mechanism (CharacterDefinitionTable.
+# GetMatchingStrReps, matching by FeatureStruct.IsUnifiable alone). Unlike
+# edge-cases/rewrite-analysis-feature-neutralization (where a rewrite rule is present, though not
+# load-bearing for the respelling itself) and edge-cases/bistratal-overlapping-segment-representation
+# (disjoint table IDENTITY despite overlapping SPELLING), this fixture has zero PhonologicalRule/
+# MetathesisRule elements and disjoint table ALPHABETS, so the only possible source of the observed
+# behavior is bundle equality across tables.
+
+language: CrossTableRootRespelling
+inspired_by: ["synthetic cross-table respelling probe, phonology-rule-free (not modeling any real language)"]
+sources:
+  - "src/SIL.Machine.Morphology.HermitCrab/CharacterDefinitionTable.cs"
+requires: []
+words:
+  - word: t
+    note: >-
+      ROOT3 ("t", entered natively on the Final stratum, table tFin, bundle X) coexists with ROOT1
+      ("m", entered on the Inner stratum, table tIn, also bundle X) respelled by tFin's own "t"
+      segment (cB1) -- no rule anywhere in this grammar changes ROOT1's shape; the respelling is
+      purely the loader's bundle-equality lookup at the Final stratum's table. Two analyses: this is
+      the positive construct witness, proving respelling coexists with a native root at the same
+      surface spelling rather than being shadowed by it.
+    provenance: "src/SIL.Machine.Morphology.HermitCrab/CharacterDefinitionTable.cs GetMatchingStrReps"
+    parses:
+      - signature: "ROOT1|m"
+        rules: []
+        exercises:
+          - "CharacterDefinitionTable: more than one table, one per stratum"
+          - "CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)"
+      - signature: "ROOT3|t"
+        rules: []
+        exercises:
+          - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: tu
+    note: >-
+      Two analyses, and the ROOT1 one carries a second, subtler finding beyond respelling-under-
+      affixation. mrSuffix (declared on the Final stratum) applies equally to ROOT1 (Inner) and
+      ROOT3 (Final): for ROOT3, HermitCrabExtensions.ToRegexString renders the whole shape through
+      the word's own (Final) stratum table, where both "t" and "u" have native spellings, giving
+      "ROOT3+SUF|tu". For ROOT1, the same rendering call uses the Inner stratum's table instead
+      (Word.Stratum tracks where the analysis bottomed out, not where every morph attached), and
+      Inner's table has NO segment matching SUF's own bundle (W) at all -- not even a respelling.
+      ToRegexString's own strReps-count check (GetMatchingStrReps returning zero matches) means that
+      segment contributes NOTHING to the rendered string rather than an error or placeholder, so the
+      suffix's own segment is silently absent from "ROOT1+SUF|m" even though SUF genuinely applied
+      (confirmed by two distinct analyses of one two-morpheme surface word). This is the same
+      GetMatchingStrReps lookup the fixture's respelling witness ("t") depends on, on its zero-match
+      branch rather than its single-match branch.
+    provenance: "src/SIL.Machine.Morphology.HermitCrab/HermitCrabExtensions.cs ToRegexString"
+    parses:
+      - signature: "ROOT1+SUF|m"
+        rules: [mrSuffix]
+        exercises:
+          - "CharacterDefinitionTable: more than one table, one per stratum"
+          - "CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)"
+      - signature: "ROOT3+SUF|tu"
+        rules: [mrSuffix]
+        exercises:
+          - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: q
+    note: >-
+      ROOT2's own raw spelling ("q", table tIn, bundle Y). tFin declares no segment with bundle Y at
+      all, so no string over tFin's own alphabet (t/s/u) can ever reach ROOT2 by bundle equality --
+      it is permanently unreachable, unlike ROOT1. This word only demonstrates the narrower fact that
+      tFin does not even declare "q" as a character, so tokenization itself fails before lexical
+      lookup is ever attempted.
+    expect_skip: true
+    exercises:
+      - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: m
+    note: >-
+      ROOT1's own raw spelling ("m", table tIn), typed at the surface. tFin (the grammar's LAST
+      stratum) does not declare "m" as a character at all, so the founding oracle cannot even
+      tokenize this input -- proving the character-identity route is closed off and only the
+      bundle-equivalence route (surfacing as "t") reaches ROOT1.
+    expect_skip: true
+    exercises:
+      - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: s
+    note: >-
+      cB2's own spelling alone ("s", tFin, bundle Z). No lexical entry in this grammar carries bundle
+      Z, so this is a plain negative control: a well-formed tFin character that no root maps to.
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: su
+    note: >-
+      A well-formed string over tFin's own alphabet (s/u both legitimate tFin segments) that is
+      simply not any lexical entry's own shape or any rule's output -- a plain negative control
+      proving tFin's inventory coverage alone doesn't manufacture spurious analyses.
+    expect_fail: true
+
+  - word: ts
+    note: "Same kind of negative control as 'su', a different well-formed non-entry, non-rule-output string over tFin's own alphabet."
+    expect_fail: true

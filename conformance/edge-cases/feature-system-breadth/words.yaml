@@ -1,0 +1,242 @@
+# Feature-system and phonological-rule breadth. See grammar.xml's header for the design.
+#
+# Oracle: the C# founding oracle (conformance/adapters/hc-dotnet-wrapper.sh batch over a Debug build
+# of src/SIL.Machine.Morphology.HermitCrab.Tool). Every signature is transcribed from that run.
+#
+# What each control isolates:
+#   ik    prRaise fires: underlying "ak" surfaces with a raised vowel before "k". Also the observation
+#         that prDecoy is inactive, since prDecoy would turn the "i" straight back into "a" and this
+#         word would not exist.
+#   ak    the unraised underlying form is NOT a surface word, which is what makes prRaise load-bearing.
+#   at    prRaise's SECOND subrule is inactive; were it loaded it would raise this vowel before "t"
+#         too and "at" would not parse. NOT a control for the inactive FeatureValue on "t" (see "ts"
+#         below for that): "ncT" is an explicit SegmentNaturalClass membership list, not a
+#         feature-value bracket, so it never consults cT's own featHigh value at all.
+#   isk   prAlpha fires with polarity="minus" on the output, flipping the vowel's height before "s".
+#   ask   the unflipped underlying form is not a surface word.
+#   ka    mtDecoy is inactive; were it loaded it would swap this "k a" pair and "ka" would not parse.
+#   it    mtSwap fires right-to-left, swapping the root's "t i" pair.
+#   ti    the unswapped underlying form is not a surface word.
+#
+# Every segment carries a unique feature bundle deliberately. An earlier draft gave t, k, l and s the
+# same bundle and the oracle's own rendering collapsed them into a bracketed alternates class
+# ("AK|a[tkls]"), which also gave every word spurious extra analyses.
+#
+# tkl/tlk/ktl  mtSwapOverlap's ncOvA/ncOvB classes deliberately share segment "k", so a 3-segment run
+#              like "tkl" has two overlapping candidate windows (t-k and k-l). rightToLeftIterative
+#              (this fixture's declared order) finds the RIGHTMOST window first (k-l), swapping it to
+#              "tlk"; leftToRightIterative would find the LEFTMOST window first (t-k) instead, giving
+#              "ktl". Confirmed against the C# oracle with both orders by hand.
+# ts           prHighTrigger's probe for the decoy FeatureValue on cT: unaffected while cT is hiMinus
+#              (its declared value); if the decoy activated, cT would ALSO carry hiPlus (the later
+#              FeatureValue wins, so the earlier hiMinus is simply overwritten -- not a "contradictory
+#              value" as an earlier draft of this file guessed, and the counterfactual sweep bore that
+#              out: activating it changed nothing until this word and prHighTrigger existed to consume
+#              the resulting value).
+# salk         mrSuffixK's probe for eSal's ExcludedEnvironments: refused here, because aSal is
+#              excluded before ncK and mrSuffixK's own suffix begins with "k".
+#
+# ComplexFeature, SymbolicFeature, SegmentNaturalClass and FeatureNaturalClass's own isActive="no"
+# declarations (cfDecoy/featDecoy/ncDecoy/ncFDecoy) are freestanding TYPE declarations rather than
+# rules: the loader only adds an active one to its lookup dictionary, so any reference to it while
+# inactive throws immediately at load time, and no single flip can ever observe one. Each is paired
+# with an inactive partner that is its sole referent (eDecCf/prDecFeat/prDecNc/prDecFnc), evidenced
+# only by CounterfactualGate.EvaluateJointly's three-run protocol: cfDecoy+eDecCf jointly makes "tal"
+# (below) newly parse; featDecoy+prDecFeat and ncFDecoy+prDecFnc jointly change "ik"'s parse;
+# ncDecoy+prDecNc jointly changes "sal"'s.
+
+language: FeatureSystemBreadth
+inspired_by: ["synthetic feature-system and rule-deactivation probe (not modeling any real language)"]
+sources:
+  - "conformance/semantic-coverage-baseline.txt feature-system todo entries"
+requires: [phonology]
+words:
+  - word: ik
+    note: >-
+      prRaise raises the vowel before "k". Also the control for PhonologicalRule@isActive="no": prDecoy
+      would lower every "i" back to "a", so this surface form could not exist if it were loaded.
+    neutralizes:
+      - prDecoy
+    parses:
+      - signature: "AK|ik"
+        rules: [prRaise]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: ak
+    note: The unraised underlying form is not a surface word, so prRaise is load-bearing.
+    expect_fail: true
+    exercises:
+      - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: at
+    note: >-
+      Control for PhonologicalSubrule@isActive="no". The inactive subrule would raise this vowel
+      before "t". NOT a control for the inactive FeatureValue on "t" (see "ts" for that): "ncT" is a
+      SegmentNaturalClass membership list and never consults cT's own featHigh value.
+    neutralizes:
+      - PhonologicalSubrule
+    parses:
+      - signature: "AT|at"
+        rules: []
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: sal
+    note: Plain control over the same alphabet, and the allomorph that carries ExcludedEnvironments.
+    parses:
+      - signature: "SAL|sal"
+        rules: []
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: isk
+    note: >-
+      prAlpha fires: polarity="minus" on the output takes the opposite value of the variable bound on
+      the input, so the underlying vowel flips height before "s".
+    parses:
+      - signature: "ASK|isk"
+        rules: [prAlpha]
+        exercises:
+          - "Alpha-variable phonological environments (VariableFeature/AlphaVariables)"
+
+  - word: ask
+    note: The unflipped underlying form is not a surface word, so prAlpha is load-bearing.
+    expect_fail: true
+    exercises:
+      - "Alpha-variable phonological environments (VariableFeature/AlphaVariables)"
+
+  - word: it
+    note: >-
+      mtSwap fires: the root "ti" surfaces with its pair swapped. The rule names the LATER pattern
+      group as its left switch, which is the only orientation the engine supports; see grammar.xml.
+      This word evidences the RULE, not its multipleApplicationOrder value, which the counterfactual
+      sweep finds unobservable here.
+    parses:
+      - signature: "TI|it"
+        rules: [mtSwap]
+        exercises:
+          - "MetathesisRule"
+
+  - word: ti
+    note: The unswapped underlying form is not a surface word, so mtSwap is load-bearing.
+    expect_fail: true
+    exercises:
+      - "MetathesisRule"
+
+  - word: ikt
+    note: >-
+      Ordering probe for mtSwap~mtSwapOverlap (TIK, "tik"): mtSwap fires first ("tik" -> "itk"),
+      bringing "t" newly adjacent to "k"; that window matches mtSwapOverlap's own switch classes
+      (ncOvA={t,k}, ncOvB={k,l}), so mtSwapOverlap then also fires ("itk" -> "ikt"). This is the
+      fixture's DECLARED order (mtSwap listed before mtSwapOverlap); see itk below for what the
+      swapped order produces instead. Two analyses share this surface: the bare TIK root, and TI +
+      mrSuffixK's "-k" suffix (previously unexercised in this fixture), which happens to reach the
+      same "tik" before phonology. Both traces additionally carry prRaise: the reverse search also
+      considers whether this word's "i before k" could be prRaise's own raised "a" (the same
+      environment AK/ik's own pair exercises below), the same ambiguous-analysis trace-union this
+      corpus documents elsewhere (see polysynthetic-stratal-derivation-chain's bubu word).
+    parses:
+      - signature: "TI+SUF|ikt"
+        rules: [mrSuffixK, mtSwap, mtSwapOverlap, prRaise]
+        exercises:
+          - "MetathesisRule"
+      - signature: "TIK|ikt"
+        rules: [mtSwap, mtSwapOverlap, prRaise]
+        exercises:
+          - "MetathesisRule"
+
+  - word: itk
+    note: >-
+      What mtSwap~mtSwapOverlap SWAPPED would produce from the same TIK root ("tik"): mtSwapOverlap
+      runs first over the unswapped "tik", where the segment before "k" is still "i" (in neither
+      ncOvA nor ncOvB), so it does not fire; only mtSwap's own swap happens ("tik" -> "itk"), and
+      mtSwapOverlap never gets a second look. Not a valid surface form under this fixture's declared
+      order; the negative control that shows the order actually matters.
+    expect_fail: true
+    blocked_by: [mtSwapOverlap]
+    exercises:
+      - "MetathesisRule"
+
+  - word: tik
+    note: The raw underlying shape of TIK, with neither swap applied -- mtSwap is obligatory wherever a "t" is directly followed by "i", so this surface form can never itself be a valid analysis (see ikt).
+    expect_fail: true
+    blocked_by: [mtSwap]
+    exercises:
+      - "MetathesisRule"
+
+  - word: ka
+    note: >-
+      Control for MetathesisRule@isActive="no". mtDecoy would swap this "k a" pair, so the root
+      surfacing unchanged is what observes its deactivation.
+    neutralizes:
+      - mtDecoy
+    parses:
+      - signature: "KA|ka"
+        rules: []
+        exercises:
+          - "MetathesisRule"
+
+  - word: tkl
+    note: >-
+      mtSwapOverlap's own raw underlying shape. Its two switch classes (ncOvA={t,k}, ncOvB={k,l})
+      share segment "k", so the rule fires obligatorily on one of the two overlapping windows; this
+      exact string is not a valid surface form.
+    expect_fail: true
+    exercises:
+      - "MetathesisRule"
+
+  - word: tlk
+    note: >-
+      mtSwapOverlap's correctly-rewritten surface form under rightToLeftIterative (this fixture's
+      declared order): scanning right to left, the rightmost window (k-l, positions 2-3) is found
+      first and swapped, giving "t" + "lk" = "tlk". The leftmost window (t-k) is never reached: it
+      would need to start at position 1, but position 2 was already consumed by the first swap.
+    neutralizes:
+      - mtSwapOverlap
+    parses:
+      - signature: "TKL|tlk"
+        rules: [mtSwapOverlap]
+        exercises:
+          - "MetathesisRule"
+
+  - word: ktl
+    note: >-
+      What mtSwapOverlap would produce on "tkl" under leftToRightIterative instead: scanning left to
+      right, the leftmost window (t-k, positions 1-2) is found first and swapped, giving "k" + "tl" =
+      "ktl". Not a valid surface form under this fixture's declared rightToLeftIterative order; kept
+      as the negative control that shows direction matters.
+    expect_fail: true
+    exercises:
+      - "MetathesisRule"
+
+  - word: ts
+    note: >-
+      prHighTrigger's own probe. "t" (cT) is hiMinus, so it is not a member of ncHighCons and the
+      rule never fires.
+    neutralizes:
+      - prHighTrigger
+    parses:
+      - signature: "TS|ts"
+        rules: []
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: salk
+    note: >-
+      mrSuffixK's probe for eSal's ExcludedEnvironments. aSal is excluded whenever followed by ncK,
+      and mrSuffixK's own suffix begins with "k" (segment cK), so this word has no analysis: not via
+      aSal (excluded here) and there is no other allomorph for SAL.
+    expect_fail: true
+    exercises:
+      - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: tal
+    note: >-
+      Joint control for ComplexFeature@isActive="no". eDecCf is an inactive entry whose
+      AssignedHeadFeatures names the inactive cfDecoy, so neither alone is observable: activating
+      cfDecoy leaves nothing referencing it, and activating eDecCf alone dangles its cfDecoy
+      reference and refuses to load. Only both together admit this word.
+    expect_fail: true
+    exercises:
+      - "Element deactivation (isActive) across loader collections"

@@ -1,0 +1,53 @@
+# Presence-only waivers
+#
+# A surface counted as covered must have evidence behind it: a verified parse attributed to the rule
+# that owns the construct (trace), a verified failing word observing a deactivated declaration
+# (negative-control), or at minimum the load path of a fixture that parses (structural).
+#
+# "presence" means declared in a grammar and never exercised. It is NOT coverage. Each line below is
+# a surface that is currently counted as covered on presence alone, with the reason it has not been
+# fixed. The gate requires this file to equal the recomputed presence-only set exactly, so the list
+# cannot grow silently and a fixed line must be deleted.
+#
+# Format: one surface ID per line. Blank lines and lines starting with "#" are ignored.
+
+# The inactive PhonologicalFeatureSystem in edge-cases/loader-isactive is observed by the grammar
+# LOADING at all rather than by a failing word: were it loaded, "voi" would resolve against the wrong
+# block and the whole grammar would fail. Distinguishing "a decoy that would change the result" from
+# "a decoy nothing reads" requires per-construct counterfactuals, which do not exist in this repo yet
+# (plan Task 5, CounterfactualGenerator). Until then this is honestly presence, not evidence.
+dtd:enum/PhonologicalFeatureSystem/isActive/no
+
+# The six decoys in edge-cases/loader-isactive-breadth that no word targets. Each is declared so the
+# enumerated value exists on that element; removing its isActive="no" would change no result in that
+# fixture, which the grammar's own header states. They are waived rather than counted so the headline
+# number matches the prose. Giving each a discriminating word is the fix; see grammar.xml's header for
+# what such a word would have to observe.
+dtd:enum/CharacterDefinitionTable/isActive/no
+dtd:enum/Family/isActive/no
+dtd:enum/FeatureNaturalClass/isActive/no
+dtd:enum/MorphologicalPhonologicalRuleFeature/isActive/no
+
+# Three inactive declarations in edge-cases/morphotactic-attribute-breadth that no word can observe.
+# Each would need a word combining two roots, and that fixture has no compounding rule: unconstrained
+# head/non-head patterns made the analyser non-terminating there (the C# oracle did not finish in ten
+# minutes on three words), so compounding is deliberately elsewhere. Giving these discriminating words
+# means adding a bounded compounding rule to that grammar.
+dtd:enum/AllomorphCoOccurrenceRule/isActive/no
+dtd:enum/MorphemeCoOccurrenceRule/isActive/no
+dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/isActive/no
+
+# Three inactive declarations in edge-cases/feature-system-breadth that are deliberately referenced by
+# nothing, because a reference would dangle when the declaration is correctly dropped, and that same
+# absence leaves no word able to observe them.
+dtd:enum/ComplexFeature/isActive/no
+dtd:enum/SegmentNaturalClass/isActive/no
+dtd:enum/SymbolicFeature/isActive/no
+
+
+
+# edge-cases/feature-system-breadth discriminates this with a feature-value bracket that consults the
+# decoy, and the counterfactual sweep evidences it. The trace grader only credits a deactivated
+# declaration that a word names in neutralizes:, and the discriminating word here is a positive
+# parse rather than a failure, so it cannot carry that key.
+dtd:enum/FeatureValue/isActive/no

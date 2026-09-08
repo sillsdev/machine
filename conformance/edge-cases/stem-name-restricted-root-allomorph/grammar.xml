@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>StemNameRestrictedRootAllomorph</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- requires: [] - pure morphotactics, zero PhonologicalRule/MetathesisRule elements. StemName
+         gating operates on the word's accumulated syntactic feature structure (featPers below), not
+         on phonological segments, so no PhonologicalFeatureSystem is needed either. -->
+    <HeadFeatures>
+      <SymbolicFeature id="featPers"><Name>pers</Name><Symbols><Symbol id="symP1">1</Symbol><Symbol id="symP2">2</Symbol></Symbols></SymbolicFeature>
+    </HeadFeatures>
+    <!-- ONE StemName region, covering only featPers=1 - the smallest grammar that can distinguish
+         RootAllomorphDef::stem_name's two halves (C# StemName.IsRequiredMatch/IsExcludedMatch):
+         an allomorph carrying stemName="snP1" is a REQUIRED match (valid only when the word's FS
+         falls inside snP1's region); an allomorph with no stemName at all is an EXCLUDED match
+         (valid only when the word's FS falls OUTSIDE every declared StemName's region). -->
+    <StemNames>
+      <StemName id="snP1" partsOfSpeech="posV">
+        <Name>PrincipalPartP1</Name>
+        <Regions>
+          <Region><AssignedHeadFeatures><FeatureValue feature="featPers" symbolValues="symP1" /></AssignedHeadFeatures></Region>
+        </Regions>
+      </StemName>
+    </StemNames>
+    <CharacterDefinitionTable id="t1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="ct"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="ca"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cm"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="ck"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cp"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="co"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cu"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cr"><Representations><Representation>r</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered" morphologicalRules="mrPers1 mrPers2">
+        <Name>S</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- Assigns featPers=1 - puts the word's FS inside snP1's region, so the stemName="snP1"
+               allomorph becomes the ONLY valid one and the unrestricted default becomes invalid. -->
+          <MorphologicalRule id="mrPers1" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>pers1</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPers1">
+                <MorphologicalInput><PhoneticSequence id="p1stem"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="p1stem" /><InsertSegments><PhoneticShape>om</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featPers" symbolValues="symP1" /></OutputHeadFeatures>
+            <MorphemeId>PERS1</MorphemeId>
+          </MorphologicalRule>
+          <!-- Assigns featPers=2 - outside snP1's region, so the default (unrestricted) allomorph
+               is the valid one and the stemName="snP1" allomorph is excluded. -->
+          <MorphologicalRule id="mrPers2" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>pers2</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPers2">
+                <MorphologicalInput><PhoneticSequence id="p2stem"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="p2stem" /><InsertSegments><PhoneticShape>ur</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featPers" symbolValues="symP2" /></OutputHeadFeatures>
+            <MorphemeId>PERS2</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <!-- One morpheme, two root allomorphs: "tam" unrestricted (valid only OUTSIDE snP1's
+               region), "kap" restricted to snP1 (valid only INSIDE it). Neither rule is required, so
+               the bare root itself is also a word: bare FS has no featPers assigned at all, which is
+               outside snP1's region, so only "tam" is valid bare. -->
+          <LexicalEntry id="eRoot" partOfSpeech="posV">
+            <Allomorphs>
+              <Allomorph id="aDefault"><PhoneticShape>tam</PhoneticShape></Allomorph>
+              <Allomorph id="aRestricted" stemName="snP1"><PhoneticShape>kap</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>ROOT</MorphemeId>
+            <Gloss>root</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

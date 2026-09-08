@@ -1,0 +1,679 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>FusionalRealizationalMorphology</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
+      <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+      <!-- posAblautV exists solely to keep mrAblaut from ever being tried against any OTHER posV
+           lexical entry: isolated probing found that with mrAblaut gated on the shared "posV", ANY
+           posV word containing "a" (e.g. "mano") got a spurious extra analysis where the "a" was
+           hypothesized as an ablaut-changed "i" reverting to some OTHER posV root (here, "mano"
+           reverted to "min" + ablaut, coincidentally also a real stem-name allomorph) - a genuine
+           cross-construct collision between two unrelated sections of one grammar, not a hand
+           derivation error. Giving SING its own POS confines mrAblaut's reversal search to exactly
+           the one root it is meant to describe. -->
+      <PartOfSpeech id="posAblautV"><Name>vAblaut</Name></PartOfSpeech>
+      <!-- posN1/posV1 and posN2/posV2 exist solely to keep the two CompoundingRules (mrCompoundHN,
+           mrCompoundNH) from both matching the SAME word: with both rules gated on the same generic
+           posN/posV and both using unrestricted wildcard head/nonhead patterns, isolated probing
+           found that mrCompoundNH ALSO matches "pannox" (reading it as nonhead="pan"+head="nox",
+           producing the identical PAN+NOXN|pan+?nox signature mrCompoundHN already derives), so every
+           compound word doubly-counted. Restricting each CompoundingRule's headPartsOfSpeech/
+           nonHeadPartsOfSpeech to its own disjoint POS pair confines it to its own lexical set. -->
+      <PartOfSpeech id="posN1"><Name>n1</Name></PartOfSpeech>
+      <PartOfSpeech id="posV1"><Name>v1</Name></PartOfSpeech>
+      <PartOfSpeech id="posN2"><Name>n2</Name></PartOfSpeech>
+      <PartOfSpeech id="posV2"><Name>v2</Name></PartOfSpeech>
+      <!-- G5 (code-coverage-driven), isolated per house style: mrCompoundConstrained below. posCompH
+           is also this compound's OWN outputPartOfSpeech, so a compound can in principle serve as
+           the head of a further compound ; used to demonstrate MaxApplicationCount rejecting a
+           third application (the DTD's own default multipleApplication="1" already caps a single
+           CompoundingRule to one application per derivation). -->
+      <PartOfSpeech id="posCompH"><Name>compH</Name></PartOfSpeech>
+      <PartOfSpeech id="posCompNH"><Name>compNH</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- requires: [] is a hard constraint for this grammar (mechanically re-derived from this file
+         every run: zero PhonologicalRule/MetathesisRule elements). Every alternation below is
+         achieved via ModifyFromInput, lexical (suppletive) allomorphs, stem names, or realizational
+         rules - all MorphologicalRule/RealizationalRule machinery, never a phonological rule.
+
+         A PhonologicalFeatureSystem is still declared (this doesn't affect requires: derivation,
+         which only looks for PhonologicalRule/MetathesisRule elements) because the one CHANGING
+         construct here - mrAblaut's ModifyFromInput ("sing"->"sang", ablaut as the SOLE exponent of
+         tense, no affix at all) - needs it for the same reason a phonological RewriteRule does (see
+         suffixing-vowel-harmony/words.yaml's header for the full finding): self-check's analysis-
+         direction reversal and Shape.ToRegexString's rendering both require the changed segment's
+         target (Lhs) and output (Rhs) to be a FeatureNaturalClass over a FULLY-SPECIFIED feature
+         system where EVERY segment's feature combination is unique - confirmed by isolated probing
+         that a partially-specified table renders as an ambiguous bracketed character class even for
+         segments no rule ever touches. The single symbolic feature "featId" below gives every
+         segment a unique value for exactly this reason; it carries no other linguistic meaning. -->
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featId">
+        <Name>id</Name>
+        <Symbols>
+          <Symbol id="fA">a</Symbol><Symbol id="fB">b</Symbol><Symbol id="fC">c</Symbol><Symbol id="fD">d</Symbol>
+          <Symbol id="fE">e</Symbol><Symbol id="fF">f</Symbol><Symbol id="fG">g</Symbol><Symbol id="fH">h</Symbol>
+          <Symbol id="fI">i</Symbol><Symbol id="fK">k</Symbol><Symbol id="fL">l</Symbol><Symbol id="fM">m</Symbol>
+          <Symbol id="fN">n</Symbol><Symbol id="fO">o</Symbol><Symbol id="fP">p</Symbol><Symbol id="fR">r</Symbol>
+          <Symbol id="fS">s</Symbol><Symbol id="fT">t</Symbol><Symbol id="fU">u</Symbol><Symbol id="fV">v</Symbol>
+          <Symbol id="fW">w</Symbol><Symbol id="fX">x</Symbol><Symbol id="fY">y</Symbol><Symbol id="fZ">z</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <HeadFeatures>
+      <SymbolicFeature id="featTense"><Name>tense</Name><Symbols><Symbol id="symPres">pres</Symbol><Symbol id="symPast">past</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featPers"><Name>pers</Name><Symbols><Symbol id="symP1">1</Symbol><Symbol id="symP2">2</Symbol><Symbol id="symP3">3</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featNum"><Name>num</Name><Symbols><Symbol id="symSg">sg</Symbol><Symbol id="symPl">pl</Symbol></Symbols></SymbolicFeature>
+    </HeadFeatures>
+    <!-- mpr-groups/output-overwrite: conjugation-theme features PEDA/PEDB in an overwrite group -
+         applying PEDB drops PEDA rather than accumulating it (matchType defaults to "any", not used
+         here; outputType="overwrite" is the point). morphologicalRuleOrder must be "linear" (see
+         Stratum below) for this to be observable at all, same as the v1 fixture's own inline note.
+         mpr-groups/required-all: two conjugation-class features (1st/2nd declension-ish) gated by
+         matchType="all" (G2), and two others gated by matchType="any" (G3, the DTD default, spelled
+         out here for symmetry with G2). All MorphologicalPhonologicalRuleFeature elements must
+         precede all MorphologicalPhonologicalRuleFeatureGroup elements per the DTD's content model
+         (features then groups, not interleaved). -->
+    <MorphologicalPhonologicalRuleFeatures>
+      <MorphologicalPhonologicalRuleFeature id="mprPedA">PedA</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprPedB">PedB</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprConjA">ConjA</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprConjB">ConjB</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprConjC">ConjC</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprConjD">ConjD</MorphologicalPhonologicalRuleFeature>
+      <!-- G5 (code-coverage-driven): mrCompoundConstrained's own gating features, distinct from the
+           mpr-groups material above (that's ordinary MorphologicalRule requiredMPRFeatures; this is
+           CompoundingRule's own headProdRestrictionsMprFeatures + per-subrule required/excluded MPR
+           features on HeadMorphologicalInput, previously zero coverage on the CompoundingRule side). -->
+      <MorphologicalPhonologicalRuleFeature id="mprCompReq">CompReq</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprSubA">CompSubA</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="any" outputType="overwrite" features="mprPedA mprPedB"><Name>ThemeGroup</Name></MorphologicalPhonologicalRuleFeatureGroup>
+      <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="all" outputType="overwrite" features="mprConjA mprConjB"><Name>AllGroup</Name></MorphologicalPhonologicalRuleFeatureGroup>
+      <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="any" outputType="overwrite" features="mprConjC mprConjD"><Name>AnyGroup</Name></MorphologicalPhonologicalRuleFeatureGroup>
+    </MorphologicalPhonologicalRuleFeatures>
+    <StemNames>
+      <!-- realizational/stem-name (principal parts): three suppletive stem alternants of one verb
+           ("bring"). sn1 covers 1st/2nd person, sn2 covers 1st/3rd - deliberately overlapping on 1st
+           person to exercise the region-difference algebra (a shared region between two stem names is
+           exempted from each other's exclusion check, per StemName.IsExcludedMatch), not plain
+           identity/inequality. The unrestricted default allomorph (no stemName) is valid only when NO
+           person feature is assigned at all (bare citation form) - since sn1 union sn2 already
+           exhausts the whole 1st/2nd/3rd person space, any person-marked form always falls inside one
+           of them. -->
+      <StemName id="snP1P2" partsOfSpeech="posV">
+        <Name>PrincipalPartA</Name>
+        <Regions>
+          <Region><AssignedHeadFeatures><FeatureValue feature="featPers" symbolValues="symP1" /></AssignedHeadFeatures></Region>
+          <Region><AssignedHeadFeatures><FeatureValue feature="featPers" symbolValues="symP2" /></AssignedHeadFeatures></Region>
+        </Regions>
+      </StemName>
+      <StemName id="snP1P3" partsOfSpeech="posV">
+        <Name>PrincipalPartB</Name>
+        <Regions>
+          <Region><AssignedHeadFeatures><FeatureValue feature="featPers" symbolValues="symP1" /></AssignedHeadFeatures></Region>
+          <Region><AssignedHeadFeatures><FeatureValue feature="featPers" symbolValues="symP3" /></AssignedHeadFeatures></Region>
+        </Regions>
+      </StemName>
+    </StemNames>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations><FeatureValue feature="featId" symbolValues="fA" /></SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations><FeatureValue feature="featId" symbolValues="fB" /></SegmentDefinition>
+        <SegmentDefinition id="cC"><Representations><Representation>c</Representation></Representations><FeatureValue feature="featId" symbolValues="fC" /></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations><FeatureValue feature="featId" symbolValues="fD" /></SegmentDefinition>
+        <SegmentDefinition id="cE"><Representations><Representation>e</Representation></Representations><FeatureValue feature="featId" symbolValues="fE" /></SegmentDefinition>
+        <SegmentDefinition id="cF"><Representations><Representation>f</Representation></Representations><FeatureValue feature="featId" symbolValues="fF" /></SegmentDefinition>
+        <SegmentDefinition id="cG"><Representations><Representation>g</Representation></Representations><FeatureValue feature="featId" symbolValues="fG" /></SegmentDefinition>
+        <SegmentDefinition id="cH"><Representations><Representation>h</Representation></Representations><FeatureValue feature="featId" symbolValues="fH" /></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations><FeatureValue feature="featId" symbolValues="fI" /></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations><FeatureValue feature="featId" symbolValues="fK" /></SegmentDefinition>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations><FeatureValue feature="featId" symbolValues="fL" /></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations><FeatureValue feature="featId" symbolValues="fM" /></SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations><FeatureValue feature="featId" symbolValues="fN" /></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations><FeatureValue feature="featId" symbolValues="fO" /></SegmentDefinition>
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations><FeatureValue feature="featId" symbolValues="fP" /></SegmentDefinition>
+        <SegmentDefinition id="cR"><Representations><Representation>r</Representation></Representations><FeatureValue feature="featId" symbolValues="fR" /></SegmentDefinition>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations><FeatureValue feature="featId" symbolValues="fS" /></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations><FeatureValue feature="featId" symbolValues="fT" /></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations><FeatureValue feature="featId" symbolValues="fU" /></SegmentDefinition>
+        <SegmentDefinition id="cV"><Representations><Representation>v</Representation></Representations><FeatureValue feature="featId" symbolValues="fV" /></SegmentDefinition>
+        <SegmentDefinition id="cW"><Representations><Representation>w</Representation></Representations><FeatureValue feature="featId" symbolValues="fW" /></SegmentDefinition>
+        <SegmentDefinition id="cX"><Representations><Representation>x</Representation></Representations><FeatureValue feature="featId" symbolValues="fX" /></SegmentDefinition>
+        <SegmentDefinition id="cY"><Representations><Representation>y</Representation></Representations><FeatureValue feature="featId" symbolValues="fY" /></SegmentDefinition>
+        <SegmentDefinition id="cZ"><Representations><Representation>z</Representation></Representations><FeatureValue feature="featId" symbolValues="fZ" /></SegmentDefinition>
+      </SegmentDefinitions>
+      <!-- The compounding join marker "+" is a BoundaryDefinition, not a SegmentDefinition (matching
+           v1 compounding/nonhead-not-root's own grammar exactly) - it carries no phonological
+           feature values at all (boundaries aren't segments) and is structurally required for
+           CompoundingRule's own seam-detection logic; declaring it as a plain segment produced zero
+           parses for every compound word (confirmed by isolated probing). -->
+      <BoundaryDefinitions>
+        <BoundaryDefinition id="cBnd"><Representations><Representation>+</Representation></Representations></BoundaryDefinition>
+      </BoundaryDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <!-- Universal wildcard for MorphologicalInput stem captures, matching suffixing-evidential-adjacency-chain's idiom. -->
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <!-- mrAblaut's target ("i") and output ("a") - see the feature-system comment above. -->
+      <FeatureNaturalClass id="ncAblautI"><Name>AblautI</Name><FeatureValue feature="featId" symbolValues="fI" /></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncAblautA"><Name>AblautA</Name><FeatureValue feature="featId" symbolValues="fA" /></FeatureNaturalClass>
+    </NaturalClasses>
+    <Families>
+      <!-- realizational/family-blocking: DUC (regular) and TUL (irregular, suppletive perfect of a
+           "carry" verb, fero/tuli-plausible) share this family so the regular form is blocked
+           from also analyzing once its features collide with TUL's own lexically-fixed tense. -->
+      <Family id="famCarry">FamCarry</Family>
+      <!-- G5 (code-coverage-driven): GEN (regular compounding head) and NOV (suppletive) share this
+           family so CompoundingRule's OWN Blockable/CheckBlocking path (SynthesisCompoundingRule.cs)
+           gets exercised; previously only ever exercised through an ordinary MorphologicalRule
+           (famCarry above), never through a compound. -->
+      <Family id="famCompBlock">FamCompBlock</Family>
+      <!-- CompoundingRule@blockable="false" probe for mrCompoundHN. Neither member declares any
+           AssignedHeadFeatures, so an empty SyntacticFeatureStruct trivially subsumes an empty one:
+           blocking here depends only on family membership, not on any particular feature value. -->
+      <Family id="famHNBlock">FamHNBlock</Family>
+    </Families>
+    <!-- Two strata, not one, because morphologicalRuleOrder is a per-stratum setting and two
+         constructs here have genuinely CONFLICTING requirements on it: mpr-groups/output-overwrite
+         needs "linear" order to be observable at all (see that section's own comment), but
+         compounding/prefix-commute's head-recursion (the prefix unapplying from the compounding
+         HEAD span before the compound itself unapplies) only succeeds under "unordered" - confirmed
+         empirically: with everything in one "linear" stratum, lexbedom (prefix-commute's positive
+         row) found zero parses; switching that one stratum to "unordered" fixed lexbedom but broke
+         yxpedz (output-overwrite's negative row) the other way. Splitting the MPR-groups rules into
+         their own "linear" stratum (sharing the same CharacterDefinitionTable, so no phonological
+         difference between the two) resolves both simultaneously. -->
+    <Strata>
+      <Stratum
+        characterDefinitionTable="table1"
+        morphologicalRuleOrder="unordered"
+        morphologicalRules="mrPers1 mrPers2 mrPers3 mrTense rrPast mrPast2 mrPl2 mrCircumfixGeT mrSuffixS3 mrNasalInfix mrCompoundHN mrPrefixBe1 mrCompoundNH mrPrefixBe2 mrAblaut mrCompoundConstrained"
+      >
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- ===================== realizational/stem-name ===================== -->
+          <MorphologicalRule id="mrPers1" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>pers1</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPers1">
+                <MorphologicalInput><PhoneticSequence id="stemP1"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprConjA"><CopyFromInput index="stemP1" /><InsertSegments><PhoneticShape>o</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featPers" symbolValues="symP1" /></OutputHeadFeatures>
+            <MorphemeId>P1</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrPers2" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>pers2</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPers2">
+                <MorphologicalInput><PhoneticSequence id="stemP2"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemP2" /><InsertSegments><PhoneticShape>s</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featPers" symbolValues="symP2" /></OutputHeadFeatures>
+            <MorphemeId>P2</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrPers3" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>pers3</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPers3">
+                <MorphologicalInput><PhoneticSequence id="stemP3"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemP3" /><InsertSegments><PhoneticShape>t</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featPers" symbolValues="symP3" /></OutputHeadFeatures>
+            <MorphemeId>P3</MorphemeId>
+          </MorphologicalRule>
+          <!-- ===================== realizational/realizational-rule ===================== -->
+          <MorphologicalRule id="mrTense" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>tense</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subTense">
+                <MorphologicalInput><PhoneticSequence id="stemTense"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemTense" /><InsertSegments><PhoneticShape>es</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featTense" symbolValues="symPres" /></OutputHeadFeatures>
+            <MorphemeId>TENSE</MorphemeId>
+          </MorphologicalRule>
+          <!-- RealizationalRule: no AffixTemplate/Slot wrapper needed at all - referenced directly in
+               the stratum's own morphologicalRules IDREFS. IsBlocked refuses to apply whenever the
+               word's syntactic FS already has ANY value for featTense (presence-based, not a value-
+               equality check) - see feresid in words.yaml, the row this construct exists to pin. -->
+          <RealizationalRule id="rrPast">
+            <Name>realizPast</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subRPast">
+                <MorphologicalInput><PhoneticSequence id="stemRPast"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemRPast" /><InsertSegments><PhoneticShape>id</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <RealizationalFeatures><FeatureValue feature="featTense" symbolValues="symPast" /></RealizationalFeatures>
+            <MorphemeId>RPAST</MorphemeId>
+          </RealizationalRule>
+          <!-- ===================== realizational/family-blocking ===================== -->
+          <MorphologicalRule id="mrPast2" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>past2</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPast2">
+                <MorphologicalInput><PhoneticSequence id="stemPast2"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemPast2" /><InsertSegments><PhoneticShape>it</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featTense" symbolValues="symPast" /></OutputHeadFeatures>
+            <MorphemeId>PAST2</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrPl2" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>plural2</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPl2">
+                <MorphologicalInput><PhoneticSequence id="stemPl2"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemPl2" /><InsertSegments><PhoneticShape>unt</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featNum" symbolValues="symPl" /></OutputHeadFeatures>
+            <MorphemeId>PL2</MorphemeId>
+          </MorphologicalRule>
+          <!-- ===================== affix-shapes/circumfix ("ge-...-t") ===================== -->
+          <MorphologicalRule id="mrCircumfixGeT" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>gePartT</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subCircumfixGeT">
+                <MorphologicalInput><PhoneticSequence id="stemGeT"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments><PhoneticShape>ge</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="stemGeT" />
+                  <InsertSegments><PhoneticShape>t</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>GET</MorphemeId>
+          </MorphologicalRule>
+          <!-- Suffix is "-h", not "-s": "-s" is already mrPers2's own literal suffix, and both rules
+               apply freely to any posV root (unordered, no AffixTemplate) - reusing "-s" here made
+               EVERY posV root's "-s"-suffixed form spuriously double-analyze as both S3 and P2 (found
+               by isolated probing: "lobs"/"muns" both came back ambiguous against declared-vs-traced
+               mismatches until this was fixed). -->
+          <MorphologicalRule id="mrSuffixS3" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>suffixS3</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSuffixS3">
+                <MorphologicalInput><PhoneticSequence id="stemS3"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemS3" /><InsertSegments><PhoneticShape>h</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>S3</MorphemeId>
+          </MorphologicalRule>
+          <!-- ===================== affix-shapes/infix (nasal infix, "vi-n-c-" style) =====================
+               Two MorphologicalInput parts (first 2 segments of the root, then the remainder), output
+               interleaves a copy of the first part, an inserted "n", then the remainder - root "vic"
+               (vincere-plausible) -> present stem "vinc". -->
+          <MorphologicalRule id="mrNasalInfix" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>nasalInfix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subNasalInfix">
+                <MorphologicalInput>
+                  <PhoneticSequence id="infFirst2"><SimpleContext naturalClass="ncAny" /><SimpleContext naturalClass="ncAny" /></PhoneticSequence>
+                  <PhoneticSequence id="infRest"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="infFirst2" />
+                  <InsertSegments><PhoneticShape>n</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="infRest" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PRESSTEM</MorphemeId>
+          </MorphologicalRule>
+          <!-- ===================== compounding/nonhead-not-root + compounding/prefix-commute =====================
+               Two independent CompoundingRules on disjoint lexical material so they never cross-fire
+               on each other's words. mrCompoundHN (head+nonhead order) pairs with mrPrefixBe1 to pin
+               nonhead-not-root (a prefixed nonhead is never a bare root, so it can never be accepted
+               as the non-head span). mrCompoundNH (nonhead+head order) pairs with mrPrefixBe2 to pin
+               prefix-commute (the prefix attaches to the HEAD instead, which compounding does not
+               require to be a bare root, so it succeeds where the nonhead-prefixed case failed). -->
+          <CompoundingRule id="mrCompoundHN" blockable="false" headPartsOfSpeech="posN1" nonHeadPartsOfSpeech="posN1 posV1">
+            <Name>compoundHeadNonHead</Name>
+            <CompoundingSubrules>
+              <CompoundingSubrule>
+                <HeadMorphologicalInput><PhoneticSequence id="chnHead"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></HeadMorphologicalInput>
+                <NonHeadMorphologicalInput><PhoneticSequence id="chnNonHead"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></NonHeadMorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="chnHead" /><InsertSegments><PhoneticShape>+</PhoneticShape></InsertSegments><CopyFromInput index="chnNonHead" /></MorphologicalOutput>
+              </CompoundingSubrule>
+            </CompoundingSubrules>
+          </CompoundingRule>
+          <MorphologicalRule id="mrPrefixBe1" requiredPartsOfSpeech="posV1" outputPartOfSpeech="posV1">
+            <Name>prefixBe1</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPrefixBe1">
+                <MorphologicalInput><PhoneticSequence id="stemBe1"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>be</PhoneticShape></InsertSegments><CopyFromInput index="stemBe1" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featTense" symbolValues="symPast" /></OutputHeadFeatures>
+            <MorphemeId>BEPFX1</MorphemeId>
+          </MorphologicalRule>
+          <CompoundingRule id="mrCompoundNH" blockable="false" headPartsOfSpeech="posN2 posV2" nonHeadPartsOfSpeech="posN2">
+            <Name>compoundNonHeadHead</Name>
+            <CompoundingSubrules>
+              <CompoundingSubrule>
+                <HeadMorphologicalInput><PhoneticSequence id="cnhHead"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></HeadMorphologicalInput>
+                <NonHeadMorphologicalInput><PhoneticSequence id="cnhNonHead"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></NonHeadMorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="cnhNonHead" /><InsertSegments><PhoneticShape>+</PhoneticShape></InsertSegments><CopyFromInput index="cnhHead" /></MorphologicalOutput>
+              </CompoundingSubrule>
+            </CompoundingSubrules>
+          </CompoundingRule>
+          <MorphologicalRule id="mrPrefixBe2" requiredPartsOfSpeech="posV2" outputPartOfSpeech="posV2">
+            <Name>prefixBe2</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPrefixBe2">
+                <MorphologicalInput><PhoneticSequence id="stemBe2"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>be</PhoneticShape></InsertSegments><CopyFromInput index="stemBe2" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featTense" symbolValues="symPast" /></OutputHeadFeatures>
+            <MorphemeId>BEPFX2</MorphemeId>
+          </MorphologicalRule>
+          <!-- ===================== ablaut as sole exponent of a category =====================
+               No affix at all: tense is realized purely by changing the root's own vowel ("i"->"a")
+               via ModifyFromInput - see the feature-system comment at the top of this file for why
+               this needs a fully-specified PhonologicalFeatureSystem to be self-check-verifiable. -->
+          <MorphologicalRule id="mrAblaut" requiredPartsOfSpeech="posAblautV" outputPartOfSpeech="posAblautV">
+            <Name>ablautPast</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subAblaut">
+                <MorphologicalInput>
+                  <PhoneticSequence id="ablautPre"><OptionalSegmentSequence min="0" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                  <PhoneticSequence id="ablautI"><SimpleContext naturalClass="ncAblautI" /></PhoneticSequence>
+                  <PhoneticSequence id="ablautPost"><OptionalSegmentSequence min="0" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="ablautPre" />
+                  <ModifyFromInput index="ablautI"><SimpleContext naturalClass="ncAblautA" /></ModifyFromInput>
+                  <CopyFromInput index="ablautPost" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featTense" symbolValues="symPast" /></OutputHeadFeatures>
+            <MorphemeId>ABLAUT</MorphemeId>
+          </MorphologicalRule>
+          <!-- ===================== CompoundingRule constraints (G5, code-coverage-driven) =====================
+               Isolated posCompH/posCompNH pair, previously zero coverage on the CompoundingRule side
+               of: headProdRestrictionsMprFeatures, per-subrule requiredMPRFeatures/excludedMPRFeatures
+               (on HeadMorphologicalInput), outputObligatoryFeatures, and Blockable/CheckBlocking.
+               Both subrules propagate mprCompReq onto their output (MPRFeatures="mprCompReq") so a
+               compound can itself satisfy headProdRestrictionsMprFeatures for a further application. -->
+          <CompoundingRule
+            id="mrCompoundConstrained"
+            blockable="true"
+            headPartsOfSpeech="posCompH"
+            nonHeadPartsOfSpeech="posCompNH"
+            outputPartOfSpeech="posCompH"
+            headProdRestrictionsMprFeatures="mprCompReq"
+            outputObligatoryFeatures="featTense"
+          >
+            <Name>compoundConstrained</Name>
+            <CompoundingSubrules>
+              <CompoundingSubrule>
+                <HeadMorphologicalInput requiredMPRFeatures="mprSubA"><PhoneticSequence id="ccHeadA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></HeadMorphologicalInput>
+                <NonHeadMorphologicalInput><PhoneticSequence id="ccNonHeadA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></NonHeadMorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprCompReq"><CopyFromInput index="ccHeadA" /><InsertSegments><PhoneticShape>+</PhoneticShape></InsertSegments><CopyFromInput index="ccNonHeadA" /></MorphologicalOutput>
+              </CompoundingSubrule>
+              <CompoundingSubrule>
+                <HeadMorphologicalInput excludedMPRFeatures="mprSubA"><PhoneticSequence id="ccHeadB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></HeadMorphologicalInput>
+                <NonHeadMorphologicalInput><PhoneticSequence id="ccNonHeadB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></NonHeadMorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprCompReq"><CopyFromInput index="ccHeadB" /><InsertSegments><PhoneticShape>+</PhoneticShape></InsertSegments><CopyFromInput index="ccNonHeadB" /></MorphologicalOutput>
+              </CompoundingSubrule>
+            </CompoundingSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featTense" symbolValues="symPres" /></OutputHeadFeatures>
+          </CompoundingRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <!-- realizational/stem-name: three distinct-shape allomorphs of one "bring" verb. -->
+          <LexicalEntry id="eFerre" partOfSpeech="posV">
+            <Allomorphs>
+              <Allomorph id="aFerreDefault"><PhoneticShape>mun</PhoneticShape></Allomorph>
+              <Allomorph id="aFerreP1P2" stemName="snP1P2"><PhoneticShape>man</PhoneticShape></Allomorph>
+              <Allomorph id="aFerreP1P3" stemName="snP1P3"><PhoneticShape>min</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>STEM</MorphemeId>
+            <Gloss>bring</Gloss>
+          </LexicalEntry>
+          <!-- realizational/realizational-rule: "carry", no lexical head features. -->
+          <LexicalEntry id="eFero" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aFero"><PhoneticShape>fer</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>FER</MorphemeId>
+            <Gloss>carry</Gloss>
+          </LexicalEntry>
+          <!-- realizational/family-blocking: regular "duc" (lead) vs irregular suppletive "tul"
+               (tuli-plausible perfect of fero), sharing famCarry; TUL's tense is lexically fixed
+               to past, so a regular past-tense synthesis of DUC gets blocked in favor of (and
+               rejected against) TUL's own shape. -->
+          <LexicalEntry id="eDuc" partOfSpeech="posV" family="famCarry">
+            <Allomorphs><Allomorph id="aDuc"><PhoneticShape>duc</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DUC</MorphemeId>
+            <Gloss>lead</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eTul" partOfSpeech="posV" family="famCarry">
+            <Allomorphs><Allomorph id="aTul"><PhoneticShape>tul</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="featTense" symbolValues="symPast" /></AssignedHeadFeatures>
+            <MorphemeId>TUL</MorphemeId>
+            <Gloss>carry.PST.SUPPL</Gloss>
+          </LexicalEntry>
+          <!-- affix-shapes/circumfix: "praise" (laudare-plausible). -->
+          <LexicalEntry id="eLob" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aLob"><PhoneticShape>lob</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>LOB</MorphemeId>
+            <Gloss>praise</Gloss>
+          </LexicalEntry>
+          <!-- affix-shapes/infix: "conquer" (vincere-plausible), root shape "vic" - present
+               stem "vinc" via the nasal infix, perfect stem is the bare root. -->
+          <LexicalEntry id="eVic" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aVic"><PhoneticShape>vic</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>VIC</MorphemeId>
+            <Gloss>conquer</Gloss>
+          </LexicalEntry>
+          <!-- compounding/nonhead-not-root (Set 1: mrCompoundHN + mrPrefixBe1). posN1/posV1 keep this
+               set's CompoundingRule from cross-firing with Set 2's (see the PartsOfSpeech comment). -->
+          <LexicalEntry id="ePan" partOfSpeech="posN1">
+            <Allomorphs><Allomorph id="aPan"><PhoneticShape>pan</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>PAN</MorphemeId>
+            <Gloss>bread</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eNoxN" partOfSpeech="posN1">
+            <Allomorphs><Allomorph id="aNoxN"><PhoneticShape>nox</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>NOXN</MorphemeId>
+            <Gloss>night</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eNoxV" partOfSpeech="posV1">
+            <Allomorphs><Allomorph id="aNoxV"><PhoneticShape>nox</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>NOXV</MorphemeId>
+            <Gloss>harm</Gloss>
+          </LexicalEntry>
+          <!-- CompoundingRule@blockable="false" probe: mrCompoundHN's own head, sharing famHNBlock
+               with eBlockSibHN below. -->
+          <LexicalEntry id="eBlockHeadHN" partOfSpeech="posN1" family="famHNBlock">
+            <Allomorphs><Allomorph id="aBlockHeadHN"><PhoneticShape>cor</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>BLOCKHEAD</MorphemeId>
+            <Gloss>heart</Gloss>
+          </LexicalEntry>
+          <!-- Family sibling: were mrCompoundHN blockable, CheckBlocking would substitute this whole
+               entry in place of any compound built on eBlockHeadHN. -->
+          <LexicalEntry id="eBlockSibHN" partOfSpeech="posN1" family="famHNBlock">
+            <Allomorphs><Allomorph id="aBlockSibHN"><PhoneticShape>zon</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>BLOCKSIB</MorphemeId>
+            <Gloss>zone</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eBlockNonHN" partOfSpeech="posN1">
+            <Allomorphs><Allomorph id="aBlockNonHN"><PhoneticShape>riv</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>BLOCKNON</MorphemeId>
+            <Gloss>river</Gloss>
+          </LexicalEntry>
+          <!-- compounding/prefix-commute (Set 2: mrCompoundNH + mrPrefixBe2) - disjoint lexical
+               material from Set 1 so the two CompoundingRules never cross-fire on the same word. The
+               homophone pair sits on the HEAD this time (not the non-head, per Set 1): mrPrefixBe2
+               requires posV2, so it can only ever attach to the verb reading (DOMV), leaving the noun
+               reading (DOMN) prefix-ineligible - the mirror image of Set 1's ambiguity placement. -->
+          <LexicalEntry id="eLexN2" partOfSpeech="posN2">
+            <Allomorphs><Allomorph id="aLexN2"><PhoneticShape>lex</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>LEX</MorphemeId>
+            <Gloss>law</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eDomN" partOfSpeech="posN2">
+            <Allomorphs><Allomorph id="aDomN"><PhoneticShape>dom</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DOMN</MorphemeId>
+            <Gloss>house</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eDomV" partOfSpeech="posV2">
+            <Allomorphs><Allomorph id="aDomV"><PhoneticShape>dom</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DOMV</MorphemeId>
+            <Gloss>tame</Gloss>
+          </LexicalEntry>
+          <!-- ablaut as sole exponent: "sing" (singen-plausible), no lexical head features. -->
+          <LexicalEntry id="eSing" partOfSpeech="posAblautV">
+            <Allomorphs><Allomorph id="aSing"><PhoneticShape>sing</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SING</MorphemeId>
+            <Gloss>sing</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eGen" partOfSpeech="posCompH" ruleFeatures="mprCompReq" family="famCompBlock">
+            <Allomorphs><Allomorph id="aGen"><PhoneticShape>gen</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>GEN</MorphemeId>
+            <Gloss>kind</Gloss>
+          </LexicalEntry>
+          <!-- Suppletive partner for GEN (famCompBlock): CheckBlocking substitutes this whole entry
+               in wherever GEN's own compounding output would otherwise surface, so a candidate word
+               built from GEN's compound has no valid resynthesis matching its own input shape. -->
+          <LexicalEntry id="eNov" partOfSpeech="posCompH" family="famCompBlock">
+            <Allomorphs><Allomorph id="aNov"><PhoneticShape>nov</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="featTense" symbolValues="symPres" /></AssignedHeadFeatures>
+            <MorphemeId>NOV</MorphemeId>
+            <Gloss>new</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eMit" partOfSpeech="posCompH" ruleFeatures="mprCompReq mprSubA">
+            <Allomorphs><Allomorph id="aMit"><PhoneticShape>mit</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>MIT</MorphemeId>
+            <Gloss>send</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eFic" partOfSpeech="posCompH" ruleFeatures="mprCompReq">
+            <Allomorphs><Allomorph id="aFic"><PhoneticShape>fic</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>FIC</MorphemeId>
+            <Gloss>make</Gloss>
+          </LexicalEntry>
+          <!-- No ruleFeatures at all: fails headProdRestrictionsMprFeatures outright (see sec+lav). -->
+          <LexicalEntry id="eSec" partOfSpeech="posCompH">
+            <Allomorphs><Allomorph id="aSec"><PhoneticShape>sec</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SEC</MorphemeId>
+            <Gloss>cut</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eLav" partOfSpeech="posCompNH">
+            <Allomorphs><Allomorph id="aLav"><PhoneticShape>lav</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>LAV</MorphemeId>
+            <Gloss>wash</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <!-- Second stratum, "linear" order, containing ONLY the two mpr-groups constructs - see the
+           comment above the first Stratum for why these can't share a stratum with everything else. -->
+      <Stratum
+        characterDefinitionTable="table1"
+        morphologicalRuleOrder="linear"
+        morphologicalRules="mrThemeX mrThemeY mrEndZ mrEndW mrEndH"
+      >
+        <Name>MprGroups</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- ===================== mpr-groups/output-overwrite ===================== -->
+          <MorphologicalRule id="mrThemeX" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>themeX</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subThemeX">
+                <MorphologicalInput><PhoneticSequence id="stemThemeX"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprPedA"><InsertSegments><PhoneticShape>x</PhoneticShape></InsertSegments><CopyFromInput index="stemThemeX" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>THEMEX</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrThemeY" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>themeY</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subThemeY">
+                <MorphologicalInput><PhoneticSequence id="stemThemeY"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprPedB"><InsertSegments><PhoneticShape>y</PhoneticShape></InsertSegments><CopyFromInput index="stemThemeY" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>THEMEY</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrEndZ" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>endZ</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subEndZ">
+                <MorphologicalInput requiredMPRFeatures="mprPedA"><PhoneticSequence id="stemEndZ"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemEndZ" /><InsertSegments><PhoneticShape>z</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>ENDZ</MorphemeId>
+          </MorphologicalRule>
+          <!-- ===================== mpr-groups/required-all ===================== -->
+          <MorphologicalRule id="mrEndW" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>endW</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subEndW">
+                <MorphologicalInput requiredMPRFeatures="mprConjA mprConjB"><PhoneticSequence id="stemEndW"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemEndW" /><InsertSegments><PhoneticShape>w</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>ENDW</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrEndH" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>endH</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subEndH">
+                <MorphologicalInput requiredMPRFeatures="mprConjC mprConjD"><PhoneticSequence id="stemEndH"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemEndH" /><InsertSegments><PhoneticShape>h</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>ENDH</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <!-- mpr-groups/output-overwrite: "foot" (pes/pedis-plausible). -->
+          <LexicalEntry id="ePed" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aPed"><PhoneticShape>ped</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>PED</MorphemeId>
+            <Gloss>foot</Gloss>
+          </LexicalEntry>
+          <!-- mpr-groups/required-all: three roots, ruleFeatures preset MPR conjugation-class
+               membership directly on the lexical entry (kat: both AllGroup members; sod: half of
+               AllGroup, half of AnyGroup; lim: neither). -->
+          <LexicalEntry id="eKat" partOfSpeech="posN" ruleFeatures="mprConjA mprConjB">
+            <Allomorphs><Allomorph id="aKat"><PhoneticShape>kat</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>KAT</MorphemeId>
+            <Gloss>cat</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eSod" partOfSpeech="posN" ruleFeatures="mprConjA mprConjC">
+            <Allomorphs><Allomorph id="aSod"><PhoneticShape>sod</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SOD</MorphemeId>
+            <Gloss>salt</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eLim" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aLim"><PhoneticShape>lim</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>LIM</MorphemeId>
+            <Gloss>threshold</Gloss>
+          </LexicalEntry>
+          <!-- Ordering discriminator for mrEndZ/mrEndW/mrEndH: ruleFeatures preset every group member
+               all three rules gate on (mprPedA, both AllGroup members, one AnyGroup member), so a single
+               root can chain all three suffixes and expose their list-order dependency. -->
+          <LexicalEntry id="eGof" partOfSpeech="posN" ruleFeatures="mprPedA mprConjA mprConjB mprConjC">
+            <Allomorphs><Allomorph id="aGof"><PhoneticShape>gof</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>GOF</MorphemeId>
+            <Gloss>gof</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

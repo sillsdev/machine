@@ -1,0 +1,1924 @@
+# Converted from conformance/pathological/deep-optional-affix-nesting (v1, removed after the v1->v2
+# migration's parity proof). grammar.xml is the same file, unmodified: 12 independent, all-optional
+# AffixTemplate prefix slots (P1..P12), each inserting
+# the literal character "x" via InsertSegments+CopyFromInput, requiredPartsOfSpeech="posV" throughout,
+# no PhonologicalRule/MetathesisRule element anywhere -- so RequiresDerivation mechanically derives
+# requires: [] (this fixture is morphotactics-only, not phonology).
+#
+# What this pins (v1 manifest.json's provenance, carried forward verbatim below): per
+# SynthesisAffixTemplateRule.ApplySlots, an all-optional slot chain explores the FULL powerset of
+# "which slots fired" (2^12 = 4096 subsets) -- and because every slot inserts the identical character,
+# any two subsets of the same size k produce byte-identical surface text but remain DISTINCT analyses
+# (distinct MorphemeId chains, hence distinct signature strings). A word with k leading x's therefore
+# has exactly C(12,k) equally-valid analyses. The three words below hit the two boundary cases (k=0,
+# k=12, each exactly 1 analysis) and the combinatorial-blowup midpoint (k=6, C(12,6) = 924 analyses,
+# oracle-confirmed) -- expected.tsv's own v1 ground truth for "xxxxxxk" is the full 924-entry
+# semicolon-joined signature list, translated below into 924 individual `parses:` entries (one per
+# distinct slot subset) rather than hand-derived from scratch, per the task's "expected parses come
+# from the v1 expected.tsv (translate to signature form), verify against the oracle" instruction --
+# hand-deriving 924 combinatorial variants would be mechanical transcription of a well-understood
+# combinatorial fact (which slots fired), not five hand-reasoned words, so this edge-case (unlike
+# prefixal-discontinuous-slot-dependency) is generated from the checked-in oracle output and then self-check-verified,
+# not authored blind. Every declared (signature, rules) pair below was verified against the live
+# oracle by the self-check gate (RunAllWords) before this file was committed.
+#
+# budget_ms below (15000, copied verbatim from v1's manifest.json budget.wallClockMs) is why this
+# fixture is EXCLUDED from a default self-check run (RunnerV2.RunOneSelfCheck: `isPathological =
+# fixture.Words.BudgetMs.HasValue`, skipped unless --include-pathological) and only exercised with
+# that flag -- same isolation discipline as v1's own pathological category.
+
+language: PathologicalDeepOptionalAffixNesting
+inspired_by: ["synthetic pathological-complexity probe (not modeling any real language)"]
+sources:
+  - "docs/conformance-framework-plan.md section 4.5 (pathological category); F3 worked example"
+requires: []
+budget_ms: 15000
+words:
+  - word: "k"
+    note: >-
+      The zero-prefix boundary case: no optional slot fires (the "skip everything" path through
+      ApplySlots), giving exactly ONE analysis, C(12,0) = 1. Confirms the template's all-optional
+      chain still permits the bare root.
+    provenance: "F3 worked example (pathological category): 12 independent all-optional affix-template prefix slots inserting an identical literal character, producing C(12,k) equally-valid analyses for a k-x-prefixed word (924 for k=6, confirmed against the live oracle: 3 words, ~2.0s total wall-clock on this branch's un-optimized plain-master engine)"
+    parses:
+      - signature: "K|k"
+        rules: []
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: "xxxxxxk"
+    note: >-
+      The combinatorial-blowup case: 6 leading x's admit C(12,6) = 924 distinct subsets of the 12
+      slots that could have produced them (confirmed exactly against the live oracle: 924
+      semicolon-joined entries in v1's own expected.tsv signature column for this row, translated
+      1:1 into the 924 `parses:` entries below). Every one of the 924 analyses is equally
+      linguistically valid under this grammar -- there is no mechanism here to prefer one subset
+      over another, so a conforming engine MUST enumerate all of them. This is the fixture's actual
+      pathological content: not a crash or a hang, but a combinatorially large, fully tractable,
+      exactly-specified analysis SET that any conforming engine must reproduce in full within the
+      budget_ms wall-clock budget.
+    provenance: "F3 worked example (pathological category): 12 independent all-optional affix-template prefix slots inserting an identical literal character, producing C(12,k) equally-valid analyses for a k-x-prefixed word (924 for k=6, confirmed against the live oracle: 3 words, ~2.0s total wall-clock on this branch's un-optimized plain-master engine)"
+    parses:
+      - signature: "P10+P5+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP5, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P10+P6+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP6, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P10+P6+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP6, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P10+P6+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP6, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P10+P6+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP6, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P10+P6+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP6, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P10+P7+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP7, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P10+P7+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP7, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P10+P7+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP7, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P10+P7+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP7, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P10+P7+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP7, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P10+P7+P6+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP7, mrP6, mrP3, mrP2, mrP1]
+      - signature: "P10+P7+P6+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP7, mrP6, mrP4, mrP2, mrP1]
+      - signature: "P10+P7+P6+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP7, mrP6, mrP4, mrP3, mrP1]
+      - signature: "P10+P7+P6+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP7, mrP6, mrP4, mrP3, mrP2]
+      - signature: "P10+P7+P6+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP7, mrP6, mrP5, mrP2, mrP1]
+      - signature: "P10+P7+P6+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP7, mrP6, mrP5, mrP3, mrP1]
+      - signature: "P10+P7+P6+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP7, mrP6, mrP5, mrP3, mrP2]
+      - signature: "P10+P7+P6+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP10, mrP7, mrP6, mrP5, mrP4, mrP1]
+      - signature: "P10+P7+P6+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP10, mrP7, mrP6, mrP5, mrP4, mrP2]
+      - signature: "P10+P7+P6+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP10, mrP7, mrP6, mrP5, mrP4, mrP3]
+      - signature: "P10+P8+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P10+P8+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P10+P8+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P10+P8+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P10+P8+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P10+P8+P6+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP6, mrP3, mrP2, mrP1]
+      - signature: "P10+P8+P6+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP6, mrP4, mrP2, mrP1]
+      - signature: "P10+P8+P6+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP6, mrP4, mrP3, mrP1]
+      - signature: "P10+P8+P6+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP6, mrP4, mrP3, mrP2]
+      - signature: "P10+P8+P6+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP6, mrP5, mrP2, mrP1]
+      - signature: "P10+P8+P6+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP6, mrP5, mrP3, mrP1]
+      - signature: "P10+P8+P6+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP6, mrP5, mrP3, mrP2]
+      - signature: "P10+P8+P6+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP6, mrP5, mrP4, mrP1]
+      - signature: "P10+P8+P6+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP6, mrP5, mrP4, mrP2]
+      - signature: "P10+P8+P6+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP6, mrP5, mrP4, mrP3]
+      - signature: "P10+P8+P7+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP3, mrP2, mrP1]
+      - signature: "P10+P8+P7+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP4, mrP2, mrP1]
+      - signature: "P10+P8+P7+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP4, mrP3, mrP1]
+      - signature: "P10+P8+P7+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP4, mrP3, mrP2]
+      - signature: "P10+P8+P7+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP5, mrP2, mrP1]
+      - signature: "P10+P8+P7+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP5, mrP3, mrP1]
+      - signature: "P10+P8+P7+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP5, mrP3, mrP2]
+      - signature: "P10+P8+P7+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP5, mrP4, mrP1]
+      - signature: "P10+P8+P7+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP5, mrP4, mrP2]
+      - signature: "P10+P8+P7+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP5, mrP4, mrP3]
+      - signature: "P10+P8+P7+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP6, mrP2, mrP1]
+      - signature: "P10+P8+P7+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP6, mrP3, mrP1]
+      - signature: "P10+P8+P7+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP6, mrP3, mrP2]
+      - signature: "P10+P8+P7+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP6, mrP4, mrP1]
+      - signature: "P10+P8+P7+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP6, mrP4, mrP2]
+      - signature: "P10+P8+P7+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP6, mrP4, mrP3]
+      - signature: "P10+P8+P7+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP6, mrP5, mrP1]
+      - signature: "P10+P8+P7+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP6, mrP5, mrP2]
+      - signature: "P10+P8+P7+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP6, mrP5, mrP3]
+      - signature: "P10+P8+P7+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP10, mrP8, mrP7, mrP6, mrP5, mrP4]
+      - signature: "P10+P9+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P10+P9+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P10+P9+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P10+P9+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P10+P9+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P10+P9+P6+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP6, mrP3, mrP2, mrP1]
+      - signature: "P10+P9+P6+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP6, mrP4, mrP2, mrP1]
+      - signature: "P10+P9+P6+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP6, mrP4, mrP3, mrP1]
+      - signature: "P10+P9+P6+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP6, mrP4, mrP3, mrP2]
+      - signature: "P10+P9+P6+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP6, mrP5, mrP2, mrP1]
+      - signature: "P10+P9+P6+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP6, mrP5, mrP3, mrP1]
+      - signature: "P10+P9+P6+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP6, mrP5, mrP3, mrP2]
+      - signature: "P10+P9+P6+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP6, mrP5, mrP4, mrP1]
+      - signature: "P10+P9+P6+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP6, mrP5, mrP4, mrP2]
+      - signature: "P10+P9+P6+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP6, mrP5, mrP4, mrP3]
+      - signature: "P10+P9+P7+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP3, mrP2, mrP1]
+      - signature: "P10+P9+P7+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP4, mrP2, mrP1]
+      - signature: "P10+P9+P7+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP4, mrP3, mrP1]
+      - signature: "P10+P9+P7+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP4, mrP3, mrP2]
+      - signature: "P10+P9+P7+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP5, mrP2, mrP1]
+      - signature: "P10+P9+P7+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP5, mrP3, mrP1]
+      - signature: "P10+P9+P7+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP5, mrP3, mrP2]
+      - signature: "P10+P9+P7+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP5, mrP4, mrP1]
+      - signature: "P10+P9+P7+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP5, mrP4, mrP2]
+      - signature: "P10+P9+P7+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP5, mrP4, mrP3]
+      - signature: "P10+P9+P7+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP6, mrP2, mrP1]
+      - signature: "P10+P9+P7+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP6, mrP3, mrP1]
+      - signature: "P10+P9+P7+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP6, mrP3, mrP2]
+      - signature: "P10+P9+P7+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP6, mrP4, mrP1]
+      - signature: "P10+P9+P7+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP6, mrP4, mrP2]
+      - signature: "P10+P9+P7+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP6, mrP4, mrP3]
+      - signature: "P10+P9+P7+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP6, mrP5, mrP1]
+      - signature: "P10+P9+P7+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP6, mrP5, mrP2]
+      - signature: "P10+P9+P7+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP6, mrP5, mrP3]
+      - signature: "P10+P9+P7+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP7, mrP6, mrP5, mrP4]
+      - signature: "P10+P9+P8+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP3, mrP2, mrP1]
+      - signature: "P10+P9+P8+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP4, mrP2, mrP1]
+      - signature: "P10+P9+P8+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP4, mrP3, mrP1]
+      - signature: "P10+P9+P8+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP4, mrP3, mrP2]
+      - signature: "P10+P9+P8+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP5, mrP2, mrP1]
+      - signature: "P10+P9+P8+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP5, mrP3, mrP1]
+      - signature: "P10+P9+P8+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP5, mrP3, mrP2]
+      - signature: "P10+P9+P8+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP5, mrP4, mrP1]
+      - signature: "P10+P9+P8+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP5, mrP4, mrP2]
+      - signature: "P10+P9+P8+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP5, mrP4, mrP3]
+      - signature: "P10+P9+P8+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP6, mrP2, mrP1]
+      - signature: "P10+P9+P8+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP6, mrP3, mrP1]
+      - signature: "P10+P9+P8+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP6, mrP3, mrP2]
+      - signature: "P10+P9+P8+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP6, mrP4, mrP1]
+      - signature: "P10+P9+P8+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP6, mrP4, mrP2]
+      - signature: "P10+P9+P8+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP6, mrP4, mrP3]
+      - signature: "P10+P9+P8+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP6, mrP5, mrP1]
+      - signature: "P10+P9+P8+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP6, mrP5, mrP2]
+      - signature: "P10+P9+P8+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP6, mrP5, mrP3]
+      - signature: "P10+P9+P8+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP6, mrP5, mrP4]
+      - signature: "P10+P9+P8+P7+P2+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP7, mrP2, mrP1]
+      - signature: "P10+P9+P8+P7+P3+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP7, mrP3, mrP1]
+      - signature: "P10+P9+P8+P7+P3+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP7, mrP3, mrP2]
+      - signature: "P10+P9+P8+P7+P4+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP7, mrP4, mrP1]
+      - signature: "P10+P9+P8+P7+P4+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP7, mrP4, mrP2]
+      - signature: "P10+P9+P8+P7+P4+P3+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP7, mrP4, mrP3]
+      - signature: "P10+P9+P8+P7+P5+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP7, mrP5, mrP1]
+      - signature: "P10+P9+P8+P7+P5+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP7, mrP5, mrP2]
+      - signature: "P10+P9+P8+P7+P5+P3+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP7, mrP5, mrP3]
+      - signature: "P10+P9+P8+P7+P5+P4+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP7, mrP5, mrP4]
+      - signature: "P10+P9+P8+P7+P6+P1+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP7, mrP6, mrP1]
+      - signature: "P10+P9+P8+P7+P6+P2+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP7, mrP6, mrP2]
+      - signature: "P10+P9+P8+P7+P6+P3+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP7, mrP6, mrP3]
+      - signature: "P10+P9+P8+P7+P6+P4+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP7, mrP6, mrP4]
+      - signature: "P10+P9+P8+P7+P6+P5+K|xxxxxxk"
+        rules: [mrP10, mrP9, mrP8, mrP7, mrP6, mrP5]
+      - signature: "P11+P10+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P11+P10+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P11+P10+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P11+P10+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P11+P10+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P11+P10+P6+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP6, mrP3, mrP2, mrP1]
+      - signature: "P11+P10+P6+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP6, mrP4, mrP2, mrP1]
+      - signature: "P11+P10+P6+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP6, mrP4, mrP3, mrP1]
+      - signature: "P11+P10+P6+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP6, mrP4, mrP3, mrP2]
+      - signature: "P11+P10+P6+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP6, mrP5, mrP2, mrP1]
+      - signature: "P11+P10+P6+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP6, mrP5, mrP3, mrP1]
+      - signature: "P11+P10+P6+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP6, mrP5, mrP3, mrP2]
+      - signature: "P11+P10+P6+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP6, mrP5, mrP4, mrP1]
+      - signature: "P11+P10+P6+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP6, mrP5, mrP4, mrP2]
+      - signature: "P11+P10+P6+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP6, mrP5, mrP4, mrP3]
+      - signature: "P11+P10+P7+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP3, mrP2, mrP1]
+      - signature: "P11+P10+P7+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP4, mrP2, mrP1]
+      - signature: "P11+P10+P7+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP4, mrP3, mrP1]
+      - signature: "P11+P10+P7+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP4, mrP3, mrP2]
+      - signature: "P11+P10+P7+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP5, mrP2, mrP1]
+      - signature: "P11+P10+P7+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP5, mrP3, mrP1]
+      - signature: "P11+P10+P7+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP5, mrP3, mrP2]
+      - signature: "P11+P10+P7+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP5, mrP4, mrP1]
+      - signature: "P11+P10+P7+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP5, mrP4, mrP2]
+      - signature: "P11+P10+P7+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP5, mrP4, mrP3]
+      - signature: "P11+P10+P7+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP6, mrP2, mrP1]
+      - signature: "P11+P10+P7+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP6, mrP3, mrP1]
+      - signature: "P11+P10+P7+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP6, mrP3, mrP2]
+      - signature: "P11+P10+P7+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP6, mrP4, mrP1]
+      - signature: "P11+P10+P7+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP6, mrP4, mrP2]
+      - signature: "P11+P10+P7+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP6, mrP4, mrP3]
+      - signature: "P11+P10+P7+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP6, mrP5, mrP1]
+      - signature: "P11+P10+P7+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP6, mrP5, mrP2]
+      - signature: "P11+P10+P7+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP6, mrP5, mrP3]
+      - signature: "P11+P10+P7+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP7, mrP6, mrP5, mrP4]
+      - signature: "P11+P10+P8+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP3, mrP2, mrP1]
+      - signature: "P11+P10+P8+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP4, mrP2, mrP1]
+      - signature: "P11+P10+P8+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP4, mrP3, mrP1]
+      - signature: "P11+P10+P8+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP4, mrP3, mrP2]
+      - signature: "P11+P10+P8+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP5, mrP2, mrP1]
+      - signature: "P11+P10+P8+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP5, mrP3, mrP1]
+      - signature: "P11+P10+P8+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP5, mrP3, mrP2]
+      - signature: "P11+P10+P8+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP5, mrP4, mrP1]
+      - signature: "P11+P10+P8+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP5, mrP4, mrP2]
+      - signature: "P11+P10+P8+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP5, mrP4, mrP3]
+      - signature: "P11+P10+P8+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP6, mrP2, mrP1]
+      - signature: "P11+P10+P8+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP6, mrP3, mrP1]
+      - signature: "P11+P10+P8+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP6, mrP3, mrP2]
+      - signature: "P11+P10+P8+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP6, mrP4, mrP1]
+      - signature: "P11+P10+P8+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP6, mrP4, mrP2]
+      - signature: "P11+P10+P8+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP6, mrP4, mrP3]
+      - signature: "P11+P10+P8+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP6, mrP5, mrP1]
+      - signature: "P11+P10+P8+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP6, mrP5, mrP2]
+      - signature: "P11+P10+P8+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP6, mrP5, mrP3]
+      - signature: "P11+P10+P8+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP6, mrP5, mrP4]
+      - signature: "P11+P10+P8+P7+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP7, mrP2, mrP1]
+      - signature: "P11+P10+P8+P7+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP7, mrP3, mrP1]
+      - signature: "P11+P10+P8+P7+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP7, mrP3, mrP2]
+      - signature: "P11+P10+P8+P7+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP7, mrP4, mrP1]
+      - signature: "P11+P10+P8+P7+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP7, mrP4, mrP2]
+      - signature: "P11+P10+P8+P7+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP7, mrP4, mrP3]
+      - signature: "P11+P10+P8+P7+P5+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP7, mrP5, mrP1]
+      - signature: "P11+P10+P8+P7+P5+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP7, mrP5, mrP2]
+      - signature: "P11+P10+P8+P7+P5+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP7, mrP5, mrP3]
+      - signature: "P11+P10+P8+P7+P5+P4+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP7, mrP5, mrP4]
+      - signature: "P11+P10+P8+P7+P6+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP7, mrP6, mrP1]
+      - signature: "P11+P10+P8+P7+P6+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP7, mrP6, mrP2]
+      - signature: "P11+P10+P8+P7+P6+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP7, mrP6, mrP3]
+      - signature: "P11+P10+P8+P7+P6+P4+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP7, mrP6, mrP4]
+      - signature: "P11+P10+P8+P7+P6+P5+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP8, mrP7, mrP6, mrP5]
+      - signature: "P11+P10+P9+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP3, mrP2, mrP1]
+      - signature: "P11+P10+P9+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP4, mrP2, mrP1]
+      - signature: "P11+P10+P9+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP4, mrP3, mrP1]
+      - signature: "P11+P10+P9+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP4, mrP3, mrP2]
+      - signature: "P11+P10+P9+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP5, mrP2, mrP1]
+      - signature: "P11+P10+P9+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP5, mrP3, mrP1]
+      - signature: "P11+P10+P9+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP5, mrP3, mrP2]
+      - signature: "P11+P10+P9+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP5, mrP4, mrP1]
+      - signature: "P11+P10+P9+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP5, mrP4, mrP2]
+      - signature: "P11+P10+P9+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP5, mrP4, mrP3]
+      - signature: "P11+P10+P9+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP6, mrP2, mrP1]
+      - signature: "P11+P10+P9+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP6, mrP3, mrP1]
+      - signature: "P11+P10+P9+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP6, mrP3, mrP2]
+      - signature: "P11+P10+P9+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP6, mrP4, mrP1]
+      - signature: "P11+P10+P9+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP6, mrP4, mrP2]
+      - signature: "P11+P10+P9+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP6, mrP4, mrP3]
+      - signature: "P11+P10+P9+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP6, mrP5, mrP1]
+      - signature: "P11+P10+P9+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP6, mrP5, mrP2]
+      - signature: "P11+P10+P9+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP6, mrP5, mrP3]
+      - signature: "P11+P10+P9+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP6, mrP5, mrP4]
+      - signature: "P11+P10+P9+P7+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP7, mrP2, mrP1]
+      - signature: "P11+P10+P9+P7+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP7, mrP3, mrP1]
+      - signature: "P11+P10+P9+P7+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP7, mrP3, mrP2]
+      - signature: "P11+P10+P9+P7+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP7, mrP4, mrP1]
+      - signature: "P11+P10+P9+P7+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP7, mrP4, mrP2]
+      - signature: "P11+P10+P9+P7+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP7, mrP4, mrP3]
+      - signature: "P11+P10+P9+P7+P5+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP7, mrP5, mrP1]
+      - signature: "P11+P10+P9+P7+P5+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP7, mrP5, mrP2]
+      - signature: "P11+P10+P9+P7+P5+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP7, mrP5, mrP3]
+      - signature: "P11+P10+P9+P7+P5+P4+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP7, mrP5, mrP4]
+      - signature: "P11+P10+P9+P7+P6+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP7, mrP6, mrP1]
+      - signature: "P11+P10+P9+P7+P6+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP7, mrP6, mrP2]
+      - signature: "P11+P10+P9+P7+P6+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP7, mrP6, mrP3]
+      - signature: "P11+P10+P9+P7+P6+P4+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP7, mrP6, mrP4]
+      - signature: "P11+P10+P9+P7+P6+P5+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP7, mrP6, mrP5]
+      - signature: "P11+P10+P9+P8+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP2, mrP1]
+      - signature: "P11+P10+P9+P8+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP3, mrP1]
+      - signature: "P11+P10+P9+P8+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP3, mrP2]
+      - signature: "P11+P10+P9+P8+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP4, mrP1]
+      - signature: "P11+P10+P9+P8+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP4, mrP2]
+      - signature: "P11+P10+P9+P8+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP4, mrP3]
+      - signature: "P11+P10+P9+P8+P5+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP5, mrP1]
+      - signature: "P11+P10+P9+P8+P5+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP5, mrP2]
+      - signature: "P11+P10+P9+P8+P5+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP5, mrP3]
+      - signature: "P11+P10+P9+P8+P5+P4+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP5, mrP4]
+      - signature: "P11+P10+P9+P8+P6+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP6, mrP1]
+      - signature: "P11+P10+P9+P8+P6+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP6, mrP2]
+      - signature: "P11+P10+P9+P8+P6+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP6, mrP3]
+      - signature: "P11+P10+P9+P8+P6+P4+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP6, mrP4]
+      - signature: "P11+P10+P9+P8+P6+P5+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP6, mrP5]
+      - signature: "P11+P10+P9+P8+P7+P1+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP7, mrP1]
+      - signature: "P11+P10+P9+P8+P7+P2+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP7, mrP2]
+      - signature: "P11+P10+P9+P8+P7+P3+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP7, mrP3]
+      - signature: "P11+P10+P9+P8+P7+P4+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP7, mrP4]
+      - signature: "P11+P10+P9+P8+P7+P5+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP7, mrP5]
+      - signature: "P11+P10+P9+P8+P7+P6+K|xxxxxxk"
+        rules: [mrP11, mrP10, mrP9, mrP8, mrP7, mrP6]
+      - signature: "P11+P5+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP5, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P11+P6+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP6, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P11+P6+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP6, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P11+P6+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP6, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P11+P6+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP6, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P11+P6+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP6, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P11+P7+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP7, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P11+P7+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP7, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P11+P7+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP7, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P11+P7+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP7, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P11+P7+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP7, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P11+P7+P6+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP7, mrP6, mrP3, mrP2, mrP1]
+      - signature: "P11+P7+P6+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP7, mrP6, mrP4, mrP2, mrP1]
+      - signature: "P11+P7+P6+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP7, mrP6, mrP4, mrP3, mrP1]
+      - signature: "P11+P7+P6+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP7, mrP6, mrP4, mrP3, mrP2]
+      - signature: "P11+P7+P6+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP7, mrP6, mrP5, mrP2, mrP1]
+      - signature: "P11+P7+P6+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP7, mrP6, mrP5, mrP3, mrP1]
+      - signature: "P11+P7+P6+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP7, mrP6, mrP5, mrP3, mrP2]
+      - signature: "P11+P7+P6+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP7, mrP6, mrP5, mrP4, mrP1]
+      - signature: "P11+P7+P6+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP7, mrP6, mrP5, mrP4, mrP2]
+      - signature: "P11+P7+P6+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP7, mrP6, mrP5, mrP4, mrP3]
+      - signature: "P11+P8+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P11+P8+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P11+P8+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P11+P8+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P11+P8+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P11+P8+P6+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP6, mrP3, mrP2, mrP1]
+      - signature: "P11+P8+P6+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP6, mrP4, mrP2, mrP1]
+      - signature: "P11+P8+P6+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP6, mrP4, mrP3, mrP1]
+      - signature: "P11+P8+P6+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP6, mrP4, mrP3, mrP2]
+      - signature: "P11+P8+P6+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP6, mrP5, mrP2, mrP1]
+      - signature: "P11+P8+P6+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP6, mrP5, mrP3, mrP1]
+      - signature: "P11+P8+P6+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP6, mrP5, mrP3, mrP2]
+      - signature: "P11+P8+P6+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP6, mrP5, mrP4, mrP1]
+      - signature: "P11+P8+P6+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP6, mrP5, mrP4, mrP2]
+      - signature: "P11+P8+P6+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP6, mrP5, mrP4, mrP3]
+      - signature: "P11+P8+P7+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP3, mrP2, mrP1]
+      - signature: "P11+P8+P7+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP4, mrP2, mrP1]
+      - signature: "P11+P8+P7+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP4, mrP3, mrP1]
+      - signature: "P11+P8+P7+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP4, mrP3, mrP2]
+      - signature: "P11+P8+P7+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP5, mrP2, mrP1]
+      - signature: "P11+P8+P7+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP5, mrP3, mrP1]
+      - signature: "P11+P8+P7+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP5, mrP3, mrP2]
+      - signature: "P11+P8+P7+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP5, mrP4, mrP1]
+      - signature: "P11+P8+P7+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP5, mrP4, mrP2]
+      - signature: "P11+P8+P7+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP5, mrP4, mrP3]
+      - signature: "P11+P8+P7+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP6, mrP2, mrP1]
+      - signature: "P11+P8+P7+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP6, mrP3, mrP1]
+      - signature: "P11+P8+P7+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP6, mrP3, mrP2]
+      - signature: "P11+P8+P7+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP6, mrP4, mrP1]
+      - signature: "P11+P8+P7+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP6, mrP4, mrP2]
+      - signature: "P11+P8+P7+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP6, mrP4, mrP3]
+      - signature: "P11+P8+P7+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP6, mrP5, mrP1]
+      - signature: "P11+P8+P7+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP6, mrP5, mrP2]
+      - signature: "P11+P8+P7+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP6, mrP5, mrP3]
+      - signature: "P11+P8+P7+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP11, mrP8, mrP7, mrP6, mrP5, mrP4]
+      - signature: "P11+P9+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P11+P9+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P11+P9+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P11+P9+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P11+P9+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P11+P9+P6+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP6, mrP3, mrP2, mrP1]
+      - signature: "P11+P9+P6+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP6, mrP4, mrP2, mrP1]
+      - signature: "P11+P9+P6+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP6, mrP4, mrP3, mrP1]
+      - signature: "P11+P9+P6+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP6, mrP4, mrP3, mrP2]
+      - signature: "P11+P9+P6+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP6, mrP5, mrP2, mrP1]
+      - signature: "P11+P9+P6+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP6, mrP5, mrP3, mrP1]
+      - signature: "P11+P9+P6+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP6, mrP5, mrP3, mrP2]
+      - signature: "P11+P9+P6+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP6, mrP5, mrP4, mrP1]
+      - signature: "P11+P9+P6+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP6, mrP5, mrP4, mrP2]
+      - signature: "P11+P9+P6+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP6, mrP5, mrP4, mrP3]
+      - signature: "P11+P9+P7+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP3, mrP2, mrP1]
+      - signature: "P11+P9+P7+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP4, mrP2, mrP1]
+      - signature: "P11+P9+P7+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP4, mrP3, mrP1]
+      - signature: "P11+P9+P7+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP4, mrP3, mrP2]
+      - signature: "P11+P9+P7+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP5, mrP2, mrP1]
+      - signature: "P11+P9+P7+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP5, mrP3, mrP1]
+      - signature: "P11+P9+P7+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP5, mrP3, mrP2]
+      - signature: "P11+P9+P7+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP5, mrP4, mrP1]
+      - signature: "P11+P9+P7+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP5, mrP4, mrP2]
+      - signature: "P11+P9+P7+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP5, mrP4, mrP3]
+      - signature: "P11+P9+P7+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP6, mrP2, mrP1]
+      - signature: "P11+P9+P7+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP6, mrP3, mrP1]
+      - signature: "P11+P9+P7+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP6, mrP3, mrP2]
+      - signature: "P11+P9+P7+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP6, mrP4, mrP1]
+      - signature: "P11+P9+P7+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP6, mrP4, mrP2]
+      - signature: "P11+P9+P7+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP6, mrP4, mrP3]
+      - signature: "P11+P9+P7+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP6, mrP5, mrP1]
+      - signature: "P11+P9+P7+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP6, mrP5, mrP2]
+      - signature: "P11+P9+P7+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP6, mrP5, mrP3]
+      - signature: "P11+P9+P7+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP7, mrP6, mrP5, mrP4]
+      - signature: "P11+P9+P8+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP3, mrP2, mrP1]
+      - signature: "P11+P9+P8+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP4, mrP2, mrP1]
+      - signature: "P11+P9+P8+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP4, mrP3, mrP1]
+      - signature: "P11+P9+P8+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP4, mrP3, mrP2]
+      - signature: "P11+P9+P8+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP5, mrP2, mrP1]
+      - signature: "P11+P9+P8+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP5, mrP3, mrP1]
+      - signature: "P11+P9+P8+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP5, mrP3, mrP2]
+      - signature: "P11+P9+P8+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP5, mrP4, mrP1]
+      - signature: "P11+P9+P8+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP5, mrP4, mrP2]
+      - signature: "P11+P9+P8+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP5, mrP4, mrP3]
+      - signature: "P11+P9+P8+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP6, mrP2, mrP1]
+      - signature: "P11+P9+P8+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP6, mrP3, mrP1]
+      - signature: "P11+P9+P8+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP6, mrP3, mrP2]
+      - signature: "P11+P9+P8+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP6, mrP4, mrP1]
+      - signature: "P11+P9+P8+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP6, mrP4, mrP2]
+      - signature: "P11+P9+P8+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP6, mrP4, mrP3]
+      - signature: "P11+P9+P8+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP6, mrP5, mrP1]
+      - signature: "P11+P9+P8+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP6, mrP5, mrP2]
+      - signature: "P11+P9+P8+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP6, mrP5, mrP3]
+      - signature: "P11+P9+P8+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP6, mrP5, mrP4]
+      - signature: "P11+P9+P8+P7+P2+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP7, mrP2, mrP1]
+      - signature: "P11+P9+P8+P7+P3+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP7, mrP3, mrP1]
+      - signature: "P11+P9+P8+P7+P3+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP7, mrP3, mrP2]
+      - signature: "P11+P9+P8+P7+P4+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP7, mrP4, mrP1]
+      - signature: "P11+P9+P8+P7+P4+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP7, mrP4, mrP2]
+      - signature: "P11+P9+P8+P7+P4+P3+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP7, mrP4, mrP3]
+      - signature: "P11+P9+P8+P7+P5+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP7, mrP5, mrP1]
+      - signature: "P11+P9+P8+P7+P5+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP7, mrP5, mrP2]
+      - signature: "P11+P9+P8+P7+P5+P3+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP7, mrP5, mrP3]
+      - signature: "P11+P9+P8+P7+P5+P4+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP7, mrP5, mrP4]
+      - signature: "P11+P9+P8+P7+P6+P1+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP7, mrP6, mrP1]
+      - signature: "P11+P9+P8+P7+P6+P2+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP7, mrP6, mrP2]
+      - signature: "P11+P9+P8+P7+P6+P3+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP7, mrP6, mrP3]
+      - signature: "P11+P9+P8+P7+P6+P4+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP7, mrP6, mrP4]
+      - signature: "P11+P9+P8+P7+P6+P5+K|xxxxxxk"
+        rules: [mrP11, mrP9, mrP8, mrP7, mrP6, mrP5]
+      - signature: "P12+P10+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P12+P10+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P12+P10+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P12+P10+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P12+P10+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P12+P10+P6+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP6, mrP3, mrP2, mrP1]
+      - signature: "P12+P10+P6+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP6, mrP4, mrP2, mrP1]
+      - signature: "P12+P10+P6+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP6, mrP4, mrP3, mrP1]
+      - signature: "P12+P10+P6+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP6, mrP4, mrP3, mrP2]
+      - signature: "P12+P10+P6+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP6, mrP5, mrP2, mrP1]
+      - signature: "P12+P10+P6+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP6, mrP5, mrP3, mrP1]
+      - signature: "P12+P10+P6+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP6, mrP5, mrP3, mrP2]
+      - signature: "P12+P10+P6+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP6, mrP5, mrP4, mrP1]
+      - signature: "P12+P10+P6+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP6, mrP5, mrP4, mrP2]
+      - signature: "P12+P10+P6+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP6, mrP5, mrP4, mrP3]
+      - signature: "P12+P10+P7+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP3, mrP2, mrP1]
+      - signature: "P12+P10+P7+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP4, mrP2, mrP1]
+      - signature: "P12+P10+P7+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP4, mrP3, mrP1]
+      - signature: "P12+P10+P7+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP4, mrP3, mrP2]
+      - signature: "P12+P10+P7+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP5, mrP2, mrP1]
+      - signature: "P12+P10+P7+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP5, mrP3, mrP1]
+      - signature: "P12+P10+P7+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP5, mrP3, mrP2]
+      - signature: "P12+P10+P7+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP5, mrP4, mrP1]
+      - signature: "P12+P10+P7+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP5, mrP4, mrP2]
+      - signature: "P12+P10+P7+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP5, mrP4, mrP3]
+      - signature: "P12+P10+P7+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP6, mrP2, mrP1]
+      - signature: "P12+P10+P7+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP6, mrP3, mrP1]
+      - signature: "P12+P10+P7+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP6, mrP3, mrP2]
+      - signature: "P12+P10+P7+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP6, mrP4, mrP1]
+      - signature: "P12+P10+P7+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP6, mrP4, mrP2]
+      - signature: "P12+P10+P7+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP6, mrP4, mrP3]
+      - signature: "P12+P10+P7+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP6, mrP5, mrP1]
+      - signature: "P12+P10+P7+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP6, mrP5, mrP2]
+      - signature: "P12+P10+P7+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP6, mrP5, mrP3]
+      - signature: "P12+P10+P7+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP7, mrP6, mrP5, mrP4]
+      - signature: "P12+P10+P8+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP3, mrP2, mrP1]
+      - signature: "P12+P10+P8+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP4, mrP2, mrP1]
+      - signature: "P12+P10+P8+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP4, mrP3, mrP1]
+      - signature: "P12+P10+P8+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP4, mrP3, mrP2]
+      - signature: "P12+P10+P8+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP5, mrP2, mrP1]
+      - signature: "P12+P10+P8+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP5, mrP3, mrP1]
+      - signature: "P12+P10+P8+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP5, mrP3, mrP2]
+      - signature: "P12+P10+P8+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP5, mrP4, mrP1]
+      - signature: "P12+P10+P8+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP5, mrP4, mrP2]
+      - signature: "P12+P10+P8+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP5, mrP4, mrP3]
+      - signature: "P12+P10+P8+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP6, mrP2, mrP1]
+      - signature: "P12+P10+P8+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP6, mrP3, mrP1]
+      - signature: "P12+P10+P8+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP6, mrP3, mrP2]
+      - signature: "P12+P10+P8+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP6, mrP4, mrP1]
+      - signature: "P12+P10+P8+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP6, mrP4, mrP2]
+      - signature: "P12+P10+P8+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP6, mrP4, mrP3]
+      - signature: "P12+P10+P8+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP6, mrP5, mrP1]
+      - signature: "P12+P10+P8+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP6, mrP5, mrP2]
+      - signature: "P12+P10+P8+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP6, mrP5, mrP3]
+      - signature: "P12+P10+P8+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP6, mrP5, mrP4]
+      - signature: "P12+P10+P8+P7+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP7, mrP2, mrP1]
+      - signature: "P12+P10+P8+P7+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP7, mrP3, mrP1]
+      - signature: "P12+P10+P8+P7+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP7, mrP3, mrP2]
+      - signature: "P12+P10+P8+P7+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP7, mrP4, mrP1]
+      - signature: "P12+P10+P8+P7+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP7, mrP4, mrP2]
+      - signature: "P12+P10+P8+P7+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP7, mrP4, mrP3]
+      - signature: "P12+P10+P8+P7+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP7, mrP5, mrP1]
+      - signature: "P12+P10+P8+P7+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP7, mrP5, mrP2]
+      - signature: "P12+P10+P8+P7+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP7, mrP5, mrP3]
+      - signature: "P12+P10+P8+P7+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP7, mrP5, mrP4]
+      - signature: "P12+P10+P8+P7+P6+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP7, mrP6, mrP1]
+      - signature: "P12+P10+P8+P7+P6+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP7, mrP6, mrP2]
+      - signature: "P12+P10+P8+P7+P6+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP7, mrP6, mrP3]
+      - signature: "P12+P10+P8+P7+P6+P4+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP7, mrP6, mrP4]
+      - signature: "P12+P10+P8+P7+P6+P5+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP8, mrP7, mrP6, mrP5]
+      - signature: "P12+P10+P9+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP3, mrP2, mrP1]
+      - signature: "P12+P10+P9+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP4, mrP2, mrP1]
+      - signature: "P12+P10+P9+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP4, mrP3, mrP1]
+      - signature: "P12+P10+P9+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP4, mrP3, mrP2]
+      - signature: "P12+P10+P9+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP5, mrP2, mrP1]
+      - signature: "P12+P10+P9+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP5, mrP3, mrP1]
+      - signature: "P12+P10+P9+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP5, mrP3, mrP2]
+      - signature: "P12+P10+P9+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP5, mrP4, mrP1]
+      - signature: "P12+P10+P9+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP5, mrP4, mrP2]
+      - signature: "P12+P10+P9+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP5, mrP4, mrP3]
+      - signature: "P12+P10+P9+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP6, mrP2, mrP1]
+      - signature: "P12+P10+P9+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP6, mrP3, mrP1]
+      - signature: "P12+P10+P9+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP6, mrP3, mrP2]
+      - signature: "P12+P10+P9+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP6, mrP4, mrP1]
+      - signature: "P12+P10+P9+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP6, mrP4, mrP2]
+      - signature: "P12+P10+P9+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP6, mrP4, mrP3]
+      - signature: "P12+P10+P9+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP6, mrP5, mrP1]
+      - signature: "P12+P10+P9+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP6, mrP5, mrP2]
+      - signature: "P12+P10+P9+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP6, mrP5, mrP3]
+      - signature: "P12+P10+P9+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP6, mrP5, mrP4]
+      - signature: "P12+P10+P9+P7+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP7, mrP2, mrP1]
+      - signature: "P12+P10+P9+P7+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP7, mrP3, mrP1]
+      - signature: "P12+P10+P9+P7+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP7, mrP3, mrP2]
+      - signature: "P12+P10+P9+P7+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP7, mrP4, mrP1]
+      - signature: "P12+P10+P9+P7+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP7, mrP4, mrP2]
+      - signature: "P12+P10+P9+P7+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP7, mrP4, mrP3]
+      - signature: "P12+P10+P9+P7+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP7, mrP5, mrP1]
+      - signature: "P12+P10+P9+P7+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP7, mrP5, mrP2]
+      - signature: "P12+P10+P9+P7+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP7, mrP5, mrP3]
+      - signature: "P12+P10+P9+P7+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP7, mrP5, mrP4]
+      - signature: "P12+P10+P9+P7+P6+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP7, mrP6, mrP1]
+      - signature: "P12+P10+P9+P7+P6+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP7, mrP6, mrP2]
+      - signature: "P12+P10+P9+P7+P6+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP7, mrP6, mrP3]
+      - signature: "P12+P10+P9+P7+P6+P4+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP7, mrP6, mrP4]
+      - signature: "P12+P10+P9+P7+P6+P5+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP7, mrP6, mrP5]
+      - signature: "P12+P10+P9+P8+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP2, mrP1]
+      - signature: "P12+P10+P9+P8+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP3, mrP1]
+      - signature: "P12+P10+P9+P8+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP3, mrP2]
+      - signature: "P12+P10+P9+P8+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP4, mrP1]
+      - signature: "P12+P10+P9+P8+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP4, mrP2]
+      - signature: "P12+P10+P9+P8+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP4, mrP3]
+      - signature: "P12+P10+P9+P8+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP5, mrP1]
+      - signature: "P12+P10+P9+P8+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP5, mrP2]
+      - signature: "P12+P10+P9+P8+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP5, mrP3]
+      - signature: "P12+P10+P9+P8+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP5, mrP4]
+      - signature: "P12+P10+P9+P8+P6+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP6, mrP1]
+      - signature: "P12+P10+P9+P8+P6+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP6, mrP2]
+      - signature: "P12+P10+P9+P8+P6+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP6, mrP3]
+      - signature: "P12+P10+P9+P8+P6+P4+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP6, mrP4]
+      - signature: "P12+P10+P9+P8+P6+P5+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP6, mrP5]
+      - signature: "P12+P10+P9+P8+P7+P1+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP7, mrP1]
+      - signature: "P12+P10+P9+P8+P7+P2+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP7, mrP2]
+      - signature: "P12+P10+P9+P8+P7+P3+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP7, mrP3]
+      - signature: "P12+P10+P9+P8+P7+P4+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP7, mrP4]
+      - signature: "P12+P10+P9+P8+P7+P5+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP7, mrP5]
+      - signature: "P12+P10+P9+P8+P7+P6+K|xxxxxxk"
+        rules: [mrP12, mrP10, mrP9, mrP8, mrP7, mrP6]
+      - signature: "P12+P11+P10+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP3, mrP2, mrP1]
+      - signature: "P12+P11+P10+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP4, mrP2, mrP1]
+      - signature: "P12+P11+P10+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP4, mrP3, mrP1]
+      - signature: "P12+P11+P10+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP4, mrP3, mrP2]
+      - signature: "P12+P11+P10+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP5, mrP2, mrP1]
+      - signature: "P12+P11+P10+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP5, mrP3, mrP1]
+      - signature: "P12+P11+P10+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP5, mrP3, mrP2]
+      - signature: "P12+P11+P10+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP5, mrP4, mrP1]
+      - signature: "P12+P11+P10+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP5, mrP4, mrP2]
+      - signature: "P12+P11+P10+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP5, mrP4, mrP3]
+      - signature: "P12+P11+P10+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP6, mrP2, mrP1]
+      - signature: "P12+P11+P10+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP6, mrP3, mrP1]
+      - signature: "P12+P11+P10+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP6, mrP3, mrP2]
+      - signature: "P12+P11+P10+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP6, mrP4, mrP1]
+      - signature: "P12+P11+P10+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP6, mrP4, mrP2]
+      - signature: "P12+P11+P10+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP6, mrP4, mrP3]
+      - signature: "P12+P11+P10+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP6, mrP5, mrP1]
+      - signature: "P12+P11+P10+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP6, mrP5, mrP2]
+      - signature: "P12+P11+P10+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP6, mrP5, mrP3]
+      - signature: "P12+P11+P10+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP6, mrP5, mrP4]
+      - signature: "P12+P11+P10+P7+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP7, mrP2, mrP1]
+      - signature: "P12+P11+P10+P7+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP7, mrP3, mrP1]
+      - signature: "P12+P11+P10+P7+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP7, mrP3, mrP2]
+      - signature: "P12+P11+P10+P7+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP7, mrP4, mrP1]
+      - signature: "P12+P11+P10+P7+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP7, mrP4, mrP2]
+      - signature: "P12+P11+P10+P7+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP7, mrP4, mrP3]
+      - signature: "P12+P11+P10+P7+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP7, mrP5, mrP1]
+      - signature: "P12+P11+P10+P7+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP7, mrP5, mrP2]
+      - signature: "P12+P11+P10+P7+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP7, mrP5, mrP3]
+      - signature: "P12+P11+P10+P7+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP7, mrP5, mrP4]
+      - signature: "P12+P11+P10+P7+P6+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP7, mrP6, mrP1]
+      - signature: "P12+P11+P10+P7+P6+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP7, mrP6, mrP2]
+      - signature: "P12+P11+P10+P7+P6+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP7, mrP6, mrP3]
+      - signature: "P12+P11+P10+P7+P6+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP7, mrP6, mrP4]
+      - signature: "P12+P11+P10+P7+P6+P5+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP7, mrP6, mrP5]
+      - signature: "P12+P11+P10+P8+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP2, mrP1]
+      - signature: "P12+P11+P10+P8+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP3, mrP1]
+      - signature: "P12+P11+P10+P8+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP3, mrP2]
+      - signature: "P12+P11+P10+P8+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP4, mrP1]
+      - signature: "P12+P11+P10+P8+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP4, mrP2]
+      - signature: "P12+P11+P10+P8+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP4, mrP3]
+      - signature: "P12+P11+P10+P8+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP5, mrP1]
+      - signature: "P12+P11+P10+P8+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP5, mrP2]
+      - signature: "P12+P11+P10+P8+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP5, mrP3]
+      - signature: "P12+P11+P10+P8+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP5, mrP4]
+      - signature: "P12+P11+P10+P8+P6+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP6, mrP1]
+      - signature: "P12+P11+P10+P8+P6+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP6, mrP2]
+      - signature: "P12+P11+P10+P8+P6+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP6, mrP3]
+      - signature: "P12+P11+P10+P8+P6+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP6, mrP4]
+      - signature: "P12+P11+P10+P8+P6+P5+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP6, mrP5]
+      - signature: "P12+P11+P10+P8+P7+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP7, mrP1]
+      - signature: "P12+P11+P10+P8+P7+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP7, mrP2]
+      - signature: "P12+P11+P10+P8+P7+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP7, mrP3]
+      - signature: "P12+P11+P10+P8+P7+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP7, mrP4]
+      - signature: "P12+P11+P10+P8+P7+P5+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP7, mrP5]
+      - signature: "P12+P11+P10+P8+P7+P6+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP8, mrP7, mrP6]
+      - signature: "P12+P11+P10+P9+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP2, mrP1]
+      - signature: "P12+P11+P10+P9+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP3, mrP1]
+      - signature: "P12+P11+P10+P9+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP3, mrP2]
+      - signature: "P12+P11+P10+P9+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP4, mrP1]
+      - signature: "P12+P11+P10+P9+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP4, mrP2]
+      - signature: "P12+P11+P10+P9+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP4, mrP3]
+      - signature: "P12+P11+P10+P9+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP5, mrP1]
+      - signature: "P12+P11+P10+P9+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP5, mrP2]
+      - signature: "P12+P11+P10+P9+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP5, mrP3]
+      - signature: "P12+P11+P10+P9+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP5, mrP4]
+      - signature: "P12+P11+P10+P9+P6+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP6, mrP1]
+      - signature: "P12+P11+P10+P9+P6+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP6, mrP2]
+      - signature: "P12+P11+P10+P9+P6+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP6, mrP3]
+      - signature: "P12+P11+P10+P9+P6+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP6, mrP4]
+      - signature: "P12+P11+P10+P9+P6+P5+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP6, mrP5]
+      - signature: "P12+P11+P10+P9+P7+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP7, mrP1]
+      - signature: "P12+P11+P10+P9+P7+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP7, mrP2]
+      - signature: "P12+P11+P10+P9+P7+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP7, mrP3]
+      - signature: "P12+P11+P10+P9+P7+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP7, mrP4]
+      - signature: "P12+P11+P10+P9+P7+P5+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP7, mrP5]
+      - signature: "P12+P11+P10+P9+P7+P6+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP7, mrP6]
+      - signature: "P12+P11+P10+P9+P8+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP8, mrP1]
+      - signature: "P12+P11+P10+P9+P8+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP8, mrP2]
+      - signature: "P12+P11+P10+P9+P8+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP8, mrP3]
+      - signature: "P12+P11+P10+P9+P8+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP8, mrP4]
+      - signature: "P12+P11+P10+P9+P8+P5+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP8, mrP5]
+      - signature: "P12+P11+P10+P9+P8+P6+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP8, mrP6]
+      - signature: "P12+P11+P10+P9+P8+P7+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP8, mrP7]
+      - signature: "P12+P11+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P12+P11+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P12+P11+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P12+P11+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P12+P11+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P12+P11+P6+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP6, mrP3, mrP2, mrP1]
+      - signature: "P12+P11+P6+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP6, mrP4, mrP2, mrP1]
+      - signature: "P12+P11+P6+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP6, mrP4, mrP3, mrP1]
+      - signature: "P12+P11+P6+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP6, mrP4, mrP3, mrP2]
+      - signature: "P12+P11+P6+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP6, mrP5, mrP2, mrP1]
+      - signature: "P12+P11+P6+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP6, mrP5, mrP3, mrP1]
+      - signature: "P12+P11+P6+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP6, mrP5, mrP3, mrP2]
+      - signature: "P12+P11+P6+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP6, mrP5, mrP4, mrP1]
+      - signature: "P12+P11+P6+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP6, mrP5, mrP4, mrP2]
+      - signature: "P12+P11+P6+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP6, mrP5, mrP4, mrP3]
+      - signature: "P12+P11+P7+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP3, mrP2, mrP1]
+      - signature: "P12+P11+P7+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP4, mrP2, mrP1]
+      - signature: "P12+P11+P7+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP4, mrP3, mrP1]
+      - signature: "P12+P11+P7+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP4, mrP3, mrP2]
+      - signature: "P12+P11+P7+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP5, mrP2, mrP1]
+      - signature: "P12+P11+P7+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP5, mrP3, mrP1]
+      - signature: "P12+P11+P7+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP5, mrP3, mrP2]
+      - signature: "P12+P11+P7+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP5, mrP4, mrP1]
+      - signature: "P12+P11+P7+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP5, mrP4, mrP2]
+      - signature: "P12+P11+P7+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP5, mrP4, mrP3]
+      - signature: "P12+P11+P7+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP6, mrP2, mrP1]
+      - signature: "P12+P11+P7+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP6, mrP3, mrP1]
+      - signature: "P12+P11+P7+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP6, mrP3, mrP2]
+      - signature: "P12+P11+P7+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP6, mrP4, mrP1]
+      - signature: "P12+P11+P7+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP6, mrP4, mrP2]
+      - signature: "P12+P11+P7+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP6, mrP4, mrP3]
+      - signature: "P12+P11+P7+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP6, mrP5, mrP1]
+      - signature: "P12+P11+P7+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP6, mrP5, mrP2]
+      - signature: "P12+P11+P7+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP6, mrP5, mrP3]
+      - signature: "P12+P11+P7+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP7, mrP6, mrP5, mrP4]
+      - signature: "P12+P11+P8+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP3, mrP2, mrP1]
+      - signature: "P12+P11+P8+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP4, mrP2, mrP1]
+      - signature: "P12+P11+P8+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP4, mrP3, mrP1]
+      - signature: "P12+P11+P8+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP4, mrP3, mrP2]
+      - signature: "P12+P11+P8+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP5, mrP2, mrP1]
+      - signature: "P12+P11+P8+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP5, mrP3, mrP1]
+      - signature: "P12+P11+P8+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP5, mrP3, mrP2]
+      - signature: "P12+P11+P8+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP5, mrP4, mrP1]
+      - signature: "P12+P11+P8+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP5, mrP4, mrP2]
+      - signature: "P12+P11+P8+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP5, mrP4, mrP3]
+      - signature: "P12+P11+P8+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP6, mrP2, mrP1]
+      - signature: "P12+P11+P8+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP6, mrP3, mrP1]
+      - signature: "P12+P11+P8+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP6, mrP3, mrP2]
+      - signature: "P12+P11+P8+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP6, mrP4, mrP1]
+      - signature: "P12+P11+P8+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP6, mrP4, mrP2]
+      - signature: "P12+P11+P8+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP6, mrP4, mrP3]
+      - signature: "P12+P11+P8+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP6, mrP5, mrP1]
+      - signature: "P12+P11+P8+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP6, mrP5, mrP2]
+      - signature: "P12+P11+P8+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP6, mrP5, mrP3]
+      - signature: "P12+P11+P8+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP6, mrP5, mrP4]
+      - signature: "P12+P11+P8+P7+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP7, mrP2, mrP1]
+      - signature: "P12+P11+P8+P7+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP7, mrP3, mrP1]
+      - signature: "P12+P11+P8+P7+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP7, mrP3, mrP2]
+      - signature: "P12+P11+P8+P7+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP7, mrP4, mrP1]
+      - signature: "P12+P11+P8+P7+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP7, mrP4, mrP2]
+      - signature: "P12+P11+P8+P7+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP7, mrP4, mrP3]
+      - signature: "P12+P11+P8+P7+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP7, mrP5, mrP1]
+      - signature: "P12+P11+P8+P7+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP7, mrP5, mrP2]
+      - signature: "P12+P11+P8+P7+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP7, mrP5, mrP3]
+      - signature: "P12+P11+P8+P7+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP7, mrP5, mrP4]
+      - signature: "P12+P11+P8+P7+P6+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP7, mrP6, mrP1]
+      - signature: "P12+P11+P8+P7+P6+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP7, mrP6, mrP2]
+      - signature: "P12+P11+P8+P7+P6+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP7, mrP6, mrP3]
+      - signature: "P12+P11+P8+P7+P6+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP7, mrP6, mrP4]
+      - signature: "P12+P11+P8+P7+P6+P5+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP8, mrP7, mrP6, mrP5]
+      - signature: "P12+P11+P9+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP3, mrP2, mrP1]
+      - signature: "P12+P11+P9+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP4, mrP2, mrP1]
+      - signature: "P12+P11+P9+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP4, mrP3, mrP1]
+      - signature: "P12+P11+P9+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP4, mrP3, mrP2]
+      - signature: "P12+P11+P9+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP5, mrP2, mrP1]
+      - signature: "P12+P11+P9+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP5, mrP3, mrP1]
+      - signature: "P12+P11+P9+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP5, mrP3, mrP2]
+      - signature: "P12+P11+P9+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP5, mrP4, mrP1]
+      - signature: "P12+P11+P9+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP5, mrP4, mrP2]
+      - signature: "P12+P11+P9+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP5, mrP4, mrP3]
+      - signature: "P12+P11+P9+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP6, mrP2, mrP1]
+      - signature: "P12+P11+P9+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP6, mrP3, mrP1]
+      - signature: "P12+P11+P9+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP6, mrP3, mrP2]
+      - signature: "P12+P11+P9+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP6, mrP4, mrP1]
+      - signature: "P12+P11+P9+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP6, mrP4, mrP2]
+      - signature: "P12+P11+P9+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP6, mrP4, mrP3]
+      - signature: "P12+P11+P9+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP6, mrP5, mrP1]
+      - signature: "P12+P11+P9+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP6, mrP5, mrP2]
+      - signature: "P12+P11+P9+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP6, mrP5, mrP3]
+      - signature: "P12+P11+P9+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP6, mrP5, mrP4]
+      - signature: "P12+P11+P9+P7+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP7, mrP2, mrP1]
+      - signature: "P12+P11+P9+P7+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP7, mrP3, mrP1]
+      - signature: "P12+P11+P9+P7+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP7, mrP3, mrP2]
+      - signature: "P12+P11+P9+P7+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP7, mrP4, mrP1]
+      - signature: "P12+P11+P9+P7+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP7, mrP4, mrP2]
+      - signature: "P12+P11+P9+P7+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP7, mrP4, mrP3]
+      - signature: "P12+P11+P9+P7+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP7, mrP5, mrP1]
+      - signature: "P12+P11+P9+P7+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP7, mrP5, mrP2]
+      - signature: "P12+P11+P9+P7+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP7, mrP5, mrP3]
+      - signature: "P12+P11+P9+P7+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP7, mrP5, mrP4]
+      - signature: "P12+P11+P9+P7+P6+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP7, mrP6, mrP1]
+      - signature: "P12+P11+P9+P7+P6+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP7, mrP6, mrP2]
+      - signature: "P12+P11+P9+P7+P6+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP7, mrP6, mrP3]
+      - signature: "P12+P11+P9+P7+P6+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP7, mrP6, mrP4]
+      - signature: "P12+P11+P9+P7+P6+P5+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP7, mrP6, mrP5]
+      - signature: "P12+P11+P9+P8+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP2, mrP1]
+      - signature: "P12+P11+P9+P8+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP3, mrP1]
+      - signature: "P12+P11+P9+P8+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP3, mrP2]
+      - signature: "P12+P11+P9+P8+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP4, mrP1]
+      - signature: "P12+P11+P9+P8+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP4, mrP2]
+      - signature: "P12+P11+P9+P8+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP4, mrP3]
+      - signature: "P12+P11+P9+P8+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP5, mrP1]
+      - signature: "P12+P11+P9+P8+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP5, mrP2]
+      - signature: "P12+P11+P9+P8+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP5, mrP3]
+      - signature: "P12+P11+P9+P8+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP5, mrP4]
+      - signature: "P12+P11+P9+P8+P6+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP6, mrP1]
+      - signature: "P12+P11+P9+P8+P6+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP6, mrP2]
+      - signature: "P12+P11+P9+P8+P6+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP6, mrP3]
+      - signature: "P12+P11+P9+P8+P6+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP6, mrP4]
+      - signature: "P12+P11+P9+P8+P6+P5+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP6, mrP5]
+      - signature: "P12+P11+P9+P8+P7+P1+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP7, mrP1]
+      - signature: "P12+P11+P9+P8+P7+P2+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP7, mrP2]
+      - signature: "P12+P11+P9+P8+P7+P3+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP7, mrP3]
+      - signature: "P12+P11+P9+P8+P7+P4+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP7, mrP4]
+      - signature: "P12+P11+P9+P8+P7+P5+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP7, mrP5]
+      - signature: "P12+P11+P9+P8+P7+P6+K|xxxxxxk"
+        rules: [mrP12, mrP11, mrP9, mrP8, mrP7, mrP6]
+      - signature: "P12+P5+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP5, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P12+P6+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP6, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P12+P6+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP6, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P12+P6+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP6, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P12+P6+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP6, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P12+P6+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP6, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P12+P7+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP7, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P12+P7+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP7, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P12+P7+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP7, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P12+P7+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP7, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P12+P7+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP7, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P12+P7+P6+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP7, mrP6, mrP3, mrP2, mrP1]
+      - signature: "P12+P7+P6+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP7, mrP6, mrP4, mrP2, mrP1]
+      - signature: "P12+P7+P6+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP7, mrP6, mrP4, mrP3, mrP1]
+      - signature: "P12+P7+P6+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP7, mrP6, mrP4, mrP3, mrP2]
+      - signature: "P12+P7+P6+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP7, mrP6, mrP5, mrP2, mrP1]
+      - signature: "P12+P7+P6+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP7, mrP6, mrP5, mrP3, mrP1]
+      - signature: "P12+P7+P6+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP7, mrP6, mrP5, mrP3, mrP2]
+      - signature: "P12+P7+P6+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP7, mrP6, mrP5, mrP4, mrP1]
+      - signature: "P12+P7+P6+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP7, mrP6, mrP5, mrP4, mrP2]
+      - signature: "P12+P7+P6+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP7, mrP6, mrP5, mrP4, mrP3]
+      - signature: "P12+P8+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P12+P8+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P12+P8+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P12+P8+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P12+P8+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P12+P8+P6+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP6, mrP3, mrP2, mrP1]
+      - signature: "P12+P8+P6+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP6, mrP4, mrP2, mrP1]
+      - signature: "P12+P8+P6+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP6, mrP4, mrP3, mrP1]
+      - signature: "P12+P8+P6+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP6, mrP4, mrP3, mrP2]
+      - signature: "P12+P8+P6+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP6, mrP5, mrP2, mrP1]
+      - signature: "P12+P8+P6+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP6, mrP5, mrP3, mrP1]
+      - signature: "P12+P8+P6+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP6, mrP5, mrP3, mrP2]
+      - signature: "P12+P8+P6+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP6, mrP5, mrP4, mrP1]
+      - signature: "P12+P8+P6+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP6, mrP5, mrP4, mrP2]
+      - signature: "P12+P8+P6+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP6, mrP5, mrP4, mrP3]
+      - signature: "P12+P8+P7+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP3, mrP2, mrP1]
+      - signature: "P12+P8+P7+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP4, mrP2, mrP1]
+      - signature: "P12+P8+P7+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP4, mrP3, mrP1]
+      - signature: "P12+P8+P7+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP4, mrP3, mrP2]
+      - signature: "P12+P8+P7+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP5, mrP2, mrP1]
+      - signature: "P12+P8+P7+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP5, mrP3, mrP1]
+      - signature: "P12+P8+P7+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP5, mrP3, mrP2]
+      - signature: "P12+P8+P7+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP5, mrP4, mrP1]
+      - signature: "P12+P8+P7+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP5, mrP4, mrP2]
+      - signature: "P12+P8+P7+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP5, mrP4, mrP3]
+      - signature: "P12+P8+P7+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP6, mrP2, mrP1]
+      - signature: "P12+P8+P7+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP6, mrP3, mrP1]
+      - signature: "P12+P8+P7+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP6, mrP3, mrP2]
+      - signature: "P12+P8+P7+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP6, mrP4, mrP1]
+      - signature: "P12+P8+P7+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP6, mrP4, mrP2]
+      - signature: "P12+P8+P7+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP6, mrP4, mrP3]
+      - signature: "P12+P8+P7+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP6, mrP5, mrP1]
+      - signature: "P12+P8+P7+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP6, mrP5, mrP2]
+      - signature: "P12+P8+P7+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP6, mrP5, mrP3]
+      - signature: "P12+P8+P7+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP8, mrP7, mrP6, mrP5, mrP4]
+      - signature: "P12+P9+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P12+P9+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P12+P9+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P12+P9+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P12+P9+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P12+P9+P6+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP6, mrP3, mrP2, mrP1]
+      - signature: "P12+P9+P6+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP6, mrP4, mrP2, mrP1]
+      - signature: "P12+P9+P6+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP6, mrP4, mrP3, mrP1]
+      - signature: "P12+P9+P6+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP6, mrP4, mrP3, mrP2]
+      - signature: "P12+P9+P6+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP6, mrP5, mrP2, mrP1]
+      - signature: "P12+P9+P6+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP6, mrP5, mrP3, mrP1]
+      - signature: "P12+P9+P6+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP6, mrP5, mrP3, mrP2]
+      - signature: "P12+P9+P6+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP6, mrP5, mrP4, mrP1]
+      - signature: "P12+P9+P6+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP6, mrP5, mrP4, mrP2]
+      - signature: "P12+P9+P6+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP6, mrP5, mrP4, mrP3]
+      - signature: "P12+P9+P7+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP3, mrP2, mrP1]
+      - signature: "P12+P9+P7+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP4, mrP2, mrP1]
+      - signature: "P12+P9+P7+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP4, mrP3, mrP1]
+      - signature: "P12+P9+P7+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP4, mrP3, mrP2]
+      - signature: "P12+P9+P7+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP5, mrP2, mrP1]
+      - signature: "P12+P9+P7+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP5, mrP3, mrP1]
+      - signature: "P12+P9+P7+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP5, mrP3, mrP2]
+      - signature: "P12+P9+P7+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP5, mrP4, mrP1]
+      - signature: "P12+P9+P7+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP5, mrP4, mrP2]
+      - signature: "P12+P9+P7+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP5, mrP4, mrP3]
+      - signature: "P12+P9+P7+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP6, mrP2, mrP1]
+      - signature: "P12+P9+P7+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP6, mrP3, mrP1]
+      - signature: "P12+P9+P7+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP6, mrP3, mrP2]
+      - signature: "P12+P9+P7+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP6, mrP4, mrP1]
+      - signature: "P12+P9+P7+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP6, mrP4, mrP2]
+      - signature: "P12+P9+P7+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP6, mrP4, mrP3]
+      - signature: "P12+P9+P7+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP6, mrP5, mrP1]
+      - signature: "P12+P9+P7+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP6, mrP5, mrP2]
+      - signature: "P12+P9+P7+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP6, mrP5, mrP3]
+      - signature: "P12+P9+P7+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP7, mrP6, mrP5, mrP4]
+      - signature: "P12+P9+P8+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP3, mrP2, mrP1]
+      - signature: "P12+P9+P8+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP4, mrP2, mrP1]
+      - signature: "P12+P9+P8+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP4, mrP3, mrP1]
+      - signature: "P12+P9+P8+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP4, mrP3, mrP2]
+      - signature: "P12+P9+P8+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP5, mrP2, mrP1]
+      - signature: "P12+P9+P8+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP5, mrP3, mrP1]
+      - signature: "P12+P9+P8+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP5, mrP3, mrP2]
+      - signature: "P12+P9+P8+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP5, mrP4, mrP1]
+      - signature: "P12+P9+P8+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP5, mrP4, mrP2]
+      - signature: "P12+P9+P8+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP5, mrP4, mrP3]
+      - signature: "P12+P9+P8+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP6, mrP2, mrP1]
+      - signature: "P12+P9+P8+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP6, mrP3, mrP1]
+      - signature: "P12+P9+P8+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP6, mrP3, mrP2]
+      - signature: "P12+P9+P8+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP6, mrP4, mrP1]
+      - signature: "P12+P9+P8+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP6, mrP4, mrP2]
+      - signature: "P12+P9+P8+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP6, mrP4, mrP3]
+      - signature: "P12+P9+P8+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP6, mrP5, mrP1]
+      - signature: "P12+P9+P8+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP6, mrP5, mrP2]
+      - signature: "P12+P9+P8+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP6, mrP5, mrP3]
+      - signature: "P12+P9+P8+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP6, mrP5, mrP4]
+      - signature: "P12+P9+P8+P7+P2+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP7, mrP2, mrP1]
+      - signature: "P12+P9+P8+P7+P3+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP7, mrP3, mrP1]
+      - signature: "P12+P9+P8+P7+P3+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP7, mrP3, mrP2]
+      - signature: "P12+P9+P8+P7+P4+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP7, mrP4, mrP1]
+      - signature: "P12+P9+P8+P7+P4+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP7, mrP4, mrP2]
+      - signature: "P12+P9+P8+P7+P4+P3+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP7, mrP4, mrP3]
+      - signature: "P12+P9+P8+P7+P5+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP7, mrP5, mrP1]
+      - signature: "P12+P9+P8+P7+P5+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP7, mrP5, mrP2]
+      - signature: "P12+P9+P8+P7+P5+P3+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP7, mrP5, mrP3]
+      - signature: "P12+P9+P8+P7+P5+P4+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP7, mrP5, mrP4]
+      - signature: "P12+P9+P8+P7+P6+P1+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP7, mrP6, mrP1]
+      - signature: "P12+P9+P8+P7+P6+P2+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP7, mrP6, mrP2]
+      - signature: "P12+P9+P8+P7+P6+P3+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP7, mrP6, mrP3]
+      - signature: "P12+P9+P8+P7+P6+P4+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP7, mrP6, mrP4]
+      - signature: "P12+P9+P8+P7+P6+P5+K|xxxxxxk"
+        rules: [mrP12, mrP9, mrP8, mrP7, mrP6, mrP5]
+      - signature: "P6+P5+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP6, mrP5, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P7+P5+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP7, mrP5, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P7+P6+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP7, mrP6, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P7+P6+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP7, mrP6, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P7+P6+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP7, mrP6, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P7+P6+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP7, mrP6, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P7+P6+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP7, mrP6, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P8+P5+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP8, mrP5, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P8+P6+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP8, mrP6, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P8+P6+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP8, mrP6, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P8+P6+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP8, mrP6, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P8+P6+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP8, mrP6, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P8+P6+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP8, mrP6, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P8+P7+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP8, mrP7, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P8+P7+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP8, mrP7, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P8+P7+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP8, mrP7, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P8+P7+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP8, mrP7, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P8+P7+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP8, mrP7, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P8+P7+P6+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP8, mrP7, mrP6, mrP3, mrP2, mrP1]
+      - signature: "P8+P7+P6+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP8, mrP7, mrP6, mrP4, mrP2, mrP1]
+      - signature: "P8+P7+P6+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP8, mrP7, mrP6, mrP4, mrP3, mrP1]
+      - signature: "P8+P7+P6+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP8, mrP7, mrP6, mrP4, mrP3, mrP2]
+      - signature: "P8+P7+P6+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP8, mrP7, mrP6, mrP5, mrP2, mrP1]
+      - signature: "P8+P7+P6+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP8, mrP7, mrP6, mrP5, mrP3, mrP1]
+      - signature: "P8+P7+P6+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP8, mrP7, mrP6, mrP5, mrP3, mrP2]
+      - signature: "P8+P7+P6+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP8, mrP7, mrP6, mrP5, mrP4, mrP1]
+      - signature: "P8+P7+P6+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP8, mrP7, mrP6, mrP5, mrP4, mrP2]
+      - signature: "P8+P7+P6+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP8, mrP7, mrP6, mrP5, mrP4, mrP3]
+      - signature: "P9+P5+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP5, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P9+P6+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP6, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P9+P6+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP6, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P9+P6+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP6, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P9+P6+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP9, mrP6, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P9+P6+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP9, mrP6, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P9+P7+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP7, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P9+P7+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP7, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P9+P7+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP7, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P9+P7+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP9, mrP7, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P9+P7+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP9, mrP7, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P9+P7+P6+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP7, mrP6, mrP3, mrP2, mrP1]
+      - signature: "P9+P7+P6+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP7, mrP6, mrP4, mrP2, mrP1]
+      - signature: "P9+P7+P6+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP9, mrP7, mrP6, mrP4, mrP3, mrP1]
+      - signature: "P9+P7+P6+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP9, mrP7, mrP6, mrP4, mrP3, mrP2]
+      - signature: "P9+P7+P6+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP7, mrP6, mrP5, mrP2, mrP1]
+      - signature: "P9+P7+P6+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP9, mrP7, mrP6, mrP5, mrP3, mrP1]
+      - signature: "P9+P7+P6+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP9, mrP7, mrP6, mrP5, mrP3, mrP2]
+      - signature: "P9+P7+P6+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP9, mrP7, mrP6, mrP5, mrP4, mrP1]
+      - signature: "P9+P7+P6+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP9, mrP7, mrP6, mrP5, mrP4, mrP2]
+      - signature: "P9+P7+P6+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP9, mrP7, mrP6, mrP5, mrP4, mrP3]
+      - signature: "P9+P8+P4+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP4, mrP3, mrP2, mrP1]
+      - signature: "P9+P8+P5+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP5, mrP3, mrP2, mrP1]
+      - signature: "P9+P8+P5+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP5, mrP4, mrP2, mrP1]
+      - signature: "P9+P8+P5+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP5, mrP4, mrP3, mrP1]
+      - signature: "P9+P8+P5+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP5, mrP4, mrP3, mrP2]
+      - signature: "P9+P8+P6+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP6, mrP3, mrP2, mrP1]
+      - signature: "P9+P8+P6+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP6, mrP4, mrP2, mrP1]
+      - signature: "P9+P8+P6+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP6, mrP4, mrP3, mrP1]
+      - signature: "P9+P8+P6+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP6, mrP4, mrP3, mrP2]
+      - signature: "P9+P8+P6+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP6, mrP5, mrP2, mrP1]
+      - signature: "P9+P8+P6+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP6, mrP5, mrP3, mrP1]
+      - signature: "P9+P8+P6+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP6, mrP5, mrP3, mrP2]
+      - signature: "P9+P8+P6+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP6, mrP5, mrP4, mrP1]
+      - signature: "P9+P8+P6+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP6, mrP5, mrP4, mrP2]
+      - signature: "P9+P8+P6+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP6, mrP5, mrP4, mrP3]
+      - signature: "P9+P8+P7+P3+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP3, mrP2, mrP1]
+      - signature: "P9+P8+P7+P4+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP4, mrP2, mrP1]
+      - signature: "P9+P8+P7+P4+P3+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP4, mrP3, mrP1]
+      - signature: "P9+P8+P7+P4+P3+P2+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP4, mrP3, mrP2]
+      - signature: "P9+P8+P7+P5+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP5, mrP2, mrP1]
+      - signature: "P9+P8+P7+P5+P3+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP5, mrP3, mrP1]
+      - signature: "P9+P8+P7+P5+P3+P2+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP5, mrP3, mrP2]
+      - signature: "P9+P8+P7+P5+P4+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP5, mrP4, mrP1]
+      - signature: "P9+P8+P7+P5+P4+P2+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP5, mrP4, mrP2]
+      - signature: "P9+P8+P7+P5+P4+P3+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP5, mrP4, mrP3]
+      - signature: "P9+P8+P7+P6+P2+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP6, mrP2, mrP1]
+      - signature: "P9+P8+P7+P6+P3+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP6, mrP3, mrP1]
+      - signature: "P9+P8+P7+P6+P3+P2+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP6, mrP3, mrP2]
+      - signature: "P9+P8+P7+P6+P4+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP6, mrP4, mrP1]
+      - signature: "P9+P8+P7+P6+P4+P2+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP6, mrP4, mrP2]
+      - signature: "P9+P8+P7+P6+P4+P3+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP6, mrP4, mrP3]
+      - signature: "P9+P8+P7+P6+P5+P1+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP6, mrP5, mrP1]
+      - signature: "P9+P8+P7+P6+P5+P2+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP6, mrP5, mrP2]
+      - signature: "P9+P8+P7+P6+P5+P3+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP6, mrP5, mrP3]
+      - signature: "P9+P8+P7+P6+P5+P4+K|xxxxxxk"
+        rules: [mrP9, mrP8, mrP7, mrP6, mrP5, mrP4]
+
+  - word: "xxxxxxxxxxxxk"
+    note: >-
+      The all-slots-fired boundary case, the mirror image of "k": with all 12 x's present, every
+      single slot must have fired (no other subset of size 12 exists out of 12), so C(12,12) = 1 --
+      back down to exactly one analysis, confirming the combinatorics collapse correctly at the
+      other extreme. Morph order is P12..P1..K because each later-firing slot's InsertSegments
+      prepends its "x" further to the left than every slot that fired before it (confirmed against
+      v1's own expected.tsv).
+    provenance: "F3 worked example (pathological category): 12 independent all-optional affix-template prefix slots inserting an identical literal character, producing C(12,k) equally-valid analyses for a k-x-prefixed word (924 for k=6, confirmed against the live oracle: 3 words, ~2.0s total wall-clock on this branch's un-optimized plain-master engine)"
+    parses:
+      - signature: "P12+P11+P10+P9+P8+P7+P6+P5+P4+P3+P2+P1+K|xxxxxxxxxxxxk"
+        rules: [mrP12, mrP11, mrP10, mrP9, mrP8, mrP7, mrP6, mrP5, mrP4, mrP3, mrP2, mrP1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"

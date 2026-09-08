@@ -1,0 +1,30 @@
+# Regression pin, not a coverage fixture. See grammar.xml's header.
+#
+# The C# engine used to throw System.InvalidOperationException "Failed to compare two elements in the
+# array", inner System.ArgumentException "Only nodes from the same list can be compared", while
+# analysing a word against a MetathesisRule whose leftSwitch names the EARLIER of its two pattern
+# groups -- an internal invariant violation. Fixed upstream by sillsdev/machine#471, so the crash
+# expectation is gone: this fixture now pins that the engine completes the analysis without throwing
+# and reports no analysis for the word.
+#
+# Oracle: the C# founding oracle (conformance/adapters/hc-dotnet-wrapper.sh batch over a Debug build of
+# src/SIL.Machine.Morphology.HermitCrab.Tool). Reduced from edge-cases/feature-system-breadth, where
+# adding a root containing the swap pair turned a passing fixture into this crash.
+#
+# It claims no coverage of its own; everything it declares is covered with real evidence in
+# edge-cases/feature-system-breadth.
+
+language: MetathesisComparisonCrash
+inspired_by: ["synthetic metathesis-ordering crash reduction (not modeling any real language)"]
+sources:
+  - "reduced from conformance/edge-cases/feature-system-breadth while covering MetathesisRule@multipleApplicationOrder"
+requires: [phonology]
+words:
+  - word: ti
+    note: >-
+      The root's own shape. Analysing it against the rightToLeftIterative swap is what used to trip the
+      comparison invariant; the swapped form "it" never did. Post-#471 the analysis completes and
+      yields nothing, which is the correct answer -- no rule derives "ti" from this lexicon.
+    expect_fail: true
+    exercises:
+      - "MetathesisRule"

@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>TruncateRulesProbe</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV">
+        <Name>v</Name>
+      </PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons">
+        <Name>cons</Name>
+        <Symbols>
+          <Symbol id="symConsPlus">+</Symbol>
+          <Symbol id="symConsMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featCont">
+        <Name>cont</Name>
+        <Symbols>
+          <Symbol id="symContPlus">+</Symbol>
+          <Symbol id="symContMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featPlace">
+        <Name>place</Name>
+        <Symbols>
+          <Symbol id="symAlveolar">alveolar</Symbol>
+          <Symbol id="symVelar">velar</Symbol>
+          <Symbol id="symBilabial">bilabial</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featHeight">
+        <Name>height</Name>
+        <Symbols>
+          <Symbol id="symLow">low</Symbol>
+          <Symbol id="symHigh">high</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featBack">
+        <Name>back</Name>
+        <Symbols>
+          <Symbol id="symBackPlus">+</Symbol>
+          <Symbol id="symBackMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <HeadFeatures />
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="charS">
+          <Representations>
+            <Representation>s</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="symConsPlus" />
+          <FeatureValue feature="featCont" symbolValues="symContPlus" />
+          <FeatureValue feature="featPlace" symbolValues="symAlveolar" />
+        </SegmentDefinition>
+        <SegmentDefinition id="charG">
+          <Representations>
+            <Representation>g</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="symConsPlus" />
+          <FeatureValue feature="featCont" symbolValues="symContMinus" />
+          <FeatureValue feature="featPlace" symbolValues="symVelar" />
+        </SegmentDefinition>
+        <SegmentDefinition id="charB">
+          <Representations>
+            <Representation>b</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="symConsPlus" />
+          <FeatureValue feature="featCont" symbolValues="symContMinus" />
+          <FeatureValue feature="featPlace" symbolValues="symBilabial" />
+        </SegmentDefinition>
+        <SegmentDefinition id="charA">
+          <Representations>
+            <Representation>a</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="symConsMinus" />
+          <FeatureValue feature="featHeight" symbolValues="symLow" />
+        </SegmentDefinition>
+        <SegmentDefinition id="charU">
+          <Representations>
+            <Representation>u</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="symConsMinus" />
+          <FeatureValue feature="featHeight" symbolValues="symHigh" />
+          <FeatureValue feature="featBack" symbolValues="symBackPlus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="charI">
+          <Representations>
+            <Representation>i</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="symConsMinus" />
+          <FeatureValue feature="featHeight" symbolValues="symHigh" />
+          <FeatureValue feature="featBack" symbolValues="symBackMinus" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny">
+        <Name>Any</Name>
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncFricative">
+        <Name>Fricative</Name>
+        <FeatureValue feature="featCons" symbolValues="symConsPlus" />
+        <FeatureValue feature="featCont" symbolValues="symContPlus" />
+      </FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mruleTruncTrail mruleTruncLead mruleTruncOptIns">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- case A: truncate a trailing segment matched by LITERAL identity (Segment, not SimpleContext) -->
+          <MorphologicalRule id="mruleTruncTrail" requiredPartsOfSpeech="posV">
+            <Name>truncate_trail_literal</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="msubTruncTrail">
+                <MorphologicalInput>
+                  <PhoneticSequence id="ptt1">
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="ncAny" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                  <PhoneticSequence id="ptt2">
+                    <Segment segment="charG" />
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="ptt1" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <Gloss>3SGA</Gloss>
+          </MorphologicalRule>
+          <!-- case B: truncate a leading segment matched by a NATURAL CLASS (fricative) -->
+          <MorphologicalRule id="mruleTruncLead" requiredPartsOfSpeech="posV">
+            <Name>truncate_lead_class</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="msubTruncLead">
+                <MorphologicalInput>
+                  <PhoneticSequence id="ptl1">
+                    <SimpleContext naturalClass="ncFricative" />
+                  </PhoneticSequence>
+                  <PhoneticSequence id="ptl2">
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="ncAny" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="ptl2" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <Gloss>3SGB</Gloss>
+          </MorphologicalRule>
+          <!-- case C: OPTIONAL leading truncation combined with an insertion (deletion-only Rhs is not
+               the only shape possible; this exercises Optional on the truncated part). -->
+          <MorphologicalRule id="mruleTruncOptIns" requiredPartsOfSpeech="posV">
+            <Name>truncate_optional_insert</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="msubTruncOptIns">
+                <MorphologicalInput>
+                  <PhoneticSequence id="pto1">
+                    <OptionalSegmentSequence min="0" max="1">
+                      <Segment segment="charS" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                  <PhoneticSequence id="pto2">
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="ncAny" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments>
+                    <PhoneticShape>g</PhoneticShape>
+                  </InsertSegments>
+                  <CopyFromInput index="pto2" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <Gloss>3SGC</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="root32" partOfSpeech="posV">
+            <Allomorphs>
+              <Allomorph id="root32_1">
+                <PhoneticShape>sag</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <Gloss>32</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="root33" partOfSpeech="posV">
+            <Allomorphs>
+              <Allomorph id="root33_1">
+                <PhoneticShape>sas</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <Gloss>33</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="root42" partOfSpeech="posV">
+            <Allomorphs>
+              <Allomorph id="root42_1">
+                <PhoneticShape>bubibi</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <Gloss>42</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

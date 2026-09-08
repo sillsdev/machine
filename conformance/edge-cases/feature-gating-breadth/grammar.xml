@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Head and foot feature gating, in the smallest grammar that still discriminates it.
+
+     The constructs here are already present in languages/fusional-realizational-morphology and
+     languages/suffixing-extension-slot-ordering, but those grammars are dense: deleting a constraint
+     element ENLARGES their search space, and the counterfactual sweep could not finish either mutant
+     inside its timeout. Constraint removal is inherently expansive, so the fix is a small grammar
+     rather than a longer timeout, and every rule added since stays equally bounded.
+
+     mrAgr's own OutputFootFeatures is redundant with the value it also REQUIRES as input (a plural,
+     stressed root stays stressed whether or not the rule reasserts it), so removing it changes nothing:
+     foot features persist across a derivation unless a rule overrides them. mrLoud and mrEmph exist to
+     make the override itself observable: mrLoud carries no input gate and OVERRIDES an unstressed
+     root's foot feature via its own OutputFootFeatures, and mrEmph, downstream, is gated on the
+     overridden value. Only a root that starts out UNSTRESSED (eNal) can show the difference; kal is
+     already stressed on its own and so cannot.
+
+     Pure morphotactics: no phonological rules, so every parse is a template application. -->
+<HermitCrabInput>
+  <Language>
+    <Name>FeatureGatingBreadth</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <HeadFeatures>
+      <SymbolicFeature id="featNum">
+        <Name>number</Name>
+        <Symbols>
+          <Symbol id="numSg">sg</Symbol>
+          <Symbol id="numPl">pl</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featTense">
+        <Name>tense</Name>
+        <Symbols>
+          <Symbol id="tnsPres">pres</Symbol>
+          <Symbol id="tnsPast">past</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </HeadFeatures>
+    <FootFeatures>
+      <SymbolicFeature id="featStress">
+        <Name>stress</Name>
+        <Symbols>
+          <Symbol id="strYes">stressed</Symbol>
+          <Symbol id="strNo">unstressed</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </FootFeatures>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="linear" morphologicalRules="mrAgr mrLoud mrEmph rrPast">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- Gated on BOTH a head feature and a foot feature, so each has its own failing word. -->
+          <MorphologicalRule id="mrAgr" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>agreement</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subAgr">
+                <MorphologicalInput><PhoneticSequence id="stemAgr"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemAgr" /><InsertSegments><PhoneticShape>ka</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featNum" symbolValues="numPl" /></OutputHeadFeatures>
+            <OutputFootFeatures><FeatureValue feature="featStress" symbolValues="strYes" /></OutputFootFeatures>
+            <RequiredHeadFeatures><FeatureValue feature="featNum" symbolValues="numPl" /></RequiredHeadFeatures>
+            <RequiredFootFeatures><FeatureValue feature="featStress" symbolValues="strYes" /></RequiredFootFeatures>
+            <MorphemeId>AGR</MorphemeId>
+            <Gloss>AGR</Gloss>
+            <Properties>
+              <Property name="note">Properties on a morphological rule</Property>
+            </Properties>
+          </MorphologicalRule>
+          <!-- Ungated: applies regardless of the root's own foot feature, and OVERRIDES it on the
+               output. Downstream mrEmph is what makes that override observable: it requires the
+               overridden value, which only exists on words that went through this rule's own
+               OutputFootFeatures, not through inheriting whatever the root already had. -->
+          <MorphologicalRule id="mrLoud" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>loud</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subLoud">
+                <MorphologicalInput><PhoneticSequence id="stemLoud"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemLoud" /><InsertSegments><PhoneticShape>no</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputFootFeatures><FeatureValue feature="featStress" symbolValues="strYes" /></OutputFootFeatures>
+            <MorphemeId>LOUD</MorphemeId>
+            <Gloss>LOUD</Gloss>
+          </MorphologicalRule>
+          <!-- Gated on the stress value that only mrLoud's OutputFootFeatures can supply, for a root
+               that starts out unstressed. -->
+          <MorphologicalRule id="mrEmph" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>emphatic</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subEmph">
+                <MorphologicalInput><PhoneticSequence id="stemEmph"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemEmph" /><InsertSegments><PhoneticShape>mu</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <RequiredFootFeatures><FeatureValue feature="featStress" symbolValues="strYes" /></RequiredFootFeatures>
+            <MorphemeId>EMPH</MorphemeId>
+            <Gloss>EMPH</Gloss>
+          </MorphologicalRule>
+          <!-- Realizes a head feature rather than gating on one. -->
+          <RealizationalRule id="rrPast">
+            <Name>past</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPast">
+                <MorphologicalInput><PhoneticSequence id="stemPast"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemPast" /><InsertSegments><PhoneticShape>id</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <RealizationalFeatures><FeatureValue feature="featTense" symbolValues="tnsPast" /></RealizationalFeatures>
+            <MorphemeId>PAST</MorphemeId>
+            <Gloss>PAST</Gloss>
+          </RealizationalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <!-- Satisfies both gates. -->
+          <LexicalEntry id="eKal" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aKal"><PhoneticShape>kal</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="featNum" symbolValues="numPl" /></AssignedHeadFeatures>
+            <AssignedFootFeatures><FeatureValue feature="featStress" symbolValues="strYes" /></AssignedFootFeatures>
+            <MorphemeId>KAL</MorphemeId>
+            <Gloss>kal</Gloss>
+          </LexicalEntry>
+          <!-- Wrong head feature: fails RequiredHeadFeatures only. -->
+          <LexicalEntry id="eTun" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aTun"><PhoneticShape>tun</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="featNum" symbolValues="numSg" /></AssignedHeadFeatures>
+            <AssignedFootFeatures><FeatureValue feature="featStress" symbolValues="strYes" /></AssignedFootFeatures>
+            <MorphemeId>TUN</MorphemeId>
+            <Gloss>tun</Gloss>
+          </LexicalEntry>
+          <!-- Wrong foot feature: fails RequiredFootFeatures only. -->
+          <LexicalEntry id="eMol" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aMol"><PhoneticShape>mol</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="featNum" symbolValues="numPl" /></AssignedHeadFeatures>
+            <AssignedFootFeatures><FeatureValue feature="featStress" symbolValues="strNo" /></AssignedFootFeatures>
+            <MorphemeId>MOL</MorphemeId>
+            <Gloss>mol</Gloss>
+          </LexicalEntry>
+          <!-- Starts unstressed, so mrEmph can succeed on it only via mrLoud's own override. -->
+          <LexicalEntry id="eNal" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aNal"><PhoneticShape>nal</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="featNum" symbolValues="numPl" /></AssignedHeadFeatures>
+            <AssignedFootFeatures><FeatureValue feature="featStress" symbolValues="strNo" /></AssignedFootFeatures>
+            <MorphemeId>NAL</MorphemeId>
+            <Gloss>nal</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

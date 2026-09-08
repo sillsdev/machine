@@ -1,0 +1,410 @@
+# Morphotactic attribute breadth. See grammar.xml's header for the design.
+#
+# Oracle: the C# founding oracle (conformance/adapters/hc-dotnet-wrapper.sh batch over a Debug build
+# of src/SIL.Machine.Morphology.HermitCrab.Tool). Every signature is transcribed from that run.
+#
+# What each negative control isolates:
+#   kulba      multipleApplication="0" on mrRep0: the cap is zero, so the suffix never attaches.
+#   kuldedede  multipleApplication="2" on mrRep2: a third copy exceeds the cap.
+#   kulsi      RealizationalRule@isActive="no" on mrRealDecoy.
+#   kur        Allomorph@isBound="true" on aKulBound: a bound form is not a free word.
+#   sol        AllomorphCoOccurrenceRule@type="require": aSol requires aNap somewhereToLeft, and no
+#              word here supplies one, so the bare root is refused. This is the only co-occurrence
+#              rule in the fixture where aSol/aNap are the roots involved.
+#   napmo      LexicalEntry@partial="true" on eNap: a partial root never matches ANY AffixTemplate
+#              (SynthesisAffixTemplatesRule.cs gates the whole template loop on
+#              !input.RootAllomorph.Morpheme.IsPartial), so mrPartial (reachable only through a
+#              template slot) can never attach to it, even though the identical suffix attaches to
+#              a non-partial root (kulmo).
+#   kulpu      AffixTemplate@final="false" on nonFinalTemplate: mrNF is reachable ONLY through that
+#              template's own slot (never stratum-listed, never in finalTemplate), so its output can
+#              never be the end of a derivation while the template itself is non-final.
+#
+# mrReal appears in almost every traced rule list, including for the bare root, while contributing no
+# morpheme to any signature. A realizational rule is traced as applied even when it realizes nothing,
+# so the lists below are the oracle's, not a tidied version of them.
+#
+# The blocking pair (mrUnblockable/mrReal, blockable="false") needed a genuinely competing, MORE
+# SPECIFIC form to be observable at all: bakgi/simru each use a dedicated root (family famBlk/famBlk3)
+# with a suppletive sibling (dom/rog) whose own AssignedHeadFeatures matches what the blockable rule's
+# output would assign, so Word.CheckBlocking has something to substitute in when blockable="true" is
+# tried as the counterfactual. eKul/eNap/eSol carry no family, so blocking can never fire on kulgi
+# itself (family==null short-circuits Word.CheckBlocking) is deliberate isolation, not an
+# oversight: it keeps the repetition/co-occurrence controls above from ever being touched by a change
+# to the blocking construct.
+#
+# The co-occurrence and MPR-feature-group constructs (topsakatana, kulbubidu) are on their own
+# isolated roots/rules (mrCoA-D, mrMB/mrMA/mrMReq) for the same reason: none of them share a rule ID
+# with anything the repetition/blocking/partial controls above touch, so mutating one surface's value
+# can never accidentally break a DIFFERENT surface's own word.
+#
+# pog/pogli/pogti/pogliti live in grammar.xml's own second, Unordered stratum (Second), not Main:
+# MorphologicalRule@partial="true" on mrPO only matters for a rule reached AFTER a final template
+# already applied (SynthesisAffixProcessRule.cs's NonPartialRuleProhibitedAfterFinalTemplate check),
+# and that ordering is only reachable via Unordered's ApplyTemplates -> ApplyMorphologicalRules
+# recursion in SynthesisStratumRule.cs, never on Main, which is deliberately Linear (see its own
+# comment). pogliti is the only string reachable through that exact order (template's own slot filled
+# with "li", THEN the stratum-level "ti" appended): mrPO applying first instead would produce
+# "pogtili", a different string, so there is no other path that could produce "pogliti" and make this
+# a false control.
+#
+# NOT EVIDENCEABLE, and not for lack of trying: Stratum@cyclicity="cyclic" and
+# Stratum@phonologicalRuleOrder="simultaneous" (both declared on Main, non-default, purely for the
+# enumerated value's presence in a document). Neither attribute is read anywhere by
+# XmlLanguageLoader.cs beyond the DTD-default parse itself, and Stratum.cs carries no corresponding
+# property at all (only MorphologicalRuleOrder exists on the class), confirmed by grepping the whole
+# of src/SIL.Machine.Morphology.HermitCrab for "Cyclicity" and "PhonologicalRuleOrder" as C# identifiers
+# and finding zero hits outside the DTD text and this loader's own unread attribute string. No grammar
+# shape, phonological or otherwise, can make an attribute the engine never consults observable (see
+# conformance/README.md's exception-surfaces list, "Cyclic strata and simultaneous rule order").
+
+language: MorphotacticAttributeBreadth
+inspired_by: ["synthetic morphotactic-attribute probe (not modeling any real language)"]
+sources:
+  - "conformance/semantic-coverage-baseline.txt morphotactic todo entries"
+requires: []
+words:
+  # Bucket-2 coverage (MorphologicalOutput.MPRFeatures->MorphologicalInput.excludedMPRFeatures):
+  # placed FIRST in file order deliberately, and the distinguishing (baseline-fail) word placed
+  # before its own control, for the same reason suffixing-extension-slot-ordering's own bucket-2
+  # words are ordered this way -- severing MorphologicalOutput.MPRFeatures fixture-wide ALSO affects
+  # mrMB/mrMA/mrMReq's own appendGroup interaction elsewhere in this file, and InterfaceWitnessLedger
+  # reports the FIRST word (in file order) whose outcome differs, not the first favorable one.
+  - word: topdori
+    note: >-
+      THE distinguishing row: TOP + mrConferExcl ("-do") + mrExclReader ("-ri"). mrConferExcl's own
+      MorphologicalOutput MPRFeatures="mprExclFlag" write is exactly what mrExclReader's
+      MorphologicalInput.excludedMPRFeatures="mprExclFlag" excludes, so mrExclReader can never apply
+      once mrConferExcl has -- zero parses. Removing either mrConferExcl's own
+      MorphologicalOutput.MPRFeatures write (the writer, so the exclusion is vacuously satisfied) or
+      mrExclReader's own excludedMPRFeatures (the reader, so there is no exclusion left to trip)
+      unblocks it independently, to the identical successful parse. topdo (below) is the control
+      showing mrConferExcl attaches normally on its own.
+    expect_fail: true
+    blocked_by: [mrExclReader]
+    claimed_cells:
+      - cell: "MorphologicalPhonologicalRuleFeature::MorphologicalOutput.MPRFeatures->MorphologicalInput.excludedMPRFeatures::McDc:PresentGatedForm"
+        severing: >-
+          either mrConferExcl's own MorphologicalOutput.MPRFeatures="mprExclFlag" write (the writer)
+          or mrExclReader's own MorphologicalInput.excludedMPRFeatures="mprExclFlag" gate (the
+          reader) -- severing either alone unblocks this word
+        before: "ok::-"
+        after: "ok::TOP+CONFEREXCL+EXCLREADER|topdori"
+        distinct_from: topdo
+        proof: >-
+          topdori is TOP run through mrConferExcl (which confers mprExclFlag) then attempting
+          mrExclReader; with both constructs intact the exclusion blocks it, so this has zero parses.
+          Removing either the writer (mrConferExcl's own MorphologicalOutput.MPRFeatures) or the
+          reader (mrExclReader's excludedMPRFeatures) lets mrExclReader apply anyway, producing
+          TOP+CONFEREXCL+EXCLREADER|topdori -- the PresentGatedForm arm: the feature is PRESENT
+          (conferred by mrConferExcl, never a lexical property of TOP itself) and mrExclReader's
+          exclusion GATES on it.
+
+  - word: topdo
+    note: TOP + mrConferExcl ("-do") alone -- the control for topdori (above), showing mrConferExcl attaches normally.
+    parses:
+      - signature: "TOP+CONFEREXCL|topdo"
+        rules: [mrReal, mrConferExcl]
+
+  - word: topri
+    note: TOP + mrExclReader ("-ri") alone, no mrConferExcl -- TOP carries no mprExclFlag on its own, so mrExclReader's exclusion is vacuously satisfied.
+    parses:
+      - signature: "TOP+EXCLREADER|topri"
+        rules: [mrReal, mrExclReader]
+
+  - word: kul
+    note: Bare free root. The control that the grammar loads and admits a complete word at all.
+    parses:
+      - signature: "KUL|kul"
+        rules: [mrReal]
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: kulde
+    note: mrRep2 applied once, well inside its cap of two.
+    parses:
+      - signature: "KUL+TWICE|kulde"
+        rules: [mrReal, mrRep2]
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: kuldede
+    note: >-
+      mrRep2 applied twice, exactly at its cap. The morpheme id appears once in the signature even
+      though the rule applied twice; that is the oracle's own rendering, transcribed as-is.
+    parses:
+      - signature: "KUL+TWICE|kuldede"
+        rules: [mrReal, mrRep2]
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: kuldedede
+    note: Three copies exceed multipleApplication="2". The upper boundary of the cap.
+    expect_fail: true
+    exercises:
+      - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: kulba
+    note: >-
+      mrRep0 carries multipleApplication="0", so its suffix can never attach and this word has no
+      analysis. The lower boundary of the cap, and the only evidence mrRep0 can ever have: a rule
+      capped at zero applications cannot appear in any traced rule list.
+    expect_fail: true
+    blocked_by: [mrRep0]
+    neutralizes:
+      - mrRep0
+    exercises:
+      - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: kulgi
+    note: mrUnblockable carries blockable="false" and sets an MPR feature through the append group.
+    parses:
+      - signature: "KUL+UNBLK|kulgi"
+        rules: [mrReal, mrUnblockable]
+        exercises:
+          - "MPR features/groups"
+
+  - word: kulmo
+    note: mrPartial carries partial="true", reached through finalTemplate's own slot.
+    parses:
+      - signature: "KUL+PART|kulmo"
+        rules: [mrPartial, mrReal]
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: kulru
+    note: mrReal is a RealizationalRule with blockable="false".
+    parses:
+      - signature: "KUL+REAL|kulru"
+        rules: [mrReal]
+        exercises:
+          - "RealizationalAffixProcessRule"
+
+  - word: kulsi
+    note: Negative control for RealizationalRule@isActive="no". mrRealDecoy would suffix "si".
+    expect_fail: true
+    blocked_by: [mrRealDecoy]
+    neutralizes:
+      - mrRealDecoy
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: nap
+    note: eNap carries partial="true" and still parses as a free root (no template involved at all).
+    parses:
+      - signature: "NAP|nap"
+        rules: []
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: napmo
+    note: >-
+      Negative control for LexicalEntry@partial="true". mrPartial attaches to kul (kulmo) but never to
+      nap: a partial root is gated out of SynthesisAffixTemplatesRule's whole template loop before any
+      individual slot is even considered, so the identical suffix has no route to this root at all.
+    expect_fail: true
+    neutralizes:
+      - eNap
+    exercises:
+      - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: sol
+    note: >-
+      Negative control for AllomorphCoOccurrenceRule@type="require". aSol requires aNap somewhereToLeft;
+      nothing here can supply one, so the bare root is refused even though it is a declared allomorph.
+    expect_fail: true
+    exercises:
+      - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: kur
+    note: Negative control for Allomorph@isBound="true". aKulBound is not a free word.
+    expect_fail: true
+    exercises:
+      - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: kulpu
+    note: >-
+      Negative control for AffixTemplate@final="false". mrNF is reachable only through
+      nonFinalTemplate's own slot, and that template's output cannot be a complete word on its own.
+    expect_fail: true
+    blocked_by: [mrNF]
+    neutralizes:
+      - nonFinalTemplate
+    exercises:
+      - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: bak
+    note: >-
+      Bare root for the MorphologicalRule@blockable="false" control, in its own family (famBlk) so
+      blocking never touches the repetition/co-occurrence controls above.
+    parses:
+      - signature: "VAK|bak"
+        rules: [mrReal]
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: dom
+    note: >-
+      Suppletive sibling of bak (family famBlk), lexically assigned the same head feature mrUnblockable
+      would assign to bak, the "more specific competing form" a blocking check substitutes in.
+    parses:
+      - signature: "ZOM|dom"
+        rules: [mrReal]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: bakgi
+    note: >-
+      mrUnblockable applied to bak. blockable="false" keeps this UNBLOCKED even though bak has a
+      family sibling (dom) whose own assigned features match what mrUnblockable's OutputHeadFeatures
+      would assign, the competing form Word.CheckBlocking would substitute in if blockable were true.
+    parses:
+      - signature: "VAK+UNBLK|bakgi"
+        rules: [mrReal, mrUnblockable]
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: sim
+    note: >-
+      Bare root for the RealizationalRule@blockable="false" control, in its own family (famBlk3),
+      lexically assigned the same head feature its sibling rog carries.
+    parses:
+      - signature: "SIM|sim"
+        rules: [mrReal]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: rog
+    note: Suppletive sibling of sim (family famBlk3), the competing form for the RealizationalRule control.
+    parses:
+      - signature: "ROG|rog"
+        rules: [mrReal]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: simru
+    note: mrReal applied to sim. blockable="false" keeps this unblocked despite sim's sibling rog.
+    parses:
+      - signature: "SIM+REAL|simru"
+        rules: [mrReal]
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: top
+    note: >-
+      Bare root for the co-occurrence and MPR-feature-group controls below, isolated from every other
+      construct in this fixture (no family, no shared rule IDs).
+    parses:
+      - signature: "TOP|top"
+        rules: [mrReal]
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: topsakatana
+    note: >-
+      top + mrCoA/mrCoB/mrCoC/mrCoD, in that order. Positive control for the four non-default
+      AllomorphCoOccurrenceRule adjacency values (each keyed on a different one of COA-D so all four
+      requirements hold on the SAME word at once), MorphemeCoOccurrenceRule@adjacency="anywhere", and
+      both rule collections' isActive="no" decoys (exclude pairs that would invalidate this word if
+      activated).
+    parses:
+      - signature: "TOP+COA+COB+COC+COD|topsakatana"
+        rules: [mrCoA, mrCoB, mrCoC, mrCoD, mrReal]
+        exercises:
+          - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: kulbubidu
+    note: >-
+      kul + mrMB (sets mprB) + mrMA (sets mprA) + mrMReq (requires mprB still present). Under
+      appendGroup's outputType="append", setting mprA does not evict mprB, so mrMReq succeeds;
+      MorphologicalPhonologicalRuleFeatureGroup@outputType="append" and @isActive="no" (groupDecoy,
+      which claims the SAME two features and hijacks their group membership when activated) both fail
+      this word the same way if neutralized.
+    parses:
+      - signature: "KUL+MB+MA+MREQ|kulbubidu"
+        rules: [mrMB, mrMA, mrMReq, mrReal]
+        exercises:
+          - "MPR features/groups"
+
+  - word: pog
+    note: >-
+      Bare root of the second (Unordered) stratum, used for the MorphologicalRule@partial="true"
+      control below.
+    parses:
+      - signature: "POG|pog"
+        rules: []
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: pogli
+    note: pogTemplate's own slot (mrPogAffix) filled, template-final.
+    parses:
+      - signature: "POG+POGAFX|pogli"
+        rules: [mrPogAffix]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: pogti
+    note: >-
+      mrPO applied directly to the bare root (never through a template first), which is why this
+      string is "ti" appended once, not "li" then "ti".
+    parses:
+      - signature: "POG+PO|pogti"
+        rules: [mrPO]
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: pogliti
+    note: >-
+      Positive control for MorphologicalRule@partial="true". pogTemplate applies first (its slot
+      filled with "li"), setting IsLastAppliedRuleFinal=true; mrPO then applies AFTER that final
+      template only because mrPO itself is partial="true"
+      (SynthesisAffixProcessRule.cs's NonPartialRuleProhibitedAfterFinalTemplate check exempts a
+      partial rule). No other derivation order can produce this exact string: mrPO applying before
+      pogTemplate gives "pogtili", not "pogliti".
+    parses:
+      - signature: "POG+POGAFX+PO|pogliti"
+        rules: [mrPO, mrPogAffix]
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: kulgimo
+    note: >-
+      Ordering discriminator for finalTemplate's unblockableSlot~partialSlot adjacent pair. Carries
+      both mrUnblockable's "gi" and mrPartial's "mo" in declared slot order. Confirmed against a
+      hand-built mutant with the two Slot elements transposed: this exact string fails to parse under
+      the swap (baseline ok::KUL+UNBLK+PART|kulgimo -> swapped ok::-), and the reversed-affix form
+      "kulmogi" fails baseline but parses under the swap, so the pair is evidenced in both directions.
+    parses:
+      - signature: "KUL+UNBLK+PART|kulgimo"
+        rules: [mrPartial, mrReal, mrUnblockable]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kulmoru
+    note: >-
+      Ordering discriminator for finalTemplate's partialSlot~realSlot adjacent pair. Carries both
+      mrPartial's "mo" and mrReal's "ru" in declared slot order. Confirmed against a hand-built mutant
+      with the two Slot elements transposed: this exact string fails to parse under the swap (baseline
+      ok::KUL+PART+REAL|kulmoru -> swapped ok::-), and the reversed-affix form "kulrumo" fails baseline
+      but parses under the swap, so the pair is evidenced in both directions.
+    parses:
+      - signature: "KUL+PART+REAL|kulmoru"
+        rules: [mrPartial, mrReal]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: topsakanabu
+    note: >-
+      Ordering discriminator for finalTemplate's coDSlot~mbSlot adjacent pair. top + mrCoA/mrCoB/mrCoD
+      (coCSlot skipped; its co-occurrence rules are not needed to satisfy coD's own requirements) +
+      mrMB, with coDSlot immediately before mbSlot in declared order. Confirmed against a hand-built
+      mutant with the two Slot elements transposed: this exact string fails to parse under the swap
+      (baseline ok::TOP+COA+COB+COD+MB|topsakanabu -> swapped ok::-), and the reversed-affix form
+      "topsakabuna" fails baseline but parses under the swap, so the pair is evidenced in both
+      directions.
+    parses:
+      - signature: "TOP+COA+COB+COD+MB|topsakanabu"
+        rules: [mrCoA, mrCoB, mrCoD, mrMB, mrReal]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"

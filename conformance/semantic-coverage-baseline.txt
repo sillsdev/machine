@@ -1,0 +1,113 @@
+# Grammar-observable semantic coverage ledger
+#
+# Generated. Every line is a surface ID from the DTD inventory that a grammar.xml COULD name (an
+# element that can appear, or an enumerated attribute value that can be written) and that no fixture
+# under conformance/ currently exercises.
+#
+# Format: <surfaceId><TAB><classification>. Blank lines and lines starting with "#" are ignored.
+#
+#   dead-schema  The engine never mentions the owning element, so no grammar can give it semantic
+#                coverage. NOT trusted from this file: the gate recomputes it by scanning
+#                src/SIL.Machine.Morphology.HermitCrab for a quoted occurrence of the element name.
+#                Implementing such an element makes this line wrong and fails the gate.
+#   todo         Coverable. This is the fixture-authoring worklist.
+#   dtd-default  The value is identical to its attribute's DTD default. XmlLanguageLoader reads the
+#                grammar with ValidationType.DTD, so the parser supplies that value for EVERY document
+#                and a fixture that writes it is indistinguishable from one that omits it. No word can
+#                discriminate them, so these are NOT work items. Recomputed from the inventory's own
+#                attribute-default surface, never trusted from this file.
+#   alphabet-quotient
+#                One value of an enumerated alphabet whose MECHANISM a sibling value already covers,
+#                such as the Greek letter naming a phonological variable, or a mid-range repetition
+#                count. Declaring the remaining letters in a grammar exercises no further behaviour,
+#                so they are quotiented rather than padded for. ALSO not trusted from this file: the
+#                gate rejects a quotient line whose (element, attribute) has no covered sibling, so a
+#                waiver cannot stand in for a mechanism nothing exercises.
+#
+# The gate asserts this file equals the recomputed uncovered set EXACTLY, in both directions:
+#   - an uncovered surface absent here fails as a NEW GAP;
+#   - a line here that a fixture now covers fails as STALE, so closing a gap means deleting its line.
+# The file can therefore only shrink toward its dead-schema floor.
+#
+# Regenerate with: hc-conformance --semantic-coverage --write-coverage-baseline
+#
+# DENOMINATOR. The DTD inventory generates 1059 surfaces; only 264 are grammar-observable and appear
+# here. The other 795 are excluded because a grammar author cannot write them: they are schema facts
+# about the document type, not choices in a document. Counts by kind, from the inventory:
+#     211 xml-read           149 attribute          149 attribute-type   149 attribute-default
+#     184 placement           91 content-group       54 default           19 special-content
+# Excluded is NOT the same as unimportant: `placement` is child cardinality and `attribute` covers the
+# IDREFS ordering carriers (Stratum@phonologicalRules, @morphologicalRules, @activeTemplates), and
+# demanding fixtures for those needs a different mechanism than reading a value out of a document.
+# That mechanism does not exist here, so this ledger measures 264 surfaces and says so rather than
+# reporting a percentage of a number it silently shrank.
+dtd:element/NextWord	dead-schema
+dtd:element/Null	dead-schema
+dtd:element/OutputSubcategorizationOverride	dead-schema
+dtd:element/OutputSubcategorizationOverrides	dead-schema
+dtd:element/PreviousWord	dead-schema
+dtd:element/SyntacticRule	dead-schema
+dtd:element/SyntacticRules	dead-schema
+dtd:enum/ComplexFeature/isActive/yes	dtd-default
+dtd:enum/CompoundingRule/isActive/yes	dtd-default
+dtd:enum/CompoundingRule/multipleApplication/1	dtd-default
+dtd:enum/CompoundingRule/multipleApplication/2	alphabet-quotient
+dtd:enum/CompoundingRule/multipleApplication/3	alphabet-quotient
+dtd:enum/CompoundingRule/multipleApplication/4	alphabet-quotient
+dtd:enum/CompoundingRule/multipleApplication/5	alphabet-quotient
+dtd:enum/CompoundingRule/multipleApplication/6	alphabet-quotient
+dtd:enum/CompoundingRule/multipleApplication/7	alphabet-quotient
+dtd:enum/CompoundingRule/multipleApplication/8	alphabet-quotient
+dtd:enum/CompoundingRule/multipleApplication/9	alphabet-quotient
+dtd:enum/CompoundingSubrule/isActive/yes	dtd-default
+dtd:enum/FeatureValue/isActive/yes	dtd-default
+dtd:enum/MetathesisRule/isActive/yes	dtd-default
+dtd:enum/MetathesisRule/multipleApplicationOrder/leftToRightIterative	dtd-default
+dtd:enum/MorphologicalOutput/redupMorphType/implicit	dtd-default
+dtd:enum/MorphologicalRule/blockable/true	dtd-default
+dtd:enum/MorphologicalRule/multipleApplication/1	dtd-default
+dtd:enum/MorphologicalRule/multipleApplication/3	alphabet-quotient
+dtd:enum/MorphologicalRule/multipleApplication/4	alphabet-quotient
+dtd:enum/MorphologicalRule/multipleApplication/5	alphabet-quotient
+dtd:enum/MorphologicalRule/multipleApplication/6	alphabet-quotient
+dtd:enum/MorphologicalRule/multipleApplication/7	alphabet-quotient
+dtd:enum/MorphologicalRule/multipleApplication/8	alphabet-quotient
+dtd:enum/MorphologicalRule/multipleApplication/9	alphabet-quotient
+dtd:enum/MorphologicalRule/partial/false	dtd-default
+dtd:enum/OutputSubcategorizationOverride/isActive/no	dead-schema
+dtd:enum/OutputSubcategorizationOverride/isActive/yes	dead-schema
+dtd:enum/PhoneticTemplate/finalBoundaryCondition/false	dtd-default
+dtd:enum/PhoneticTemplate/initialBoundaryCondition/false	dtd-default
+dtd:enum/PhonologicalFeatureSystem/isActive/yes	dtd-default
+dtd:enum/PhonologicalRule/isActive/yes	dtd-default
+dtd:enum/PhonologicalRule/multipleApplicationOrder/leftToRightIterative	dtd-default
+dtd:enum/PhonologicalSubrule/isActive/yes	dtd-default
+dtd:enum/RealizationalRule/blockable/true	dtd-default
+dtd:enum/RealizationalRule/isActive/yes	dtd-default
+dtd:enum/SegmentNaturalClass/isActive/yes	dtd-default
+dtd:enum/Slot/optional/false	dtd-default
+dtd:enum/Stratum/cyclicity/noncyclic	dtd-default
+dtd:enum/Stratum/phonologicalRuleOrder/linear	dtd-default
+dtd:enum/SymbolicFeature/isActive/yes	dtd-default
+dtd:enum/VariableFeature/name/%CE%B3	alphabet-quotient
+dtd:enum/VariableFeature/name/%CE%B4	alphabet-quotient
+dtd:enum/VariableFeature/name/%CE%B5	alphabet-quotient
+dtd:enum/VariableFeature/name/%CE%B6	alphabet-quotient
+dtd:enum/VariableFeature/name/%CE%B7	alphabet-quotient
+dtd:enum/VariableFeature/name/%CE%B8	alphabet-quotient
+dtd:enum/VariableFeature/name/%CE%B9	alphabet-quotient
+dtd:enum/VariableFeature/name/%CE%BA	alphabet-quotient
+dtd:enum/VariableFeature/name/%CE%BB	alphabet-quotient
+dtd:enum/VariableFeature/name/%CE%BC	alphabet-quotient
+dtd:enum/VariableFeature/name/%CE%BD	alphabet-quotient
+dtd:enum/VariableFeature/name/%CE%BE	alphabet-quotient
+dtd:enum/VariableFeature/name/%CE%BF	alphabet-quotient
+dtd:enum/VariableFeature/name/%CF%80	alphabet-quotient
+dtd:enum/VariableFeature/name/%CF%81	alphabet-quotient
+dtd:enum/VariableFeature/name/%CF%83	alphabet-quotient
+dtd:enum/VariableFeature/name/%CF%84	alphabet-quotient
+dtd:enum/VariableFeature/name/%CF%85	alphabet-quotient
+dtd:enum/VariableFeature/name/%CF%86	alphabet-quotient
+dtd:enum/VariableFeature/name/%CF%87	alphabet-quotient
+dtd:enum/VariableFeature/name/%CF%88	alphabet-quotient
+dtd:enum/VariableFeature/name/%CF%89	alphabet-quotient

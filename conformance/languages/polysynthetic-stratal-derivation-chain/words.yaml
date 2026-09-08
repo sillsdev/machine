@@ -1,0 +1,372 @@
+# HAND DERIVATION (authored BEFORE running the oracle -- see grammar.xml for the rule definitions
+# these derivations reason from).
+#
+#   1. nuna -> NUNA ("land", posN) bare noun root, no rule -> trivially valid.
+#        -> NUNA|nuna, rules: []
+#   2. nunaliq -> NUNA + DERIV ("-liq", posN->posV verbalizer, in the deep Derivation stratum): the
+#      root is verbalized, no inflection yet.
+#        -> NUNA+DERIV|nunaliq, rules: [mrDeriv]
+#   3. nunaliqvuq -> NUNA + DERIV + INFL ("-vuq", posV->posV, in the shallower Inflection stratum):
+#      the derived posV stem built in stratum 0 feeds inflection in stratum 1 -- recursion across
+#      strata, the stratum-ordering headline.
+#        -> NUNA+DERIV+INFL|nunaliqvuq, rules: [mrDeriv, mrInfl]
+#   4. nunavuq -> INFL attempted directly on the bare noun "nuna": mrInfl requires posV, but "nuna"
+#      is posN and nothing verbalized it, so inflection can never attach -> zero parses.
+#        -> expect_fail, blocked_by: [mrInfl]
+#   5. akutat -> AKU ("meat", posN1 head) + TAT (posN1/posV1 nonhead, homophonous) compounded
+#      head+nonHead via mrCompoundHN: the nonhead "tat" resolves as BOTH its noun (TATN) and verb
+#      (TATV) reading, so two analyses. The "+" seam renders as "+?".
+#        -> AKU+TATN|aku+?tat ; AKU+TATV|aku+?tat, rules: [mrCompoundHN] each
+#
+# The remaining words reuse these mechanisms on independent lexical/rule material -- the prefix-
+# commute compounding Set 2, the Guesser/LexicalGuess pattern, and the three seam-phonology probes
+# (i-deletion multi-site unapplication, multi-segment raising, and the P6 deletion-composition) -- or
+# are expect_fail words whose signature is the empty set.
+#
+# Reconciliation against the oracle (self-check): documented per word where the oracle disagreed with
+# the hand derivation; the trace is authoritative per the task discipline. In particular, the
+# multi-parse "bubu" word carries prDelReins on every parse because TraceRuleAttributor unions the
+# phonological rules fired across all of a word's analyses (its own documented ambiguous-word
+# limitation, the same one templatic-root-modification's gigugu note records) -- here that union is honest
+# anyway, since every "bubu" analysis genuinely deletes an "i".
+#
+# Coverage addendum (bucket-1 obligation sweep): silaaku adds a word only, no grammar change -- the
+# construct it exercises (mrCompoundHN's headPartsOfSpeech) was already declared.
+#   silaaku -> mrCompoundHN attempted with SILA (posN2) as HEAD, mismatching headPartsOfSpeech="posN1"
+#     -> zero parses (HeadRequiredSyntacticFeatureStruct, conformance/gate-obligations.tsv).
+
+language: PolysyntheticStratalDerivationChain
+inspired_by: ["polysynthetic derivation-then-inflection across strata, with noun-incorporation-style compounding and recursive postbase-style suffixation (typological pattern, not any specific language)"]
+sources:
+  - "WALS - polysynthesis, noun incorporation, and derivation chapters"
+  - "typological literature on derivation strata and noun incorporation"
+  - "typological literature on recursive derivational suffixation and postbase ordering"
+requires: [phonology]
+words:
+  - word: nuna
+    note: NUNA ("land", posN) bare noun root -- no rule touches it, trivially valid.
+    parses:
+      - signature: "NUNA|nuna"
+        gloss: land
+        rules: []
+        exercises: []
+
+  - word: nunaliq
+    note: NUNA + DERIV ("-liq", posN->posV verbalizer) in the deep Derivation stratum -- verbalized, not yet inflected.
+    parses:
+      - signature: "NUNA+DERIV|nunaliq"
+        gloss: land-VBLZ
+        rules: [mrDeriv]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: nunaliqvuq
+    note: >-
+      NUNA + DERIV + INFL -- the derivational "-liq" applies in the deep Derivation stratum (posN->
+      posV), then the derived verb stem feeds the inflectional "-vuq" (3sg indicative) in the
+      shallower Inflection stratum: recursion across strata, the stratum-ordering headline construct.
+    parses:
+      - signature: "NUNA+DERIV+INFL|nunaliqvuq"
+        gloss: land-VBLZ-3SG.IND
+        rules: [mrDeriv, mrInfl]
+        exercises:
+          - "Stratum (Linear/Unordered rule order)"
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: nunavuq
+    note: INFL attempted directly on the bare noun "nuna" -- mrInfl requires a posV stem, but nothing verbalized "nuna" (posN), so inflection can never attach. Zero parses (inflection presupposes the derivation stratum ran).
+    expect_fail: true
+    blocked_by: [mrInfl]
+    exercises:
+      - "Stratum (Linear/Unordered rule order)"
+    # Claims the McDc:AbsentGatedForm cell of conformance/dataflow-obligations.tsv's obligation matrix.
+    # DataflowClaimGate checks this against conformance/dataflow-obligations.tsv, never trusts it,
+    # and recomputes severing/before/after by re-severing the writer and reader named in the ledger
+    # row -- the inline values below are what it recomputed against, not what it trusts blindly.
+    claimed_cells:
+      - cell: "PartOfSpeech::LexicalEntry.partOfSpeech->MorphologicalRule.requiredPartsOfSpeech::McDc:AbsentGatedForm"
+        severing: >-
+          partOfSpeech across every LexicalEntry (the one that matters here is NUNA's posN), as the
+          writer, or mrInfl's MorphologicalRule.requiredPartsOfSpeech="posV" gate, as the reader --
+          severing either alone unblocks this word
+        before: "ok::-"
+        after: "ok::NUNA+INFL|nunavuq"
+        distinct_from: nunaliqvuq
+        proof: >-
+          nunavuq is mrInfl attempted directly on the bare noun NUNA (posN); with both constructs
+          intact, inflection cannot attach (ok::-). Removing either the writer (LexicalEntry's
+          partOfSpeech) or the reader (mrInfl's requiredPartsOfSpeech) lets inflection attach
+          anyway, producing NUNA+INFL|nunavuq -- the AbsentGatedForm arm: the required feature is
+          ABSENT and the rule's requirement GATES on it. nunaliqvuq (NUNA+DERIV+INFL, where mrDeriv
+          verbalizes the root to posV first) is the control that shows mrInfl applies normally once
+          the required POS is actually present, so nunavuq's block is attributable to the gate, not
+          to mrInfl never applying at all.
+
+  - word: akutat
+    note: >-
+      AKU ("meat", posN1 head) + TAT (nonhead) compounded head+nonHead via mrCompoundHN -- "tat" is
+      homophonous between its noun (TATN) and verb (TATV) reading and both resolve as the non-head
+      root, so two analyses sharing the surface "aku+tat" (rendered "aku+?tat" with the "+" boundary).
+    parses:
+      - signature: "AKU+TATN|aku+?tat"
+        gloss: meat-shadow
+        rules: [mrCompoundHN]
+        exercises:
+          - "CompoundingRule"
+          - "Boundary markers (CharacterDefinitionTable)"
+      - signature: "AKU+TATV|aku+?tat"
+        gloss: meat-tie
+        rules: [mrCompoundHN]
+        exercises:
+          - "CompoundingRule"
+          - "Boundary markers (CharacterDefinitionTable)"
+
+  - word: pitat
+    note: TAT's verb reading (TATV, posV1) with the pi- prefix, standalone (no compounding) -- proves mrPrefixPi1 works in isolation, so akupitat's rejection below is specifically the non-head-must-be-a-root constraint.
+    parses:
+      - signature: "PIPFX1+TATV|pitat"
+        gloss: PFX-tie
+        rules: [mrPrefixPi1]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: akupitat
+    note: >-
+      AKU (head) + pi-prefixed TAT compounded head+nonHead -- the non-head span "pitat" is prefix+root,
+      NOT a bare root, and mrCompoundHN's analysis-side search requires the non-head to already be a
+      bare root (AnalysisCompoundingRule discards a non-root non-head), so this has zero parses -- the
+      distinguishing non-head-not-root pin.
+    expect_fail: true
+    blocked_by: [mrCompoundHN]
+    provenance: "P3, CompoundingRuleTests.SimpleRules reconfiguration 3 (non-head-not-root variant)"
+    exercises:
+      - "CompoundingRule"
+
+  - word: akutas
+    note: AKU + "tas" -- "tas" is neither a root nor any rule's output, so no compound analysis exists at all.
+    expect_fail: true
+    exercises:
+      - "CompoundingRule"
+
+  - word: silaaku
+    note: >-
+      SILA ("weather", posN2) attempted as the HEAD of mrCompoundHN, with AKU ("meat", posN1) as
+      nonhead -- mrCompoundHN's own headPartsOfSpeech="posN1" never matches SILA's declared posN2.
+      Unlike a nonhead-POS mismatch (checked, unrecorded, during the analysis-direction root search --
+      AnalysisCompoundingRule.cs:65-73 silently discards a non-conforming nonhead candidate before it
+      is ever passed on for confirmation), a head-POS mismatch survives to the synthesis-direction
+      confirm step and is traced there (SynthesisCompoundingRule.cs:100-114). mrCompoundNH's own
+      attempt at "silaaku" (nonhead=SILA, head=AKU) also fails, on ITS OWN head-side gate
+      (headPartsOfSpeech="posN2 posV2" never matches AKU's posN1). Zero parses.
+    expect_fail: true
+    blocked_by: [mrCompoundHN]
+    exercises:
+      - "CompoundingRule"
+    # Claims the Blocked arm of conformance/gate-obligations.tsv's HeadRequiredSyntacticFeatureStruct
+    # gate. Unlike kutu/patu in edge-cases/compounding-breadth (which fail via HeadRequired
+    # HeadFeatures/HeadRequiredFootFeatures, leaving CompoundingRule.headPartsOfSpeech itself
+    # unaffected by severing), this word's failure is a genuine HEAD PART-OF-SPEECH mismatch, so
+    # severing headPartsOfSpeech -- the gate's own hardcoded severance target
+    # (EngineGateInventoryLedger.DtdAttributes) -- actually flips it.
+
+  - word: silanuk
+    note: >-
+      SILA ("weather", posN2 nonhead) + NUK (head) compounded nonHead+head via mrCompoundNH -- "nuk"
+      is homophonous between its noun (NUKN) and verb (NUKV) reading on the HEAD, so two analyses
+      sharing "sila+nuk" (rendered "sila+?nuk").
+    parses:
+      - signature: "SILA+NUKN|sila+?nuk"
+        gloss: weather-horn
+        rules: [mrCompoundNH]
+        exercises:
+          - "CompoundingRule"
+          - "Boundary markers (CharacterDefinitionTable)"
+      - signature: "SILA+NUKV|sila+?nuk"
+        gloss: weather-pull
+        rules: [mrCompoundNH]
+        exercises:
+          - "CompoundingRule"
+          - "Boundary markers (CharacterDefinitionTable)"
+
+  - word: silamanuk
+    note: >-
+      SILA (nonhead) + ma-prefixed NUK (head) compounded nonHead+head -- here the prefix attaches to
+      the HEAD span, which mrCompoundNH's non-head-root requirement never constrains, so it succeeds
+      where akupitat failed. mrPrefixMa2 requires posV2, so only NUK's verb reading (NUKV) is
+      prefix-eligible: exactly one analysis, not two. The prefix commutes with compounding.
+    provenance: "P3, CompoundingRuleTests.SimpleRules reconfiguration 3 (prefix-commute variant)"
+    parses:
+      - signature: "SILA+MAPFX2+NUKV|sila+?manuk"
+        gloss: weather-PFX-pull
+        rules: [mrCompoundNH, mrPrefixMa2]
+        exercises:
+          - "CompoundingRule"
+
+  - word: silamak
+    note: SILA + "mak" -- "mak" is neither NUK nor any valid prefixed-head shape, so no compound analysis exists.
+    expect_fail: true
+    exercises:
+      - "CompoundingRule"
+
+  - word: takuvuq
+    note: >-
+      Guesser/LexicalGuess: "taku" (see) is deliberately absent from the lexicon, so a normal parse
+      finds nothing; with root-guessing on, the "[Any]*" lexical pattern guesses a posV root, which
+      the inflection "-vuq" then attaches to. Two distinct guesses per PROTOCOL.md's pinned rendering
+      ("taku"+INFL, and the whole surface as a bare unaffixed root); a guessed root's morph-chain
+      component is the literal guessed substring itself, with no distinguishing marker. Each distinct
+      guess appears TWICE because this three-stratum grammar's analysis reaches the same guessable
+      shape at more than one stratum level (the guesser runs per analysis candidate, and the signature
+      multiset does not dedupe -- PROTOCOL.md section 3), so the honest multiset is 2x2. Self-check
+      only -- BatchCommand cannot guess, see PROTOCOL.md; the harness omits this word from adapter-mode
+      materialization.
+    parses:
+      - signature: "taku+INFL|takuvuq"
+        gloss: see-3SG.IND
+        guess: true
+        rules: [mrInfl]
+        exercises:
+          - "Guesser/LexicalGuess"
+      - signature: "taku+INFL|takuvuq"
+        guess: true
+        rules: [mrInfl]
+        exercises:
+          - "Guesser/LexicalGuess"
+      - signature: "takuvuq|takuvuq"
+        gloss: see.3SG.IND
+        guess: true
+        rules: []
+        exercises:
+          - "Guesser/LexicalGuess"
+      - signature: "takuvuq|takuvuq"
+        guess: true
+        rules: []
+        exercises:
+          - "Guesser/LexicalGuess"
+
+  - word: bubu
+    note: >-
+      rewrite/deletion-reinsertion (P2 multi-site deletion unapplication): "i" is obligatorily deleted
+      after a high vowel, so the one surface "bubu" has THREE distinct underlying analyses -- DR1
+      ("bubui", final i deleted), DR2 ("buibu", medial i deleted), DR3 ("buibui", both deleted). Every
+      analysis genuinely fired prDelReins, so the trace-union (see file header) is honest on every
+      parse.
+    provenance: "P2, RewriteRuleTests.DeletionRules first reconfiguration (multi-site deletion unapplication)"
+    parses:
+      - signature: "DR1|bubu"
+        gloss: probe.bubui
+        rules: [prDelReins]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+      - signature: "DR2|bubu"
+        gloss: probe.buibu
+        rules: [prDelReins]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+      - signature: "DR3|bubu"
+        gloss: probe.buibui
+        rules: [prDelReins]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: buibu
+    note: The raw underlying shape with an undeleted "i" after a high vowel -- prDelReins is obligatory, so this surface form can never itself be a valid analysis.
+    expect_fail: true
+    blocked_by: [prDelReins]
+    exercises:
+      - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: kuuukuuu
+    note: >-
+      rewrite/multiplesegment (W9.2): MS ("kuiikuii") surfaces with each "ii" raised to "uu" after a
+      back-round vowel -- a 2-segment target rewrite, "kuiikuii" -> "kuuukuuu".
+    provenance: "W9.2 probe, RewriteRuleTests.MultipleSegmentRules"
+    parses:
+      - signature: "MS|kuuukuuu"
+        gloss: probe.multiseg
+        rules: [prMultiSeg]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: kuiikuii
+    note: The raw underlying shape with un-raised "ii" -- prMultiSeg is obligatory wherever an "ii" follows a back-round vowel, so this surface form can never itself be a valid analysis.
+    expect_fail: true
+    blocked_by: [prMultiSeg]
+    exercises:
+      - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: buuubuuu
+    note: >-
+      rewrite/multiplesegment-deletion-composition (P6 group-capture fix): MDC ("buiibuii") surfaces
+      as "buuubuuu" via the same 2-segment raising (prMDC1), composed in the same stratum with a
+      pure-deletion rule (prMDC2, t -> nothing) that never fires here (no "t") but whose reverse-
+      analysis interposes an optional "t" between the raising rule's target pair -- the exact
+      composition the P6 fix addressed. Only prMDC1 fires in synthesis, so rules names just it.
+    provenance: "P6, RewriteRuleTests.MultipleSegmentRules second reconfiguration (group-capture fix)"
+    parses:
+      - signature: "MDC|buuubuuu"
+        gloss: probe.mdc
+        rules: [prMDC1]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: buiibuii
+    note: The raw underlying shape with un-raised "ii" -- prMDC1 is obligatory, so this surface form can never itself be a valid analysis.
+    expect_fail: true
+    blocked_by: [prMDC1]
+    exercises:
+      - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: mau
+    note: >-
+      MDC2 ("matu") exercises the P6 grammar's SECOND rule (prMDC2, t -> nothing before a back-round
+      vowel) on its own: "matu" has a "t" before "u", so it surfaces as "mau". This rule is inert on
+      the buuubuuu composition above (no "t"), where only its analysis-direction reversal matters; here
+      it actually fires.
+    parses:
+      - signature: "MDC2|mau"
+        gloss: probe.mdc2
+        rules: [prMDC2]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: matu
+    note: The raw underlying shape with an undeleted "t" before "u" -- prMDC2 is obligatory, so this surface form can never itself be a valid analysis (see mau).
+    expect_fail: true
+    blocked_by: [prMDC2]
+    exercises:
+      - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: uui
+    note: >-
+      Ordering probe for prMDC1~prMDC2 (MDC3, "utui"): the trigger-u is directly before a "t", which
+      sits between it and the HighVowel pair "u i" -- prMDC1's LeftEnvironment needs the trigger
+      IMMEDIATELY before its target pair, so the intervening "t" blocks prMDC1 from ever firing here.
+      prMDC2 then deletes that "t" (its right neighbor "u" is back-round): "utui" -> "uui". This is
+      the fixture's DECLARED order (prMDC1 listed before prMDC2); see uuu below for what the swapped
+      order produces on the same root instead.
+    parses:
+      - signature: "MDC3|uui"
+        gloss: probe.mdc3
+        rules: [prMDC2]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: uuu
+    note: >-
+      What prMDC1~prMDC2 SWAPPED would produce from the same MDC3 root ("utui"): prMDC2 running
+      first deletes the "t" (right neighbor "u" is back-round), which brings the trigger-u directly
+      against the HighVowel pair "u i" -- prMDC1's LeftEnvironment is now satisfied where it was not
+      before, so prMDC1 also fires, raising the "i" to "u" too. Not a valid surface form under this
+      fixture's declared order; the negative control that shows the order actually matters.
+    expect_fail: true
+    blocked_by: [prMDC1]
+    exercises:
+      - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: utui
+    note: The raw underlying shape of MDC3, with neither the "t" deleted nor the vowel pair raised -- prMDC2 is obligatory wherever a "t" precedes a back-round vowel, so this surface form can never itself be a valid analysis (see uui).
+    expect_fail: true
+    blocked_by: [prMDC2]
+    exercises:
+      - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"

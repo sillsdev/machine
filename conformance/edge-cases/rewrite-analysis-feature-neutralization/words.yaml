@@ -1,0 +1,104 @@
+# oracle-provenance: founding-oracle
+# Verified against the C# founding oracle (hc.dll, via hc-conformance.exe self-check,
+# `dotnet run --project src/SIL.Machine.Morphology.HermitCrab.Conformance -c Release -- --fixtures
+# conformance --propose --include-pathological`) built from this worktree. Signatures below are
+# transcribed verbatim from that run, not hand-derived.
+#
+# Pins cross-table RESPELLING. In HermitCrab a segment is its feature bundle; a
+# CharacterDefinitionTable only spells that bundle for one stratum
+# (src/SIL.Machine.Morphology.HermitCrab/CharacterDefinitionTable.cs, GetMatchingStrReps around lines
+# 96-106, matches by `FeatureStruct.IsUnifiable` alone -- character-definition identity exists only
+# in a zero-phonological-feature grammar). tCore's "b" and tSurf's "d" carry the same bundle
+# (`g`=hi, `k`=k1), so ROOT1 ("b", entered on the Core stratum) surfaces as "d", with or without a
+# phonological rule: the oracle analyses "d" as ROOT1|b even when prPtoD is deleted from this grammar.
+# The directory name records an earlier, wrong attribution to the rewrite rule's analysis-side
+# feature erasure (FeatureAnalysisRewriteRuleSpec.cs, around lines 56-58); that mechanism exists but
+# is not load-bearing here. word 'd' is the positive construct witness (two analyses: the respelled
+# ROOT1 and the rule-derived ROOT2); word 'n' is the negative control (exactly one analysis, since its
+# `k`=k2 matches no other segment) -- together they discriminate both an under-recall that misses the
+# respelled analysis and an over-correction that matches every segment as every character definition
+# (which would wrongly make 'n' ambiguous too).
+
+language: RewriteAnalysisFeatureNeutralization
+inspired_by: ["synthetic cross-stratum respelling probe (not modeling any real language)"]
+sources:
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/FeatureAnalysisRewriteRuleSpec.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/SegmentNaturalClass.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/CharacterDefinitionTable.cs"
+requires: [phonology]
+words:
+  - word: d
+    note: >-
+      ROOT2 ("p", on the Surface stratum, table tSurf), correctly changed to "d" by the Surface
+      stratum's own obligatory "p -> d" rule (`g`: lo -> hi). The founding oracle ALSO reports a
+      second analysis: ROOT1 ("b", entered on the Core stratum, table tCore), whose full feature
+      struct (`g`=hi, `k`=k1) is IDENTICAL to "d"'s own (tSurf's `cD`) -- the same segment, spelled
+      "b" by the Core table and "d" by the Surface table. No rule is involved in that analysis; it
+      survives deleting prPtoD. This is the positive construct witness: an implementation must find
+      BOTH analyses, the respelled ROOT1 and the rule-derived ROOT2.
+    provenance: "src/SIL.Machine.Morphology.HermitCrab/CharacterDefinitionTable.cs GetMatchingStrReps"
+    parses:
+      - signature: "ROOT1|b"
+        rules: [prPtoD]
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+          - "CharacterDefinitionTable: more than one table, one per stratum"
+          - "CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)"
+      - signature: "ROOT2|d"
+        rules: [prPtoD]
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+          - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: n
+    note: >-
+      ROOT4 ("n", also on the Surface stratum), sharing the rule's own INPUT value of `g` (lo, same
+      as "p") but carrying `k`=k2 -- a value no other segment in the grammar carries. The negative
+      control: even though `g` gets erased identically whenever the rule's own natural classes are
+      reconstructed, ROOT4's own `k` value is never satisfiable by that reconstruction (which still
+      constrains `k`=k1, "p"/"d"'s own shared value), so it can never collide and must parse
+      unambiguously. A implementation that "fixes" the divergence above by treating every segment as
+      matching every character definition, rather than reproducing the actual erasure mechanism,
+      would wrongly make this word ambiguous too -- this word catches that over-correction.
+    provenance: "src/SIL.Machine.Morphology.HermitCrab/SegmentNaturalClass.cs lines 12-27"
+    parses:
+      - signature: "ROOT4|n"
+        rules: []
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: p
+    note: >-
+      ROOT2's own raw (pre-rule) spelling -- the phonological rule is obligatory (phonological rules
+      always apply where their context matches, no optionality), so this must never be a valid
+      surface form.
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: b
+    note: >-
+      ROOT1's own raw spelling, entered on the Core stratum (table tCore, the grammar's FIRST/
+      non-final stratum). tSurf (the grammar's LAST stratum) does not declare "b" as a character at
+      all, so the founding oracle cannot even tokenize this input string -- SKIPPED (invalid shape),
+      not a genuine zero-analysis "ok".
+    expect_skip: true
+    exercises:
+      - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: bp
+    note: "Same tokenization failure as 'b' above (contains a character tSurf does not declare)."
+    expect_skip: true
+    exercises:
+      - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: dn
+    note: >-
+      A well-formed string over tSurf's own alphabet ("d"/"n" both legitimate tSurf segments) that is
+      simply not any lexical entry's own shape -- a plain negative control proving tSurf's inventory
+      coverage alone doesn't manufacture spurious analyses.
+    expect_fail: true
+
+  - word: pd
+    note: "Same kind of negative control as 'dn', a different well-formed non-entry string over tSurf's own alphabet."
+    expect_fail: true

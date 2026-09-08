@@ -1,0 +1,70 @@
+# Oracle: pangloss (`pg_parse::Morpher`, driven directly via a temporary probe test -- see
+# STAGING.md's "Verification" section), NOT the C# founding oracle. Signatures below are
+# transcribed verbatim from that run, not hand-derived.
+
+language: FreeFluctuatingAllomorphPair
+inspired_by: ["synthetic allomorph-disjunctivity/free-fluctuation probe (not modeling any real language); a dedicated, minimal analog of edge-cases/disjunctive-recheck's own eGray row"]
+sources:
+  - "rust/crates/pg-foma/src/capability.rs, CharacteristicKind::FreeFluctuation's own doc"
+  - "machine/conformance/edge-cases/disjunctive-recheck (the free-fluctuation escape half of that fixture, isolated here)"
+requires: []
+words:
+  - word: pol
+    note: eAlt's first allomorph, unconstrained, bare -- establishes the free-fluctuation pair's baseline before "pel" below.
+    parses:
+      - signature: "ALT|pol"
+        gloss: alt
+        rules: []
+        exercises:
+          - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: pel
+    note: >-
+      THE construct-exhibiting row: eAlt's second allomorph -- allomorph 0 "pol" "would also
+      match" (both are totally unconstrained), but the two have IDENTICAL (empty) constraint
+      sets, so pg_rules::validity::allomorphs_valid_impl recognizes them as free variants and
+      short-circuits the disjunctive rejection. "pel" is NOT rejected.
+    provenance: "capability.rs, CharacteristicKind::FreeFluctuation's own doc (root_constraints_equal / free_fluctuates)"
+    parses:
+      - signature: "ALT|pel"
+        gloss: alt
+        rules: []
+        exercises:
+          - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: kits
+    note: eOrd's environment-constrained allomorph 0 ("kit", requires a following "s") + ruleS -- allomorph 0's own environment is satisfied, so it fires directly.
+    parses:
+      - signature: "ORD+SSFX|kits"
+        gloss: ord-SSFX
+        rules: [ruleS]
+        exercises:
+          - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: kots
+    note: >-
+      THE contrastive negative control: eOrd's elsewhere allomorph 1 ("kot") + ruleS -- allomorph
+      0's environment (following "s") is ALSO satisfied at the same position, and the two
+      allomorphs do NOT free-fluctuate (their constraint sets differ), so the disjunctive
+      re-check REJECTS this synthesis. Zero parses. Sharpens exactly what "free" means in
+      FreeFluctuation: an engine that treats every multi-allomorph entry as free-fluctuating
+      (not just ones whose constraints truly compare equal) would wrongly accept this.
+    expect_fail: true
+    blocked_by: [ruleS]
+    exercises:
+      - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: kot
+    note: eOrd's elsewhere allomorph, bare -- only derivable from allomorph 1 ("kit" has no following "s" here, so allomorph 0 cannot apply).
+    parses:
+      - signature: "ORD|kot"
+        gloss: ord
+        rules: []
+        exercises:
+          - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: kit
+    note: eOrd's environment-constrained allomorph, bare -- its own RightEnvironment (following "s") fails at word end, and allomorph 1 is spelled "kot", not "kit", so no derivation produces this surface form at all.
+    expect_fail: true
+    exercises:
+      - "Disjunctive allomorphs / free-fluctuation"

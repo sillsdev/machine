@@ -1,0 +1,45 @@
+# Oracle: pangloss (`pg_parse::Morpher`, driven directly via a temporary probe test -- see
+# STAGING.md's "Verification" section), NOT the C# founding oracle. Signatures below are
+# transcribed verbatim from that run, not hand-derived.
+
+language: ProcessMorphologyInPlaceMutation
+inspired_by: ["synthetic ablaut/mutation-as-sole-exponent probe (not modeling any real language)"]
+sources:
+  - "rust/crates/pg-foma/src/capability.rs, CharacteristicKind::ProcessMorphology's own doc and ABLAUT_PROCESS_XML unit fixture"
+requires: []
+words:
+  - word: i
+    note: The mutable root, bare -- no tense feature assigned, mrAblaut has nothing to apply to (it requires the target segment itself, not the whole word, and this IS the whole word already in the right shape only if mrAblaut fired, which it hasn't).
+    parses:
+      - signature: "ROOT|i"
+        gloss: i-root
+        rules: []
+        exercises: []
+
+  - word: a
+    note: >-
+      THE construct-exhibiting row: surface "a" has TWO analyses -- eA bare (an unrelated root
+      that happens to already be spelled "a"), and eI + mrAblaut (past tense realized purely by
+      mutating "i" to "a", no affix at all -- classify_affix reads this Modify-only RHS as
+      Role::Process). A ProcessMorphology compile regression (crate::emit::is_structural_rule no
+      longer admitting Role::Process, or the structural-composite replay breaking) would silently
+      drop the second analysis, leaving only "AROOT|a".
+    provenance: "capability.rs, CharacteristicKind::ProcessMorphology's own doc; strategy_coverage.rs's tuned_surface_probed ProcessMorphology row (emit::is_structural_rule / build_structural_composites / pg_rules::morph::synthesize)"
+    parses:
+      - signature: "AROOT|a"
+        gloss: a-root
+        rules: []
+        exercises: []
+      - signature: "ROOT+ABLAUT|a"
+        gloss: i-root-ABLAUT
+        rules: [mrAblaut]
+        exercises:
+          - "MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext"
+
+  - word: u
+    note: A plain structural control -- mrAblaut's output class only ever contains "a", so it can never derive "u"; this root's only analysis is itself, bare.
+    parses:
+      - signature: "UROOT|u"
+        gloss: u-root
+        rules: []
+        exercises: []

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+	<Language>
+		<Name>N1-IsActive</Name>
+		<PartsOfSpeech>
+			<PartOfSpeech id="n">
+				<Name>Noun</Name>
+			</PartOfSpeech>
+		</PartsOfSpeech>
+		<!-- Two PhonologicalFeatureSystem blocks: the FIRST is active (no isActive attr, DTD
+		     default "yes") and declares the "voi" feature that NaturalClasses below resolves.
+		     The SECOND is an inactive draft (isActive="no") that declares an unrelated "junk"
+		     feature and NOT "voi". C# XmlLanguageLoader.LoadLanguage selects
+		     SingleOrDefault(IsActive) (XmlLanguageLoader.cs:239), i.e. the FIRST (only active)
+		     block, so "voi" resolves and the grammar loads. A loader that ignores isActive and
+		     takes the last block encountered (the pre-fix Rust bug) would select the "junk" only
+		     block instead; NaturalClasses' FeatureValue feature="voi" would then fail to resolve
+		     (unknown phonological feature 'voi') and the WHOLE GRAMMAR would fail to load. This
+		     is the fixture's red on revert signal: pre-fix Rust errors out before producing any
+		     TSV; C# and post-fix Rust both load fine and produce identical results. -->
+		<PhonologicalFeatureSystem>
+			<SymbolicFeature id="voi">
+				<Name>Voice</Name>
+				<Symbols>
+					<Symbol id="voiplus">+</Symbol>
+					<Symbol id="voiminus">-</Symbol>
+				</Symbols>
+			</SymbolicFeature>
+			<!-- A fully disambiguating feature so every segment's feature struct is mutually
+			     non-unifiable with every other's (one unique symbol per segment): keeps the
+			     oracle signature down to plain literal characters (as in the 3 real reference
+			     grammars) instead of the char-def-set bracket notation that a HermitCrab
+			     grammar this sparse would otherwise trigger (CharacterDefinitionTable.
+			     GetMatchingStrReps, IsUnifiable-based); that mechanism is real and correct,
+			     just orthogonal to what this fixture is testing (isActive selection), so it is
+			     designed out here rather than accidentally exercised. -->
+			<SymbolicFeature id="seg6">
+				<Name>SegId</Name>
+				<Symbols>
+					<Symbol id="idA">a</Symbol>
+					<Symbol id="idO">o</Symbol>
+					<Symbol id="idT">t</Symbol>
+					<Symbol id="idD">d</Symbol>
+					<Symbol id="idK">k</Symbol>
+					<Symbol id="idS">s</Symbol>
+				</Symbols>
+			</SymbolicFeature>
+		</PhonologicalFeatureSystem>
+		<PhonologicalFeatureSystem isActive="no">
+			<SymbolicFeature id="junk">
+				<Name>Draft</Name>
+				<Symbols>
+					<Symbol id="junkval">x</Symbol>
+				</Symbols>
+			</SymbolicFeature>
+		</PhonologicalFeatureSystem>
+		<CharacterDefinitionTable id="table1">
+			<Name>N1 Orthography</Name>
+			<SegmentDefinitions>
+				<SegmentDefinition id="seg1">
+					<Representations>
+						<Representation>a</Representation>
+					</Representations>
+					<FeatureValue feature="seg6" symbolValues="idA" />
+				</SegmentDefinition>
+				<SegmentDefinition id="seg2">
+					<Representations>
+						<Representation>o</Representation>
+					</Representations>
+					<FeatureValue feature="seg6" symbolValues="idO" />
+				</SegmentDefinition>
+				<SegmentDefinition id="segT">
+					<Representations>
+						<Representation>t</Representation>
+					</Representations>
+					<FeatureValue feature="voi" symbolValues="voiminus" />
+					<FeatureValue feature="seg6" symbolValues="idT" />
+				</SegmentDefinition>
+				<SegmentDefinition id="segD">
+					<Representations>
+						<Representation>d</Representation>
+					</Representations>
+					<FeatureValue feature="voi" symbolValues="voiplus" />
+					<FeatureValue feature="seg6" symbolValues="idD" />
+				</SegmentDefinition>
+				<SegmentDefinition id="segK">
+					<Representations>
+						<Representation>k</Representation>
+					</Representations>
+					<FeatureValue feature="seg6" symbolValues="idK" />
+				</SegmentDefinition>
+				<SegmentDefinition id="segS">
+					<Representations>
+						<Representation>s</Representation>
+					</Representations>
+					<FeatureValue feature="seg6" symbolValues="idS" />
+				</SegmentDefinition>
+			</SegmentDefinitions>
+			<BoundaryDefinitions>
+				<BoundaryDefinition id="bdry1">
+					<Representations>
+						<Representation>+</Representation>
+					</Representations>
+				</BoundaryDefinition>
+			</BoundaryDefinitions>
+		</CharacterDefinitionTable>
+		<NaturalClasses>
+			<FeatureNaturalClass id="voiced">
+				<Name>Voiced</Name>
+				<FeatureValue feature="voi" symbolValues="voiplus" />
+			</FeatureNaturalClass>
+		</NaturalClasses>
+		<Strata>
+			<Stratum characterDefinitionTable="table1">
+				<Name>main</Name>
+				<LexicalEntries>
+					<LexicalEntry id="le1" partOfSpeech="n">
+						<Allomorphs>
+							<Allomorph id="le1-1">
+								<PhoneticShape>kat</PhoneticShape>
+							</Allomorph>
+						</Allomorphs>
+						<Gloss>kat</Gloss>
+					</LexicalEntry>
+					<LexicalEntry id="le2" partOfSpeech="n">
+						<Allomorphs>
+							<Allomorph id="le2-1">
+								<PhoneticShape>sod</PhoneticShape>
+							</Allomorph>
+						</Allomorphs>
+						<Gloss>sod</Gloss>
+					</LexicalEntry>
+				</LexicalEntries>
+			</Stratum>
+		</Strata>
+	</Language>
+</HermitCrabInput>

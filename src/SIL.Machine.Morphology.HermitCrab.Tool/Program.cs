@@ -92,9 +92,11 @@ internal class Program
             new TracingCommand(context),
             new TestCommand(context),
             new StatsCommand(context),
+            new BatchCommand(context),
         };
 
         string input;
+        int exitCode = 0;
         if (!string.IsNullOrEmpty(scriptFile))
         {
             using (var scriptReader = new StreamReader(scriptFile))
@@ -105,7 +107,12 @@ internal class Program
                     if (!input.Trim().StartsWith("#") && input.Trim() != "")
                     {
                         string[] cmdArgs = SplitCommandLine(input);
-                        ConsoleCommandDispatcher.DispatchCommand(commands, cmdArgs, context.Out);
+                        int result = ConsoleCommandDispatcher.DispatchCommand(commands, cmdArgs, context.Out);
+                        // Remember the first nonzero result rather than the last: once a script
+                        // line fails, later lines running (or not) shouldn't paper over that with
+                        // a subsequent success.
+                        if (result != 0 && exitCode == 0)
+                            exitCode = result;
                     }
                     input = scriptReader.ReadLine();
                 }
@@ -133,10 +140,15 @@ internal class Program
 
         output?.Close();
 
-        return 0;
+        return exitCode;
     }
 
-    private static string[] SplitCommandLine(string commandLine)
+    /// <summary>Splits a command line into tokens, honoring double- and single-quoted segments.
+    /// Shared with <c>SIL.Machine.Morphology.HermitCrab.Conformance</c>'s <c>AdapterEngine</c> via
+    /// <c>InternalsVisibleTo</c> so both consumers tokenize the exact same way instead of
+    /// maintaining a second, divergent implementation (the Conformance harness's own copy did not
+    /// handle single quotes).</summary>
+    internal static string[] SplitCommandLine(string commandLine)
     {
         var parmChars = commandLine.ToCharArray();
         var inSingleQuote = false;

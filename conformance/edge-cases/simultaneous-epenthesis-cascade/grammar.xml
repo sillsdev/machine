@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>IterativeEpenthesisCascadeProbe</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN">
+        <Name>n</Name>
+      </PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons">
+        <Name>cons</Name>
+        <Symbols>
+          <Symbol id="symConsPlus">+</Symbol>
+          <Symbol id="symConsMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featVoc">
+        <Name>voc</Name>
+        <Symbols>
+          <Symbol id="symVocPlus">+</Symbol>
+          <Symbol id="symVocMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featHigh">
+        <Name>high</Name>
+        <Symbols>
+          <Symbol id="symHighPlus">+</Symbol>
+          <Symbol id="symHighMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featBack">
+        <Name>back</Name>
+        <Symbols>
+          <Symbol id="symBackPlus">+</Symbol>
+          <Symbol id="symBackMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featRound">
+        <Name>round</Name>
+        <Symbols>
+          <Symbol id="symRoundPlus">+</Symbol>
+          <Symbol id="symRoundMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <HeadFeatures />
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="charB">
+          <Representations>
+            <Representation>b</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="symConsPlus" />
+          <FeatureValue feature="featVoc" symbolValues="symVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="symHighMinus" />
+          <FeatureValue feature="featBack" symbolValues="symBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="symRoundMinus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="charI">
+          <Representations>
+            <Representation>i</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="symConsMinus" />
+          <FeatureValue feature="featVoc" symbolValues="symVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="symHighPlus" />
+          <FeatureValue feature="featBack" symbolValues="symBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="symRoundMinus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="charU">
+          <Representations>
+            <Representation>u</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="symConsMinus" />
+          <FeatureValue feature="featVoc" symbolValues="symVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="symHighPlus" />
+          <FeatureValue feature="featBack" symbolValues="symBackPlus" />
+          <FeatureValue feature="featRound" symbolValues="symRoundPlus" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncHighVowel">
+        <Name>HighVowel</Name>
+        <FeatureValue feature="featCons" symbolValues="symConsMinus" />
+        <FeatureValue feature="featVoc" symbolValues="symVocPlus" />
+        <FeatureValue feature="featHigh" symbolValues="symHighPlus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncHFUVowel">
+        <Name>HFUVowel</Name>
+        <FeatureValue feature="featCons" symbolValues="symConsMinus" />
+        <FeatureValue feature="featVoc" symbolValues="symVocPlus" />
+        <FeatureValue feature="featHigh" symbolValues="symHighPlus" />
+        <FeatureValue feature="featBack" symbolValues="symBackMinus" />
+        <FeatureValue feature="featRound" symbolValues="symRoundMinus" />
+      </FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <!-- Ports RewriteRuleTests.EpenthesisRules sub-case (1) (RewriteRuleTests.cs:1191-1202)
+           verbatim: insert an HFU vowel ("i") after any high vowel, tagged simultaneous, no
+           RightEnvironment. C#'s own unit test proves "buibui" <- "bubu" under Simultaneous. -->
+      <PhonologicalRule id="prule4">
+        <Name>rule4</Name>
+        <PhoneticInput />
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <SimpleContext naturalClass="ncHFUVowel" />
+              </PhoneticSequence>
+            </PhoneticOutput>
+            <Environment>
+              <LeftEnvironment>
+                <PhoneticTemplate>
+                  <PhoneticSequence>
+                    <SimpleContext naturalClass="ncHighVowel" />
+                  </PhoneticSequence>
+                </PhoneticTemplate>
+              </LeftEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" phonologicalRules="prule4">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="root19" partOfSpeech="posN">
+            <Allomorphs>
+              <Allomorph id="root19_1">
+                <PhoneticShape>bubu</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <Gloss>19</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

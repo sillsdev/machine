@@ -1,0 +1,61 @@
+# Oracle: pangloss (`pg_parse::Morpher`, driven directly via a temporary probe test -- see
+# STAGING.md's "Verification" section), NOT the C# founding oracle. Signatures below are
+# transcribed verbatim from that run, not hand-derived.
+
+language: MprGroupOverwriteWithoutRealizational
+inspired_by: ["synthetic MPR-group-overwrite probe (not modeling any real language); the ThemeGroup mechanism of languages/fusional-realizational-morphology's own MprGroups stratum, isolated into a grammar with no RealizationalRule at all"]
+sources:
+  - "languages/fusional-realizational-morphology's own MprGroups stratum (mrThemeX/mrThemeY/mrEndZ, ThemeGroup)"
+requires: []
+words:
+  - word: dof
+    note: DOF bare root, no prefix -- a plain control.
+    parses:
+      - signature: "DOF|dof"
+        gloss: dof
+        rules: []
+        exercises: []
+
+  - word: udof
+    note: DOF prefixed by mrThemeA ("u-", sets MPR feature mprA).
+    parses:
+      - signature: "THEMEA+DOF|udof"
+        gloss: THEME.A-dof
+        rules: [mrThemeA]
+        exercises:
+          - "MPR features/groups"
+
+  - word: wudof
+    note: DOF prefixed by mrThemeA then mrThemeB ("w-", sets mprB) -- ThemeGroup's outputType="overwrite" means mrThemeB's own output DROPS mprA rather than accumulating it alongside mprB.
+    provenance: "mpr-groups/output-overwrite (MprGroupOutput::Overwrite in MPR output accumulation)"
+    parses:
+      - signature: "THEMEB+THEMEA+DOF|wudof"
+        gloss: THEME.B-THEME.A-dof
+        rules: [mrThemeA, mrThemeB]
+        exercises:
+          - "MPR features/groups"
+
+  - word: udofq
+    note: DOF prefixed by mrThemeA then suffixed by mrEndC (requiredMPRFeatures="mprA") -- mprA is still present (only mrThemeA applied), so mrEndC's requirement is satisfied.
+    parses:
+      - signature: "THEMEA+DOF+ENDC|udofq"
+        gloss: THEME.A-dof-END
+        rules: [mrThemeA, mrEndC]
+        exercises:
+          - "MPR features/groups"
+
+  - word: wudofq
+    note: >-
+      THE distinguishing row: DOF prefixed by mrThemeA then mrThemeB then suffixed by mrEndC --
+      the CONSTRUCT this fixture exists to pin. After mrThemeB, ThemeGroup's Overwrite semantics
+      have already dropped mprA, so mrEndC's requiredMPRFeatures="mprA" fails. Zero parses. This
+      grammar carries NO RealizationalRule anywhere (unlike the only two existing grammars with an
+      Overwrite MPR group), so EmissionStrategy::PlanComposed is not refused outright and actually
+      reaches this material -- an engine whose plan-composed lexicon emitter (or any other
+      backend) treats Overwrite as a flat union (the pre-fix "Append" mis-implementation this
+      exact mechanism was built to catch) would wrongly accept this.
+    provenance: "mpr-groups/output-overwrite (MprGroupOutput::Overwrite in MPR output accumulation)"
+    expect_fail: true
+    blocked_by: [mrEndC]
+    exercises:
+      - "MPR features/groups"
