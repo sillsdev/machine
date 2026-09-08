@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using SIL.Machine.Annotations;
+using SIL.Machine.FeatureModel;
 using SIL.Machine.Rules;
 using SIL.ObjectModel;
 
@@ -157,6 +158,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     if (shapeWord.TryGetValue(shape, out canonicalWord))
                     {
                         canonicalWord.Alternatives.Add(mruleOutWord);
+                        GeneralizeSyntacticFeatureStruct(canonicalWord, mruleOutWord);
                         continue;
                     }
                     shapeWord[shape] = mruleOutWord;
@@ -166,6 +168,22 @@ namespace SIL.Machine.Morphology.HermitCrab
                     _morpher.TraceManager.EndUnapplyStratum(_stratum, mruleOutWord);
             }
             return output;
+        }
+
+        /// <summary>
+        /// The canonical word stands in for every merged alternative in the strata below (see
+        /// <see cref="Word.ExpandAlternatives"/>), so its syntactic feature structure must generalize theirs:
+        /// otherwise a rule that is valid for an alternative is filtered out on the canonical word's narrower
+        /// feature structure and the alternative's parse is lost. Union keeps the features the two share, with
+        /// the union of their values, and drops the rest.
+        /// </summary>
+        private static void GeneralizeSyntacticFeatureStruct(Word canonicalWord, Word alternative)
+        {
+            if (canonicalWord.SyntacticFeatureStruct.ValueEquals(alternative.SyntacticFeatureStruct))
+                return;
+            FeatureStruct fs = canonicalWord.SyntacticFeatureStruct.Clone();
+            fs.Union(alternative.SyntacticFeatureStruct);
+            canonicalWord.SyntacticFeatureStruct = fs;
         }
 
         private IEnumerable<Word> ApplyMorphologicalRules(Word input)
