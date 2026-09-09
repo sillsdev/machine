@@ -84,12 +84,7 @@
             );
         }
 
-        public void TemplateNotUnapplied(
-            AffixTemplate template,
-            Word input,
-            FailureReason reason,
-            object failureObj
-        )
+        public void TemplateNotUnapplied(AffixTemplate template, Word input, FailureReason reason, object failureObj)
         {
             ((Trace)input.CurrentTrace).Children.Add(
                 new Trace(TraceType.TemplateAnalysisInput, template)

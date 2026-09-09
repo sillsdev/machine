@@ -62,8 +62,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     if (!_morpher.IsPartial || _morpher.AlwaysEnforceFinalTemplates)
                     {
                         outWord.FinalTemplateState = !_rule.IsTemplateRule
-                        ? FinalTemplateState.NonTemplate
-                        : FinalTemplateState.None;
+                            ? FinalTemplateState.NonTemplate
+                            : FinalTemplateState.None;
                     }
                     outWord.MorphologicalRuleUnapplied(_rule);
                     outWord.Freeze();
