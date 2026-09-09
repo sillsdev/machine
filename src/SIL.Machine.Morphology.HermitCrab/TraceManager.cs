@@ -84,18 +84,16 @@
             );
         }
 
-        public void MorphologicalRuleNotUnapplied(
-            IMorphologicalRule rule,
-            int subruleIndex,
+        public void TemplateNotUnapplied(
+            AffixTemplate template,
             Word input,
             FailureReason reason,
             object failureObj
         )
         {
             ((Trace)input.CurrentTrace).Children.Add(
-                new Trace(TraceType.MorphologicalRuleAnalysis, rule)
+                new Trace(TraceType.TemplateAnalysisInput, template)
                 {
-                    SubruleIndex = subruleIndex,
                     Input = input,
                     FailureReason = reason,
                 }

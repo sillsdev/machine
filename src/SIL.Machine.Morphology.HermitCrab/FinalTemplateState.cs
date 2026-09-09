@@ -4,6 +4,7 @@
     {
         None,
         NonTemplate,
-        FinalTemplateAfterNonTemplate,
+        FinalTemplate,
+        NonFinalTemplate,
     }
 }
