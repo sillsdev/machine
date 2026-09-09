@@ -59,6 +59,12 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         outWord.SyntacticFeatureStruct.Add(_rule.RequiredSyntacticFeatureStruct);
                     else if (_rule.OutSyntacticFeatureStruct.IsEmpty)
                         outWord.SyntacticFeatureStruct.Clear();
+                    if (!_morpher.IsPartial || _morpher.AlwaysEnforceFinalTemplates)
+                    {
+                        outWord.FinalTemplateState = !_rule.IsTemplateRule
+                            ? FinalTemplateState.NonTemplate
+                            : FinalTemplateState.None;
+                    }
                     outWord.MorphologicalRuleUnapplied(_rule);
                     outWord.Freeze();
                     if (_morpher.TraceManager.IsTracing)

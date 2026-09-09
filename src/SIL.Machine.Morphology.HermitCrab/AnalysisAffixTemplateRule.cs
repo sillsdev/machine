@@ -42,6 +42,25 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _morpher.TraceManager.BeginUnapplyTemplate(_template, input);
 
             Word inWord = input.Clone();
+            // Do not allow a final template to unapply if the grammar is not partial
+            // and a non-template was last unapplied.
+            if (
+                (!_morpher.IsPartial || _morpher.AlwaysEnforceFinalTemplates)
+                && inWord.FinalTemplateState == FinalTemplateState.NonTemplate
+                && _template.IsFinal
+            )
+            {
+                if (_morpher.TraceManager.IsTracing)
+                {
+                    _morpher.TraceManager.TemplateNotUnapplied(
+                        _template,
+                        input,
+                        FailureReason.NonPartialRuleProhibitedAfterFinalTemplate,
+                        null
+                    );
+                }
+                return Enumerable.Empty<Word>();
+            }
             inWord.Freeze();
 
             var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);

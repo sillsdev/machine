@@ -84,6 +84,13 @@
             );
         }
 
+        public void TemplateNotUnapplied(AffixTemplate template, Word input, FailureReason reason, object failureObj)
+        {
+            ((Trace)input.CurrentTrace).Children.Add(
+                new Trace(TraceType.TemplateAnalysisInput, template) { Input = input, FailureReason = reason }
+            );
+        }
+
         public void CompoundingRuleNotUnapplied(
             IMorphologicalRule rule,
             int subruleIndex,

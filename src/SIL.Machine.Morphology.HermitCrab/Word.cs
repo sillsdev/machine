@@ -28,6 +28,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private FeatureStruct _realizationalFS;
         private Stratum _stratum;
         private bool? _isLastAppliedRuleFinal;
+        private FinalTemplateState _finalTemplateState;
         private bool _isPartial;
         private readonly Dictionary<string, HashSet<int>> _disjunctiveAllomorphIndices;
         private int _mruleAppCount = 0;
@@ -47,6 +48,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _nonHeadApps = new List<Word>();
             _obligatorySyntacticFeatures = new IDBearerSet<Feature>();
             _isLastAppliedRuleFinal = null;
+            _finalTemplateState = FinalTemplateState.None;
             _disjunctiveAllomorphIndices = new Dictionary<string, HashSet<int>>();
         }
 
@@ -65,6 +67,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _nonHeadApps = new List<Word>();
             _obligatorySyntacticFeatures = new IDBearerSet<Feature>();
             _isLastAppliedRuleFinal = null;
+            _finalTemplateState = FinalTemplateState.None;
             _isPartial = false;
             _disjunctiveAllomorphIndices = new Dictionary<string, HashSet<int>>();
         }
@@ -93,6 +96,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _nonHeadAppIndex = word._nonHeadAppIndex;
             _obligatorySyntacticFeatures = new IDBearerSet<Feature>(word._obligatorySyntacticFeatures);
             _isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
+            _finalTemplateState = word._finalTemplateState;
             _isPartial = word._isPartial;
             CurrentTrace = word.CurrentTrace;
             AnalysisScope = word.AnalysisScope;
@@ -392,6 +396,16 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
+        internal FinalTemplateState FinalTemplateState
+        {
+            get { return _finalTemplateState; }
+            set
+            {
+                CheckFrozen();
+                _finalTemplateState = value;
+            }
+        }
+
         /// <summary>
         /// Gets the number of times the specified morphological rule has been applied.
         /// </summary>
@@ -621,6 +635,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             code = code * 31 + _mruleApps.GetSequenceHashCode();
             code = code * 31 + _mruleAppIndex.GetHashCode();
             code = code * 31 + _isLastAppliedRuleFinal.GetHashCode();
+            code = code * 31 + _finalTemplateState.GetHashCode();
             return code;
         }
 
@@ -640,7 +655,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                 && _rootAllomorph == other._rootAllomorph
                 && _mruleApps.SequenceEqual(other._mruleApps)
                 && _mruleAppIndex == other._mruleAppIndex
-                && _isLastAppliedRuleFinal == other._isLastAppliedRuleFinal;
+                && _isLastAppliedRuleFinal == other._isLastAppliedRuleFinal
+                && _finalTemplateState == other._finalTemplateState;
         }
 
         public Word Clone()
