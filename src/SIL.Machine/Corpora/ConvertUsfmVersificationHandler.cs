@@ -7,19 +7,10 @@ namespace SIL.Machine.Corpora
 {
     public class ConvertUsfmVersificationHandler : ScriptureRefUsfmParserHandlerBase
     {
-        private static readonly IReadOnlyList<Regex> TrailingParagraphMarkerPatterns = new List<Regex>
-        {
-            new Regex(@"mt\d*", RegexOptions.Compiled),
-            new Regex(@"mte\d*", RegexOptions.Compiled),
-            new Regex(@"ms\d*", RegexOptions.Compiled),
-            new Regex("mr", RegexOptions.Compiled),
-            new Regex(@"s\d*", RegexOptions.Compiled),
-            new Regex("sr", RegexOptions.Compiled),
-            new Regex("r", RegexOptions.Compiled),
-            new Regex("d", RegexOptions.Compiled),
-            new Regex("sp", RegexOptions.Compiled),
-            new Regex(@"sd\d*", RegexOptions.Compiled),
-        };
+        private static readonly Regex TrailingParagraphMarkerPatterns = new Regex(
+            @"^(?:mte?\d*|ms\d*|sd?\d*|mr|sr|sp|d|r)$",
+            RegexOptions.Compiled
+        );
         private readonly List<UsfmToken> _tokens;
         private List<(int Index, UsfmToken Token)> _trailingVerseTokens;
         private VerseRef _prevVerseRef;
@@ -115,6 +106,8 @@ namespace SIL.Machine.Corpora
                 }
             }
 
+            bool addedVerseText = false;
+
             string start = null;
             for (int i = 0; i < verseRefs.Count; i++)
             {
@@ -135,13 +128,14 @@ namespace SIL.Machine.Corpora
                     {
                         AddTrailingTokens();
                         _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
-                        if (state.Index + 1 < state.Tokens.Count)
+                        if (!addedVerseText && state.Index + 1 < state.Tokens.Count)
                         {
                             UsfmToken nextToken = state.Tokens[state.Index + 1];
                             if (nextToken.Type == UsfmTokenType.Text)
                             {
                                 _tokens.Add(nextToken);
                                 _verseBoundary++;
+                                addedVerseText = true;
                             }
                         }
                         _tokens.Add(new UsfmToken(UsfmTokenType.Chapter, "c", "", "", verseRefs[i].Chapter));
@@ -153,13 +147,14 @@ namespace SIL.Machine.Corpora
                     {
                         AddTrailingTokens();
                         _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
-                        if (state.Index + 1 < state.Tokens.Count)
+                        if (!addedVerseText && state.Index + 1 < state.Tokens.Count)
                         {
                             UsfmToken nextToken = state.Tokens[state.Index + 1];
                             if (nextToken.Type == UsfmTokenType.Text)
                             {
                                 _tokens.Add(nextToken);
                                 _verseBoundary++;
+                                addedVerseText = true;
                             }
                         }
                         start = verseRefs[i].Verse;
@@ -227,7 +222,7 @@ namespace SIL.Machine.Corpora
                 }
                 else if (inPreservedParagraph)
                 {
-                    inPreservedParagraph = !inPreservedParagraph || token.Type != UsfmTokenType.Paragraph;
+                    inPreservedParagraph = token.Type != UsfmTokenType.Paragraph;
                 }
                 else
                 {
@@ -238,8 +233,6 @@ namespace SIL.Machine.Corpora
                     _trailingVerseTokens.Add((_tokens.Count, token));
                 else if (!_skip)
                     _tokens.Add(token);
-                else
-                    offset = offset + 1 - 1;
 
                 offset++;
             }
@@ -263,9 +256,7 @@ namespace SIL.Machine.Corpora
         private bool IsPreservedTrailingParagraphMarker(UsfmToken token, UsfmToken nextToken)
         {
             return (token.Marker == "p" && nextToken != null && nextToken.Type == UsfmTokenType.Verse)
-                || TrailingParagraphMarkerPatterns.Any(p =>
-                    token.Type == UsfmTokenType.Paragraph && p.IsMatch(token.Marker)
-                );
+                || token.Type == UsfmTokenType.Paragraph && TrailingParagraphMarkerPatterns.IsMatch(token.Marker);
         }
     }
 }
