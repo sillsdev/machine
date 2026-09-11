@@ -114,6 +114,11 @@ namespace SIL.Machine.Corpora
             _compareSegments = compareSegments;
         }
 
+        public static ScrVers GetRowsVersification(IReadOnlyList<UpdateUsfmRow> rows)
+        {
+            return rows.Any() ? rows.First(r => r.Refs.Count > 0).Refs[0].Versification : ScrVers.English;
+        }
+
         public IReadOnlyList<UsfmToken> Tokens => _tokens;
 
         public override void EndUsfm(UsfmParserState state)

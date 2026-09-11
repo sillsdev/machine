@@ -1,12 +1,28 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
     public class ConvertUsfmVersificationHandler : ScriptureRefUsfmParserHandlerBase
     {
+        private static readonly IReadOnlyList<Regex> TrailingParagraphMarkerPatterns = new List<Regex>
+        {
+            new Regex(@"mt\d*", RegexOptions.Compiled),
+            new Regex(@"mte\d*", RegexOptions.Compiled),
+            new Regex(@"ms\d*", RegexOptions.Compiled),
+            new Regex("mr", RegexOptions.Compiled),
+            new Regex(@"s\d*", RegexOptions.Compiled),
+            new Regex("sr", RegexOptions.Compiled),
+            new Regex("r", RegexOptions.Compiled),
+            new Regex("d", RegexOptions.Compiled),
+            new Regex("sp", RegexOptions.Compiled),
+            new Regex(@"sd\d*", RegexOptions.Compiled),
+        };
         private readonly List<UsfmToken> _tokens;
+        private readonly List<UsfmToken> _trailingVerseTokens;
+        private int _trailingVerseTokensInsertionIndex;
         private VerseRef _prevVerseRef;
         private int _verseBoundary;
         private readonly ScrVers _targetVersification;
@@ -18,10 +34,14 @@ namespace SIL.Machine.Corpora
             _verseBoundary = 0;
             _insertChapterIndex = -1;
             _tokens = new List<UsfmToken>();
+            _trailingVerseTokens = new List<UsfmToken>();
+            _trailingVerseTokensInsertionIndex = 0;
             _prevVerseRef = new VerseRef();
             _targetVersification = targetVersification;
             _skip = false;
         }
+
+        public IReadOnlyList<UsfmToken> Tokens => _tokens;
 
         public override void Chapter(
             UsfmParserState state,
@@ -33,6 +53,19 @@ namespace SIL.Machine.Corpora
         {
             base.Chapter(state, number, marker, altNumber, pubNumber);
             ProcessTokens(state);
+            VerseRef vr = state.VerseRef;
+            // The versification of verse 0 cannot properly be changed
+            vr.Verse = "1";
+            if (
+                !_prevVerseRef.IsDefault
+                && (
+                    vr.ChangeVersificationWithSegments(_targetVersification).Book != _prevVerseRef.Book
+                    || vr.ChapterNum == -1
+                )
+            )
+            {
+                _skip = true;
+            }
             _insertChapterIndex = _tokens.Count;
         }
 
@@ -56,24 +89,36 @@ namespace SIL.Machine.Corpora
                 .ToList();
 
             if (
-                _prevVerseRef.IsDefault
-                || (
-                    verseRefs[0].BookNum == _prevVerseRef.BookNum && verseRefs[0].ChapterNum != _prevVerseRef.ChapterNum
-                )
+                (
+                    _prevVerseRef.IsDefault
+                    || (
+                        verseRefs[0].BookNum == _prevVerseRef.BookNum
+                        && verseRefs[0].ChapterNum != _prevVerseRef.ChapterNum
+                    )
+                ) && (verseRefs[0].ChapterNum != -1)
             )
             {
                 UsfmToken newChapterToken = new UsfmToken(UsfmTokenType.Chapter, "c", "", "", verseRefs[0].Chapter);
 
                 if (_insertChapterIndex == -1)
+                {
                     _tokens.Add(newChapterToken);
+                    _tokens.Add(new UsfmToken(UsfmTokenType.Paragraph, "nb", "", "", ""));
+                }
                 else
+                {
                     _tokens.Insert(_insertChapterIndex, newChapterToken);
+                }
+                _trailingVerseTokensInsertionIndex++;
             }
 
             string start = null;
             for (int i = 0; i < verseRefs.Count; i++)
             {
-                if (!_prevVerseRef.IsDefault && verseRefs[i].Book != _prevVerseRef.Book)
+                if (
+                    (!_prevVerseRef.IsDefault && verseRefs[i].Book != _prevVerseRef.Book)
+                    || verseRefs[i].ChapterNum == -1
+                )
                 {
                     continue;
                 }
@@ -85,14 +130,35 @@ namespace SIL.Machine.Corpora
                         && _prevVerseRef.ChapterNum != verseRefs[i].ChapterNum
                     )
                     {
+                        AddTrailingTokens();
                         _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
+                        if (state.Index + 1 < state.Tokens.Count)
+                        {
+                            UsfmToken nextToken = state.Tokens[state.Index + 1];
+                            if (nextToken.Type == UsfmTokenType.Text)
+                            {
+                                _tokens.Add(nextToken);
+                                _verseBoundary++;
+                            }
+                        }
                         _tokens.Add(new UsfmToken(UsfmTokenType.Chapter, "c", "", "", verseRefs[i].Chapter));
+                        _tokens.Add(new UsfmToken(UsfmTokenType.Paragraph, "nb", "", "", ""));
                         start = verseRefs[i].Verse;
                         _prevVerseRef = verseRefs[i];
                     }
                     else if (_prevVerseRef.VerseNum + 1 != verseRefs[i].VerseNum)
                     {
+                        AddTrailingTokens();
                         _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
+                        if (state.Index + 1 < state.Tokens.Count)
+                        {
+                            UsfmToken nextToken = state.Tokens[state.Index + 1];
+                            if (nextToken.Type == UsfmTokenType.Text)
+                            {
+                                _tokens.Add(nextToken);
+                                _verseBoundary++;
+                            }
+                        }
                         start = verseRefs[i].Verse;
                         _prevVerseRef = verseRefs[i];
                     }
@@ -111,6 +177,7 @@ namespace SIL.Machine.Corpora
 
             if (start != null)
             {
+                AddTrailingTokens();
                 string end = start != _prevVerseRef.Verse ? "-" + _prevVerseRef.Verse : "";
                 _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
                 _skip = false;
@@ -140,12 +207,49 @@ namespace SIL.Machine.Corpora
         private void ProcessTokens(UsfmParserState state)
         {
             int offset = 0;
-            if (!_skip)
+            bool inPreservedParagraph = false;
+            while (_verseBoundary + offset < state.Index)
             {
-                while (_verseBoundary + offset < state.Index)
-                    _tokens.Add(state.Tokens[_verseBoundary + offset++]);
+                UsfmToken token = state.Tokens[_verseBoundary + offset];
+                if (
+                    inPreservedParagraph
+                    || IsPreservedTrailingParagraphMarker(
+                        token,
+                        _verseBoundary + offset + 1 < state.Tokens.Count
+                            ? state.Tokens[_verseBoundary + offset + 1]
+                            : null
+                    )
+                )
+                {
+                    inPreservedParagraph = !inPreservedParagraph || token.Type != UsfmTokenType.Paragraph;
+
+                    if (_trailingVerseTokens.Count == 0)
+                        _trailingVerseTokensInsertionIndex = _tokens.Count;
+                    _trailingVerseTokens.Add(token);
+                }
+                else
+                {
+                    inPreservedParagraph = false;
+                    if (!_skip)
+                        _tokens.Add(token);
+                }
+                offset++;
             }
             _verseBoundary = state.Index + 1;
+        }
+
+        private void AddTrailingTokens()
+        {
+            _tokens.InsertRange(_trailingVerseTokensInsertionIndex, _trailingVerseTokens);
+            _trailingVerseTokens.Clear();
+        }
+
+        private bool IsPreservedTrailingParagraphMarker(UsfmToken token, UsfmToken nextToken)
+        {
+            return (token.Marker == "p" && nextToken != null && nextToken.Type == UsfmTokenType.Verse)
+                || TrailingParagraphMarkerPatterns.Any(p =>
+                    token.Type == UsfmTokenType.Paragraph && p.IsMatch(token.Marker)
+                );
         }
     }
 }
