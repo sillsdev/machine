@@ -21,8 +21,7 @@ namespace SIL.Machine.Corpora
             new Regex(@"sd\d*", RegexOptions.Compiled),
         };
         private readonly List<UsfmToken> _tokens;
-        private readonly List<UsfmToken> _trailingVerseTokens;
-        private int _trailingVerseTokensInsertionIndex;
+        private List<(int Index, UsfmToken Token)> _trailingVerseTokens;
         private VerseRef _prevVerseRef;
         private int _verseBoundary;
         private readonly ScrVers _targetVersification;
@@ -34,8 +33,7 @@ namespace SIL.Machine.Corpora
             _verseBoundary = 0;
             _insertChapterIndex = -1;
             _tokens = new List<UsfmToken>();
-            _trailingVerseTokens = new List<UsfmToken>();
-            _trailingVerseTokensInsertionIndex = 0;
+            _trailingVerseTokens = new List<(int Index, UsfmToken Token)>();
             _prevVerseRef = new VerseRef();
             _targetVersification = targetVersification;
             _skip = false;
@@ -103,13 +101,18 @@ namespace SIL.Machine.Corpora
                 if (_insertChapterIndex == -1)
                 {
                     _tokens.Add(newChapterToken);
+                    _trailingVerseTokens = _trailingVerseTokens
+                        .Select(tup => tup.Index == _tokens.Count - 1 ? (tup.Index + 1, tup.Token) : tup)
+                        .ToList();
                     _tokens.Add(new UsfmToken(UsfmTokenType.Paragraph, "nb", "", "", ""));
                 }
                 else
                 {
                     _tokens.Insert(_insertChapterIndex, newChapterToken);
+                    _trailingVerseTokens = _trailingVerseTokens
+                        .Select(tup => tup.Index == _insertChapterIndex ? (tup.Index + 1, tup.Token) : tup)
+                        .ToList();
                 }
-                _trailingVerseTokensInsertionIndex++;
             }
 
             string start = null;
@@ -212,8 +215,7 @@ namespace SIL.Machine.Corpora
             {
                 UsfmToken token = state.Tokens[_verseBoundary + offset];
                 if (
-                    inPreservedParagraph
-                    || IsPreservedTrailingParagraphMarker(
+                    IsPreservedTrailingParagraphMarker(
                         token,
                         _verseBoundary + offset + 1 < state.Tokens.Count
                             ? state.Tokens[_verseBoundary + offset + 1]
@@ -221,18 +223,24 @@ namespace SIL.Machine.Corpora
                     )
                 )
                 {
+                    inPreservedParagraph = true;
+                }
+                else if (inPreservedParagraph)
+                {
                     inPreservedParagraph = !inPreservedParagraph || token.Type != UsfmTokenType.Paragraph;
-
-                    if (_trailingVerseTokens.Count == 0)
-                        _trailingVerseTokensInsertionIndex = _tokens.Count;
-                    _trailingVerseTokens.Add(token);
                 }
                 else
                 {
                     inPreservedParagraph = false;
-                    if (!_skip)
-                        _tokens.Add(token);
                 }
+
+                if (inPreservedParagraph)
+                    _trailingVerseTokens.Add((_tokens.Count, token));
+                else if (!_skip)
+                    _tokens.Add(token);
+                else
+                    offset = offset + 1 - 1;
+
                 offset++;
             }
             _verseBoundary = state.Index + 1;
@@ -240,7 +248,15 @@ namespace SIL.Machine.Corpora
 
         private void AddTrailingTokens()
         {
-            _tokens.InsertRange(_trailingVerseTokensInsertionIndex, _trailingVerseTokens);
+            foreach (
+                (int index, List<UsfmToken> tokens) in _trailingVerseTokens
+                    .GroupBy(tup => tup.Index)
+                    .Select(g => (g.Key, g.Select(tup => tup.Token).ToList()))
+                    .OrderBy(tup => -tup.Key)
+            )
+            {
+                _tokens.InsertRange(index, tokens);
+            }
             _trailingVerseTokens.Clear();
         }
 
