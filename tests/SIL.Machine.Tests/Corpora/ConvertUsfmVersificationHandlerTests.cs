@@ -380,8 +380,8 @@ public class ConvertUsfmVersificationHandlerTests
     public void GetUsfm_HeadingIntroducingKeptVerse_IsPreserved()
     {
         // Russian Orthodox vs. Original
-        // DAN 3:24-90 = DAG 3:24-90  (leaves the book, so it is dropped)
-        // DAN 3:91-100 = DAN 3:24-33 (stays in the book, so it is kept)
+        // DAN 3:24-90 = DAG 3:24-90
+        // DAN 3:91-100 = DAN 3:24-33
 
         string usfm =
             @"\id DAN - Test
@@ -415,7 +415,7 @@ public class ConvertUsfmVersificationHandlerTests
     public void GetUsfm_HeadingIntroducingDroppedVerse_IsDropped()
     {
         // Russian Orthodox vs. Original
-        // PSA 151:1-7 = PS2 1:1-7 (the whole chapter leaves the book)
+        // PSA 151:1-7 = PS2 1:1-7
 
         string usfm =
             @"\id PSA - Test
@@ -706,6 +706,38 @@ public class ConvertUsfmVersificationHandlerTests
 \v 6 Text
 ";
         AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_SameSourceAndTargetVersification()
+    {
+        string usfm =
+            @"\id MAT - Test
+\h Matthew
+\mt Matthew
+\ip An introduction to Matthew\fe + \ft This is an endnote.\fe*
+\p \rq MAT 1\rq* Here is another paragraph.
+\p and with a \w keyword|a special concept\w* in it.
+\p and a \weirdtaglookingthing that is not an actual tag.
+\c 1
+\s Chapter One
+\v 1 Chapter \pn one\+pro WON\+pro*\pn*, verse one.\f + \fr 1:1: \ft This is a footnote for v1.\f*
+\li1
+\v 2 \bd C\bd*hapter one,
+\li2 verse\f + \fr 1:2: \ft This is a footnote for v2.\f* two.
+\v 3 Chapter one \w*,
+\li2 verse three.
+\v 4 Chapter one with odd whitespace, 
+\li2 verse four,
+\v 5 Chapter one,
+\li2 verse \fig Figure 1|src=""image1.png"" size=""col"" ref=""1:5""\fig* five.
+\v 6 Verse 6 content.
+\v 7
+\v 8
+";
+
+        string target = UpdateUsfm(usfm, sourceVersification: ScrVers.English, targetVersification: ScrVers.English);
+        AssertUsfmEquals(target, usfm);
     }
 
     private static string UpdateUsfm(string source, ScrVers sourceVersification, ScrVers targetVersification)
