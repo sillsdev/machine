@@ -534,6 +534,71 @@ public class ConvertUsfmVersificationHandlerTests
     }
 
     [Test]
+    public void GetUsfm_ChapterMarkerIsFollowedByParagraphMarker_HeadingOpensParagraph()
+    {
+        // English vs. Original
+        // MAL 4:1-6 = MAL 3:19-24
+
+        string usfm =
+            @"\id MAL - Test
+\c 3
+\p
+\v 18 Text
+\s1 Section
+\p
+\v 19-23 More text
+\v 24 Last text
+";
+
+        string target = UpdateUsfm(usfm, sourceVersification: ScrVers.Original, targetVersification: ScrVers.English);
+        string result =
+            @"\id MAL - Test
+\c 3
+\p
+\v 18 Text
+\c 4
+\s1 Section
+\p
+\v 1-5 More text
+\v 6 Last text
+";
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_HeadingAfterChapterLabel_KeepsMarkerContent()
+    {
+        // English vs. Original
+        // ISA 9:1 = ISA 8:23
+
+        string usfm =
+            @"\id ISA - Test
+\c 8
+\p
+\v 22 Text
+\c 9
+\cl Chapter Nine
+\s1 Section
+\p
+\v 1 Nine one
+";
+
+        string target = UpdateUsfm(usfm, sourceVersification: ScrVers.Original, targetVersification: ScrVers.English);
+        string result =
+            @"\id ISA - Test
+\c 8
+\p
+\v 22 Text
+\c 9
+\cl Chapter Nine
+\s1 Section
+\p
+\v 2 Nine one
+";
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
     public void GetUsfm_CrossChapterVerseRange_TextStaysWithFirstVerse()
     {
         // English vs. Original

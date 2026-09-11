@@ -91,17 +91,40 @@ namespace SIL.Machine.Corpora
 
                 if (_insertChapterIndex == -1)
                 {
+                    int chapterIndex = _tokens.Count;
                     _tokens.Add(newChapterToken);
-                    _trailingVerseTokens = _trailingVerseTokens
-                        .Select(tup => tup.Index == _tokens.Count - 1 ? (tup.Index + 1, tup.Token) : tup)
+                    List<UsfmToken> trailingAtChapter = _trailingVerseTokens
+                        .Where(tup => tup.Index == chapterIndex)
+                        .Select(tup => tup.Token)
                         .ToList();
-                    _tokens.Add(new UsfmToken(UsfmTokenType.Paragraph, "nb", "", "", ""));
+                    if (trailingAtChapter.Count == 0)
+                    {
+                        // The chapter break falls mid-paragraph, so the paragraph continues across it.
+                        _tokens.Add(new UsfmToken(UsfmTokenType.Paragraph, "nb", "", "", ""));
+                    }
+                    else
+                    {
+                        // The trailing markers follow the new chapter and break the paragraph. If
+                        // they do not open a paragraph of their own, the verse still needs one.
+                        UsfmToken lastParagraph = trailingAtChapter.LastOrDefault(t =>
+                            t.Type == UsfmTokenType.Paragraph
+                        );
+                        if (lastParagraph == null || TrailingParagraphMarkerPatterns.IsMatch(lastParagraph.Marker))
+                        {
+                            _trailingVerseTokens.Add(
+                                (chapterIndex, new UsfmToken(UsfmTokenType.Paragraph, "nb", "", "", ""))
+                            );
+                        }
+                        _trailingVerseTokens = _trailingVerseTokens
+                            .Select(tup => tup.Index == chapterIndex ? (tup.Index + 1, tup.Token) : tup)
+                            .ToList();
+                    }
                 }
                 else
                 {
                     _tokens.Insert(_insertChapterIndex, newChapterToken);
                     _trailingVerseTokens = _trailingVerseTokens
-                        .Select(tup => tup.Index == _insertChapterIndex ? (tup.Index + 1, tup.Token) : tup)
+                        .Select(tup => tup.Index >= _insertChapterIndex ? (tup.Index + 1, tup.Token) : tup)
                         .ToList();
                 }
             }
