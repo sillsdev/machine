@@ -33,12 +33,7 @@ public class ConvertUsfmVersificationHandlerTests
 \v 6 Text
 ";
 
-        string target = UpdateUsfm(
-            "MAL",
-            usfm,
-            sourceVersification: ScrVers.English,
-            targetVersification: ScrVers.Original
-        );
+        string target = UpdateUsfm(usfm, sourceVersification: ScrVers.English, targetVersification: ScrVers.Original);
         string result =
             @"\id MAL
 \h Malachi
@@ -85,12 +80,7 @@ public class ConvertUsfmVersificationHandlerTests
 \v 24 Text
 ";
 
-        string target = UpdateUsfm(
-            "MAL",
-            usfm,
-            sourceVersification: ScrVers.Original,
-            targetVersification: ScrVers.English
-        );
+        string target = UpdateUsfm(usfm, sourceVersification: ScrVers.Original, targetVersification: ScrVers.English);
         string result =
             @"\id MAL
 \h Malachi
@@ -106,6 +96,7 @@ public class ConvertUsfmVersificationHandlerTests
 \v 1-17
 \v 18 Text \f More text \f*
 \c 4
+\nb
 \v 1-5
 \v 6 Text
 ";
@@ -122,15 +113,16 @@ public class ConvertUsfmVersificationHandlerTests
             @"\id PSA - Test
 \h Psalms
 \c 150
+\p
 \v 1-5 Lines
 \v 6 Line
 \q Another line
 \c 151
+\p
 \v 1-7 More lines
 ";
 
         string target = UpdateUsfm(
-            "PSA",
             usfm,
             sourceVersification: ScrVers.RussianOrthodox,
             targetVersification: ScrVers.Original
@@ -139,6 +131,7 @@ public class ConvertUsfmVersificationHandlerTests
             @"\id PSA - Test
 \h Psalms
 \c 150
+\p
 \v 1-5 Lines
 \v 6 Line
 \q Another line
@@ -167,16 +160,17 @@ public class ConvertUsfmVersificationHandlerTests
             @"\id DAN - Test
 \h Daniel
 \c 3
-\v 1-23
-\v 24-90
 \p
-\v 91-100
+\v 1-23 Text 1
+\v 24-90 Text 2
+\p More text 2
+\v 91-100 Text 3
 \c 4
-\v 1
+\p
+\v 1 Text 4
 ";
 
         string target = UpdateUsfm(
-            "DAN",
             usfm,
             sourceVersification: ScrVers.RussianOrthodox,
             targetVersification: ScrVers.Original
@@ -185,10 +179,12 @@ public class ConvertUsfmVersificationHandlerTests
             @"\id DAN - Test
 \h Daniel
 \c 3
-\v 1-23
-\v 24-33
+\p
+\v 1-23 Text 1
+\v 24-33 Text 3
 \c 4
-\v 1
+\p
+\v 1 Text 4
 ";
         AssertUsfmEquals(target, result);
     }
@@ -202,24 +198,24 @@ public class ConvertUsfmVersificationHandlerTests
         string usfm =
             @"\id ISA - Test
 \c 8
+\p
 \v 22
 \v 23
 \c 9
+\p
 \v 1
 ";
 
-        string target = UpdateUsfm(
-            "ISA",
-            usfm,
-            sourceVersification: ScrVers.Original,
-            targetVersification: ScrVers.English
-        );
+        string target = UpdateUsfm(usfm, sourceVersification: ScrVers.Original, targetVersification: ScrVers.English);
         string result =
             @"\id ISA - Test
 \c 8
+\p
 \v 22
 \c 9
+\nb
 \v 1
+\p
 \v 2
 ";
         AssertUsfmEquals(target, result);
@@ -234,24 +230,24 @@ public class ConvertUsfmVersificationHandlerTests
         string usfm =
             @"\id ISA - Test
 \c 8
+\p
 \v 22
 \c 9
+\p
 \v 1
 \v 2
 ";
 
-        string target = UpdateUsfm(
-            "ISA",
-            usfm,
-            sourceVersification: ScrVers.English,
-            targetVersification: ScrVers.Original
-        );
+        string target = UpdateUsfm(usfm, sourceVersification: ScrVers.English, targetVersification: ScrVers.Original);
         string result =
             @"\id ISA - Test
 \c 8
+\p
 \v 22
+\p
 \v 23
 \c 9
+\nb
 \v 1
 ";
         AssertUsfmEquals(target, result);
@@ -266,23 +262,23 @@ public class ConvertUsfmVersificationHandlerTests
         string usfm =
             @"\id ISA - Test
 \c 8
+\p
 \v 22-23
 \c 9
+\p
 \v 1
 ";
 
-        string target = UpdateUsfm(
-            "ISA",
-            usfm,
-            sourceVersification: ScrVers.Original,
-            targetVersification: ScrVers.English
-        );
+        string target = UpdateUsfm(usfm, sourceVersification: ScrVers.Original, targetVersification: ScrVers.English);
         string result =
             @"\id ISA - Test
 \c 8
+\p
 \v 22
 \c 9
+\nb
 \v 1
+\p
 \v 2
 ";
         AssertUsfmEquals(target, result);
@@ -308,15 +304,16 @@ public class ConvertUsfmVersificationHandlerTests
         string usfm =
             @"\id DAN - Test
 \c 3
+\p
 \v 1-22
 \v 23-89
 \v 90-100
 \c 4
+\p
 \v 1
 ";
 
         string target = UpdateUsfm(
-            "DAN",
             usfm,
             sourceVersification: ScrVers.RussianOrthodox,
             targetVersification: ScrVers.Original
@@ -324,10 +321,12 @@ public class ConvertUsfmVersificationHandlerTests
         string result =
             @"\id DAN - Test
 \c 3
+\p
 \v 1-22
 \v 23
 \v 24-33
 \c 4
+\p
 \v 1
 ";
         AssertUsfmEquals(target, result);
@@ -353,13 +352,14 @@ public class ConvertUsfmVersificationHandlerTests
         string usfm =
             @"\id DAN - Test
 \c 3
+\p
 \v 1-100
 \c 4
+\p
 \v 1
 ";
 
         string target = UpdateUsfm(
-            "DAN",
             usfm,
             sourceVersification: ScrVers.RussianOrthodox,
             targetVersification: ScrVers.Original
@@ -367,20 +367,21 @@ public class ConvertUsfmVersificationHandlerTests
         string result =
             @"\id DAN - Test
 \c 3
+\p
 \v 1-33
 \c 4
+\p
 \v 1
 ";
         AssertUsfmEquals(target, result);
     }
 
     [Test]
-    public void GetUsfm_HeadingIntroducingKeptVerse_AfterDroppedVerse()
+    public void GetUsfm_HeadingIntroducingKeptVerse_IsPreserved()
     {
         // Russian Orthodox vs. Original
         // DAN 3:24-90 = DAG 3:24-90  (leaves the book, so it is dropped)
         // DAN 3:91-100 = DAN 3:24-33 (stays in the book, so it is kept)
-        // The heading and paragraph marker between them introduce the verse that is kept.
 
         string usfm =
             @"\id DAN - Test
@@ -388,13 +389,12 @@ public class ConvertUsfmVersificationHandlerTests
 \p
 \v 1-23 Text
 \v 24-90 Dropped text
-\s1 Section
+\s1 \nd Section\nd*
 \p
 \v 91-100 More text
 ";
 
         string target = UpdateUsfm(
-            "DAN",
             usfm,
             sourceVersification: ScrVers.RussianOrthodox,
             targetVersification: ScrVers.Original
@@ -404,11 +404,11 @@ public class ConvertUsfmVersificationHandlerTests
 \c 3
 \p
 \v 1-23 Text
-\s1 Section
+\s1 \nd Section\nd*
 \p
 \v 24-33 More text
 ";
-        AssertUsfmEqualsExactly(target, result);
+        AssertUsfmEquals(target, result);
     }
 
     [Test]
@@ -416,23 +416,21 @@ public class ConvertUsfmVersificationHandlerTests
     {
         // Russian Orthodox vs. Original
         // PSA 151:1-7 = PS2 1:1-7 (the whole chapter leaves the book)
-        // The heading introduces the dropped verse, so it goes with it. The \q belongs to the
-        // preceding verse and stays.
 
         string usfm =
             @"\id PSA - Test
 \c 150
+\p
 \v 1-5 Lines
 \v 6 Line
 \q Another line
 \c 151
-\s1 Section
+\s1 \nd Section\nd*
 \p
 \v 1-7 More lines
 ";
 
         string target = UpdateUsfm(
-            "PSA",
             usfm,
             sourceVersification: ScrVers.RussianOrthodox,
             targetVersification: ScrVers.Original
@@ -440,19 +438,17 @@ public class ConvertUsfmVersificationHandlerTests
         string result =
             @"\id PSA - Test
 \c 150
+\p
 \v 1-5 Lines
 \v 6 Line
 \q Another line
 ";
-        AssertUsfmEqualsExactly(target, result);
+        AssertUsfmEquals(target, result);
     }
 
     [Test]
-    public void GetUsfm_DroppedVerseText_IsDroppedWhenKeptVerseFollows()
+    public void GetUsfm_DropVerseText()
     {
-        // Guards against rescuing the dropped verse's own text along with the markers that
-        // introduce the verse after it.
-
         string usfm =
             @"\id DAN - Test
 \c 3
@@ -463,7 +459,6 @@ public class ConvertUsfmVersificationHandlerTests
 ";
 
         string target = UpdateUsfm(
-            "DAN",
             usfm,
             sourceVersification: ScrVers.RussianOrthodox,
             targetVersification: ScrVers.Original
@@ -475,17 +470,14 @@ public class ConvertUsfmVersificationHandlerTests
 \v 1-23 Text
 \v 24-33 More text
 ";
-        AssertUsfmEqualsExactly(target, result);
+        AssertUsfmEquals(target, result);
     }
 
     [Test]
-    public void GetUsfm_SynthesizedChapter_IsFollowedByParagraphMarker()
+    public void GetUsfm_ChapterMarkerIsFollowedByParagraphMarker()
     {
         // English vs. Original
         // MAL 4:1-6 = MAL 3:19-24
-        // Converting Original to English splits chapter 3 mid-paragraph, so the synthesized \c 4
-        // has no paragraph marker of its own. \nb continues the paragraph across the chapter break;
-        // without it the first verse of chapter 4 sits outside any paragraph.
 
         string usfm =
             @"\id MAL - Test
@@ -496,12 +488,7 @@ public class ConvertUsfmVersificationHandlerTests
 \v 24 Last text
 ";
 
-        string target = UpdateUsfm(
-            "MAL",
-            usfm,
-            sourceVersification: ScrVers.Original,
-            targetVersification: ScrVers.English
-        );
+        string target = UpdateUsfm(usfm, sourceVersification: ScrVers.Original, targetVersification: ScrVers.English);
         string result =
             @"\id MAL - Test
 \c 3
@@ -512,18 +499,14 @@ public class ConvertUsfmVersificationHandlerTests
 \v 1-5 More text
 \v 6 Last text
 ";
-        AssertUsfmEqualsExactly(target, result);
+        AssertUsfmEquals(target, result);
     }
 
     [Test]
-    public void GetUsfm_SynthesizedChapter_FromSplitVerseRange_IsFollowedByParagraphMarker()
+    public void GetUsfm_ChapterMarkerIsFollowedByParagraphMarker_CrossChapterVerseRange()
     {
         // English vs. Original
         // ISA 9:1 = ISA 8:23
-        // The range \v 22-23 straddles the mapped chapter boundary, so it is split and a chapter
-        // marker is synthesized between the two halves. That marker needs a paragraph too.
-        // The verses are left without text deliberately: where the text of a split range should
-        // end up is a separate question from whether the synthesized chapter has a paragraph.
 
         string usfm =
             @"\id ISA - Test
@@ -535,12 +518,7 @@ public class ConvertUsfmVersificationHandlerTests
 \v 1
 ";
 
-        string target = UpdateUsfm(
-            "ISA",
-            usfm,
-            sourceVersification: ScrVers.Original,
-            targetVersification: ScrVers.English
-        );
+        string target = UpdateUsfm(usfm, sourceVersification: ScrVers.Original, targetVersification: ScrVers.English);
         string result =
             @"\id ISA - Test
 \c 8
@@ -552,20 +530,14 @@ public class ConvertUsfmVersificationHandlerTests
 \p
 \v 2
 ";
-        AssertUsfmEqualsExactly(target, result);
+        AssertUsfmEquals(target, result);
     }
 
     [Test]
-    public void GetUsfm_SplitVerseRange_TextStaysWithFirstVerse()
+    public void GetUsfm_CrossChapterVerseRange_TextStaysWithFirstVerse()
     {
         // English vs. Original
         // ISA 9:1 = ISA 8:23
-        // \v 22-23 straddles the mapped chapter boundary and is split. The text covers both
-        // verses, and no single \v can express that, so it stays with the verse the range starts
-        // at rather than being carried into the next chapter.
-        //
-        // This expects the synthesized \c 9 to be followed by \nb as well, so it needs both that
-        // fix and the text placement fix to pass.
 
         string usfm =
             @"\id ISA - Test
@@ -577,12 +549,7 @@ public class ConvertUsfmVersificationHandlerTests
 \v 1 Chapter nine verse one text
 ";
 
-        string target = UpdateUsfm(
-            "ISA",
-            usfm,
-            sourceVersification: ScrVers.Original,
-            targetVersification: ScrVers.English
-        );
+        string target = UpdateUsfm(usfm, sourceVersification: ScrVers.Original, targetVersification: ScrVers.English);
         string result =
             @"\id ISA - Test
 \c 8
@@ -594,15 +561,154 @@ public class ConvertUsfmVersificationHandlerTests
 \p
 \v 2 Chapter nine verse one text
 ";
-        AssertUsfmEqualsExactly(target, result);
+        AssertUsfmEquals(target, result);
     }
 
-    private static string UpdateUsfm(
-        string bookId,
-        string source,
-        ScrVers sourceVersification,
-        ScrVers targetVersification
-    )
+    [Test]
+    public void GetUsfm_IgnoreInvalidChapter()
+    {
+        // English vs. Original
+        // MAL 4:1-6 = MAL 3:19-24
+
+        string usfm =
+            @"\id MAL
+\h Malachi
+\c 1
+\s1 Section
+\p
+\v 1 Text
+\v 2-14
+\c 2@
+\v 1-17
+\c 3
+\p
+\v 1-17
+\v 18 Text \f More text \f*
+\v 19-23
+\v 24 Text
+";
+
+        string target = UpdateUsfm(usfm, sourceVersification: ScrVers.Original, targetVersification: ScrVers.English);
+
+        // Strip out invalid chapters since we can't reliably convert them
+        string result =
+            @"\id MAL
+\h Malachi
+\c 1
+\s1 Section
+\p
+\v 1 Text
+\v 2-14
+\c 3
+\p
+\v 1-17
+\v 18 Text \f More text \f*
+\c 4
+\nb
+\v 1-5
+\v 6 Text
+";
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_IgnoreInvalidVerse()
+    {
+        // English vs. Original
+        // MAL 4:1-6 = MAL 3:19-24
+
+        string usfm =
+            @"\id MAL
+\h Malachi
+\c 1
+\s1 Section
+\p
+\v 1@ Text
+\v 2-14
+\c 2
+\v 1-17
+\c 3
+\p
+\v 1-17
+\v 18 Text \f More text \f*
+\v 19-23
+\v 24 Text
+";
+
+        string target = UpdateUsfm(usfm, sourceVersification: ScrVers.Original, targetVersification: ScrVers.English);
+
+        // Just pass invalid verses through to target
+        string result =
+            @"\id MAL
+\h Malachi
+\c 1
+\s1 Section
+\p
+\v 1@ Text
+\v 2-14
+\c 2
+\v 1-17
+\c 3
+\p
+\v 1-17
+\v 18 Text \f More text \f*
+\c 4
+\nb
+\v 1-5
+\v 6 Text
+";
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_MissingVerseInRange()
+    {
+        // English vs. Original
+        // MAL 4:1-6 = MAL 3:19-24
+
+        string usfm =
+            @"\id MAL
+\h Malachi
+\c 1
+\s1 Section
+\p
+\v 1 Text
+\v 2-14
+\c 2
+\v 1-17
+\c 3
+\p
+\v 1-17
+\v 18 Text \f More text \f*
+\v 19-21,23 Text
+\v 24 Text
+";
+
+        string target = UpdateUsfm(usfm, sourceVersification: ScrVers.Original, targetVersification: ScrVers.English);
+        string result =
+            @"\id MAL
+\h Malachi
+\c 1
+\s1 Section
+\p
+\v 1 Text
+\v 2-14
+\c 2
+\v 1-17
+\c 3
+\p
+\v 1-17
+\v 18 Text \f More text \f*
+\c 4
+\nb
+\v 1-3 Text
+\v 5
+\v 6 Text
+";
+        AssertUsfmEquals(target, result);
+    }
+
+    private static string UpdateUsfm(string source, ScrVers sourceVersification, ScrVers targetVersification)
     {
         source = source.Trim().ReplaceLineEndings("\r\n") + "\r\n";
         var settings = new DefaultParatextProjectSettings(
@@ -611,9 +717,11 @@ public class ConvertUsfmVersificationHandlerTests
             fileNameSuffix: string.Empty,
             fileNamePrefix: string.Empty
         );
-        var files = new Dictionary<string, string> { [bookId] = source };
-        var updater = new MemoryParatextProjectVersificationConverter(files, settings);
-        return updater.UpdateUsfm(bookId, targetVersification);
+        var handler = new ConvertUsfmVersificationHandler(targetVersification);
+        var tokenizer = new UsfmTokenizer(settings.Stylesheet);
+        IReadOnlyList<UsfmToken> tokens = tokenizer.Tokenize(source);
+        UsfmParser.Parse(tokens, handler, settings.Stylesheet, settings.Versification);
+        return handler.GetUsfm(settings.Stylesheet);
     }
 
     private static void AssertUsfmEquals(string target, string truth)
@@ -621,18 +729,10 @@ public class ConvertUsfmVersificationHandlerTests
         Assert.That(target, Is.Not.Null);
         string[] targetLines = target.Split('\n');
         string[] truthLines = truth.Split('\n');
+        Assert.That(targetLines.Length, Is.EqualTo(truthLines.Length));
         for (int i = 0; i < truthLines.Length; i++)
+        {
             Assert.That(targetLines[i].Trim(), Is.EqualTo(truthLines[i].Trim()), message: $"Line {i}");
-    }
-
-    // AssertUsfmEquals only walks the expected lines, so output that runs past the end of the
-    // expected USFM slips through. These cases turn on content being dropped, so they need the
-    // line count checked too.
-    private static void AssertUsfmEqualsExactly(string target, string truth)
-    {
-        AssertUsfmEquals(target, truth);
-        Assert.That(NonEmptyLineCount(target), Is.EqualTo(NonEmptyLineCount(truth)), message: "extra output");
-
-        static int NonEmptyLineCount(string usfm) => usfm.Split('\n').Count(l => l.Trim().Length > 0);
+        }
     }
 }
