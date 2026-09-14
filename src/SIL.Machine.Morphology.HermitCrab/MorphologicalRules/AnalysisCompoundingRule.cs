@@ -127,7 +127,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 foreach (Word outWord in srOutput)
                 {
                     if (!_rule.HeadRequiredSyntacticFeatureStruct.IsEmpty)
-                        outWord.SyntacticFeatureStruct.Add(_rule.HeadRequiredSyntacticFeatureStruct);
+                        outWord.SyntacticFeatureStruct.PriorityUnion(_rule.HeadRequiredSyntacticFeatureStruct);
                     else if (_rule.OutSyntacticFeatureStruct.IsEmpty)
                         outWord.SyntacticFeatureStruct.Clear();
                     outWord.MorphologicalRuleUnapplied(_rule);
