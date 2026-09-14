@@ -54,6 +54,16 @@ namespace SIL.Machine.Translation.Thot
 
         public WordAlignmentMatrix GetTrainingAlignment(int n)
         {
+            // Checked here as well, since either direction can hold more than the shared range.
+            if (n < 0 || n >= TrainingAlignmentCount)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(n),
+                    n,
+                    $"The index must be less than the number of retained training alignments ({TrainingAlignmentCount})."
+                );
+            }
+
             WordAlignmentMatrix bestMatrix = _directWordAlignmentModel.GetTrainingAlignment(n);
             if (Heuristic == SymmetrizationHeuristic.None)
                 return bestMatrix;
@@ -61,9 +71,9 @@ namespace SIL.Machine.Translation.Thot
             WordAlignmentMatrix invMatrix = _inverseWordAlignmentModel.GetTrainingAlignment(n);
             invMatrix.Transpose();
 
-            // Skip the combine when the matrices are degenerate or their dimensions don't
-            // line up (e.g. an out-of-range n, or a pair filtered out of training in only
-            // one direction): the heuristic operations require matching dimensions.
+            // Skip the combine when the matrices are degenerate or their dimensions don't line up
+            // (a pair filtered out of training in only one direction): the heuristic operations
+            // require matching dimensions.
             if (
                 bestMatrix.RowCount == 0
                 || bestMatrix.ColumnCount == 0

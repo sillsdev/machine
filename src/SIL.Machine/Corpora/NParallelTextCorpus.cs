@@ -472,6 +472,7 @@ namespace SIL.Machine.Corpora
                 if (N <= index)
                 {
                     throw new ArgumentOutOfRangeException(
+                        nameof(index),
                         $"There are only {N} parallel texts, but text {index} was chosen."
                     );
                 }
