@@ -165,13 +165,6 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 _allomorph,
                 output.MorphologicalRuleApplicationCount.ToString()
             );
-            if (outputNewMorph == null)
-            {
-                // There are no new output morphs in a truncation rule,
-                // so we add its allomorph to the last output shape.
-                string morphID = output.MorphologicalRuleApplicationCount.ToString();
-                output.MarkMorph(new List<ShapeNode>() { output.Shape.Last }, _allomorph, morphID);
-            }
             var markedAllomorphs = new HashSet<Allomorph>();
             foreach (Annotation<ShapeNode> inputMorph in match.Input.Morphs)
             {
@@ -204,6 +197,26 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     }
                 }
                 markedAllomorphs.Add(allomorph);
+            }
+            if (outputNewMorph == null)
+            {
+                // There are no new output morphs in a truncation rule (or a zero-width identity
+                // rule -- CopyFromInput with no InsertSegments), so we add its allomorph to the
+                // last output shape node. This runs AFTER the loop above (which re-marks every
+                // allomorph this rule wraps) rather than before it: when this rule's own affix
+                // ends at the exact same shape-node boundary as a wrapped allomorph's own affix
+                // (e.g. a zero-width rule applied immediately outside one whose own suffix is the
+                // shape's last segment), both allomorphs' MarkMorph calls claim that single node,
+                // and Word.MarkMorph's node.Annotation reparenting (via AnnotationList.Add) always
+                // gives the LAST caller sole ownership of it, leaving the other's morph annotation
+                // empty. Marking here, after the loop, guarantees the wrapped allomorph's own
+                // morph is established (and keeps the node) first, and that this rule's own
+                // (possibly now-empty) morph sorts after it -- which is what the signature's
+                // application-order rendering (Word.AllomorphsInMorphOrder) needs: an empty morph
+                // annotation still carries this rule's own morpheme ID, and the sort order is what
+                // determines whether that ID is rendered before or after the allomorph it wraps.
+                string morphID = output.MorphologicalRuleApplicationCount.ToString();
+                output.MarkMorph(new List<ShapeNode>() { output.Shape.Last }, _allomorph, morphID);
             }
 
             output.MprFeatures.AddOutput(_allomorph.OutMprFeatures);
