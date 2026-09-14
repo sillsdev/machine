@@ -16,10 +16,7 @@ public class ScriptureRangeParserTests
         }
         else
         {
-            Assert.Throws<ArgumentException>(() =>
-            {
-                parser.GetChapters(rangeString);
-            });
+            Assert.Throws<ArgumentException>(() => parser.GetChapters(rangeString));
         }
     }
 
@@ -132,7 +129,7 @@ public class ScriptureRangeParserTests
                 { "LUK", [] },
                 { "JHN", [] },
                 { "ACT", [1, 2, 3] },
-                { "ROM", new List<int>() },
+                { "ROM", [] },
             },
             false
         );
@@ -191,5 +188,8 @@ public class ScriptureRangeParserTests
         yield return new TestCaseData("NT,OT,-MRK,-EXO", new Dictionary<string, List<int>>(), true);
         yield return new TestCaseData("OT,MAT1", new Dictionary<string, List<int>>(), true);
         yield return new TestCaseData("OT,MAT-LUK", new Dictionary<string, List<int>>(), true);
+        yield return new TestCaseData("MAT;;MRK", new Dictionary<string, List<int>>(), true);
+        yield return new TestCaseData("  ;  ", new Dictionary<string, List<int>>(), true);
+        yield return new TestCaseData(";", new Dictionary<string, List<int>>(), true);
     }
 }
