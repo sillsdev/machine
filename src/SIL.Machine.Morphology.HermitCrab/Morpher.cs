@@ -95,7 +95,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         public int MaxAlternatives { get; set; }
 
         /// <summary>
-        /// Merge analyses that have equivalent shapes.
+        /// Merge analyses that are equivalent for every analysis-side rule (see <see cref="AnalysisStateKey"/>).
         /// Merged analyses will be expanded if lexical lookup succeeds.
         /// </summary>
         public bool MergeEquivalentAnalyses { get; set; }

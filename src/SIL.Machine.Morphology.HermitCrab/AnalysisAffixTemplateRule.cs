@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SIL.Machine.Annotations;
-using SIL.Machine.FeatureModel;
 using SIL.Machine.Rules;
 using SIL.ObjectModel;
 
@@ -34,8 +33,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (!_morpher.RuleSelector(_template))
                 return Enumerable.Empty<Word>();
 
-            FeatureStruct fs;
-            if (!input.SyntacticFeatureStruct.Unify(_template.RequiredSyntacticFeatureStruct, out fs))
+            // A check only: adding the template's required features here would make SyntacticFeatureStruct
+            // depend on whether a template was un-applied, which Word.ValueEquals assumes cannot happen.
+            if (!input.SyntacticFeatureStruct.IsUnifiable(_template.RequiredSyntacticFeatureStruct))
                 return Enumerable.Empty<Word>();
 
             if (_morpher.TraceManager.IsTracing)
@@ -69,8 +69,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             else
                 ParallelApplySlots(inWord, output);
 
-            foreach (Word outWord in output)
-                outWord.SyntacticFeatureStruct.Add(fs);
             return output;
         }
 

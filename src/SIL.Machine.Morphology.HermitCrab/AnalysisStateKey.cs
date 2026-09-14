@@ -21,9 +21,12 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// <see cref="Word.RealizationalFeatureStruct"/>.</item>
     /// </list>
     /// No rule reads the order those rules were unapplied in, which is the redundancy this key collapses,
-    /// so the trail is reduced to an unordered multiset here. <c>_isLastAppliedRuleFinal</c> and
-    /// <c>IsPartial</c> are excluded as well: <c>Word.ValueEquals</c> includes them for result dedup, but
-    /// no analysis-side rule reads them.
+    /// so the trail is reduced to an unordered multiset here. <c>_isLastAppliedRuleFinal</c> is excluded
+    /// as well: <c>Word.ValueEquals</c> includes it for result dedup, but no analysis-side rule reads it.
+    /// <para>
+    /// <c>AnalysisStratumRule</c> also merges equivalent analyses under this key. A merged alternative gets
+    /// no rule applications of its own, so that use needs the same completeness.
+    /// </para>
     /// </summary>
     internal readonly struct AnalysisStateKey : IEquatable<AnalysisStateKey>
     {
@@ -38,10 +41,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         /// <summary>
         /// Keys <paramref name="word"/>, freezing the fields the key reads. A named factory because that
-        /// freeze mutates <paramref name="word"/>: <c>Word.FreezeImpl</c> leaves
-        /// <c>SyntacticFeatureStruct</c> unfrozen and <c>AnalysisAffixTemplateRule.Apply</c> mutates it on
-        /// already-frozen Words, so pinning it here turns a later mutation into a throw rather than a
-        /// corrupted table -- at the cost of freezing it earlier than the unmemoized engine does.
+        /// freeze mutates <paramref name="word"/>: the cached hash calls <c>GetFrozenHashCode</c>, and
+        /// <c>Word.FreezeImpl</c> leaves <c>SyntacticFeatureStruct</c> unfrozen.
         /// </summary>
         public static AnalysisStateKey PinAndKey(Word word)
         {
