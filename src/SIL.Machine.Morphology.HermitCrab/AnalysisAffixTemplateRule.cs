@@ -38,15 +38,11 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (!input.SyntacticFeatureStruct.IsUnifiable(_template.RequiredSyntacticFeatureStruct))
                 return Enumerable.Empty<Word>();
 
-            if (_morpher.TraceManager.IsTracing)
-                _morpher.TraceManager.BeginUnapplyTemplate(_template, input);
-
-            Word inWord = input.Clone();
-            // Do not allow a final template to unapply if the grammar is not partial
+            // Do not allow a final template to unapply if we don't need to worry about partials
             // and a non-template was last unapplied.
             if (
                 (!_morpher.IsPartial || _morpher.AlwaysEnforceFinalTemplates)
-                && inWord.FinalTemplateState == FinalTemplateState.NonTemplate
+                && input.FinalTemplateState == FinalTemplateState.NonTemplate
                 && _template.IsFinal
             )
             {
@@ -61,6 +57,11 @@ namespace SIL.Machine.Morphology.HermitCrab
                 }
                 return Enumerable.Empty<Word>();
             }
+
+            if (_morpher.TraceManager.IsTracing)
+                _morpher.TraceManager.BeginUnapplyTemplate(_template, input);
+
+            Word inWord = input.Clone();
             inWord.Freeze();
 
             var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);

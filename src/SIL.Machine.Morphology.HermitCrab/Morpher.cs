@@ -512,6 +512,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                             SyntacticFeatureStruct = input.SyntacticFeatureStruct,
                             Stratum = input.Stratum,
                         };
+                        // Don't update Morpher.IsPartial even if lexEntry.IsPartial is true.
+                        // We don't mind if final templates are filtered during analysis in this case.
                         lexEntry.Allomorphs.Add(root);
                         // Point the root allomorph to the lexical pattern in FieldWorks.
                         if (lexicalPattern.Morpheme != null)
