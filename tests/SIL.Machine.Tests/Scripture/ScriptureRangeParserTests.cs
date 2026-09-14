@@ -7,28 +7,27 @@ namespace SIL.Machine.Scripture;
 public class ScriptureRangeParserTests
 {
     [TestCaseSource(nameof(GetCases))]
-    public void GetChapters(string rangeString, Dictionary<string, List<int>> expectedOutput, bool throwsException)
+    public void GetChapters(string rangeString, Dictionary<string, List<int>> expectedOutput, Type? exceptionType)
     {
         var parser = new ScriptureRangeParser();
-        if (!throwsException)
+        if (exceptionType == null)
         {
             Assert.That(parser.GetChapters(rangeString), Is.EquivalentTo(expectedOutput));
         }
         else
         {
-            Assert.Throws<ArgumentException>(() =>
-            {
-                parser.GetChapters(rangeString);
-            });
+            Exception? exception = Assert.Catch(() => parser.GetChapters(rangeString));
+            Assert.That(exception, Is.Not.Null);
+            Assert.That(exception.GetType(), Is.EqualTo(exceptionType));
         }
     }
 
     [TestCaseSource(nameof(GetCases))]
-    public void TryGetChapters(string rangeString, Dictionary<string, List<int>> expectedOutput, bool throwsException)
+    public void TryGetChapters(string rangeString, Dictionary<string, List<int>> expectedOutput, Type? exceptionType)
     {
         var parser = new ScriptureRangeParser();
         bool actual = parser.TryGetChapters(rangeString, out Dictionary<string, List<int>> chapters);
-        if (!throwsException)
+        if (exceptionType == null)
         {
             using (Assert.EnterMultipleScope())
             {
@@ -48,45 +47,45 @@ public class ScriptureRangeParserTests
 
     private static IEnumerable<TestCaseData> GetCases()
     {
-        yield return new TestCaseData("MAL", new Dictionary<string, List<int>> { { "MAL", [] } }, false);
-        yield return new TestCaseData("PS2", new Dictionary<string, List<int>> { { "PS2", [] } }, false);
+        yield return new TestCaseData("MAL", new Dictionary<string, List<int>> { { "MAL", [] } }, null);
+        yield return new TestCaseData("PS2", new Dictionary<string, List<int>> { { "PS2", [] } }, null);
         yield return new TestCaseData(
             "GEN,EXO",
             new Dictionary<string, List<int>> { { "GEN", [] }, { "EXO", [] } },
-            false
+            null
         );
         yield return new TestCaseData(
             "1JN,2JN",
             new Dictionary<string, List<int>> { { "1JN", [] }, { "2JN", [] } },
-            false
+            null
         );
         yield return new TestCaseData(
             "OT",
             Enumerable.Range(1, 39).Select(i => (Canon.BookNumberToId(i), new List<int>())).ToDictionary(),
-            false
+            null
         );
         yield return new TestCaseData(
             "NT",
             Enumerable.Range(40, 27).Select(i => (Canon.BookNumberToId(i), new List<int>())).ToDictionary(),
-            false
+            null
         );
         yield return new TestCaseData(
             "NT,OT",
             Enumerable.Range(1, 66).Select(i => (Canon.BookNumberToId(i), new List<int>())).ToDictionary(),
-            false
+            null
         );
         yield return new TestCaseData(
             "MAT;MRK",
             new Dictionary<string, List<int>> { { "MAT", [] }, { "MRK", [] } },
-            false
+            null
         );
         yield return new TestCaseData(
             "MAT; MRK",
             new Dictionary<string, List<int>> { { "MAT", [] }, { "MRK", [] } },
-            false
+            null
         );
-        yield return new TestCaseData("MAT1,2,3", new Dictionary<string, List<int>> { { "MAT", [1, 2, 3] } }, false);
-        yield return new TestCaseData("MAT1, 2, 3", new Dictionary<string, List<int>> { { "MAT", [1, 2, 3] } }, false);
+        yield return new TestCaseData("MAT1,2,3", new Dictionary<string, List<int>> { { "MAT", [1, 2, 3] } }, null);
+        yield return new TestCaseData("MAT1, 2, 3", new Dictionary<string, List<int>> { { "MAT", [1, 2, 3] } }, null);
         yield return new TestCaseData(
             "MAT-LUK",
             new Dictionary<string, List<int>>
@@ -95,7 +94,7 @@ public class ScriptureRangeParserTests
                 { "MRK", [] },
                 { "LUK", [] },
             },
-            false
+            null
         );
         yield return new TestCaseData(
             "MAT1,2,3;MAT-LUK",
@@ -105,7 +104,7 @@ public class ScriptureRangeParserTests
                 { "MRK", [] },
                 { "LUK", [] },
             },
-            false
+            null
         );
         yield return new TestCaseData(
             "2JN-3JN;EXO1,8,3-5;GEN",
@@ -116,13 +115,9 @@ public class ScriptureRangeParserTests
                 { "2JN", [] },
                 { "3JN", [] },
             },
-            false
+            null
         );
-        yield return new TestCaseData(
-            "1JN 1;1JN 2;1JN 3-5",
-            new Dictionary<string, List<int>> { { "1JN", [] } },
-            false
-        );
+        yield return new TestCaseData("1JN 1;1JN 2;1JN 3-5", new Dictionary<string, List<int>> { { "1JN", [] } }, null);
         yield return new TestCaseData(
             "MAT-ROM;-ACT4-28",
             new Dictionary<string, List<int>>
@@ -132,11 +127,11 @@ public class ScriptureRangeParserTests
                 { "LUK", [] },
                 { "JHN", [] },
                 { "ACT", [1, 2, 3] },
-                { "ROM", new List<int>() },
+                { "ROM", [] },
             },
-            false
+            null
         );
-        yield return new TestCaseData("2JN;-2JN 1", new Dictionary<string, List<int>>(), false);
+        yield return new TestCaseData("2JN;-2JN 1", new Dictionary<string, List<int>>(), null);
         yield return new TestCaseData(
             "NT;OT;-MRK;-EXO",
             Enumerable
@@ -144,7 +139,7 @@ public class ScriptureRangeParserTests
                 .Where(i => i != 2 && i != 41)
                 .Select(i => (Canon.BookNumberToId(i), new List<int>()))
                 .ToDictionary(),
-            false
+            null
         );
         yield return new TestCaseData(
             "NT;-MAT3-5,17;-REV21,22",
@@ -163,33 +158,52 @@ public class ScriptureRangeParserTests
                     };
                 })
                 .ToDictionary(),
-            false
+            null
         );
-        yield return new TestCaseData("MAT-JHN;-MAT-LUK", new Dictionary<string, List<int>> { { "JHN", [] } }, false);
-        yield return new TestCaseData("", new Dictionary<string, List<int>>(), false);
+        yield return new TestCaseData("MAT-JHN;-MAT-LUK", new Dictionary<string, List<int>> { { "JHN", [] } }, null);
+        yield return new TestCaseData("", new Dictionary<string, List<int>>(), null);
 
         //*Throw exceptions
-        yield return new TestCaseData("MAT3-1", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("MRK-MAT", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("MRK;-MRK10-3", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("MAT0-10", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("MAT-FLUM", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("-MAT-FLUM", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("ABC", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("MAT-ABC", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("NT;-ABC-LUK", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("MAT 500", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("MAT 1-500", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("MAT;-MAT 300-500", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("-MRK", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("-MRK 1", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("MRK 2-5;-MRK 1-4", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("MRK 2-5;-MRK 6", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("OT;-MRK-LUK", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("NT;OT;-ABC", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("MAT;-ABC 1", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("NT,OT,-MRK,-EXO", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("OT,MAT1", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("OT,MAT-LUK", new Dictionary<string, List<int>>(), true);
+        yield return new TestCaseData("MAT3-1", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData("MRK-MAT", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData("MRK;-MRK10-3", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData("MAT0-10", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData("MAT-FLUM", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData("-MAT-FLUM", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData("ABC", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData("MAT-ABC", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData("NT;-ABC-LUK", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData("MAT 500", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData("MAT 1-500", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData(
+            "MAT;-MAT 300-500",
+            new Dictionary<string, List<int>>(),
+            typeof(ArgumentException)
+        );
+        yield return new TestCaseData("-MRK", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData("-MRK 1", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData(
+            "MRK 2-5;-MRK 1-4",
+            new Dictionary<string, List<int>>(),
+            typeof(ArgumentException)
+        );
+        yield return new TestCaseData("MRK 2-5;-MRK 6", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData("OT;-MRK-LUK", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData("NT;OT;-ABC", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData("MAT;-ABC 1", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData(
+            "NT,OT,-MRK,-EXO",
+            new Dictionary<string, List<int>>(),
+            typeof(ArgumentException)
+        );
+        yield return new TestCaseData("OT,MAT1", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData("OT,MAT-LUK", new Dictionary<string, List<int>>(), typeof(ArgumentException));
+        yield return new TestCaseData(
+            "MAT;;MRK",
+            new Dictionary<string, List<int>>(),
+            typeof(InvalidOperationException)
+        );
+        yield return new TestCaseData("  ;  ", new Dictionary<string, List<int>>(), typeof(InvalidOperationException));
+        yield return new TestCaseData(";", new Dictionary<string, List<int>>(), typeof(InvalidOperationException));
     }
 }
