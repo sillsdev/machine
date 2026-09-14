@@ -8,20 +8,27 @@ using SIL.Scripture;
 public class ScriptureRangeParser
 {
     private readonly Dictionary<string, int> _bookLengths = new Dictionary<string, int>();
+
     private static readonly Regex CommaSeparatedBooks = new Regex(
         @"^([A-Z\d]{3}|OT|NT)(, ?([A-Z\d]{3}|OT|NT))*$",
         RegexOptions.Compiled
     );
+
     private static readonly Regex BookRange = new Regex(@"^-?[A-Z\d]{3}-[A-Z\d]{3}$", RegexOptions.Compiled);
+
     private static readonly Regex ChapterSelection = new Regex(
         @"^-?[A-Z\d]{3} ?(\d+|\d+-\d+)(, ?(\d+|\d+-\d+))*$",
         RegexOptions.Compiled
     );
 
-    public static Dictionary<string, List<int>> GetChapters(string chapterSelections, ScrVers versification = null)
-    {
-        return new ScriptureRangeParser(versification).GetChapters(chapterSelections);
-    }
+    public static Dictionary<string, List<int>> GetChapters(string chapterSelections, ScrVers versification = null) =>
+        new ScriptureRangeParser(versification).GetChapters(chapterSelections);
+
+    public static bool TryGetChapters(
+        string chapterSelections,
+        ScrVers versification,
+        out Dictionary<string, List<int>> chapters
+    ) => new ScriptureRangeParser(versification).TryGetChapters(chapterSelections, out chapters);
 
     public ScriptureRangeParser(ScrVers versification = null)
     {
@@ -62,10 +69,12 @@ public class ScriptureRangeParser
                     {
                         throw new ArgumentException($"{chapterRangeString} is an invalid chapter range.");
                     }
+
                     if (start == 0 || end > lastChapter || end <= start)
                     {
                         throw new ArgumentException($"{chapterRangeString} is an invalid chapter range.");
                     }
+
                     for (int chapterNum = start; chapterNum <= end; chapterNum++)
                     {
                         chapters.Add(chapterNum);
@@ -78,13 +87,16 @@ public class ScriptureRangeParser
                     {
                         throw new ArgumentException($"{section} is an invalid chapter number.");
                     }
+
                     if (chapterNum > lastChapter)
                     {
                         throw new ArgumentException($"{section} is an invalid chapter number.");
                     }
+
                     chapters.Add(chapterNum);
                 }
             }
+
             if (chapters.Count() == lastChapter)
             {
                 chaptersPerBook[bookName] = new List<int>();
@@ -108,6 +120,7 @@ public class ScriptureRangeParser
             {
                 throw new ArgumentException($"{section} is an invalid book range.");
             }
+
             for (
                 int bookNum = Canon.BookIdToNumber(startAndEnd[0]);
                 bookNum <= Canon.BookIdToNumber(startAndEnd[1]);
@@ -140,6 +153,7 @@ public class ScriptureRangeParser
             {
                 throw new ArgumentException($"{section} is an invalid book ID.");
             }
+
             chaptersPerBook[section] = new List<int>();
         }
 
@@ -171,6 +185,7 @@ public class ScriptureRangeParser
                 "Invalid syntax. If you are providing multiple selections, e.g. a range of books followed by a selection of chapters from a book, separate each selection with a semicolon."
             );
         }
+
         string[] selections = chapterSelections.Split(delimiter);
         foreach (string section in selections.Select(s => s.Trim()))
         {
@@ -226,6 +241,7 @@ public class ScriptureRangeParser
                             chaptersPerBook[bookName] = new List<int>();
                             continue;
                         }
+
                         chaptersPerBook[bookName] = chaptersPerBook[bookName]
                             .Concat(sectionChapters[bookName])
                             .Distinct()
@@ -243,6 +259,21 @@ public class ScriptureRangeParser
                 }
             }
         }
+
         return chaptersPerBook;
+    }
+
+    public bool TryGetChapters(string chapterSelections, out Dictionary<string, List<int>> chapters)
+    {
+        try
+        {
+            chapters = GetChapters(chapterSelections);
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            chapters = null;
+            return false;
+        }
     }
 }
