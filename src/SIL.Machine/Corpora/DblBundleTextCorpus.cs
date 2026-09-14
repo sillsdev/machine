@@ -38,8 +38,11 @@ namespace SIL.Machine.Corpora
                                 doc.Root.Elements("identification").Elements("abbreviation").FirstOrDefault();
                             using (CorporaUtils.VersificationLock.Lock())
                             {
-                                Versification = Scripture.Versification.Table.Implementation.Load(tempFile.Path, abbr);
-                                Scripture.Versification.Table.Implementation.RemoveAllUnknownVersifications();
+                                Versification = SIL.Scripture.Versification.Table.Implementation.Load(
+                                    tempFile.Path,
+                                    abbr
+                                );
+                                SIL.Scripture.Versification.Table.Implementation.RemoveAllUnknownVersifications();
                             }
                         }
                     }
