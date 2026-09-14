@@ -191,6 +191,7 @@ public class ThotFastAlignWordAlignmentModelTests
         using (Assert.EnterMultipleScope())
         {
             Assert.That(model.TrainingAlignmentCount, Is.EqualTo(8));
+            Assert.Throws<ArgumentOutOfRangeException>(() => model.GetTrainingAlignment(8));
             // For a deterministic model, the retained training alignment matches the inference alignment,
             // and it survives the trainer being closed.
             Assert.That(
@@ -232,12 +233,11 @@ public class ThotFastAlignWordAlignmentModelTests
         ITrainer trainer = model.CreateTrainer(corpus);
         await trainer.TrainAsync();
         await trainer.SaveAsync();
-        // When emission is not enabled, retrieval returns a degenerate result rather than raising.
-        WordAlignmentMatrix alignment = model.GetTrainingAlignment(0);
+        // When emission is not enabled, nothing is retained, so there is nothing to retrieve.
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(alignment.ColumnCount, Is.Zero);
-            Assert.That(alignment.RowCount, Is.Zero);
+            Assert.That(model.TrainingAlignmentCount, Is.Zero);
+            Assert.Throws<ArgumentOutOfRangeException>(() => model.GetTrainingAlignment(0));
         }
     }
 

@@ -104,21 +104,12 @@ namespace SIL.Machine.Translation.Thot
             // training, so the corpus the model was trained on must be iterated in full to keep the index in
             // sync; rows outside the requested texts are skipped rather than filtered out.
             var textIdSet = textIds == null ? null : new HashSet<string>(textIds);
-            int alignmentCount = model.TrainingAlignmentCount;
             int i = -1;
             foreach (ParallelTextRow row in corpus.GetRows())
             {
                 i++;
                 if (textIdSet != null && !textIdSet.Contains(row.TextId))
                     continue;
-
-                if (i >= alignmentCount)
-                {
-                    throw new InvalidOperationException(
-                        $"The corpus has more rows than the {alignmentCount} alignments that were retained "
-                            + "during training."
-                    );
-                }
 
                 WordAlignmentMatrix alignment = model.GetTrainingAlignment(i);
                 WordAlignmentMatrix knownAlignment = row.CreateAlignmentMatrix();

@@ -169,6 +169,15 @@ namespace SIL.Machine.Translation.Thot
         {
             CheckDisposed();
 
+            if (n < 0 || n >= TrainingAlignmentCount)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(n),
+                    n,
+                    $"The index must be less than the number of retained training alignments ({TrainingAlignmentCount})."
+                );
+            }
+
             uint iLen = 0;
             uint jLen = 0;
             Thot.swAlignModel_getTrainingAlignment(Handle, (uint)n, IntPtr.Zero, ref iLen, ref jLen);
