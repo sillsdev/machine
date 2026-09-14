@@ -36,6 +36,46 @@ public class ThotCorpusTests
         Assert.That(transductive, Is.EquivalentTo(inference));
     }
 
+    [Test]
+    public void WordAlignCorpus_UntokenizedCorpus_TokenizesBeforeAligning()
+    {
+        // The alignments are sized in tokens, so aligning an untokenized corpus must tokenize it.
+        IParallelTextCorpus corpus = TestHelpers.CreateUntokenizedTestParallelCorpus();
+        List<ParallelTextRow> rows = [.. corpus.WordAlign(ThotWordAlignmentModelType.FastAlign).GetRows()];
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(rows, Has.Count.EqualTo(8));
+            Assert.That(rows[0].SourceSegment, Has.Count.EqualTo(5));
+            Assert.That(rows[0].TargetSegment, Has.Count.EqualTo(6));
+            Assert.That(rows.Any(row => row.AlignedWordPairs.Count > 0), Is.True);
+        }
+    }
+
+    [Test]
+    public void WordAlignCorpus_NoRetainedAlignments_FallsBackToInductive()
+    {
+        IParallelTextCorpus corpus = TestHelpers.CreateTestParallelCorpus();
+        using ThotSymmetrizedWordAlignmentModel model = ThotSymmetrizedWordAlignmentModel.Create(
+            ThotWordAlignmentModelType.FastAlign
+        );
+        using (ITrainer trainer = model.CreateTrainer(corpus))
+        {
+            // The trainer captured the flag at construction, so setting it now retains nothing.
+            model.EmitTrainingAlignments = true;
+            trainer.TrainAsync().GetAwaiter().GetResult();
+            trainer.SaveAsync().GetAwaiter().GetResult();
+        }
+        Assert.That(model.TrainingAlignmentCount, Is.EqualTo(0));
+
+        // Dispatching on the flag would emit nothing; the count falls back to inference.
+        List<ParallelTextRow> rows = [.. corpus.WordAlign(model).GetRows()];
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(rows, Has.Count.EqualTo(8));
+            Assert.That(rows.Any(row => row.AlignedWordPairs.Count > 0), Is.True);
+        }
+    }
+
     [TestCase(ThotWordAlignmentModelType.Eflomal)]
     [TestCase(ThotWordAlignmentModelType.FastAlign)]
     public void WordAlignCorpus_DefaultIsTransductive(ThotWordAlignmentModelType modelType)

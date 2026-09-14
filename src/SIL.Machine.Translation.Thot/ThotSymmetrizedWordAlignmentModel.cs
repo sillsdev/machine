@@ -1,4 +1,7 @@
-﻿namespace SIL.Machine.Translation.Thot
+﻿using System;
+using SIL.Machine.Corpora;
+
+namespace SIL.Machine.Translation.Thot
 {
     public class ThotSymmetrizedWordAlignmentModel : SymmetrizedWordAlignmentModel, ITransductiveWordAlignmentModel
     {
@@ -25,13 +28,29 @@
             }
         }
 
-        public int TrainingAlignmentCount => _directWordAlignmentModel.TrainingAlignmentCount;
+        public int TrainingAlignmentCount =>
+            Math.Min(
+                _directWordAlignmentModel.TrainingAlignmentCount,
+                _inverseWordAlignmentModel.TrainingAlignmentCount
+            );
 
         public static ThotSymmetrizedWordAlignmentModel Create(ThotWordAlignmentModelType modelType) =>
             new ThotSymmetrizedWordAlignmentModel(
                 ThotWordAlignmentModel.Create(modelType),
                 ThotWordAlignmentModel.Create(modelType)
             );
+
+        protected override ITrainer CreateTrainerCore(IParallelTextCorpus corpus) => CreateTrainer(corpus);
+
+        public new ThotSymmetrizedWordAlignmentModelTrainer CreateTrainer(IParallelTextCorpus corpus)
+        {
+            CheckDisposed();
+
+            return new ThotSymmetrizedWordAlignmentModelTrainer(
+                _directWordAlignmentModel.CreateTrainer(corpus),
+                _inverseWordAlignmentModel.CreateTrainer(corpus.Invert())
+            );
+        }
 
         public WordAlignmentMatrix GetTrainingAlignment(int n)
         {

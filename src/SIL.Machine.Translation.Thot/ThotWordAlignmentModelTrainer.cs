@@ -65,13 +65,6 @@ namespace SIL.Machine.Translation.Thot
                 // Eflomal is a single model that runs its own Bayesian IBM1->HMM->fertility cascade.
                 _isEflomal = true;
                 IntPtr eflomal = Thot.CreateAlignmentModel(modelType);
-                if (eflomal == IntPtr.Zero)
-                {
-                    throw new NotSupportedException(
-                        "Eflomal alignment model is not supported by the installed Thot native library. "
-                            + "A Thot build that includes EflomalAlignmentModel (model type 9) is required."
-                    );
-                }
                 if (parameters.EflomalSeed.HasValue)
                     Thot.swAlignModel_setEflomalSeed(eflomal, parameters.EflomalSeed.Value);
                 if (parameters.EflomalNumSamplers.HasValue)
@@ -207,6 +200,12 @@ namespace SIL.Machine.Translation.Thot
 
         public Task TrainAsync(IProgress<ProgressStatus> progress = null, CancellationToken cancellationToken = default)
         {
+            Train(progress, cancellationToken);
+            return Task.CompletedTask;
+        }
+
+        public void Train(IProgress<ProgressStatus> progress = null, CancellationToken cancellationToken = default)
+        {
             // One step to load the corpus, then for each trained model one step to start training plus
             // one per training iteration. When the Eflomal model uses its automatic schedule, the
             // iteration count is derived from the corpus during startTraining (stored as 0 until then),
@@ -288,8 +287,6 @@ namespace SIL.Machine.Translation.Thot
                 Thot.swAlignModel_endTraining(handle);
             }
             Stats.TrainCorpusSize = trainedSegmentCount;
-
-            return Task.CompletedTask;
         }
 
         public virtual void Save()

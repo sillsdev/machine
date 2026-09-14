@@ -176,6 +176,9 @@ namespace SIL.Machine.Translation.Thot
         public static extern uint swAlignModel_getNumSentencePairs(IntPtr swAlignModelHandle);
 
         [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern uint swAlignModel_getNumTrainingAlignments(IntPtr swAlignModelHandle);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
         public static extern double swAlignModel_getTrainingAlignment(
             IntPtr swAlignModelHandle,
             uint n,

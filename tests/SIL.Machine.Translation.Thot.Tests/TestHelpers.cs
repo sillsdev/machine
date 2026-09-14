@@ -27,41 +27,46 @@ public static class TestHelpers
         ];
     }
 
+    private static readonly string[] SourceLines =
+    [
+        "isthay isyay ayay esttay-N .",
+        "ouyay ouldshay esttay-V oftenyay .",
+        "isyay isthay orkingway ?",
+        "isthay ouldshay orkway-V .",
+        "ityay isyay orkingway .",
+        "orkway-N ancay ebay ardhay !",
+        "ayay esttay-N ancay ebay ardhay .",
+        "isthay isyay ayay ordway !",
+    ];
+
+    private static readonly string[] TargetLines =
+    [
+        "this is a test N .",
+        "you should test V often .",
+        "is this working ?",
+        "this should work V .",
+        "it is working .",
+        "work N can be hard !",
+        "a test N can be hard .",
+        "this is a word !",
+    ];
+
     public static ParallelTextCorpus CreateTestParallelCorpus()
     {
-        var srcCorpus = new DictionaryTextCorpus(
-            new MemoryText(
-                "text1",
-                [
-                    Row(1, "isthay isyay ayay esttay-N ."),
-                    Row(2, "ouyay ouldshay esttay-V oftenyay ."),
-                    Row(3, "isyay isthay orkingway ?"),
-                    Row(4, "isthay ouldshay orkway-V ."),
-                    Row(5, "ityay isyay orkingway ."),
-                    Row(6, "orkway-N ancay ebay ardhay !"),
-                    Row(7, "ayay esttay-N ancay ebay ardhay ."),
-                    Row(8, "isthay isyay ayay ordway !"),
-                ]
-            )
-        );
+        return new ParallelTextCorpus(TextCorpus(SourceLines, Row), TextCorpus(TargetLines, Row));
+    }
 
-        var trgCorpus = new DictionaryTextCorpus(
-            new MemoryText(
-                "text1",
-                [
-                    Row(1, "this is a test N ."),
-                    Row(2, "you should test V often ."),
-                    Row(3, "is this working ?"),
-                    Row(4, "this should work V ."),
-                    Row(5, "it is working ."),
-                    Row(6, "work N can be hard !"),
-                    Row(7, "a test N can be hard ."),
-                    Row(8, "this is a word !"),
-                ]
-            )
-        );
+    // The test corpus with each segment left as one untokenized string, as read from disk.
+    public static ParallelTextCorpus CreateUntokenizedTestParallelCorpus()
+    {
+        return new ParallelTextCorpus(TextCorpus(SourceLines, UntokenizedRow), TextCorpus(TargetLines, UntokenizedRow));
+    }
 
-        return new ParallelTextCorpus(srcCorpus, trgCorpus);
+    private static DictionaryTextCorpus TextCorpus(string[] lines, Func<int, string, TextRow> rowFactory)
+    {
+        return new DictionaryTextCorpus(
+            new MemoryText("text1", [.. lines.Select((line, i) => rowFactory(i + 1, line))])
+        );
     }
 
     public static ThotSymmetrizedWordAlignmentModel CreateTrainedModel(
@@ -120,5 +125,10 @@ public static class TestHelpers
     private static TextRow Row(int rowRef, string segment)
     {
         return new TextRow("text1", rowRef) { Segment = segment.Split() };
+    }
+
+    private static TextRow UntokenizedRow(int rowRef, string segment)
+    {
+        return new TextRow("text1", rowRef) { Segment = [segment] };
     }
 }
