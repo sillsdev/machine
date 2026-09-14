@@ -632,9 +632,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (IsFrozen && other.IsFrozen && GetFrozenHashCode() != other.GetFrozenHashCode())
                 return false;
 
-            // We don't need to include SyntacticFeatureStruct because it is uniquely determined
-            // by the combination of _mruleApps and _realizationalFS.  AffixTemplates check
-            // but don't change SyntacticFeatureStruct.
+            // SyntacticFeatureStruct is excluded: during analysis it is a function of _mruleApps and
+            // _realizationalFS -- AnalysisAffixTemplateRule checks a template's required features without
+            // adding them -- and SetRootAllomorph overwrites it at lexical lookup.
             return _shape.ValueEquals(other._shape)
                 && _realizationalFS.ValueEquals(other._realizationalFS)
                 && _nonHeadApps.SequenceEqual(other._nonHeadApps, FreezableEqualityComparer<Word>.Default)

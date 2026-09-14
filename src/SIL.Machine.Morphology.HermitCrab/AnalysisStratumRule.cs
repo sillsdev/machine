@@ -150,17 +150,21 @@ namespace SIL.Machine.Morphology.HermitCrab
                 }
                 // Skip intermediate sources from phonological rules, templates, and morphological rules.
                 mruleOutWord.Source = origInput;
+                AnalysisStateKey key = default;
                 if (mergeEquivalentAnalyses)
                 {
-                    var key = AnalysisStateKey.PinAndKey(mruleOutWord);
+                    key = AnalysisStateKey.PinAndKey(mruleOutWord);
                     if (wordCache.TryGetValue(key, out Word canonicalWord))
                     {
                         canonicalWord.Alternatives.Add(mruleOutWord);
                         continue;
                     }
-                    wordCache[key] = mruleOutWord;
                 }
-                output.Add(mruleOutWord);
+                // Only cache a canonical that made it into the output. Two words can have different keys yet
+                // be Word.ValueEquals (UnappliedRuleCounts also counts realizational rules, which never enter
+                // _mruleApps), and a rejected canonical would swallow every later word with its key.
+                if (output.Add(mruleOutWord) && mergeEquivalentAnalyses)
+                    wordCache[key] = mruleOutWord;
                 if (_morpher.TraceManager.IsTracing)
                     _morpher.TraceManager.EndUnapplyStratum(_stratum, mruleOutWord);
             }
