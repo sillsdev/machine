@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using SIL.Machine.Corpora;
+using SIL.Machine.Tokenization;
 using SIL.Machine.Utils;
 
 namespace SIL.Machine.Translation.Thot
@@ -21,7 +21,7 @@ namespace SIL.Machine.Translation.Thot
             int batchSize = 1024
         )
         {
-            if (model.EmitTrainingAlignments)
+            if (model.TrainingAlignmentCount > 0)
                 return new TransductiveWordAlignParallelTextCorpus(corpus, model);
 
             return CorporaExtensions.WordAlign(corpus, model, batchSize);
@@ -71,6 +71,9 @@ namespace SIL.Machine.Translation.Thot
             {
                 // Training on only the requested texts keeps the training-alignment index in sync with the rows.
                 IParallelTextCorpus corpus = _corpus.FilterTexts(textIds);
+                // The trainer tokenizes internally, so the alignments are sized in tokens; yield the same
+                // tokenized rows for the word pairs to index. A no-op for an already-tokenized corpus.
+                corpus = corpus.Tokenize(WhitespaceTokenizer.Instance);
                 // Training in the generator ties the model's lifetime to reading the rows, at the cost of
                 // training a new model on each iteration.
                 using (var model = ThotSymmetrizedWordAlignmentModel.Create(_modelType))
@@ -79,10 +82,10 @@ namespace SIL.Machine.Translation.Thot
                     // Retain the alignments computed during training so that the corpus can be aligned
                     // without a separate, potentially expensive, inference pass.
                     model.EmitTrainingAlignments = true;
-                    using (ITrainer trainer = model.CreateTrainer(corpus))
+                    using (ThotSymmetrizedWordAlignmentModelTrainer trainer = model.CreateTrainer(corpus))
                     {
-                        trainer.TrainAsync(_progress).GetAwaiter().GetResult();
-                        trainer.SaveAsync().GetAwaiter().GetResult();
+                        trainer.Train(_progress);
+                        trainer.Save();
                     }
 
                     foreach (ParallelTextRow row in GetTransductiveRows(corpus, model, textIds: null))
@@ -100,13 +103,22 @@ namespace SIL.Machine.Translation.Thot
             // The training alignments are keyed by the order in which the sentence pairs were added during
             // training, so the corpus the model was trained on must be iterated in full to keep the index in
             // sync; rows outside the requested texts are skipped rather than filtered out.
-            var textIdList = textIds?.ToList();
-            List<ParallelTextRow> rows = corpus.GetRows().ToList();
-            for (int i = 0; i < rows.Count; i++)
+            var textIdSet = textIds == null ? null : new HashSet<string>(textIds);
+            int alignmentCount = model.TrainingAlignmentCount;
+            int i = -1;
+            foreach (ParallelTextRow row in corpus.GetRows())
             {
-                ParallelTextRow row = rows[i];
-                if (textIdList != null && !textIdList.Contains(row.TextId))
+                i++;
+                if (textIdSet != null && !textIdSet.Contains(row.TextId))
                     continue;
+
+                if (i >= alignmentCount)
+                {
+                    throw new InvalidOperationException(
+                        $"The corpus has more rows than the {alignmentCount} alignments that were retained "
+                            + "during training."
+                    );
+                }
 
                 WordAlignmentMatrix alignment = model.GetTrainingAlignment(i);
                 WordAlignmentMatrix knownAlignment = row.CreateAlignmentMatrix();

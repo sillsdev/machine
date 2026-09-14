@@ -126,7 +126,9 @@ namespace SIL.Machine.Translation.Thot
             _prefFileName = prefFileName;
         }
 
-        public ITrainer CreateTrainer(IParallelTextCorpus corpus)
+        ITrainer IWordAlignmentModel.CreateTrainer(IParallelTextCorpus corpus) => CreateTrainer(corpus);
+
+        public ThotWordAlignmentModelTrainer CreateTrainer(IParallelTextCorpus corpus)
         {
             CheckDisposed();
 
@@ -161,7 +163,7 @@ namespace SIL.Machine.Translation.Thot
 
         public bool EmitTrainingAlignments { get; set; }
 
-        public int TrainingAlignmentCount => (int)Thot.swAlignModel_getNumSentencePairs(Handle);
+        public int TrainingAlignmentCount => (int)Thot.swAlignModel_getNumTrainingAlignments(Handle);
 
         public WordAlignmentMatrix GetTrainingAlignment(int n)
         {
