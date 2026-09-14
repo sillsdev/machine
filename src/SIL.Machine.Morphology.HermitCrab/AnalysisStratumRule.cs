@@ -127,11 +127,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             _prulesRule.Apply(input);
             input.Freeze();
-            IDictionary<Shape, Word> shapeWord = null;
+            IDictionary<AnalysisStateKey, Word> wordCache = null;
             // Don't merge if tracing because it messes up the tracing.
             bool mergeEquivalentAnalyses = _morpher.MergeEquivalentAnalyses && !_morpher.TraceManager.IsTracing;
             if (mergeEquivalentAnalyses)
-                shapeWord = new Dictionary<Shape, Word>(FreezableEqualityComparer<Shape>.Default);
+                wordCache = new Dictionary<AnalysisStateKey, Word>();
 
             // AnalysisStratumRule.Apply should cover the inverse of SynthesisStratumRule.Apply.
             IEnumerable<Word> mruleOutWords = ApplyTemplates(input).Concat(ApplyMorphologicalRules(input));
@@ -150,18 +150,21 @@ namespace SIL.Machine.Morphology.HermitCrab
                 }
                 // Skip intermediate sources from phonological rules, templates, and morphological rules.
                 mruleOutWord.Source = origInput;
+                AnalysisStateKey key = default;
                 if (mergeEquivalentAnalyses)
                 {
-                    Shape shape = mruleOutWord.Shape;
-                    Word canonicalWord;
-                    if (shapeWord.TryGetValue(shape, out canonicalWord))
+                    key = AnalysisStateKey.PinAndKey(mruleOutWord);
+                    if (wordCache.TryGetValue(key, out Word canonicalWord))
                     {
                         canonicalWord.Alternatives.Add(mruleOutWord);
                         continue;
                     }
-                    shapeWord[shape] = mruleOutWord;
                 }
-                output.Add(mruleOutWord);
+                // Only cache a canonical that made it into the output. Two words can have different keys yet
+                // be Word.ValueEquals (UnappliedRuleCounts also counts realizational rules, which never enter
+                // _mruleApps), and a rejected canonical would swallow every later word with its key.
+                if (output.Add(mruleOutWord) && mergeEquivalentAnalyses)
+                    wordCache[key] = mruleOutWord;
                 if (_morpher.TraceManager.IsTracing)
                     _morpher.TraceManager.EndUnapplyStratum(_stratum, mruleOutWord);
             }
