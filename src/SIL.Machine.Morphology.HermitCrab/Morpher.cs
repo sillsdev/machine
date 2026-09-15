@@ -103,7 +103,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <summary>
         /// A Morpher is partial if any of the elements are partial.
         /// </summary>
-        public bool IsPartial { get; set; }
+        public bool IsPartial { get; }
 
         /// <summary>
         /// Enforce final templates even if some of the morphemes were partial.

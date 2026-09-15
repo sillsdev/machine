@@ -462,7 +462,8 @@ public class AffixTemplateTests : HermitCrabTestBase
 
         // Verify early pruning of final template.
         var morpher = new Morpher(TraceManager, Language);
-        morpher.IsPartial = false; // Override for testing purposes.
+        Assert.That(morpher.IsPartial, Is.True);
+        morpher.AlwaysEnforceFinalTemplates = true;
         TraceManager.IsTracing = true;
         AssertMorphsEqual(morpher.ParseWord("sagdv", out object trace));
         Assert.That(
@@ -482,7 +483,6 @@ public class AffixTemplateTests : HermitCrabTestBase
         // Verify correctness when non-partial and non-final.
         verbTemplate.IsFinal = false;
         morpher = new Morpher(TraceManager, Language);
-        morpher.IsPartial = false;
         AssertMorphsEqual(morpher.ParseWord("sagd"));
         AssertMorphsEqual(morpher.ParseWord("sagdv"), "32 PAST NOM");
         AssertMorphsEqual(morpher.ParseWord("sagdvs"), "32 PAST NOM PL");

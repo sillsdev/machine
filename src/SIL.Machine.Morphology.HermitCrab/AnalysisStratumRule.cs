@@ -165,6 +165,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 {
                     // Clear FinalTemplateState to allow clitics.
                     newMruleOutWord = mruleOutWord.Clone();
+                    newMruleOutWord.Source = origInput;
                     newMruleOutWord.FinalTemplateState = FinalTemplateState.None;
                     newMruleOutWord.Freeze();
                 }

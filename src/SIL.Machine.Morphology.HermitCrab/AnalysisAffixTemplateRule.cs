@@ -38,6 +38,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (!input.SyntacticFeatureStruct.IsUnifiable(_template.RequiredSyntacticFeatureStruct))
                 return Enumerable.Empty<Word>();
 
+            if (_morpher.TraceManager.IsTracing)
+                _morpher.TraceManager.BeginUnapplyTemplate(_template, input);
+
             // Do not allow a final template to unapply if we don't need to worry about partials
             // and a non-template was last unapplied.
             if (
@@ -57,9 +60,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                 }
                 return Enumerable.Empty<Word>();
             }
-
-            if (_morpher.TraceManager.IsTracing)
-                _morpher.TraceManager.BeginUnapplyTemplate(_template, input);
 
             Word inWord = input.Clone();
             inWord.Freeze();
