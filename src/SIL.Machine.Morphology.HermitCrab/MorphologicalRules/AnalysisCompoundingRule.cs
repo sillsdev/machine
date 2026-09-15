@@ -130,6 +130,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         outWord.SyntacticFeatureStruct.Add(_rule.HeadRequiredSyntacticFeatureStruct);
                     else if (_rule.OutSyntacticFeatureStruct.IsEmpty)
                         outWord.SyntacticFeatureStruct.Clear();
+                    outWord.FinalTemplateState = FinalTemplateState.NonTemplate;
                     outWord.MorphologicalRuleUnapplied(_rule);
 
                     outWord.Freeze();

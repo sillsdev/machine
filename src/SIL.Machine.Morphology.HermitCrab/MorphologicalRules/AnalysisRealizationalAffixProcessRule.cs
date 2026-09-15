@@ -53,6 +53,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 foreach (Word outWord in _rules[i].Apply(input).RemoveDuplicates())
                 {
                     outWord.RealizationalFeatureStruct = realFS;
+                    outWord.FinalTemplateState = FinalTemplateState.None;
                     outWord.MorphologicalRuleUnapplied(_rule);
 
                     outWord.Freeze();
