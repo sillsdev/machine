@@ -397,20 +397,23 @@ public class AffixTemplateTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("sagvs"), "32 NOM PL");
     }
 
-    [Test]
-    public void SameRuleUsedInMultipleTemplates()
+    [TestCase(true, TestName = "SameRuleUsedInMultipleTemplates_AffixHasRequiredFeatures")]
+    [TestCase(false, TestName = "SameRuleUsedInMultipleTemplates_AffixHasNoRequiredFeatures")]
+    public void SameRuleUsedInMultipleTemplates(bool affixHasRequiredFeatures)
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
 
-        var edSuffix = new AffixProcessRule
+        // Without required features of its own, the only syntactic features ed_suffix carries after
+        // unapplication are whichever template it was reached through, so the two templates yield words
+        // that differ only in SyntacticFeatureStruct -- which Word.ValueEquals does not read.
+        var edSuffix = new AffixProcessRule { Name = "ed_suffix", Gloss = "PAST" };
+        if (affixHasRequiredFeatures)
         {
-            Name = "ed_suffix",
-            Gloss = "PAST",
-            RequiredSyntacticFeatureStruct = FeatureStruct
+            edSuffix.RequiredSyntacticFeatureStruct = FeatureStruct
                 .New(Language.SyntacticFeatureSystem)
                 .Symbol("V", "IV", "TV")
-                .Value,
-        };
+                .Value;
+        }
 
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph

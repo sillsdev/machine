@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using SIL.Machine.Corpora;
 using SIL.Machine.Utils;
 
@@ -7,27 +7,6 @@ namespace SIL.Machine.Translation.Thot;
 [TestFixture]
 public class ThotEflomalWordAlignmentModelTests
 {
-    [OneTimeSetUp]
-    public void RequireEflomalSupport()
-    {
-        bool supported;
-        try
-        {
-            var probe = new ThotWordAlignmentModelTrainer(
-                ThotWordAlignmentModelType.Eflomal,
-                TestHelpers.CreateTestParallelCorpus(),
-                "probe"
-            );
-            probe.Dispose();
-            supported = true;
-        }
-        catch (NotSupportedException)
-        {
-            supported = false;
-        }
-        Assume.That(supported, Is.True, "Eflomal requires a Thot build that includes EflomalAlignmentModel");
-    }
-
     private static ThotEflomalWordAlignmentModel TrainModel(string? prefFileName = null)
     {
         // No iteration counts are specified, so Eflomal derives its schedule automatically from

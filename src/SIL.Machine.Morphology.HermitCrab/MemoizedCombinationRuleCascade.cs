@@ -75,12 +75,10 @@ namespace SIL.Machine.Morphology.HermitCrab
             return results;
         }
 
-        // Mirrors the base's multiApp expansion, including its recurse-before-add ordering: the HashSet
-        // keeps whichever of two comparer-equal results lands first, and Word.ValueEquals ignores
-        // SyntacticFeatureStruct, so which one survives is observable downstream. Delegating to the base
-        // is not possible -- it collects into one globally-deduped set, so a subtree result another branch
-        // already contributed is missing from it, yet must still be recorded here or a later replay of
-        // this key would return too few results.
+        // Mirrors the base's multiApp expansion, including its recurse-before-add ordering. Delegating to
+        // the base is not possible -- it collects into one globally-deduped set, so a subtree result another
+        // branch already contributed is missing from it, yet must still be recorded here or a later replay
+        // of this key would return too few results.
         private List<Word> ApplyRulesRaw(Word input, HashSet<Word> output)
         {
             var local = new List<Word>();
