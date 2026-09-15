@@ -1,0 +1,103 @@
+using NUnit.Framework;
+using SIL.Machine.Morphology.HermitCrab.Conformance.SemanticCoverage;
+
+namespace SIL.Machine.Morphology.HermitCrab;
+
+[TestFixture]
+public sealed class GrammarCoverageLedgerTests
+{
+    private static string RepositoryRoot()
+    {
+        string? directory = TestContext.CurrentContext.TestDirectory;
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory, "conformance", "constructs.txt")))
+                return directory;
+            directory = Directory.GetParent(directory)?.FullName;
+        }
+
+        Assert.Fail("Could not locate the repository root.");
+        return string.Empty;
+    }
+
+    // Every one of the 35 fixtures appears at least once -- a fixture with zero rows here would mean
+    // the per-grammar view has nothing to say about it at all, which is exactly the gap this ledger
+    // exists to close. Layer totals are pinned so a source ledger drifting silently changes this file
+    // in a way CheckedInGrammarCoverageLedgerIsUpToDate below would also catch.
+    //
+    // Surface dropped 191 -> 189 (rows 641 -> 639) on a full --write-counterfactual +
+    // --write-coverage-evidence re-sweep: BoundaryMarker and Gloss no longer reach Evidenced in any
+    // fixture (their sole prior witness, since neither is checked in EvidenceLedger anymore). 33 ->
+    // 35 fixtures (rows 647 -> 664) when rewrite-analysis-feature-neutralization/
+    // synthesis-stratum-render-stale-table were added.
+    [Test]
+    public void CheckedInLedgerCoversAllFixturesWithTheMeasuredLayerCounts()
+    {
+        string root = RepositoryRoot();
+        IReadOnlyList<GrammarCoverageLedger.Row> rows = GrammarCoverageLedger.Read(root);
+
+        int distinctFixtures = rows.Select(r => r.Fixture).Distinct().Count();
+        int surface = rows.Count(r => r.Layer == ObligationLayer.Surface);
+        int @interface = rows.Count(r => r.Layer == ObligationLayer.Interface);
+        int construct = rows.Count(r => r.Layer == ObligationLayer.Construct);
+
+        TestContext.Out.WriteLine(
+            $"rows={rows.Count} fixtures={distinctFixtures} surface={surface} interface={@interface} construct={construct}"
+        );
+
+        // 664 -> 677 with edge-cases/cross-table-root-respelling (9 interface rows, 1 construct row) and
+        // the new cross-table respelling construct claimed by three fixtures (3 construct rows).
+        // 677 -> 676 (construct 96 -> 95) when edge-cases/feature-gating-breadth's rrPast converted
+        // from RealizationalRule to an ordinary MorphologicalRule: the RealizationalAffixProcessRule
+        // claimed-unmapped row (3 claims) is gone, and kalid/kalmuid/kalidmu merge into the fixture's
+        // existing "Syntactic feature agreement (...)" claimed-confirmed row (11 -> 14 claims) instead
+        // of adding a new one -- a net row removed, not replaced.
+        //
+        // 676 -> 672 (interface 392 -> 391, construct 95 -> 92) after edge-cases/morphotactic-attribute-
+        // breadth's and languages/fusional-realizational-morphology's family-blocking fieldworks_producible
+        // conversions (this branch). Interface: LexicalEntry.family drops to 2 present fixtures (from 4),
+        // netting one fewer distinct present-interface row suite-wide (InterfaceWitnessLedgerTests pins
+        // the same -1). Construct: of this fixture's own 8 pre-conversion claimed-construct rows, 3
+        // disappear entirely (RealizationalAffixProcessRule; Syntactic feature agreement, which only its
+        // now-removed family+blockable material claimed; Element deactivation, claimed only by the removed
+        // MPR-group isActive decoy); the other 5 persist with revised claim counts, once the fixture's
+        // words.yaml regained the "exercises:" tags the conversion had silently dropped (see that file's
+        // own "COVERAGE.CSV REGRESSION" note) -- net -3, no category added.
+        //
+        // 672 -> 673 (construct 92 -> 93) after adding "exercises:" tags to
+        // edge-cases/mpr-overwrite-order-dependence (previously zero rows here too -- see
+        // ConformanceFixtureGateTests.EveryFixtureContributesAtLeastOneCoverageRow): its 10 new claims
+        // of "MPR features/groups" collapse into the fixture's one existing claimed-unmapped
+        // Construct row, a net +1 (the row itself, not one per claim).
+        //
+        // 673 -> 675 (interface 391 -> 393) after edge-cases/mpr-gated-exception's own
+        // fieldworks_producible conversion (this session): the same two newly-present interfaces
+        // InterfaceWitnessLedgerTests pins (AffixTemplate.requiredPartsOfSpeech, Slot.morphologicalRules
+        // -- this fixture's first AffixTemplate/Slot) each add one interface-layer row here too.
+        Assert.That(rows, Has.Count.EqualTo(675));
+        Assert.That(distinctFixtures, Is.EqualTo(36));
+        Assert.That(surface, Is.EqualTo(189));
+        Assert.That(@interface, Is.EqualTo(393));
+        Assert.That(construct, Is.EqualTo(93));
+    }
+
+    // This is a JOIN over three already-checked-in ledgers (EvidenceLedger, InterfaceInventoryLedger +
+    // InterfaceWitnessLedger, ConstructClaimCorroboration) -- no reparse of its own, so unlike
+    // InterfaceWitnessLedgerTests's freshness test this one is cheap enough to run on every pass.
+    [Test]
+    public void CheckedInGrammarCoverageLedgerIsUpToDate()
+    {
+        string root = RepositoryRoot();
+        IReadOnlyList<GrammarCoverageLedger.Row> fresh = GrammarCoverageLedger.Compute(root);
+        string freshText = GrammarCoverageLedger.ToText(fresh);
+        string checkedIn = File.ReadAllText(
+            Path.Combine(root, GrammarCoverageLedger.RelativePath.Replace('/', Path.DirectorySeparatorChar))
+        );
+
+        Assert.That(
+            freshText.ReplaceLineEndings("\n"),
+            Is.EqualTo(checkedIn.ReplaceLineEndings("\n")),
+            "regenerate with: hc-conformance --write-coverage-traceability --repository-root ."
+        );
+    }
+}

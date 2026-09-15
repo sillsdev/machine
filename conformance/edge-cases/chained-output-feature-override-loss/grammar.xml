@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Analysis-side OutputHeadFeatures override loss (HC-Rust "exact analysis feature structure"
+     divergence, PanGloss branch fix/exact-analysis-fs).
+
+     This fixture PINS CURRENT C# BEHAVIOUR, a known parse LOSS, not an endorsement of it. See
+     words.yaml for the full write-up, the provenance chain (sillsdev/machine research branch
+     perf/pr494-priority-union, doc/pr494-review.md section 4, test
+     OverrideLoss_TenseFlipFlop_AddAndPriorityUnionLoseTheParse_ExactFindsIt), and the exact word
+     that demonstrates the loss.
+
+     Shape: three suffix rules on one root, applied in strict list order (Linear stratum).
+       mrInner     no RequiredHeadFeatures; OutputHeadFeatures tense=pres.        suffix "-i"
+       mrOuter     no RequiredHeadFeatures; OutputHeadFeatures tense=past.        suffix "-u"
+       mrOutermost RequiredHeadFeatures tense=past; no OutputHeadFeatures.        suffix "-a"
+     mrOutermost is the discriminator that makes the loss OBSERVABLE rather than vacuous: it only
+     admits a derivation that actually passed through mrOuter's own tense=past write, so a
+     structurally-valid four-morph chain (root+mrInner+mrOuter+mrOutermost) either parses as a whole
+     or it does not; there is no unrelated reason it could fail to parse other than the feature
+     bookkeeping under test. -->
+<HermitCrabInput>
+  <Language>
+    <Name>ChainedOutputFeatureOverrideLoss</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <HeadFeatures>
+      <SymbolicFeature id="featTense">
+        <Name>tense</Name>
+        <Symbols>
+          <Symbol id="tnsPres">pres</Symbol>
+          <Symbol id="tnsPast">past</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </HeadFeatures>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cZ"><Representations><Representation>z</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="linear"
+               morphologicalRules="mrInner mrOuter mrOutermost">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- No RequiredHeadFeatures: applies to any verb regardless of its current tense. Writes
+               tense=pres via OutputHeadFeatures. -->
+          <MorphologicalRule id="mrInner" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>inner</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subInner">
+                <MorphologicalInput><PhoneticSequence id="stemInner"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemInner" /><InsertSegments><PhoneticShape>i</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featTense" symbolValues="tnsPres" /></OutputHeadFeatures>
+            <MorphemeId>INNER</MorphemeId>
+            <Gloss>INNER</Gloss>
+          </MorphologicalRule>
+          <!-- No RequiredHeadFeatures either: applies regardless of mrInner's tense=pres write, and
+               OVERWRITES it with tense=past via its own OutputHeadFeatures. This is the write whose
+               analysis-side undo is under test. -->
+          <MorphologicalRule id="mrOuter" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>outer</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subOuter">
+                <MorphologicalInput><PhoneticSequence id="stemOuter"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemOuter" /><InsertSegments><PhoneticShape>u</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featTense" symbolValues="tnsPast" /></OutputHeadFeatures>
+            <MorphemeId>OUTER</MorphemeId>
+            <Gloss>OUTER</Gloss>
+          </MorphologicalRule>
+          <!-- The discriminator: REQUIRES tense=past (only producible by mrOuter's own
+               OutputHeadFeatures) and writes no head feature of its own. Admits a derivation only if
+               it genuinely passed through mrOuter's write. -->
+          <MorphologicalRule id="mrOutermost" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>outermost</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subOutermost">
+                <MorphologicalInput><PhoneticSequence id="stemOutermost"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemOutermost" /><InsertSegments><PhoneticShape>a</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <RequiredHeadFeatures><FeatureValue feature="featTense" symbolValues="tnsPast" /></RequiredHeadFeatures>
+            <MorphemeId>OUTERMOST</MorphemeId>
+            <Gloss>OUTERMOST</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <!-- Untensed root: no AssignedHeadFeatures, so neither mrInner nor mrOuter's own
+               (absent) RequiredHeadFeatures gate is ever at stake for the root itself. -->
+          <LexicalEntry id="eZud" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aZud"><PhoneticShape>zud</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ZUD</MorphemeId>
+            <Gloss>zud</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
