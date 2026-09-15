@@ -1,0 +1,54 @@
+# Regression pin, not a coverage fixture. See grammar.xml's header.
+#
+# The C# engine used to throw System.InvalidOperationException "Failed to compare two elements in the
+# array", inner System.ArgumentException "Only nodes from the same list can be compared", while
+# analysing a word against a MetathesisRule whose leftSwitch names the EARLIER of its two pattern
+# groups -- an internal invariant violation. Fixed upstream by sillsdev/machine#471, so the crash
+# expectation is gone: this fixture now pins that the engine completes the analysis without throwing
+# and reports no analysis for the word.
+#
+# Oracle: the C# founding oracle (conformance/adapters/hc-dotnet-wrapper.sh batch over a Debug build of
+# src/SIL.Machine.Morphology.HermitCrab.Tool). Reduced from edge-cases/feature-system-breadth, where
+# adding a root containing the swap pair turned a passing fixture into this crash.
+#
+# It claims no coverage of its own; everything it declares is covered with real evidence in
+# edge-cases/feature-system-breadth.
+
+language: MetathesisComparisonCrash
+inspired_by: ["synthetic metathesis-ordering crash reduction (not modeling any real language)"]
+sources:
+  - "reduced from conformance/edge-cases/feature-system-breadth while covering MetathesisRule@multipleApplicationOrder"
+requires: [phonology]
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  PERMANENTLY KEEP-ENGINE-ONLY, not a temporary or deferred verdict: this is not merely a missing
+  HCLoader feature but a STRUCTURAL impossibility -- HCLoader's own inversion combined with
+  FieldWorks' own metathesis-rule editor UI (cited below) together guarantee the opposite shape on
+  every real project, so there is no future conversion pending here; this is a genuine engine defect
+  that happens to be permanently unreachable from FieldWorks, not a gap that could ever close.
+  grammar.xml:51 declares leftSwitch="mtLeft" rightSwitch="mtRight" with mtLeft structurally EARLIER
+  in the PhoneticTemplate than mtRight -- the crash trigger this fixture pins is specifically
+  leftSwitch naming the earlier of the rule's two pattern groups (see grammar.xml's own header).
+  LoadMetathesisRule (HCLoader.cs:2103-2161) unconditionally sets LeftSwitchName = "r" (:2122) and
+  names the group at LibLCM's kidxRightSwitch index "r" (:2134-2135) -- so HC's LeftSwitchName is
+  always bound to LibLCM's RIGHT switch, never its left. The engine's own reference loader
+  (XmlLanguageLoader.cs:826-840) maps grammar.xml's leftSwitch/rightSwitch attributes to
+  LeftSwitchName/RightSwitchName directly, with no such inversion. FieldWorks' own UI
+  (Src/LexText/Morphology/MetaRuleFormulaControl.cs, GetNextCell/GetPrevCell ~211-242) hard-codes
+  cell order LeftEnv->LeftSwitch->RightSwitch->RightEnv, so the group a user places in LibLCM's
+  LeftSwitch cell is always structurally EARLIER than the one in the RightSwitch cell. Combined
+  with HCLoader's inversion, that always-earlier group ends up bound to HC's RightSwitchName, and
+  the always-later group to LeftSwitchName -- the opposite of this fixture's shape. A real
+  FieldWorks project can therefore never produce a MetathesisRule whose leftSwitch names the
+  structurally earlier group, so the crash this fixture regression-tests is unreachable from
+  FieldWorks. See fieldworks-producibility.tsv's metathesis switch-name/position inversion
+  loader-gap row.
+words:
+  - word: ti
+    note: >-
+      The root's own shape. Analysing it against the rightToLeftIterative swap is what used to trip the
+      comparison invariant; the swapped form "it" never did. Post-#471 the analysis completes and
+      yields nothing, which is the correct answer -- no rule derives "ti" from this lexicon.
+    expect_fail: true
+    exercises:
+      - "MetathesisRule"

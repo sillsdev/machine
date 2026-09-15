@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>BistratalOverlappingSegmentRepresentation</Name>
+    <PartsOfSpeech><PartOfSpeech id="posAny"><Name>Any</Name></PartOfSpeech></PartsOfSpeech>
+    
+    <CharacterDefinitionTable id="t1">
+      <Name>Inner</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="ca"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cb"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="ci"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cs1"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <CharacterDefinitionTable id="t2">
+      <Name>Outer</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cd"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="ce"><Representations><Representation>e</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cs2"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <Strata>
+      <Stratum characterDefinitionTable="t1">
+        <Name>Inner</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot1">
+            <Allomorphs><Allomorph id="aRoot1"><PhoneticShape>basi</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT1</MorphemeId>
+            <Gloss>root1</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eRoot2">
+            <Allomorphs><Allomorph id="aRoot2"><PhoneticShape>abis</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT2</MorphemeId>
+            <Gloss>root2</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <Stratum characterDefinitionTable="t2">
+        <Name>Outer</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot3">
+            <Allomorphs><Allomorph id="aRoot3"><PhoneticShape>des</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT3</MorphemeId>
+            <Gloss>root3</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eRoot4">
+            <Allomorphs><Allomorph id="aRoot4"><PhoneticShape>sed</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT4</MorphemeId>
+            <Gloss>root4</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
+
