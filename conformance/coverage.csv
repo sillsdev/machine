@@ -6,6 +6,12 @@ BistratalOverlappingSegmentRepresentation,sed,ROOT4|sed,"CharacterDefinitionTabl
 BistratalOverlappingSegmentRepresentation,basi,,"CharacterDefinitionTable: more than one table, one per stratum"
 BistratalOverlappingSegmentRepresentation,abis,,"CharacterDefinitionTable: more than one table, one per stratum"
 BistratalOverlappingSegmentRepresentation,eds,,"CharacterDefinitionTable: more than one table, one per stratum"
+ChainedOutputFeatureOverrideLoss,zud,ZUD|zud,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+ChainedOutputFeatureOverrideLoss,zudi,ZUD+INNER|zudi,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+ChainedOutputFeatureOverrideLoss,zudu,ZUD+OUTER|zudu,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+ChainedOutputFeatureOverrideLoss,zudua,ZUD+OUTER+OUTERMOST|zudua,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+ChainedOutputFeatureOverrideLoss,zudia,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+ChainedOutputFeatureOverrideLoss,zudiua,ZUD+INNER+OUTER+OUTERMOST|zudiua,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 CompoundingBreadth,ka,KA|ka,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,tu,TU|tu,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,katu,KA+TU|katu,CompoundingRule
@@ -94,6 +100,7 @@ FeatureSystemBreadth,ktl,,MetathesisRule
 FeatureSystemBreadth,ts,TS|ts,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 FeatureSystemBreadth,salk,,AffixProcessRule: prefix/suffix/circumfix/infix
 FeatureSystemBreadth,tal,,Element deactivation (isActive) across loader collections
+FinalTemplatePartialDiscriminators,dakfa,DAK+FINTAGA|dakfa,Affix template slots (obligatory/disjunctive/ordering)
 FreeFluctuatingAllomorphPair,pol,ALT|pol,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,pel,ALT|pel,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,kits,ORD+SSFX|kits,Disjunctive allomorphs / free-fluctuation
@@ -220,6 +227,7 @@ SynthesisStratumRenderStaleTable,j,ROOTCROSS|,CharacterDefinitionTable: cross-ta
 SynthesisStratumRenderStaleTable,k,ROOTSAME|k,"CharacterDefinitionTable: more than one table, one per stratum"
 SynthesisStratumRenderStaleTable,w,,"CharacterDefinitionTable: more than one table, one per stratum"
 SynthesisStratumRenderStaleTable,i,,"CharacterDefinitionTable: more than one table, one per stratum"
+Mbalantic,pakolosa,PFXA+KOLO+SFXA|pakolosa,Affix template slots (obligatory/disjunctive/ordering)
 TruncateRulesProbe,sag,|sag,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,sas,|sas,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,bubibi,|bubibi,AffixProcessRule: subtraction/truncation

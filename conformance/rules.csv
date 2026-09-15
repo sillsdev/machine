@@ -1,5 +1,8 @@
 language,rule_id,words
 AlphaVariableNameCollision,prDoubleAlpha,ia
+ChainedOutputFeatureOverrideLoss,mrInner,zudi;zudiua
+ChainedOutputFeatureOverrideLoss,mrOuter,zudu;zudua;zudiua
+ChainedOutputFeatureOverrideLoss,mrOutermost,zudua;!zudia;zudiua
 CompoundingBreadth,crDecoy,!kaptu
 CompoundingBreadth,crJoin,katu;!katumi
 CompoundingBreadth,crNever,!kamtu
@@ -36,6 +39,15 @@ FeatureSystemBreadth,prDecNc,
 FeatureSystemBreadth,prDecoy,
 FeatureSystemBreadth,prHighTrigger,
 FeatureSystemBreadth,prRaise,ik;ikt
+FinalTemplatePartialDiscriminators,mrFinTagA,dakfa;daknagafa
+FinalTemplatePartialDiscriminators,mrFinTagB,pilnbtbfb;pilfb;pilfbvb
+FinalTemplatePartialDiscriminators,mrGate1,!dakfaga;daknagafa
+FinalTemplatePartialDiscriminators,mrGate2Complete,pilnbtbfb
+FinalTemplatePartialDiscriminators,mrGate2Partial,!pilnbvbfb;pilfbvb
+FinalTemplatePartialDiscriminators,mrGate3Partial,nibgi
+FinalTemplatePartialDiscriminators,mrNonFinTagA,daknagafa
+FinalTemplatePartialDiscriminators,mrNonFinTagB,pilnbtbfb
+FinalTemplatePartialDiscriminators,mrZTagSlot,
 FreeFluctuatingAllomorphPair,ruleS,kits;!kots
 N2-DefaultSymbol,pr1,!bdt
 IsActiveBreadth,mrBoundaryPfx,mo+kul
@@ -97,6 +109,10 @@ StrRepIdentityProbe,rulePfx,pat;mat;mupat;mumat;!mwpat;mwuta;!muuta;ndpat;imat
 SubruleMorphosyntacticGating,mrDerive,bat
 SubruleMorphosyntacticGating,prGate,pat;bat
 SynthesisStratumRenderStaleTable,prItoJ,j
+Mbalantic,mrPfxA,pakolosa;!pakolola
+Mbalantic,mrPfxB,takolola;!takolosa
+Mbalantic,mrSfxA,pakolosa;!takolosa
+Mbalantic,mrSfxB,takolola;!pakolola
 TruncateRulesProbe,mruleTruncLead,ag;as;gas
 TruncateRulesProbe,mruleTruncOptIns,gbubibi;gas
 TruncateRulesProbe,mruleTruncTrail,sa
