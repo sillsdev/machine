@@ -16,6 +16,10 @@ Reopen only for a corpus with the reported pathological final-template interleav
 morphemes, or with a proved narrower per-state partiality condition. Measure real prunes before shipping.
 
 ## Addendum 2026-09-03
-Superseded in part: `docs/pr491-final-template-prune-upper-bound.md` measures the same prune with the partiality
-guard lifted at 8-33x on Mbugwe and Sena with identical analysis sets. The guard, not the mechanism, is what made
-it inert, and partial lexical entries can be excluded from the guard by proof. Reopen per that document.
+Superseded in part. The same prune, measured with the partiality guard lifted, is 8-33x on Mbugwe and Sena with
+identical analysis sets (298x on the single heaviest Sena word). The guard, not the mechanism, is what made it
+inert: partial *lexical entries* can never rescue a pruned branch, because synthesis applies no template to a
+partial root and then fails the candidate with `PartialParse`, so a rules-only, per-stratum guard is strictly
+stronger and still sound. Reopen on that basis rather than on the corpus counts above. The full measurement
+record is `docs/pr491-final-template-prune-upper-bound.md` on the `perf/hc-optimization-archive` branch, which
+is outside this docs set.

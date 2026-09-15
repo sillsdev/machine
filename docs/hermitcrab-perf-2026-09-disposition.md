@@ -11,11 +11,14 @@ its records. Re-focus on sillsdev/machine PR #491 and on grammar hygiene, which 
 - Only one mechanism (deferred template clone, 1.054x) was ever timed alone. The package figure (1.76x Amharic,
   1.83x Mbugwe) cannot be attributed to its parts (`hermitcrab-perf-2026-09-counts.md`).
 - The parity gate that blessed the package compared morph counts, not analyses: `MorpherTests.WordAnalysisSignature`
-  joins `Morpheme.Id`, which is empty for every FLEx export used (no `<MorphemeId>` element). See
-  `pr491-final-template-prune-upper-bound.md`, "Signature caveat".
-- Meanwhile PR #491's mechanism, measured with the guard lifted, is 8–33x on Mbugwe and Sena with identical analysis
-  sets (same document). The branch is worth keeping only where #491 cannot fire (Amharic-shaped grammars), and only
-  in its most reviewable piece.
+  joins `Morpheme.Id`, which comes from `<MorphemeId>` and is empty for every FLEx export used. On Sena, Mbugwe
+  and Amharic the signature therefore degenerates to a morph count per analysis, so every earlier "exact parity"
+  claim on those grammars verified counts, not analyses. Anything re-measured on them needs a
+  gloss + allomorph-index + syntactic-feature-structure signature instead.
+- Meanwhile PR #491's mechanism, measured with the guard lifted (`AlwaysEnforceFinalTemplates = true`), is
+  8–33x on Mbugwe and Sena with identical analysis sets, and 298x on the single heaviest Sena word; Amharic
+  barely moves because its per-word cost is not in the template interleaving. The branch is worth keeping only
+  where #491 cannot fire (Amharic-shaped grammars), and only in its most reviewable piece.
 
 ## Disposition per mechanism
 
@@ -89,9 +92,25 @@ branches remain.
 
 Records in this directory: `hermitcrab-optimization-ledger.md` (22 attempts), `hermitcrab-perf-2026-09-counts.md`
 (count round), `hermitcrab-probe-design.md`, `optimizations/*` and `rejected-optimizations/*` (one record per
-mechanism), `pr491-final-template-prune-upper-bound.md`, `pr491-review-draft.md`, `pangloss-final-template-prune-handoff.md`,
-`pangloss-hc-rust-speedups-handoff-2026-09-02.md` (archived, section 4 superseded), `superpowers/plans/2026-09-02-hermitcrab-optimization-round.md`
-(the execution plan), and this file.
+mechanism), `superpowers/plans/2026-09-02-hermitcrab-optimization-round.md` (the execution plan), and this file.
+
+Four further records of the round were deliberately left out of this set, because they concern another author's
+open PR and a sibling project rather than this round's own mechanisms. They are described here so that nothing
+depends on reading them, and they remain on the `perf/hc-optimization-archive` branch:
+
+- `pr491-final-template-prune-upper-bound.md` — the measurement record behind the 8–33x figures above: PR #491's
+  prune with its partiality guard lifted, per-grammar wall time, affix-rule applications and template entries,
+  plus the analysis-set parity check and the signature caveat quoted earlier. It also proves the guard
+  over-broad, since partial *lexical entries* can never rescue a pruned branch (only partial rules can, and only
+  at or below the template's stratum).
+- `pr491-review-draft.md` — the review comment drafted from that record: the win with the guard lifted, a
+  duplicate-parse bug when enforcement is active (an all-slots-skipped clone differing from its input only by
+  `FinalTemplateState` survives the `ApplyTemplates` equality filter), the rules-only per-stratum guard, and
+  state transitions that run even while the prune is disabled and cost memo hits.
+- `pangloss-final-template-prune-handoff.md` — the same prune handed to PanGloss (the Rust port) for
+  implementation there.
+- `pangloss-hc-rust-speedups-handoff-2026-09-02.md` — speedup leads handed the other way, from PanGloss into
+  this round. Archived; its section 4 is superseded.
 
 Privacy: word forms and glosses from the private grammars appear only as word-list indices and rule ids in these
 records. The raw A/B logs (which contain word forms) live only in the session scratchpad and are not to be
