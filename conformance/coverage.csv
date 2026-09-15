@@ -197,6 +197,7 @@ RightToLeftAnchorEnvironment,aea,,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,eaaa,,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,eeae,ROOT3|eeae,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,eeee,,RewriteRule direction (Dir): right-to-left
+SharedTemplateUnconstrainedSuffix,mivd,NROOT+IVERB+PAST|mivd,Affix template slots (obligatory/disjunctive/ordering)
 StemNameRestrictedRootAllomorph,tam,ROOT|tam,Stem names
 StemNameRestrictedRootAllomorph,kap,,Stem names
 StemNameRestrictedRootAllomorph,kapom,ROOT+PERS1|kapom,Stem names

@@ -101,6 +101,8 @@ ProcessMorphologyInPlaceMutation,mrAblaut,a
 RewriteAnalysisFeatureNeutralization,prPtoD,d
 RightToLeftAnchorEnvironment,prRtlAnchor,aae;ae;eeae
 RightToLeftAnchorEnvironment,prSpread,eeae
+SharedTemplateUnconstrainedSuffix,mrIverb,mivd
+SharedTemplateUnconstrainedSuffix,mrPast,mivd;tid
 IterativeEpenthesisCascadeProbe,prule4,
 StemNameRestrictedRootAllomorph,mrPers1,kapom
 StemNameRestrictedRootAllomorph,mrPers2,tamur
