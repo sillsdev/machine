@@ -92,6 +92,70 @@ public class AnalysisSyntacticFeatureStructTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("zudzit"), "smRoot r3 r2");
     }
 
+    /// <summary>
+    /// Four suffix rules over three values of head.pers. Rule b is the shape that matters: an Out with no
+    /// Required, which neither Add nor PriorityUnion strips from the FS, so the value b wrote is carried
+    /// backwards as though it constrained b's input.
+    /// </summary>
+    private void AddOutWithoutRequiredGrammar()
+    {
+        FeatureStruct none = FeatureStruct.New().Value;
+        FeatureStruct root = FeatureStruct
+            .New(Language.SyntacticFeatureSystem)
+            .Symbol("V")
+            .Feature(Head)
+            .EqualTo(head => head.Feature("pers").EqualTo("1"))
+            .Value;
+        AddEntry("zutRoot", root, Morphophonemic, "zut");
+        Morphophonemic.MorphologicalRules.Add(MakeSuffixRule("a", Pers("1"), Pers("3"), Table3, "i"));
+        Morphophonemic.MorphologicalRules.Add(MakeSuffixRule("b", none, Pers("2"), Table3, "u"));
+        Morphophonemic.MorphologicalRules.Add(MakeSuffixRule("c", Pers("2"), Pers("3"), Table3, "y"));
+        Morphophonemic.MorphologicalRules.Add(MakeSuffixRule("d", Pers("3"), none, Table3, "o"));
+    }
+
+    /// <summary>
+    /// Control: the chains both folds find, so a failure below is specific to the word, not the grammar.
+    /// </summary>
+    [Test]
+    public void ParseWord_OutWithoutRequired_ShorterChainsFound()
+    {
+        AddOutWithoutRequiredGrammar();
+
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        AssertMorphsEqual(morpher.ParseWord("zut"), "zutRoot");
+        AssertMorphsEqual(morpher.ParseWord("zuti"), "zutRoot a");
+        AssertMorphsEqual(morpher.ParseWord("zutiu"), "zutRoot a b");
+        AssertMorphsEqual(morpher.ParseWord("zutuyo"), "zutRoot b c d");
+    }
+
+    /// <summary>
+    /// root(1) --a--> 3 --b--> 2 --c--> 3 --d--> 3. Un-applying d leaves 3 on the FS and c then requires 2:
+    /// Add unions them to {2, 3}, which still overlaps a's Out of 3, so the word survives; PriorityUnion
+    /// replaces, leaving 2, and a is gated out.
+    /// </summary>
+    [Test]
+    public void ParseWord_OutWithoutRequired_FullChainFound()
+    {
+        AddOutWithoutRequiredGrammar();
+
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        AssertMorphsEqual(morpher.ParseWord("zutiuyo"), "zutRoot a b c d");
+    }
+
+    /// <summary>
+    /// The same chain without the outermost rule: root(1) --a--> 3 --b--> 2 --c--> 3. Nothing writes 3 one
+    /// layer out, so the FS is 2 alone and a is gated out under either fold. Only stripping the paths b's
+    /// Out defines finds this word.
+    /// </summary>
+    [Test]
+    public void ParseWord_OutWithoutRequired_ChainWithoutOutermostRuleFound()
+    {
+        AddOutWithoutRequiredGrammar();
+
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        AssertMorphsEqual(morpher.ParseWord("zutiuy"), "zutRoot a b c");
+    }
+
     private Word MakeWord(string shape, FeatureStruct syntacticFS)
     {
         var word = new Word(Morphophonemic, Morphophonemic.CharacterDefinitionTable.Segment(shape))
@@ -126,6 +190,13 @@ public class AnalysisSyntacticFeatureStructTests : HermitCrabTestBase
         );
         return rule;
     }
+
+    private FeatureStruct Pers(string value) =>
+        FeatureStruct
+            .New(Language.SyntacticFeatureSystem)
+            .Feature(Head)
+            .EqualTo(head => head.Feature("pers").EqualTo(value))
+            .Value;
 
     private FeatureStruct Pos(params string[] symbols) =>
         FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol(symbols).Value;
