@@ -1,0 +1,40 @@
+language: DiscontinuousMorphEnvironment
+inspired_by: ["synthetic allomorph environment and infixation probe (not modeling any real language)"]
+sources:
+  - "Allomorph.IsWordValid contiguous-piece validation, Allomorph.cs:110-125"
+requires: []
+# FieldWorks verdict relies on the task-provided HCLoader.cs facts; that external source is not in
+# this worktree. MoStemAllomorph.PhoneEnvRC and MoAffixAllomorph.PositionRS cover these constructs.
+fieldworks_producible: true
+words:
+  - word: dom
+    note: Unrestricted bare control root; no infix and no environment constraint.
+    parses:
+      - signature: "CTRL|dom"
+        gloss: control
+        rules: []
+  - word: zabu
+    note: The constrained root plus the suffix supplies u immediately to the right of the root's single piece.
+    parses:
+      - signature: "GOOD+SUFG|zabu"
+        gloss: good-root-u
+        rules: [mrSuffixGood]
+  - word: zuaubu
+    note: The good infix splits the root into three pieces; each piece is immediately followed by u, so the environment holds at every piece.
+    parses:
+      - signature: "GOOD+GINF+SUFG|zuaubu"
+        gloss: good-root-infixed-u
+        rules: [mrGoodInfix, mrSuffixGood]
+  - word: zuexbu
+    note: >-
+      Discriminating rejection: the merged root span has u at its right edge from the suffix, but
+      the middle root piece is followed by x at an inner boundary. A single merged-span check would
+      accept this; per-piece validation rejects it.
+    expect_fail: true
+    blocked_by: [mrBadInfix]
+  - word: zuixdu
+    note: >-
+      Discriminating rejection: like zuexbu, the first and last merged edges see u, while the middle
+      root piece is followed by x. This independent root confirms the failure is per-piece, not lexical.
+    expect_fail: true
+    blocked_by: [mrBadInfix]
