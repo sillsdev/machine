@@ -7,8 +7,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 
 /// <summary>
 /// How analysis (un-application) tracks the syntactic feature structure of the stem it is looking for.
-/// Synthesis computes PriorityUnion(Unify(stem, rule.Required), rule.Out), so after un-applying a rule the
-/// stem must unify with rule.Required: the analysis FS is narrowed with PriorityUnion, not widened with Add.
+/// Synthesis computes PriorityUnion(Unify(stem, rule.Required), rule.Out), and analysis inverts it: the paths
+/// rule.Out writes are stripped off the FS, and what is left is unified with rule.Required.
 /// </summary>
 public class AnalysisSyntacticFeatureStructTests : HermitCrabTestBase
 {
@@ -16,8 +16,8 @@ public class AnalysisSyntacticFeatureStructTests : HermitCrabTestBase
 
     /// <summary>
     /// Three category-changing derivational rules: N -> V, V -> N and a third rule N -> V. After un-applying
-    /// the first two, the stem must be N. With Add the FS would be {N, V} and the third rule (Out = V) would
-    /// be attempted; with PriorityUnion it is N and the third rule is filtered out before pattern matching.
+    /// the first two, the stem must be N: with Add the FS would be {N, V} and the third rule (Out = V) would
+    /// be attempted, but the inverse fold leaves N and filters it out before pattern matching.
     /// </summary>
     [Test]
     public void AnalysisAffixProcessRule_CategoryChangeChain_RequiredOverridesAccumulatedPos()

@@ -914,6 +914,53 @@ public class FeatureStructTests
     }
 
     [Test]
+    public void Restrict()
+    {
+        var featSys = new FeatureSystem
+        {
+            new SymbolicFeature("a", new FeatureSymbol("a1"), new FeatureSymbol("a2")),
+            new SymbolicFeature("b", new FeatureSymbol("b1"), new FeatureSymbol("b2")),
+            new ComplexFeature("cx"),
+        };
+
+        // a path is removed whatever its value, which is what separates Restrict from Subtract
+        FeatureStruct fs = FeatureStruct.NewMutable(featSys).Symbol("a1", "a2").Symbol("b1").Value;
+        fs.Restrict(FeatureStruct.New(featSys).Symbol("a1").Value);
+        Assert.That(fs.ValueEquals(FeatureStruct.New(featSys).Symbol("b1").Value), Is.True);
+
+        fs = FeatureStruct.NewMutable(featSys).Symbol("a1", "a2").Symbol("b1").Value;
+        fs.Subtract(FeatureStruct.New(featSys).Symbol("a1").Value);
+        Assert.That(fs.ValueEquals(FeatureStruct.New(featSys).Symbol("a2").Symbol("b1").Value), Is.True);
+
+        // a path this feature structure does not define is ignored
+        fs = FeatureStruct.NewMutable(featSys).Symbol("b1").Value;
+        fs.Restrict(FeatureStruct.New(featSys).Symbol("a1").Value);
+        Assert.That(fs.ValueEquals(FeatureStruct.New(featSys).Symbol("b1").Value), Is.True);
+
+        // nested paths are restricted in place
+        fs = FeatureStruct.NewMutable(featSys).Feature("cx").EqualTo(cx => cx.Symbol("a1").Symbol("b1")).Value;
+        fs.Restrict(FeatureStruct.New(featSys).Feature("cx").EqualTo(cx => cx.Symbol("a1")).Value);
+        Assert.That(
+            fs.ValueEquals(FeatureStruct.New(featSys).Feature("cx").EqualTo(cx => cx.Symbol("b1")).Value),
+            Is.True
+        );
+
+        // a nested feature structure left empty is removed with its feature
+        fs = FeatureStruct.NewMutable(featSys).Feature("cx").EqualTo(cx => cx.Symbol("a1")).Symbol("b1").Value;
+        fs.Restrict(FeatureStruct.New(featSys).Feature("cx").EqualTo(cx => cx.Symbol("a1")).Value);
+        Assert.That(fs.ValueEquals(FeatureStruct.New(featSys).Symbol("b1").Value), Is.True);
+
+        // restricting by itself removes everything
+        fs = FeatureStruct.NewMutable(featSys).Symbol("a1").Feature("cx").EqualTo(cx => cx.Symbol("b1")).Value;
+        fs.Restrict(fs);
+        Assert.That(fs.IsEmpty, Is.True);
+
+        fs = FeatureStruct.NewMutable(featSys).Symbol("a1").Value;
+        fs.Freeze();
+        Assert.That(() => fs.Restrict(FeatureStruct.New(featSys).Symbol("a1").Value), Throws.InvalidOperationException);
+    }
+
+    [Test]
     public void BitArray()
     {
         // Parts of Speech for Ket has more than 64 values.
