@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.FiniteState
 {
@@ -22,7 +24,8 @@ namespace SIL.Machine.FiniteState
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
             IList<TagMapCommand> initCmds,
-            ISet<int> initAnns
+            ISet<int> initAnns,
+            bool allMatches
         )
         {
             Stack<DeterministicFsaTraversalInstance<TData, TOffset>> instStack = InitializeStack(
@@ -33,6 +36,13 @@ namespace SIL.Machine.FiniteState
             );
 
             var curResults = new List<FstResult<TData, TOffset>>();
+            var states = new HashSet<Tuple<State<TData, TOffset>, int>>(
+                AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int>>(
+                    StateKeyEquals,
+                    StateKeyGetHashCode
+                )
+            );
+
             while (instStack.Count != 0)
             {
                 DeterministicFsaTraversalInstance<TData, TOffset> inst = instStack.Pop();
@@ -51,6 +61,15 @@ namespace SIL.Machine.FiniteState
                             )
                         )
                         {
+                            if (!allMatches)
+                            {
+                                var stateKey = Tuple.Create(ni.State, ni.AnnotationIndex);
+                                if (states.Contains(stateKey))
+                                {
+                                    continue;
+                                }
+                                states.Add(stateKey);
+                            }
                             instStack.Push(ni);
                         }
 
@@ -66,6 +85,23 @@ namespace SIL.Machine.FiniteState
             CheckAcceptingStartState(initAnns, initRegisters, curResults);
 
             return curResults;
+        }
+
+        private bool StateKeyEquals(
+            Tuple<State<TData, TOffset>, int> x,
+            Tuple<State<TData, TOffset>, int> y
+        )
+        {
+            return x.Item1.Equals(y.Item1)
+                && x.Item2.Equals(y.Item2);
+        }
+
+        private int StateKeyGetHashCode(Tuple<State<TData, TOffset>, int> m)
+        {
+            int code = 23;
+            code = code * 31 + m.Item1.GetHashCode();
+            code = code * 31 + m.Item2.GetHashCode();
+            return code;
         }
 
         protected override DeterministicFsaTraversalInstance<TData, TOffset> CreateInstance()

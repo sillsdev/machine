@@ -24,7 +24,8 @@ namespace SIL.Machine.FiniteState
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
             IList<TagMapCommand> initCmds,
-            ISet<int> initAnns
+            ISet<int> initAnns,
+            bool allMatches
         )
         {
             Stack<NondeterministicFsaTraversalInstance<TData, TOffset>> instStack = InitializeStack(
@@ -35,6 +36,12 @@ namespace SIL.Machine.FiniteState
             );
 
             var curResults = new List<FstResult<TData, TOffset>>();
+            var states = new HashSet<Tuple<State<TData, TOffset>, int>>(
+                AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int>>(
+                    StateKeyEquals,
+                    StateKeyGetHashCode
+                )
+            );
             var traversed = new HashSet<Tuple<State<TData, TOffset>, int, Register<TOffset>[,]>>(
                 AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int, Register<TOffset>[,]>>(
                     KeyEquals,
@@ -74,6 +81,15 @@ namespace SIL.Machine.FiniteState
                                 arc,
                                 curResults
                             );
+                            if (!allMatches)
+                            {
+                                var stateKey = Tuple.Create(newInst.State, newInst.AnnotationIndex);
+                                if (states.Contains(stateKey))
+                                {
+                                    continue;
+                                }
+                                states.Add(stateKey);
+                            }
                             Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(
                                 newInst.State,
                                 newInst.AnnotationIndex,
@@ -109,6 +125,15 @@ namespace SIL.Machine.FiniteState
                             )
                             {
                                 newInst.Visited.Clear();
+                                if (!allMatches)
+                                {
+                                    var stateKey = Tuple.Create(newInst.State, newInst.AnnotationIndex);
+                                    if (states.Contains(stateKey))
+                                    {
+                                        continue;
+                                    }
+                                    states.Add(stateKey);
+                                }
                                 Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(
                                     newInst.State,
                                     newInst.AnnotationIndex,
@@ -135,6 +160,22 @@ namespace SIL.Machine.FiniteState
             CheckAcceptingStartState(initAnns, initRegisters, curResults);
 
             return curResults;
+        }
+        private bool StateKeyEquals(
+             Tuple<State<TData, TOffset>, int> x,
+             Tuple<State<TData, TOffset>, int> y
+         )
+        {
+            return x.Item1.Equals(y.Item1)
+                && x.Item2.Equals(y.Item2);
+        }
+
+        private int StateKeyGetHashCode(Tuple<State<TData, TOffset>, int> m)
+        {
+            int code = 23;
+            code = code * 31 + m.Item1.GetHashCode();
+            code = code * 31 + m.Item2.GetHashCode();
+            return code;
         }
 
         protected override NondeterministicFsaTraversalInstance<TData, TOffset> CreateInstance()
