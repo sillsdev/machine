@@ -37,10 +37,7 @@ namespace SIL.Machine.FiniteState
 
             var curResults = new List<FstResult<TData, TOffset>>();
             var states = new HashSet<Tuple<State<TData, TOffset>, int>>(
-                AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int>>(
-                    StateKeyEquals,
-                    StateKeyGetHashCode
-                )
+                AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int>>(StateKeyEquals, StateKeyGetHashCode)
             );
 
             while (instStack.Count != 0)
