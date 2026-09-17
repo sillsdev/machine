@@ -1,0 +1,44 @@
+name: Feature request
+description: Propose a behavior or API improvement for SIL Machine
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and users
+      description: Who needs this and what cannot they do today?
+    validations:
+      required: true
+  - type: textarea
+    id: use_cases
+    attributes:
+      label: Use cases
+      description: Give concrete workflows and representative inputs.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior or API
+      description: Describe observable behavior; include compatibility concerns.
+    validations:
+      required: true
+  - type: textarea
+    id: non_goals
+    attributes:
+      label: Non-goals and deferred work
+      description: State what this request does not include.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria and tests
+      description: List observable outcomes, edge cases, and the test strategy.
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Compatibility, performance, and platform constraints
+      description: Include package/API, resource, OS, or runtime constraints.

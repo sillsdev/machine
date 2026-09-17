@@ -1,0 +1,38 @@
+name: Port from machine.py
+description: Track relevant behavior to port from sillsdev/machine.py
+title: "Port: "
+labels:
+  - porting
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A merged PR normally creates this issue automatically. Use this form when no generated issue exists.
+  - type: input
+    id: source_pr
+    attributes:
+      label: machine.py source PR or commit
+      description: Full GitHub URL.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Behavior to port
+      description: Describe the relevant behavior and what is not relevant here.
+    validations:
+      required: true
+  - type: textarea
+    id: target
+    attributes:
+      label: Target projects and compatibility
+      description: Name verified target projects/APIs, platform implications, and compatibility risks.
+    validations:
+      required: true
+  - type: textarea
+    id: tests
+    attributes:
+      label: Evidence and tests
+      description: Link source validation and propose target regression/acceptance tests. Mark unknowns explicitly.
+    validations:
+      required: true
