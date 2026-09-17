@@ -1,0 +1,24 @@
+---
+name: hermitcrab-review
+description: Review HermitCrab morphology changes for analysis equivalence, memoization-key completeness, retained-memory bounds, parallelism, and hot-path cost.
+applyTo: "src/SIL.Machine.Morphology.HermitCrab/**/*.cs"
+---
+
+- Treat analysis output as the primary contract. A faster parse, more memo hits, or a
+  successful build does not prove equivalent analyses.
+- When changing analysis-side rules or state, re-audit every field the rule reads
+  against `AnalysisStateKey`. Check freezing, cached hashes, mutable dictionaries,
+  equality, rule counts, non-head counts, feature structures, and stratum identity.
+- Memoized results must represent fully expanded subtrees. Check replay prefixes,
+  deduplication, empty/nogood entries, in-flight recursion, and the separation between
+  sequential and parallel scopes.
+- Preserve the per-parse scope rule and inspect the
+  100,000-entry/1,000,000-retained-word backstops when changing storage or result lists.
+  Do not weaken a bound without measured evidence and tests.
+- Inspect allocations and retained object lifetimes only in changed inner loops. If the
+  change claims a performance improvement, require a reproducible benchmark or measured
+  artifact in addition to semantic regression tests.
+- Exercise sequential and parallel behavior where the changed path supports both, and
+  test cancellation/disposal if a boundary is asynchronous.
+- Run focused HermitCrab tests and the normal release test/build checks. State any
+  unavailable benchmark, large-corpus, or platform evidence explicitly.

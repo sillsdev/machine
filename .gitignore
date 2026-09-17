@@ -55,3 +55,6 @@ tests/SIL.Machine.Tests/Corpora/TestData/usfm/target/*
 tests/SIL.Machine.Tests/Corpora/TestData/project/*
 tests/SIL.Machine.Tests/Corpora/TestData/pretranslations.json
 .idea
+
+# Local, generated review summaries
+.review/
