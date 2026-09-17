@@ -48,6 +48,23 @@ CSharpier is required for C#. The tool is pinned in `.config/dotnet-tools.json`,
 CI also collects coverage (`--collect:"Xplat Code Coverage"`); `local_check.sh`
 does not, so do not describe a local run as coverage-equivalent.
 
+## Comment hygiene
+
+Agents must run `./local_check.sh --agent-strict`. It adds
+`scripts/comment-hygiene.ps1` to the sequence above and fails the run on any
+comment violation in the lines the branch adds, so you fix your own comments
+before they reach review. This flag is required of agents and optional for
+humans. Do not drop it to get a run through.
+
+The standard is `.claude/skills/code-comments/SKILL.md`: a 200-character
+aggregate budget for a block of implementation comments, the 120-column
+`.editorconfig` width for every comment line, ASCII punctuation, and no process
+framing, document pointers, historical narration, or provenance claims.
+
+The `Comment hygiene` pull request workflow runs the same scan in advisory mode.
+It annotates and never fails, so a green check there is not evidence that the
+strict check passed.
+
 ## Native SentencePiece boundary
 
 CI builds `src/sentencepiece4c` separately and feeds the platform-specific
