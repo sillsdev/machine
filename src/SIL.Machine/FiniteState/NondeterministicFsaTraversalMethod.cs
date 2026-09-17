@@ -158,6 +158,7 @@ namespace SIL.Machine.FiniteState
 
             return curResults;
         }
+
         private bool StateKeyEquals(Tuple<State<TData, TOffset>, int> x, Tuple<State<TData, TOffset>, int> y)
         {
             return x.Item1.Equals(y.Item1) && x.Item2.Equals(y.Item2);
