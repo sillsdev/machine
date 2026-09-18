@@ -6,9 +6,8 @@ namespace SIL.Machine.Scripture;
 [TestFixture]
 public class ScriptureRangeParserTests
 {
-    [Test]
     [TestCaseSource(nameof(GetCases))]
-    public void TestParse(string rangeString, Dictionary<string, List<int>> expectedOutput, bool throwsException)
+    public void GetChapters(string rangeString, Dictionary<string, List<int>> expectedOutput, bool throwsException)
     {
         var parser = new ScriptureRangeParser();
         if (!throwsException)
@@ -24,18 +23,41 @@ public class ScriptureRangeParserTests
         }
     }
 
-    public static IEnumerable<TestCaseData> GetCases()
+    [TestCaseSource(nameof(GetCases))]
+    public void TryGetChapters(string rangeString, Dictionary<string, List<int>> expectedOutput, bool throwsException)
     {
-        yield return new TestCaseData("MAL", new Dictionary<string, List<int>> { { "MAL", new List<int>() } }, false);
-        yield return new TestCaseData("PS2", new Dictionary<string, List<int>> { { "PS2", new List<int>() } }, false);
+        var parser = new ScriptureRangeParser();
+        bool actual = parser.TryGetChapters(rangeString, out Dictionary<string, List<int>> chapters);
+        if (!throwsException)
+        {
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(chapters, Is.EquivalentTo(expectedOutput));
+                Assert.That(actual, Is.True);
+            }
+        }
+        else
+        {
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(chapters, Is.Null);
+                Assert.That(actual, Is.False);
+            }
+        }
+    }
+
+    private static IEnumerable<TestCaseData> GetCases()
+    {
+        yield return new TestCaseData("MAL", new Dictionary<string, List<int>> { { "MAL", [] } }, false);
+        yield return new TestCaseData("PS2", new Dictionary<string, List<int>> { { "PS2", [] } }, false);
         yield return new TestCaseData(
             "GEN,EXO",
-            new Dictionary<string, List<int>> { { "GEN", new List<int>() }, { "EXO", new List<int>() } },
+            new Dictionary<string, List<int>> { { "GEN", [] }, { "EXO", [] } },
             false
         );
         yield return new TestCaseData(
             "1JN,2JN",
-            new Dictionary<string, List<int>> { { "1JN", new List<int>() }, { "2JN", new List<int>() } },
+            new Dictionary<string, List<int>> { { "1JN", [] }, { "2JN", [] } },
             false
         );
         yield return new TestCaseData(
@@ -55,43 +77,23 @@ public class ScriptureRangeParserTests
         );
         yield return new TestCaseData(
             "MAT;MRK",
-            new Dictionary<string, List<int>> { { "MAT", new List<int>() }, { "MRK", new List<int>() } },
+            new Dictionary<string, List<int>> { { "MAT", [] }, { "MRK", [] } },
             false
         );
         yield return new TestCaseData(
             "MAT; MRK",
-            new Dictionary<string, List<int>> { { "MAT", new List<int>() }, { "MRK", new List<int>() } },
+            new Dictionary<string, List<int>> { { "MAT", [] }, { "MRK", [] } },
             false
         );
-        yield return new TestCaseData(
-            "MAT1,2,3",
-            new Dictionary<string, List<int>>
-            {
-                {
-                    "MAT",
-                    new List<int>() { 1, 2, 3 }
-                },
-            },
-            false
-        );
-        yield return new TestCaseData(
-            "MAT1, 2, 3",
-            new Dictionary<string, List<int>>
-            {
-                {
-                    "MAT",
-                    new List<int>() { 1, 2, 3 }
-                },
-            },
-            false
-        );
+        yield return new TestCaseData("MAT1,2,3", new Dictionary<string, List<int>> { { "MAT", [1, 2, 3] } }, false);
+        yield return new TestCaseData("MAT1, 2, 3", new Dictionary<string, List<int>> { { "MAT", [1, 2, 3] } }, false);
         yield return new TestCaseData(
             "MAT-LUK",
             new Dictionary<string, List<int>>
             {
-                { "MAT", new List<int>() },
-                { "MRK", new List<int>() },
-                { "LUK", new List<int>() },
+                { "MAT", [] },
+                { "MRK", [] },
+                { "LUK", [] },
             },
             false
         );
@@ -99,9 +101,9 @@ public class ScriptureRangeParserTests
             "MAT1,2,3;MAT-LUK",
             new Dictionary<string, List<int>>
             {
-                { "MAT", new List<int>() },
-                { "MRK", new List<int>() },
-                { "LUK", new List<int>() },
+                { "MAT", [] },
+                { "MRK", [] },
+                { "LUK", [] },
             },
             false
         );
@@ -109,38 +111,32 @@ public class ScriptureRangeParserTests
             "2JN-3JN;EXO1,8,3-5;GEN",
             new Dictionary<string, List<int>>
             {
-                { "GEN", new List<int>() },
-                {
-                    "EXO",
-                    new List<int>() { 1, 3, 4, 5, 8 }
-                },
-                { "2JN", new List<int>() },
-                { "3JN", new List<int>() },
+                { "GEN", [] },
+                { "EXO", [1, 3, 4, 5, 8] },
+                { "2JN", [] },
+                { "3JN", [] },
             },
             false
         );
         yield return new TestCaseData(
             "1JN 1;1JN 2;1JN 3-5",
-            new Dictionary<string, List<int>> { { "1JN", new List<int>() } },
+            new Dictionary<string, List<int>> { { "1JN", [] } },
             false
         );
         yield return new TestCaseData(
             "MAT-ROM;-ACT4-28",
             new Dictionary<string, List<int>>
             {
-                { "MAT", new List<int>() },
-                { "MRK", new List<int>() },
-                { "LUK", new List<int>() },
-                { "JHN", new List<int>() },
-                {
-                    "ACT",
-                    new List<int>() { 1, 2, 3 }
-                },
+                { "MAT", [] },
+                { "MRK", [] },
+                { "LUK", [] },
+                { "JHN", [] },
+                { "ACT", [1, 2, 3] },
                 { "ROM", new List<int>() },
             },
             false
         );
-        yield return new TestCaseData("2JN;-2JN 1", new Dictionary<string, List<int>> { }, false);
+        yield return new TestCaseData("2JN;-2JN 1", new Dictionary<string, List<int>>(), false);
         yield return new TestCaseData(
             "NT;OT;-MRK;-EXO",
             Enumerable
@@ -156,27 +152,20 @@ public class ScriptureRangeParserTests
                 .Range(40, 27)
                 .Select(i =>
                 {
-                    if (i == 40)
+                    return i switch
                     {
-                        return (
+                        40 => (
                             Canon.BookNumberToId(i),
-                            Enumerable.Range(1, 28).Where(c => !(c == 3 || c == 4 || c == 5 || c == 17)).ToList()
-                        );
-                    }
-                    if (i == 66)
-                    {
-                        return (Canon.BookNumberToId(i), Enumerable.Range(1, 20).ToList());
-                    }
-                    return (Canon.BookNumberToId(i), new List<int>());
+                            Enumerable.Range(1, 28).Where(c => c is not (3 or 4 or 5 or 17)).ToList()
+                        ),
+                        66 => (Canon.BookNumberToId(i), [.. Enumerable.Range(1, 20)]),
+                        _ => (Canon.BookNumberToId(i), []),
+                    };
                 })
                 .ToDictionary(),
             false
         );
-        yield return new TestCaseData(
-            "MAT-JHN;-MAT-LUK",
-            new Dictionary<string, List<int>> { { "JHN", new List<int>() } },
-            false
-        );
+        yield return new TestCaseData("MAT-JHN;-MAT-LUK", new Dictionary<string, List<int>> { { "JHN", [] } }, false);
         yield return new TestCaseData("", new Dictionary<string, List<int>>(), false);
 
         //*Throw exceptions
