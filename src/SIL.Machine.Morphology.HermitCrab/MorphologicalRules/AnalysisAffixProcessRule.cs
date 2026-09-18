@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Annotations;
+using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
 
@@ -11,11 +12,18 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         private readonly Morpher _morpher;
         private readonly AffixProcessRule _rule;
         private readonly List<PatternRule<Word, ShapeNode>> _rules;
+        private readonly FeatureStruct _outputFS;
 
         public AnalysisAffixProcessRule(Morpher morpher, AffixProcessRule rule)
         {
             _morpher = morpher;
             _rule = rule;
+
+            // synthesis computes PriorityUnion(Unify(stem, Required), Out), so every word this rule produces is
+            // subsumed by PriorityUnion(Required, Out): a tighter gate than Out alone that still admits them all
+            _outputFS = rule.RequiredSyntacticFeatureStruct.Clone();
+            _outputFS.PriorityUnion(rule.OutSyntacticFeatureStruct);
+            _outputFS.Freeze();
 
             _rules = new List<PatternRule<Word, ShapeNode>>();
             foreach (AffixProcessAllomorph allo in rule.Allomorphs)
@@ -43,7 +51,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
             if (
                 input.GetUnapplicationCount(_rule) >= _rule.MaxApplicationCount
-                || !_rule.OutSyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct)
+                || !_outputFS.IsUnifiable(input.SyntacticFeatureStruct)
             )
             {
                 return Enumerable.Empty<Word>();
@@ -55,10 +63,23 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 bool unapplied = false;
                 foreach (Word outWord in _rules[i].Apply(input).RemoveDuplicates())
                 {
+                    // the paths Out writes describe this rule's output, not the stem it applied to, so they are
+                    // stripped rather than carried backwards; what is left must unify with Required
+                    outWord.SyntacticFeatureStruct.Restrict(_rule.OutSyntacticFeatureStruct);
                     if (!_rule.RequiredSyntacticFeatureStruct.IsEmpty)
-                        outWord.SyntacticFeatureStruct.Add(_rule.RequiredSyntacticFeatureStruct);
-                    else if (_rule.OutSyntacticFeatureStruct.IsEmpty)
-                        outWord.SyntacticFeatureStruct.Clear();
+                    {
+                        if (
+                            !outWord.SyntacticFeatureStruct.Unify(
+                                _rule.RequiredSyntacticFeatureStruct,
+                                out FeatureStruct syntacticFS
+                            )
+                        )
+                        {
+                            continue;
+                        }
+
+                        outWord.SyntacticFeatureStruct = syntacticFS;
+                    }
                     outWord.MorphologicalRuleUnapplied(_rule);
                     outWord.Freeze();
                     if (_morpher.TraceManager.IsTracing)
