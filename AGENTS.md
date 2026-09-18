@@ -118,6 +118,19 @@ pull request.
 
 - This file is the shared operational source of truth. `CLAUDE.md` imports it.
 - Claude-specific workflows live under `.claude/skills/`.
-- `.github/copilot-instructions.md` and `.github/instructions/*.instructions.md`
-  exist for GitHub Copilot compatibility and must not restate rules from here.
+- Path-scoped review rules live under `docs/review/`. Match the changed path to
+  find the rules file:
+
+  | Path glob | Rules file |
+  | --- | --- |
+  | `src/SIL.Machine/Corpora/**/*.cs` | `docs/review/corpora-usfm.md` |
+  | `src/SIL.Machine.Morphology.HermitCrab/**/*.cs` | `docs/review/hermitcrab.md` |
+  | `src/SIL.Machine/**/*.cs` | `docs/review/machine-library.md` |
+  | `src/SIL.Machine.Translation.Thot/**/*.cs` | `docs/review/machine-library.md` |
+  | `src/SIL.Machine.Tokenization.SentencePiece/**/*.cs` | `docs/review/machine-library.md` |
+  | `src/SIL.Machine.Translation.TensorFlow/**/*.cs` | `docs/review/machine-library.md` |
+  | `tests/**/*.cs` | `docs/review/machine-tests.md` |
+
+  For a high-risk change, `docs/review/devils-advocate.md` is an optional
+  adversarial second pass.
 - Add a nested `AGENTS.md` only when a subtree genuinely needs different rules.

@@ -114,6 +114,12 @@ or Windows CMake commands exactly as shown in ci.yml. For packaging changes, run
 or record the affected dotnet pack ... -c Release -o artifacts command and
 distinguish local results from the CI package job.
 
+An agent must also run `./local_check.sh --agent-strict`, which adds the
+comment-hygiene scan and fails on any violation in the lines the branch adds.
+It is required of agents and optional for humans; do not drop it to get a run
+through. The advisory `Comment hygiene` pull request check going green is not
+evidence that the strict scan passed.
+
 For documentation/skill/template-only changes, run dotnet csharpier check .
 only if C# files are touched; otherwise use git diff --check and available
 YAML/Markdown diagnostics. Always state skipped checks and why. Never claim
@@ -174,7 +180,7 @@ workflow has already created one.
 
 ## 8. Review comments
 
-For each Copilot or human comment, classify it as:
+For each review comment, human or automated, classify it as:
 
 * **Fix** -- technically sound and unambiguous; make the minimum change.
 * **Clarify** -- missing context or a design decision; ask the specific question.
