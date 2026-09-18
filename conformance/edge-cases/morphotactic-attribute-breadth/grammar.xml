@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Morphotactic attribute breadth. Closes the coverage-ledger entries that need no phonological
+     feature system: repetition caps, partial rules/entries, bound allomorphs, non-final templates,
+     co-occurrence rules, and MPR feature groups. Stratum cyclicity and phonologicalRuleOrder are
+     declared below (Main) purely for the enumerated value's presence in a document: grep the whole
+     of src/SIL.Machine.Morphology.HermitCrab for "Cyclicity"/"PhonologicalRuleOrder" and Stratum.cs's
+     own property list, and neither exists anywhere outside the DTD and XmlLanguageLoader's unread
+     Stratum attribute text; the loader never even reads them into a discarded local, let alone acts
+     on them. No fixture can make either surface observable; that is a product gap, not a modeling gap.
+
+     Converted to fieldworks_producible: true (see words.yaml history note for the prior state and
+     what did not survive). Two independent, previously unrecorded findings drove the biggest changes
+     here, beyond the four causes the prior notes already named:
+
+     - HCLoader.cs never sets LexicalEntry.Family (grep confirmed zero hits) and never touches
+       Blockable on any rule (grep confirmed zero hits for "Blockable" in HCLoader.cs), so the
+       entire family/blockable/Word.CheckBlocking mechanism is unreachable from a FieldWorks project,
+       not merely the specific "family-blocking" label the prior notes used. Every construct here
+       that depended on it (the MorphologicalRule@blockable="false" probe, the RealizationalRule@
+       blockable="false" probe, both suppletive-sibling families) is gone, not converted: no
+       FieldWorks-producible substitute exists for CheckBlocking itself (see
+       conformance/docs/engine-only-fixture-retirement.md).
+     - Main's own morphologicalRuleOrder="linear" mattered to this fixture's ground truth (the
+       conferExcl/exclReader exclusion pair is legible only because one order is tried), so
+       PROTOCOL.md section 9's fourth usage-level check applied: MorphologicalRuleOrder must not
+       matter to a fixture's committed ground truth; HCLoader hardcodes every Stratum to Unordered
+       and can never emit linear. Switched to "unordered" and every word re-verified against the C#
+       founding oracle under that order; see words.yaml for what changed and what did not.
+
+     Repetition is the reason this fixture exists at all. multipleApplication has NO effect on a rule
+     reached through an AffixTemplate slot, because a template applies each slot once (established
+     against the C# oracle in edge-cases/loader-isactive-breadth). Every repeatable rule here is
+     therefore listed on the Stratum's own morphologicalRules attribute instead, where the cap is
+     observable: mrRep0 must never apply, and mrRep2 must apply at most twice. Those two boundaries
+     are what the ledger's remaining multipleApplication values are quotiented against.
+
+     MorphologicalRule@partial gets its OWN unordered Second stratum below: partial only gates a
+     rule NOT reachable through any Slot (SynthesisAffixProcessRule.cs's IsTemplateRule check), and a
+     template-then-stratum-rule ordering only exists via the Unordered ApplyTemplates-then-
+     ApplyMorphologicalRules recursion in SynthesisStratumRule.cs.
+
+     Every decoy carries isActive="no" and is named by the word whose outcome observes it, per
+     words.yaml's neutralizes: lists. -->
+<HermitCrabInput>
+  <Language>
+    <Name>MorphotacticAttributeBreadth</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <MorphologicalPhonologicalRuleFeatures>
+      <MorphologicalPhonologicalRuleFeature id="mprA">A</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprB">B</MorphologicalPhonologicalRuleFeature>
+      <!-- Bucket-2 coverage (MorphologicalOutput.MPRFeatures -> MorphologicalInput.excludedMPRFeatures):
+           an affix confers a flag that blocks a LATER affix. HCLoader.cs:969 (AffixProcessAllomorph.
+           OutMprFeatures) writes the payload, HCLoader.cs:1717 (AffixProcessAllomorph.
+           ExcludedMprFeatures) reads it. Ungrouped deliberately: this is a direct exclusion, not an
+           overwrite-group interaction (see mrGrpSetA/mrGrpSetB/mrGrpReq below). -->
+      <MorphologicalPhonologicalRuleFeature id="mprExclFlag">ExclFlag</MorphologicalPhonologicalRuleFeature>
+      <!-- FieldWorks-producible replacement for the prior appendGroup/groupDecoy pair: HCLoader.cs
+           (LoadLanguage, :168-192) only ever builds THREE hardcoded, always-Overwrite groups:
+           "inflClasses" (matchType Any), "exceptionFeatures" (matchType All), "lexEntryInflTypes"
+           (matchType All); never a user-named group, and never a group whose Output is anything but
+           the engine default (Overwrite). No existing fixture (staged or upstream, checked via
+           grep across every grammar.xml) exercises any of the three real names, so naming this group
+           "exceptionFeatures" with the matching matchType="all" and the default (omitted, i.e.
+           Overwrite) outputType is new, not duplicate, coverage of a real HCLoader-producible
+           surface: MorphologicalPhonologicalRuleFeatureGroup.features is "Yes" in
+           fieldworks-producibility.tsv but had no witnessing fixture before this one. What is lost:
+           outputType="append" itself. HCLoader never sets Output away from Overwrite, so append
+           semantics have no FieldWorks-producible fixture anywhere in this suite; see
+           conformance/docs/engine-only-fixture-retirement.md for where that construct's own coverage
+           now lives (mpr-group-overwrite-without-realizational / mpr-overwrite-order-dependence,
+           both still engine-only). -->
+      <MorphologicalPhonologicalRuleFeatureGroup matchType="all" features="mprA mprB">
+        <Name>exceptionFeatures</Name>
+      </MorphologicalPhonologicalRuleFeatureGroup>
+    </MorphologicalPhonologicalRuleFeatures>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="sA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sE"><Representations><Representation>e</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sG"><Representations><Representation>g</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sL"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sR"><Representations><Representation>r</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sS"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <!-- cyclicity="cyclic" and phonologicalRuleOrder="simultaneous" are both non-default. This
+           stratum declares no phonological rules, so the rule-order value is a load-time property
+           here rather than an observable ordering; the ledger records it accordingly. Neither
+           attribute has a producibility question of its own: Stratum.cs carries no corresponding
+           engine property at all (see the file header), so HCLoader has no path to write either
+           value regardless; the DTD default and any explicit value are equally unreachable from a
+           real project, and equally inert in the engine. morphologicalRuleOrder="unordered" (below)
+           is the one Stratum attribute that IS engine-real and IS HCLoader-producible (HCLoader
+           hardcodes Unordered on every Stratum it builds; see the file header for why this fixture
+           had to move off "linear" to convert). -->
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" cyclicity="cyclic"
+               phonologicalRuleOrder="simultaneous"
+               morphologicalRules="mrRep0 mrRep2 mrConferExcl mrGrpSetB mrGrpSetA mrGrpReq"
+               isActive="yes">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- multipleApplication="0": the cap is zero, so this suffix must never attach. -->
+          <MorphologicalRule id="mrRep0" multipleApplication="0" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>neverApplies</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subRep0">
+                <MorphologicalInput><PhoneticSequence id="stem0"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stem0" /><InsertSegments><PhoneticShape>ba</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>NEVER</MorphemeId>
+            <Gloss>never</Gloss>
+          </MorphologicalRule>
+          <!-- multipleApplication="2": at most two copies of this suffix. -->
+          <MorphologicalRule id="mrRep2" multipleApplication="2" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>twiceAtMost</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subRep2">
+                <MorphologicalInput><PhoneticSequence id="stem2"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stem2" /><InsertSegments><PhoneticShape>de</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>TWICE</MorphemeId>
+            <Gloss>twice</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrNF" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>nfOnly</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subNF">
+                <MorphologicalInput><PhoneticSequence id="stemNF"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemNF" /><InsertSegments><PhoneticShape>pu</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>NF</MorphemeId>
+            <Gloss>nf</Gloss>
+          </MorphologicalRule>
+          <!-- partial="true": a partially specified rule. -->
+          <MorphologicalRule id="mrPartial" partial="true" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>partialRule</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPartial">
+                <MorphologicalInput><PhoneticSequence id="stemP"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemP" /><InsertSegments><PhoneticShape>mo</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PART</MorphemeId>
+            <Gloss>part</Gloss>
+          </MorphologicalRule>
+          <!-- mrCoA/mrCoB/mrCoC/mrCoD: four isolated ordinary suffixes, kept from the pre-conversion
+               grammar purely for affix-stacking and Slot-ordering coverage (topsakatana,
+               topsakanabu below) now that no co-occurrence rule references them; see mrExA/mrExB
+               below for where AllomorphCoOccurrenceRule/MorphemeCoOccurrenceRule coverage now lives. -->
+          <MorphologicalRule id="mrCoA" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>coA</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subCoA">
+                <MorphologicalInput><PhoneticSequence id="stemCoA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemCoA" /><InsertSegments><PhoneticShape>sa</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>COA</MorphemeId>
+            <Gloss>coa</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrCoB" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>coB</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subCoB">
+                <MorphologicalInput><PhoneticSequence id="stemCoB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemCoB" /><InsertSegments><PhoneticShape>ka</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>COB</MorphemeId>
+            <Gloss>cob</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrCoC" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>coC</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subCoC">
+                <MorphologicalInput><PhoneticSequence id="stemCoC"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemCoC" /><InsertSegments><PhoneticShape>ta</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>COC</MorphemeId>
+            <Gloss>coc</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrCoD" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>coD</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subCoD">
+                <MorphologicalInput><PhoneticSequence id="stemCoD"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemCoD" /><InsertSegments><PhoneticShape>na</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>COD</MorphemeId>
+            <Gloss>cod</Gloss>
+          </MorphologicalRule>
+          <!-- mrMB: kept only for the topsakanabu Slot-ordering discriminator below (coDSlot~mbSlot).
+               Its prior MorphologicalOutput.MPRFeatures="mprB" write is gone: a rule reached only
+               through an AffixTemplate Slot is necessarily inflectional, and LoadInflAffixProcessRule
+               never sets MPR features on an inflectional rule (PROTOCOL.md section 9), so that write
+               could never come from FieldWorks regardless of which group it fed. The MPR-group
+               read/write pair this rule used to help demonstrate now lives entirely on mrGrpSetA/
+               mrGrpSetB/mrGrpReq below, which are stratum-level (never template-slot), where writing
+               MPR features IS producible. -->
+          <MorphologicalRule id="mrMB" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>setMB</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subMB">
+                <MorphologicalInput><PhoneticSequence id="stemMB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemMB" /><InsertSegments><PhoneticShape>bu</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>MB</MorphemeId>
+            <Gloss>mb</Gloss>
+          </MorphologicalRule>
+          <!-- Bucket-2 coverage: the affix-conferred-blocking pair. mrConferExcl's own
+               MorphologicalOutput.MPRFeatures write (mprExclFlag) is the writer under test; applying
+               it before mrExclReader means mrExclReader's own MorphologicalInput.excludedMPRFeatures
+               gate blocks: a later affix refusing to attach once an earlier one has marked the stem,
+               e.g. a derivational suffix that makes a further derivation ineligible.
+
+               The writer (mrConferExcl) and reader (mrExclReader) have OPPOSITE location
+               requirements, confirmed by fieldworks-producibility.tsv and by
+               edge-cases/mpr-gated-exception's own words.yaml (the very fixture this task's family-
+               blocking conversion is meant to follow the pattern of, and the reason IT stays
+               fieldworks_producible: false overall): MorphologicalOutput.MPRFeatures is producible
+               only on a rule reached OUTSIDE any AffixTemplate Slot (LoadInflAffixProcessRule never
+               sets it on an inflectional/templated rule), while MorphologicalInput.excludedMPRFeatures
+               is producible only on a rule reached THROUGH a Slot (HCLoader.cs:1717 is its sole
+               assignment site, inside LoadAffixTemplate's own slot-blocking loop; a stratum-level
+               rule's excludedMPRFeatures has no HCLoader path at all; see mpr-gated-exception's own
+               mrSuf, which is exactly this shape and is the HC-engine-only half of that fixture). So
+               mrConferExcl stays stratum-level here and mrExclReader moves into finalTemplate's own
+               exclReaderSlot below: the only placement where BOTH halves of this bucket-2 pair are
+               simultaneously producible. (The pre-conversion version of this fixture had both rules
+               stratum-level, which means its own fieldworks_producible: false verdict, while correct
+               in outcome, understated its causes: this specific shape was never named among them.) -->
+          <MorphologicalRule id="mrConferExcl" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>conferExcl</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subConferExcl">
+                <MorphologicalInput><PhoneticSequence id="stemConferExcl"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprExclFlag"><CopyFromInput index="stemConferExcl" /><InsertSegments><PhoneticShape>do</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>CONFEREXCL</MorphemeId>
+            <Gloss>conferexcl</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrExclReader" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>exclReader</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subExclReader">
+                <MorphologicalInput excludedMPRFeatures="mprExclFlag"><PhoneticSequence id="stemExclReader"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemExclReader" /><InsertSegments><PhoneticShape>ri</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>EXCLREADER</MorphemeId>
+            <Gloss>exclreader</Gloss>
+          </MorphologicalRule>
+          <!-- MPR-group overwrite semantics (replaces the removed appendGroup/groupDecoy pair; see
+               the MorphologicalPhonologicalRuleFeatureGroup comment above). All three rules are
+               stratum-level, so their MPR-feature reads/writes are producible. mrGrpSetB confers
+               mprB; mrGrpSetA confers mprA, and since both are members of "exceptionFeatures"
+               (Overwrite, the only mode HCLoader ever produces), applying mrGrpSetA after mrGrpSetB
+               evicts mprB group-wide; mrGrpReq then requires mprB still be present. -->
+          <MorphologicalRule id="mrGrpSetB" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>grpSetB</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subGrpSetB">
+                <MorphologicalInput><PhoneticSequence id="stemGrpSetB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprB"><CopyFromInput index="stemGrpSetB" /><InsertSegments><PhoneticShape>ga</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>GRPB</MorphemeId>
+            <Gloss>grpb</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrGrpSetA" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>grpSetA</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subGrpSetA">
+                <MorphologicalInput><PhoneticSequence id="stemGrpSetA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprA"><CopyFromInput index="stemGrpSetA" /><InsertSegments><PhoneticShape>ge</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>GRPA</MorphemeId>
+            <Gloss>grpa</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrGrpReq" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>grpReq</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subGrpReq">
+                <MorphologicalInput requiredMPRFeatures="mprB"><PhoneticSequence id="stemGrpReq"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemGrpReq" /><InsertSegments><PhoneticShape>go</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>GRPREQ</MorphemeId>
+            <Gloss>grpreq</Gloss>
+          </MorphologicalRule>
+          <!-- FieldWorks-producible replacement for the removed MorphemeCoOccurrenceRule/
+               AllomorphCoOccurrenceRule type="require" pair (topsakatana's old four requires plus
+               "sol"'s own require, all gone: HCLoader's two co-occurrence loaders build Exclude
+               constraints only, sourced from prohibition-only LibLCM repositories, so type="require"
+               has no FieldWorks equivalent at all, regardless of the surrounding rule). mrExA/mrExB
+               are an isolated pair purely for this; see the AllomorphCoOccurrenceRules/
+               MorphemeCoOccurrenceRules elements below. -->
+          <MorphologicalRule id="mrExA" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>exA</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subExA">
+                <MorphologicalInput><PhoneticSequence id="stemExA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemExA" /><InsertSegments><PhoneticShape>ke</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>EXA</MorphemeId>
+            <Gloss>exa</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrExB" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>exB</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subExB">
+                <MorphologicalInput><PhoneticSequence id="stemExB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemExB" /><InsertSegments><PhoneticShape>ko</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>EXB</MorphemeId>
+            <Gloss>exb</Gloss>
+          </MorphologicalRule>
+          <!-- mrExC/mrExD: a SECOND isolated exclude pair, added specifically to restore
+               dtd:enum/AllomorphCoOccurrenceRule/adjacency/{adjacentToLeft,adjacentToRight,
+               somewhereToLeft,somewhereToRight} coverage. The mrExA/mrExB pair above only exercises
+               "anywhere" (Allomorph) and "adjacentToRight" (Morpheme, a separate DTD surface); the
+               other four AllomorphCoOccurrenceRule adjacency values had no other witness anywhere in
+               this suite once the pre-conversion type="require" material (four different adjacency
+               values, on mrCoA-D) was removed. See the AllomorphCoOccurrenceRules element below:
+               ExC/ExD are always adjacent when both present (fixed Slot order, no rule between their
+               two slots), so one word ("toplane") exercises all four non-default adjacency values at
+               once via four separate rule declarations over the SAME underlying fact, exactly as
+               mrConferExcl/mrExclReader already model a single fact two ways elsewhere in this file. -->
+          <MorphologicalRule id="mrExC" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>exC</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subExC">
+                <MorphologicalInput><PhoneticSequence id="stemExC"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemExC" /><InsertSegments><PhoneticShape>la</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>EXC</MorphemeId>
+            <Gloss>exc</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrExD" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>exD</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subExD">
+                <MorphologicalInput><PhoneticSequence id="stemExD"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemExD" /><InsertSegments><PhoneticShape>ne</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>EXD</MorphemeId>
+            <Gloss>exd</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <!-- The FINAL template. A stratum whose only template is non-final admits no complete word
+               at all (confirmed against the C# oracle: with just the non-final template below, even a
+               bare root produced zero parses), so a final template has to exist alongside it. -->
+          <AffixTemplate requiredPartsOfSpeech="posN">
+            <Name>finalTemplate</Name>
+            <Slot optional="true" morphologicalRules="mrPartial"><Name>partialSlot</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrCoA"><Name>coASlot</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrCoB"><Name>coBSlot</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrCoC"><Name>coCSlot</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrCoD"><Name>coDSlot</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrMB"><Name>mbSlot</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrExclReader"><Name>exclReaderSlot</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrExA"><Name>exASlot</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrExB"><Name>exBSlot</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrExC"><Name>exCSlot</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrExD"><Name>exDSlot</Name></Slot>
+          </AffixTemplate>
+          <!-- final="false": a non-final template. Its output is not a complete word on its own. -->
+          <AffixTemplate requiredPartsOfSpeech="posN" final="false">
+            <Name>nonFinalTemplate</Name>
+            <Slot optional="true" morphologicalRules="mrNF"><Name>nonFinalSlot</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eKul" partOfSpeech="posN" ruleFeatures="mprA">
+            <Allomorphs>
+              <Allomorph id="aKul"><PhoneticShape>kul</PhoneticShape></Allomorph>
+              <!-- isBound="true": this allomorph cannot stand as a free word. -->
+              <Allomorph id="aKulBound" isBound="true"><PhoneticShape>kur</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>KUL</MorphemeId>
+            <Gloss>vessel</Gloss>
+          </LexicalEntry>
+          <!-- partial="true": a partially specified entry. -->
+          <LexicalEntry id="eNap" partOfSpeech="posN" partial="true">
+            <Allomorphs>
+              <Allomorph id="aNap"><PhoneticShape>nap</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>NAP</MorphemeId>
+            <Gloss>stone</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eTop" partOfSpeech="posN">
+            <Allomorphs>
+              <Allomorph id="aTop"><PhoneticShape>top</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>TOP</MorphemeId>
+            <Gloss>top</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <!-- Second, unordered stratum: MorphologicalRule/partial="true" needs a stratum-level (never
+           templated) rule to be attempted AFTER a final template already applied, and that ordering
+           only arises via the Unordered ApplyTemplates->ApplyMorphologicalRules recursion
+           (SynthesisStratumRule.cs). -->
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" morphologicalRules="mrPO">
+        <Name>Second</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrPogAffix" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>pogAffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPogAffix">
+                <MorphologicalInput><PhoneticSequence id="stemPogAffix"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemPogAffix" /><InsertSegments><PhoneticShape>li</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>POGAFX</MorphemeId>
+            <Gloss>pogafx</Gloss>
+          </MorphologicalRule>
+          <!-- partial="true": never a member of any Slot, so it stays IsTemplateRule=false and this
+               is the rule the mutation actually exercises. -->
+          <MorphologicalRule id="mrPO" partial="true" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>afterFinal</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPO">
+                <MorphologicalInput><PhoneticSequence id="stemPO"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemPO" /><InsertSegments><PhoneticShape>ti</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PO</MorphemeId>
+            <Gloss>po</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posN">
+            <Name>pogTemplate</Name>
+            <Slot optional="true" morphologicalRules="mrPogAffix"><Name>pogSlot</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="ePog" partOfSpeech="posN">
+            <Allomorphs>
+              <Allomorph id="aPog"><PhoneticShape>pog</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>POG</MorphemeId>
+            <Gloss>pog</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+    <MorphemeCoOccurrenceRules>
+      <!-- type="exclude": HCLoader-producible (its two co-occurrence loaders build Exclude
+           constraints only). EXA immediately right of EXB forbidden. -->
+      <MorphemeCoOccurrenceRule type="exclude" primaryMorpheme="mrExA" otherMorphemes="mrExB" adjacency="adjacentToRight" />
+      <!-- isActive="no" decoy: HCLoader DOES have a Disabled-filter equivalent for
+           MorphemeCoOccurrenceRule (unlike LexicalEntry/Allomorph/Stratum/etc.), so this is
+           producible. Reuses CoA/CoC harmlessly (inactive, so it never actually fires). -->
+      <MorphemeCoOccurrenceRule isActive="no" type="exclude" primaryMorpheme="mrCoA" otherMorphemes="mrCoC" adjacency="anywhere" />
+    </MorphemeCoOccurrenceRules>
+    <AllomorphCoOccurrenceRules>
+      <!-- type="exclude": EXA and EXB may never co-occur anywhere in the same word. -->
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="subExA" otherAllomorphs="subExB" adjacency="anywhere" />
+      <!-- ExC/ExD are always adjacent when both present (fixed Slot order, nothing declared
+           between exCSlot/exDSlot): one underlying fact, stated four ways, to cover all four
+           non-default AllomorphCoOccurrenceRule adjacency values (see mrExC/mrExD's own comment). -->
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="subExD" otherAllomorphs="subExC" adjacency="adjacentToLeft" />
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="subExC" otherAllomorphs="subExD" adjacency="adjacentToRight" />
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="subExD" otherAllomorphs="subExC" adjacency="somewhereToLeft" />
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="subExC" otherAllomorphs="subExD" adjacency="somewhereToRight" />
+      <!-- isActive="no" decoy, preserved from the pre-conversion grammar's own isActive-toggle
+           coverage: on unrelated material (CoA/CoC), so activating it would invalidate topsakatana
+           without touching exASlot/exBSlot/exCSlot/exDSlot's own words. -->
+      <AllomorphCoOccurrenceRule isActive="no" type="exclude" primaryAllomorph="subCoA" otherAllomorphs="subCoC" adjacency="anywhere" />
+    </AllomorphCoOccurrenceRules>
+  </Language>
+</HermitCrabInput>
