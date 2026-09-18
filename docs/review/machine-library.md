@@ -1,8 +1,11 @@
----
-name: machine-library-review
-description: Review shipped machine library code for compatibility, deterministic language behavior, async contracts, resources, and focused tests.
-applyTo: "src/SIL.Machine/**/*.cs,src/SIL.Machine.Translation.Thot/**/*.cs,src/SIL.Machine.Tokenization.SentencePiece/**/*.cs,src/SIL.Machine.Translation.TensorFlow/**/*.cs"
----
+# Machine Library Review
+
+*Review shipped machine library code for compatibility, deterministic language
+behavior, async contracts, resources, and focused tests.*
+
+Governs `src/SIL.Machine/**/*.cs`, `src/SIL.Machine.Translation.Thot/**/*.cs`,
+`src/SIL.Machine.Tokenization.SentencePiece/**/*.cs`, and
+`src/SIL.Machine.Translation.TensorFlow/**/*.cs`.
 
 - Treat code in these projects as shipped library code. Check public/protected API
   shape, overloads, optional parameters, return types, XML documentation, target

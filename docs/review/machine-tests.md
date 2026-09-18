@@ -1,8 +1,9 @@
----
-name: machine-tests-review
-description: Review machine tests as evidence for changed behavior, edge cases, contracts, and resource/cancellation boundaries.
-applyTo: "tests/**/*.cs"
----
+# Machine Tests Review
+
+*Review machine tests as evidence for changed behavior, edge cases, contracts, and
+resource/cancellation boundaries.*
+
+Governs `tests/**/*.cs`.
 
 - A test must exercise the changed behavior, not merely execute the changed method.
   Identify branches, guards, ordering, error paths, cancellation, limits, and side

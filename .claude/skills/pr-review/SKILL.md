@@ -34,7 +34,14 @@ explicitly authorizes that action.
    files, and any target-local instructions.
 3. Classify changed files: shipped API/library, tests, HermitCrab, corpus/USFM,
    SentencePiece/native, tool, workflow/package, or documentation.
-4. Apply only the review axes and path-scoped instructions relevant to that classification.
+4. Apply the review axes below plus the path-scoped rules under `docs/review/` that
+   match the changed paths:
+   - `src/SIL.Machine/Corpora/**/*.cs` -> `docs/review/corpora-usfm.md`
+   - `src/SIL.Machine.Morphology.HermitCrab/**/*.cs` -> `docs/review/hermitcrab.md`
+   - `src/SIL.Machine/**/*.cs`, `src/SIL.Machine.Translation.Thot/**/*.cs`,
+     `src/SIL.Machine.Tokenization.SentencePiece/**/*.cs`, and
+     `src/SIL.Machine.Translation.TensorFlow/**/*.cs` -> `docs/review/machine-library.md`
+   - `tests/**/*.cs` -> `docs/review/machine-tests.md`
 5. Search for public declarations, interface implementations, project references,
    package metadata, tests, fixtures, and downstream references before concluding that a
    contract changed.
@@ -140,7 +147,10 @@ checklist to unrelated pure algorithms.
   reviewed head. This workflow is push/tag-triggered, not a `pull_request`-triggered
   gate.
 - Do not treat Codecov upload as a pass/fail threshold; inspect changed-line tests directly.
-- If a command cannot run, state why and what remains unverified. Never convert unavailable evidence into a pass.
+- If a command cannot run, state why and what remains unverified. Never convert
+  unavailable evidence into a pass.
+- A search that finds nothing is not proof that a concept is absent unless you
+  state the scope you searched.
 
 ## Output format
 
@@ -182,5 +192,5 @@ List commands with status (`passed`, `failed`, `not run`, or `blocked`), exact f
 ### Suggested Review Focus
 
 Name the one to three highest-value areas for a human reviewer. If an adversarial pass
-is requested, use the separate library devil's-advocate role and keep its objections
+is requested, apply `docs/review/devils-advocate.md` and keep its objections
 evidence-linked.
