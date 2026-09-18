@@ -81,16 +81,8 @@ strict check passed.
 ## Native SentencePiece boundary
 
 CI builds `src/sentencepiece4c` separately and feeds the platform-specific
-artifact to the managed build and package job. The verified forms are:
-
-```
-cmake -S src/sentencepiece4c -B src/sentencepiece4c/build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build src/sentencepiece4c/build --config Release --target sentencepiece4c
-```
-
-Windows CI configures with `-A x64` instead of the Ninja generator. This is the
-only native boundary in the repository; it is not a general native-before-managed
-build policy.
+artifact to the managed build and package job. If you change it, copy the
+current CMake commands from `.github/workflows/ci.yml` rather than from here.
 
 ## Tests and changes
 
@@ -114,9 +106,8 @@ native SentencePiece build, CSharpier check, Release build, tests with coverage,
 and tag-triggered NuGet publishing. It triggers on `push`, not on `pull_request`,
 so a green check on a PR reflects the pushed head rather than a PR event.
 
-`appveyor.yml` is legacy. It still references `SIL.Machine.WebApi` projects that
-are absent from the tree. Do not add projects to satisfy it, and do not treat its
-VS2019 assumptions as the current target matrix.
+`appveyor.yml` is legacy and describes projects that are not in the tree.
+Ignore it.
 
 ## Porting to and from machine.py
 
@@ -137,12 +128,12 @@ pull request.
   | Path glob | Rules file |
   | --- | --- |
   | `src/SIL.Machine/Corpora/**/*.cs` | `docs/review/corpora-usfm.md` |
+  | `src/SIL.Machine/PunctuationAnalysis/**/*.cs` | `docs/review/punctuation.md` |
   | `src/SIL.Machine.Morphology.HermitCrab/**/*.cs` | `docs/review/hermitcrab.md` |
-  | `src/SIL.Machine/**/*.cs` | `docs/review/machine-library.md` |
-  | `src/SIL.Machine.Translation.Thot/**/*.cs` | `docs/review/machine-library.md` |
-  | `src/SIL.Machine.Tokenization.SentencePiece/**/*.cs` | `docs/review/machine-library.md` |
-  | `src/SIL.Machine.Translation.TensorFlow/**/*.cs` | `docs/review/machine-library.md` |
+  | any other `src/**/*.cs` | `docs/review/machine-library.md` |
   | `tests/**/*.cs` | `docs/review/machine-tests.md` |
+
+  The first matching row wins.
 
   For a high-risk change, `docs/review/devils-advocate.md` is an optional
   adversarial second pass.

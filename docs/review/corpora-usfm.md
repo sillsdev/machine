@@ -10,13 +10,13 @@ Governs `src/SIL.Machine/Corpora/**/*.cs`.
 - Use ordinal comparison for marker, token, identifier, and protocol identity unless the
   code's contract is explicitly linguistic or user-facing. Do not blanket-replace
   culture-aware comparisons; justify the semantic choice.
-- For USFM/versification changes, add paired input/output or reference assertions
-  covering the affected book/chapter/verse mapping, marker nesting, empty/malformed
-  input, and Unicode case relevant to the change.
+- Reference and versification arithmetic is the defect class that recurs most here
+  (`4e889539`, `54687760`, `8d924c1a`, `f9ba7bb7`, `78350670`). For any change that
+  touches it, add paired input/output or reference assertions over the affected
+  book/chapter/verse mapping, marker nesting, empty and malformed input, and the
+  relevant Unicode case.
 - Check that missing, duplicate, or ambiguous references fail or resolve according to
   the existing contract. Do not treat a parser snapshot as proof of visual rendering
   parity.
 - For files, ZIPs, and streams, preserve entry/byte limits, path validation, disposal,
   cancellation, and actionable errors.
-- Use existing corpus/USFM test helpers and run focused tests plus the normal test/build
-  checks. Report any fixture, full-suite, or culture/platform evidence not run.

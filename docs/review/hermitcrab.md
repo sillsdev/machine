@@ -21,5 +21,3 @@ Governs `src/SIL.Machine.Morphology.HermitCrab/**/*.cs`.
   artifact in addition to semantic regression tests.
 - Exercise sequential and parallel behavior where the changed path supports both, and
   test cancellation/disposal if a boundary is asynchronous.
-- Run focused HermitCrab tests and the normal release test/build checks. State any
-  unavailable benchmark, large-corpus, or platform evidence explicitly.

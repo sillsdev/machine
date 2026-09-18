@@ -8,14 +8,8 @@ user-invocable: true
 # Writing a machine review
 
 This is a style guide for the review you publish, not a method for doing the
-review. What to look for lives in `docs/review/`, keyed by changed path:
-
-| Path | Rules |
-| --- | --- |
-| `src/SIL.Machine/Corpora/**/*.cs` | `docs/review/corpora-usfm.md` |
-| `src/SIL.Machine.Morphology.HermitCrab/**/*.cs` | `docs/review/hermitcrab.md` |
-| other `src/**/*.cs` | `docs/review/machine-library.md` |
-| `tests/**/*.cs` | `docs/review/machine-tests.md` |
+review. What to look for lives in `docs/review/`; `AGENTS.md` maps a changed
+path to its rules file.
 
 A review is read-only. Do not edit, commit, push, or resolve threads.
 
@@ -69,5 +63,12 @@ Five lines at most:
 
 State `None verified` where that is the honest answer. Say which public API,
 target framework, package, or parity contract changed, or that none did.
+
+## Closing a thread
+
+Say what happened to each finding: **changed**, **accepted** (the author
+answered and you agree), or **unverified** (nobody settled it). Of 140 review
+threads in this repository's last three years, 128 have no author follow-up at
+all, so the reader cannot tell which findings mattered. Leave nothing implicit.
 
 For an adversarial second pass, apply `docs/review/devils-advocate.md`.

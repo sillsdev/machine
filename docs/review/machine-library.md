@@ -1,29 +1,26 @@
 # Machine Library Review
 
-*Review shipped machine library code for compatibility, deterministic language
-behavior, async contracts, resources, and focused tests.*
+*Review shipped library code for compatibility, deterministic comparison, async
+contracts, and disposal.*
 
-Governs `src/SIL.Machine/**/*.cs`, `src/SIL.Machine.Translation.Thot/**/*.cs`,
-`src/SIL.Machine.Tokenization.SentencePiece/**/*.cs`, and
-`src/SIL.Machine.Translation.TensorFlow/**/*.cs`.
+Governs any `src/**/*.cs` no more specific rules file claims.
 
-- Treat code in these projects as shipped library code. Check public/protected API
-  shape, overloads, optional parameters, return types, XML documentation, target
-  framework, package references, and assembly/package versioning when touched.
-- The current library target is `netstandard2.0`; do not introduce a target or API that
-  silently removes existing consumers. Do not demand nullable reference types for the
-  whole library, but review any changed annotations or `#nullable` contract carefully
-  because test projects enable nullable while shipped libraries do not.
-- Existing public asynchronous APIs use `Task` and `CancellationToken`; existing
-  corpus/tokenizer APIs are synchronous. Verify cancellation propagation, ordering,
-  disposal, and library-context behavior in changed async code. Treat a new
-  `IAsyncEnumerable` surface as an explicit compatibility decision.
-- Use explicit culture/comparison semantics for token, marker, identifier, serialized,
-  and protocol logic. Preserve genuinely linguistic culture-aware behavior. Add a
-  culture regression test when the changed code can vary by culture.
-- For file, stream, archive, process, or native-DLL changes, check bounds, paths,
-  disposal, platform selection, and failure propagation.
-- Add or update focused tests for changed decisions and boundary cases. Report commands
-  and gaps; do not use a coverage percentage as the sole proof.
-- Run `dotnet csharpier check .`, the relevant test project, and the release build as
-  appropriate. Respect `.editorconfig` and CSharpier's 120-column width.
+- Treat this as shipped library code. Check public and protected API shape,
+  overloads, optional parameters, return types, and XML documentation when they
+  change. The target is `netstandard2.0`; do not introduce an API that silently
+  drops existing consumers.
+- Use ordinal comparison for markers, tokens, identifiers, and protocol text.
+  Reserve culture-sensitive comparison for genuinely linguistic operations. This
+  is the defect class review misses most often here: `075c6ea1`, `dac2d895`, and
+  `418ff225` all shipped it.
+- Existing async APIs use `Task` and `CancellationToken`; corpus and tokenizer
+  APIs are synchronous. In changed async code verify cancellation propagation,
+  ordering, and disposal.
+- Dispose engines, models, trainers, and streams according to their contracts,
+  and check who owns a stream that is passed in - `5a488c01` and `37e13b79` were
+  both ownership bugs.
+- Test projects enable nullable reference types and the shipped libraries do
+  not. Review a changed annotation for a false promise; do not ask for a
+  repository-wide migration.
+- Add focused tests for the decisions the diff changes. Report the commands you
+  ran; a coverage percentage is not evidence.
