@@ -1,0 +1,46 @@
+name: Comment hygiene
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Separate from CI Build so the report does not wait on the native build, the
+  # Release build, and the test matrix.
+  comment_hygiene:
+    name: Report comment hygiene (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-latest]
+
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@v6
+        with:
+          # The scan diffs against the merge base; a shallow checkout leaves
+          # that commit unreachable.
+          fetch-depth: 0
+
+      - name: Verify the hygiene rules
+        shell: pwsh
+        run: ./scripts/comment-hygiene.ps1 -SelfTest
+
+      # Advisory: the scan annotates the lines this pull request adds and always
+      # exits 0. Agents get the blocking version through ./local_check.sh
+      # --agent-strict, so existing comment debt and any false positive cannot
+      # block a human contributor.
+      - name: Scan the lines this pull request adds
+        shell: pwsh
+        run: >
+          ./scripts/comment-hygiene.ps1
+          -Advisory
+          -BaseRef '${{ github.event.pull_request.base.sha }}'

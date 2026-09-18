@@ -1,0 +1,68 @@
+name: Bug report
+description: Report a reproducible problem in SIL Machine
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please remove secrets and private project data from examples and logs.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: >-
+        Three short sentences: the symptom, the smallest trigger, and what it
+        costs. Detail goes in the fields below.
+      placeholder: |
+        A USFM attribute is dropped when the tokenizer runs under tr-TR.
+        Any marker containing an ASCII i splits at the wrong index on a Turkish locale.
+        Round-tripping a Turkish project silently loses the attribute.
+    validations:
+      required: true
+  - type: input
+    id: package
+    attributes:
+      label: Affected package or API
+      description: Name the SIL.Machine package, project, or public API.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Include the package version or commit SHA.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, architecture, and .NET runtime.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Minimal input/fixture and exact steps, including frequency.
+      placeholder: |
+        1. ...
+        2. ...
+        Expected: ...
+        Actual: ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or exception
+      description: Paste sanitized output, or write None.
+  - type: textarea
+    id: regression
+    attributes:
+      label: Regression and test idea
+      description: State the first known good version, if known, and the smallest regression test.
+    validations:
+      required: true
