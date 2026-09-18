@@ -387,7 +387,7 @@ namespace SIL.Machine.FiniteState
                 }
 
                 List<FstResult<TData, TOffset>> curResults = traversalMethod
-                    .Traverse(ref annIndex, initRegisters, cmds, initAnns)
+                    .Traverse(ref annIndex, initRegisters, cmds, initAnns, allMatches)
                     .ToList();
                 if (curResults.Count > 0)
                 {

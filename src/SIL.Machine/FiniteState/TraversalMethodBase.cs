@@ -91,7 +91,8 @@ namespace SIL.Machine.FiniteState
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
             IList<TagMapCommand> initCmds,
-            ISet<int> initAnns
+            ISet<int> initAnns,
+            bool allMatches
         );
 
         protected static void ExecuteCommands(
