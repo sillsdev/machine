@@ -18,8 +18,5 @@ Governs `tests/**/*.cs`.
 - For HermitCrab changes, compare analysis semantics, not only memo-hit counts or
   execution success. Exercise key completeness, replay, resource caps, and
   parallel/sequential equivalence when touched.
-- For public API changes, include compile/use coverage for the changed signature and
-  document any consumer or target-framework evidence that was not available.
-- Run the focused test command, `dotnet test --verbosity normal`, and coverage
-  collection when useful. Record filters, skipped tests, failures, and unverified
-  changed lines. A global coverage percentage is not changed-line evidence.
+- Name the test that proves the change. "Where is the test?" is the single most
+  common review question in this repository; answer it before it is asked.
