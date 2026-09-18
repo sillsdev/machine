@@ -94,9 +94,9 @@ namespace SIL.Machine.FiniteState
                             if (!skip)
                             {
                                 Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(
-                                     newInst.State,
-                                     newInst.AnnotationIndex,
-                                     newInst.Registers
+                                    newInst.State,
+                                    newInst.AnnotationIndex,
+                                    newInst.Registers
                                  );
                                 if (!traversed.Contains(key))
                                 {
