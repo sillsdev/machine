@@ -78,24 +78,31 @@ namespace SIL.Machine.FiniteState
                                 arc,
                                 curResults
                             );
+                            bool skip = false;
                             if (!allMatches)
                             {
                                 var stateKey = Tuple.Create(newInst.State, newInst.AnnotationIndex);
                                 if (states.Contains(stateKey))
                                 {
-                                    continue;
+                                    skip = true;
                                 }
-                                states.Add(stateKey);
+                                else
+                                {
+                                    states.Add(stateKey);
+                                }
                             }
-                            Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(
-                                newInst.State,
-                                newInst.AnnotationIndex,
-                                newInst.Registers
-                            );
-                            if (!traversed.Contains(key))
+                            if (!skip)
                             {
-                                instStack.Push(newInst);
-                                traversed.Add(key);
+                                Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(
+                                     newInst.State,
+                                     newInst.AnnotationIndex,
+                                     newInst.Registers
+                                 );
+                                if (!traversed.Contains(key))
+                                {
+                                    instStack.Push(newInst);
+                                    traversed.Add(key);
+                                }
                             }
                             if (isInstReusable)
                                 releaseInstance = false;
