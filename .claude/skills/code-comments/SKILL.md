@@ -5,119 +5,59 @@ description: MUST use before writing or editing any comment in this repository -
 
 # Machine code comments
 
-Write comments for the next reader. A comment must explain a current contract,
-invariant, constraint, compatibility requirement, performance tradeoff, or
-non-obvious reason. If the code and its names already make the behaviour
-obvious, delete the comment.
+Write for the next reader. A comment earns its place by explaining a contract,
+an invariant, a compatibility requirement, a performance tradeoff, or a
+non-obvious reason. If the code and its names already say it, delete it.
 
-`scripts/comment-hygiene.ps1` enforces the mechanical parts of this standard
-over the lines a branch adds. It cannot judge whether a comment is accurate or
-worth keeping; that is still the author's and reviewer's job.
+Say WHAT the code guarantees and WHY it matters, in the present tense. Do not
+narrate HOW it works - the comment should survive an equivalent rewrite. A
+member summary describes that member's own contract, not its caller's.
 
-## Scope
+## Banned content
 
-The checker examines whole-line comments in:
+`scripts/comment-hygiene.ps1` fails on these over the lines a branch adds:
 
-- C# under `src/` and `tests/`;
-- the C/C++ wrapper under `src/sentencepiece4c/`;
-- PowerShell, shell, and Python under `scripts/`, plus `local_check.sh`.
+- **Process framing** - `Phase 1`, `later we'll`, `we'll eventually`.
+- **History** - `it used to`, `previously returned`, `was removed`,
+  `renamed from`, `no longer used`.
+- **Provenance** - `extracted from`, `shared by X and Y`, `the only caller`.
+- **Pointers** - to a Markdown file, a numbered section, a review note, or
+  another file's comment.
+- **Non-ASCII punctuation** - use `--`, `->`, `...`, `-`, `x`, and plain quotes.
+  Typography only; comment text may use any script the language data needs.
 
-It examines `//`, `///`, and whole-line `#` comments. It does not examine
-trailing comments, `/* ... */` blocks, Python docstrings, string literals, or a
-shebang line. A bare `#` in a C# file is a preprocessor directive, not a
-comment.
+A present-tense statement of current state is not history: "Returns null when
+the stratum has no rules" is a contract. A compatibility note about behavior
+that must stay true is welcome. An issue reference that is part of the current
+contract may stay.
 
-## Content rules
+## Budget and width
 
-- Be accurate before being brief. Three or four sentences is usually enough.
-- Explain WHAT the code guarantees and WHY the choice matters. Do not narrate
-  HOW the current implementation works; the comment should survive an equivalent
-  rewrite.
-- A member summary describes that member's own contract, not a caller's or a
-  collaborator's.
-- A comment must stand on its own. Delete restatements of the adjacent code.
-- Private comments are for non-obvious behaviour, invariants, compatibility,
-  performance, or a subtle bug fix.
-- Keep a compatibility comment about behaviour that must stay true, for example
-  "Matches the legacy normalization so persisted data stays interoperable". Do
-  not say that code was ported, changed in a commit, or used to behave
-  differently.
-- Use ASCII punctuation: `--` for an em dash, `->` for an arrow, `...` for an
-  ellipsis, `-` for a bullet or en dash, `x` for a multiplication sign, and
-  plain quotes. This is about typography only; comments may contain any script,
-  IPA, or orthography the language data requires.
-- Prefer a clear word to an abbreviation the next reader cannot resolve.
+A run of consecutive whole-line `//` or `#` comments is one block, ended by a
+blank line, code, or a doc comment. **One block gets 200 characters total**,
+markers and indentation excluded. `///` blocks and PowerShell block comments are
+exempt from the budget, not from the content rules or the width limit.
 
-## Banned comment content
+Every comment line fits 120 display columns, per `.editorconfig`.
 
-Do not write:
-
-- process framing such as `Phase 1`, `later we'll`, or `we'll eventually`;
-- pointers to a Markdown document, a numbered section, or a review note;
-- historical narration such as `it used to`, `used to be`, `previously
-  returned`, `was removed`, `renamed from`, `first shipped`, or `no longer
-  used`;
-- provenance claims such as `shared by X and Y`, `the only caller`, or
-  `extracted from`;
-- cross-file pointers such as `see X's note` or `as documented in X`.
-
-A present-tense statement about current state is fine: "Returns null when the
-stratum has no rules" is a contract, not history. A GitHub issue reference that
-is part of the current contract may stay.
+A block that wants more than 200 characters usually belongs in an XML summary,
+or is explaining something the code should express directly.
 
 ## XML documentation
 
-The shipped library projects set `GenerateDocumentationFile` and suppress
-CS1591/CS1573, so the compiler does not require documentation. This standard
-supplies the contract the compiler does not enforce.
+One `<summary>` above the member, including a public constructor with
+parameters. Omit `<param>` and `<returns>` that only restate a name or type;
+keep them for units, nullability, ownership, or real result semantics. Document
+every parameter or none. No file headers, no divider comments, no fact repeated
+in both the summary and the parameters.
 
-- Put one `<summary>` directly above the documented member. Give a public
-  constructor with parameters a summary too.
-- Omit `<param>` and `<returns>` when they only restate a name or a type. Keep
-  them when they add units, nullability, ownership, constraints, or real result
-  semantics.
-- Be all-or-nothing for parameters: document every parameter, or fold the
-  explanation into the summary.
-- Use `<value>` for a property contract, `<exception>` for errors a caller is
-  expected to handle, and `<see cref="..."/>` for contract-relevant symbols.
-- Do not repeat the same fact in the summary, the parameters, and the returns.
-- Do not add decorative file headers or section-divider comments.
-
-## Length and width
-
-An implementation-comment block is a consecutive run of whole-line `//` or `#`
-comments; a blank line, a line of code, or a doc comment ends it. **The combined
-trimmed text of one block must be at most 200 characters.** This is a single
-aggregate budget, not 200 characters per line, and neither the indentation nor
-the `//` marker counts toward it.
-
-A `///` block and a PowerShell block comment are exempt from that budget. They
-are exempt from how much they may say, not from how they are written: the
-content rules and the width limit still apply.
-
-Every comment line must fit `max_line_length` from `.editorconfig`, currently
-120 display columns, counting indentation and the marker. A tab advances to the
-next four-column stop.
-
-If a block needs more than 200 characters, the usual answer is that it belongs
-in an XML summary on the member, or that it is explaining something the code
-should express directly.
-
-## Tests
-
-A test comment should explain a non-obvious fixture, fake, or setup constraint.
-It should not restate the test name or say that the test exists for coverage.
+A test comment explains a non-obvious fixture or setup constraint. It does not
+restate the test name.
 
 ## Running the check
 
-```
-pwsh ./scripts/comment-hygiene.ps1              # lines this branch adds; fails on a violation
-pwsh ./scripts/comment-hygiene.ps1 -Advisory    # same scan, always exits 0
-pwsh ./scripts/comment-hygiene.ps1 -Full -Advisory  # size the existing debt
-pwsh ./scripts/comment-hygiene.ps1 -SelfTest    # verify the rules themselves
-```
-
-Agents must run `./local_check.sh --agent-strict`, which runs the blocking scan
-before the format, build, and test steps. Do not drop the flag to get a run
-through; fix the comments instead. The pull request workflow is advisory, so a
-clean CI check is not evidence that the strict check passed.
+`pwsh ./scripts/comment-hygiene.ps1` scans the lines your branch adds; add
+`-Full -Advisory` to size existing debt, or `-SelfTest` to check the rules
+themselves. Agents run `./local_check.sh --agent-strict`, which makes the scan
+blocking. The pull request check is advisory, so its green tick is not evidence
+that the strict scan passed.
