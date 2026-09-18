@@ -1,6 +1,6 @@
 ---
 name: commit-messages
-description: Use before writing a commit message in sillsdev/machine; apply the repository commit conventions and check the new commit range before pushing.
+description: How to write a commit message in sillsdev/machine - imperative subject, short body.
 ---
 
 # Commit messages

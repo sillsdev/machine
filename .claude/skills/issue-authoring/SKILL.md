@@ -1,86 +1,52 @@
 ---
 name: issue-authoring
-description: Use when creating, refining, or triaging a GitHub issue in sillsdev/machine; produce evidence-based bug, feature, or machine.py porting issues without inventing Jira requirements.
+description: How to write a GitHub issue in sillsdev/machine - one symptom, short body, real evidence.
 argument-hint: Optional issue type, title, symptoms, acceptance criteria, or source PR
 user-invocable: true
 ---
 
-# Issue Authoring
+# Writing a machine issue
 
-Use GitHub issues as the native issue system for sillsdev/machine. This skill
-supports Bug, Feature, and Porting issues. It does not fetch, assign, transition,
-or comment on Jira tickets. An LT- reference may be included as an external
-reference only when supplied and verified.
+A style guide for the issue text. GitHub issues are the native tracker here;
+this repository has no Jira workflow. An `LT-` reference is an external link
+only, and only when someone supplied it.
 
-## Common intake and evidence gate
+Search open and recently closed issues first. Say what you searched.
 
-1. Search existing open and recently closed GitHub issues for duplicates and
-   related PRs before drafting.
-2. Ask for the smallest concrete example distinguishing a problem from an
-   enhancement request.
-3. Separate observed facts, reproduction/acceptance evidence, and hypotheses.
-4. Remove secrets, tokens, private data, and unsanitized customer/project data.
-5. Name affected version/commit, OS, architecture, runtime, and package when
-   known.
-6. If a fact is unknown, write Unknown and identify how to verify it.
+## The title
 
-An issue is ready when another maintainer can reproduce the bug, evaluate the
-feature acceptance criteria, or identify the exact source change to port.
+One symptom, in the reader's words, under about 70 characters. No "investigate",
+no "improve", no component prefix the labels already carry.
 
-## Bug issue
+Bad: *Tokenizer improvements*
+Good: *USFM attribute is dropped when the locale is tr-TR*
 
-Require:
+## The body
 
-* concise symptom and affected package/API;
-* version or commit, OS, architecture, and .NET runtime;
-* minimal input, fixture, code sample, or repository state;
-* exact reproduction steps and frequency;
-* expected result and actual result;
-* sanitized exception/log output;
-* regression range or not known; and
-* a minimal regression-test idea.
+Short paragraphs or bullets, never a wall. Lead with the symptom and the one
+fact that makes it reproducible. Everything else is a labelled line someone can
+scan. Write `Unknown` where you do not know, and say how to find out.
 
-If automation is feasible, propose a failing test before implementation and name
-the likely test project. If not, state the concrete reason--visual/manual
-behavior, unavailable external service, or packaging infrastructure--and give an
-alternative verification plan.
+**Bug** - affected package or API; version or commit, OS, runtime; the smallest
+input that shows it; expected vs actual; sanitized log or exception; when it
+started, or `Unknown`; the test that would catch it.
 
-## Feature issue
+**Feature** - who is blocked and by what; the behavior proposed, with its
+compatibility cost; acceptance criteria an outsider could check; non-goals.
 
-Require:
+**Porting** - the source PR or commit URL, what behavior matters here, what does
+not, and the target projects if known.
 
-* user/problem statement and affected consumers;
-* use cases and non-goals;
-* proposed behavior or API, including compatibility concerns;
-* observable acceptance criteria;
-* test strategy and representative edge cases;
-* performance/resource/platform constraints; and
-* deliberately excluded follow-up work.
+Sanitize before posting: no secrets, tokens, customer text, or private project
+data.
 
-Do not prescribe an implementation before behavior and acceptance criteria are
-clear. Use Fixes #N only when closing the issue on merge is intended.
+## Ready
 
-## machine.py porting issue
+An issue is ready when another maintainer can reproduce the bug, judge the
+acceptance criteria, or find the exact change to port - without asking you a
+question first.
 
-Include source repository and PR/commit URL, target behavior to port, what is
-not relevant to machine, verified target projects/files if known,
-compatibility/test implications, and source validation evidence or an explicit
-gap.
+`create-porting-issue.yml` already files the porting issue after a merge, marked
+`AUTO-GENERATED-ISSUE`. Do not write a second one by hand.
 
-The existing merged-PR workflow normally creates the opposite-repository issue
-with title Port '<PR title>', label porting, and this body:
-
-    Port any relevant changes in <PR URL> from <current repo> to <other repo>.
-
-    <!-- AUTO-GENERATED-ISSUE -->
-
-Do not duplicate that issue. If a closing issue reference already contains the
-marker, the workflow skips another generated issue. If the port is not covered
-by a merged PR, create a normal Porting issue using the fields above.
-
-## Handoff
-
-Return proposed title, type/labels, complete body, duplicate-search result,
-evidence gaps, and links. The author decides whether to publish it. Do not
-claim that a test, reproduction, or external issue was checked unless it was
-actually checked.
+Hand back the title, labels, and body. The author decides whether to publish.

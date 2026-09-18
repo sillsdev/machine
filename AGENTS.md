@@ -48,6 +48,19 @@ CSharpier is required for C#. The tool is pinned in `.config/dotnet-tools.json`,
 CI also collects coverage (`--collect:"Xplat Code Coverage"`); `local_check.sh`
 does not, so do not describe a local run as coverage-equivalent.
 
+## Branch hygiene
+
+Before opening or updating a pull request, confirm the branch and the range:
+`git status --short --branch`, `git merge-base origin/master HEAD`,
+`git diff --check <merge-base>...HEAD`, and `git log --check origin/master..`.
+The target default is `origin/master`; if the remote default changes, use the
+resolved default and say so.
+
+Preserve unrelated changes and pre-existing untracked files. Never use
+`reset --hard`, `checkout --`, broad deletion, or broad staging as a cleanup
+shortcut. A local review summary may be written to `.review/`, which
+`.gitignore` excludes; keep other transient notes outside the repository.
+
 ## Comment hygiene
 
 Agents must run `./local_check.sh --agent-strict`. It adds

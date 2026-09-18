@@ -1,34 +1,31 @@
 ## Quick summary
 
-<!-- What changed, why it matters, and the one question reviewers should answer. Keep this short. -->
+<!-- First sentence: what a caller can now do, or what stopped being broken.
+Then the reviewer's main unknown and its answer. Under 200 words. -->
 
-## Issue / porting context
+## Where to look
 
-<!-- Use Fixes #N only when this PR should close a GitHub issue. For machine.py
-work, link the source PR or porting issue. -->
-
-## What changed
-
-<!-- Include public API, serialization, package, platform, or compatibility effects. -->
+<!-- One line per risk: the risk, then the test or gate that pins it. -->
 
 ## Deliberately not included
 
-<!-- State relevant deferred behavior or follow-up work. Delete this section if none. -->
+<!-- Deferred work and what would unblock it. Delete if none. -->
 
 ## Validation
 
-- [ ] dotnet tool restore
-- [ ] dotnet restore
-- [ ] dotnet csharpier check .
-- [ ] dotnet build --no-restore -c Release
-- [ ] dotnet test --verbosity normal
-- [ ] ./local_check.sh --agent-strict (required for agents; optional for humans)
-- [ ] Applicable SentencePiece CMake build run, or not relevant
-- [ ] Applicable package output checked, or not relevant
-- [ ] git diff --check and commit-range whitespace checked
+<!-- The exact commands you ran and what they returned. Delete a line you did
+not run; do not list a command as evidence unless it produced the result shown.
+CI collects coverage and local_check.sh does not, so a local run is not
+CI-equivalent. -->
 
-<!-- Replace each checked item with the actual result in the PR body. Do not check an unrun command. -->
+- `./local_check.sh` --
+- `./local_check.sh --agent-strict` -- <!-- required of agents, optional for humans -->
+- `git diff --check <merge-base>...HEAD` --
+- <!-- SentencePiece CMake, package output, or focused test runs, if relevant -->
 
-## Reviewer focus
+## Issue / porting context
 
-<!-- Name the files/symbols and risks that deserve attention. -->
+<!-- Fixes #N only for a real GitHub issue. For machine.py work, link the
+source PR. Delete if neither applies. -->
+
+<!-- Longer reasoning belongs below a --- rule, in closed <details> blocks. -->

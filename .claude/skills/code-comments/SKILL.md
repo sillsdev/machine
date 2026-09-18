@@ -1,6 +1,6 @@
 ---
 name: code-comments
-description: MUST use before writing or editing any comment in this repository, in .cs, .cpp/.h, .ps1/.psm1, .sh, or .py alike. Covers the content contract, the banned content categories, XML documentation rules, the 200-character budget for an implementation comment block, and the 120-column width limit that CI reports on.
+description: MUST use before writing or editing any comment in this repository - content rules, budget, width.
 ---
 
 # Machine code comments
