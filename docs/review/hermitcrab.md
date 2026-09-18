@@ -13,9 +13,8 @@ Governs `src/SIL.Machine.Morphology.HermitCrab/**/*.cs`.
 - Memoized results must represent fully expanded subtrees. Check replay prefixes,
   deduplication, empty/nogood entries, in-flight recursion, and the separation between
   sequential and parallel scopes.
-- Preserve the per-parse scope rule and inspect the
-  100,000-entry/1,000,000-retained-word backstops when changing storage or result lists.
-  Do not weaken a bound without measured evidence and tests.
+- Do not weaken an existing memo or retained-word bound without measured evidence
+  and a test. Read the current limits from the code.
 - Inspect allocations and retained object lifetimes only in changed inner loops. If the
   change claims a performance improvement, require a reproducible benchmark or measured
   artifact in addition to semantic regression tests.

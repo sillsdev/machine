@@ -5,10 +5,9 @@ contracts, and disposal.*
 
 Governs any `src/**/*.cs` no more specific rules file claims.
 
-- Treat this as shipped library code. Check public and protected API shape,
-  overloads, optional parameters, return types, and XML documentation when they
-  change. The target is `netstandard2.0`; do not introduce an API that silently
-  drops existing consumers.
+- This is shipped library code, consumed as `netstandard2.0`. Check public and
+  protected API shape, overloads, optional parameters, and return types when they
+  change; do not introduce an API that silently drops existing consumers.
 - Use ordinal comparison for markers, tokens, identifiers, and protocol text.
   Reserve culture-sensitive comparison for genuinely linguistic operations. This
   is the defect class review misses most often here: `075c6ea1`, `dac2d895`, and

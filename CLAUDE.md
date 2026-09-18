@@ -2,7 +2,6 @@
 
 ## Claude Code
 
-- Keep repository-wide standing guidance in `AGENTS.md` and import it here.
-- Put Claude-only workflows and task procedures under `.claude/skills/`.
-- Keep `.github/` for GitHub-required files: workflows and issue and pull
-  request templates. Path-scoped review rules live under `docs/review/`.
+- Repository-wide guidance is `AGENTS.md`, imported above.
+- Claude-only workflows live under `.claude/skills/`; path-scoped review rules
+  under `docs/review/`; `.github/` holds only workflows and templates.
