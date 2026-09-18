@@ -1,8 +1,9 @@
----
-name: corpora-usfm-review
-description: Review corpus and USFM changes for deterministic marker/token behavior, ScriptureRef and versification correctness, Unicode handling, and safe file inputs.
-applyTo: "src/SIL.Machine/Corpora/**/*.cs"
----
+# Corpora and USFM Review
+
+*Review corpus and USFM changes for deterministic marker/token behavior, ScriptureRef
+and versification correctness, Unicode handling, and safe file inputs.*
+
+Governs `src/SIL.Machine/Corpora/**/*.cs`.
 
 - Trace changed behavior from source text/file or corpus row through tokenization,
   parsing, ScriptureRef/`ScrVers` conversion, update handling, and emitted text.

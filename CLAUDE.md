@@ -4,6 +4,5 @@
 
 - Keep repository-wide standing guidance in `AGENTS.md` and import it here.
 - Put Claude-only workflows and task procedures under `.claude/skills/`.
-- Keep `.github/` for GitHub-required compatibility files: workflows, issue and
-  pull request templates, `copilot-instructions.md`, and
-  `.github/instructions/*.instructions.md`.
+- Keep `.github/` for GitHub-required files: workflows and issue and pull
+  request templates. Path-scoped review rules live under `docs/review/`.

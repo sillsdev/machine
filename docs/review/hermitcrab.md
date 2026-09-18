@@ -1,8 +1,9 @@
----
-name: hermitcrab-review
-description: Review HermitCrab morphology changes for analysis equivalence, memoization-key completeness, retained-memory bounds, parallelism, and hot-path cost.
-applyTo: "src/SIL.Machine.Morphology.HermitCrab/**/*.cs"
----
+# HermitCrab Review
+
+*Review HermitCrab morphology changes for analysis equivalence, memoization-key
+completeness, retained-memory bounds, parallelism, and hot-path cost.*
+
+Governs `src/SIL.Machine.Morphology.HermitCrab/**/*.cs`.
 
 - Treat analysis output as the primary contract. A faster parse, more memo hits, or a
   successful build does not prove equivalent analyses.
