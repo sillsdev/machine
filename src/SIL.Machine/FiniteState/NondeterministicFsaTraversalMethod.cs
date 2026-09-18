@@ -97,7 +97,7 @@ namespace SIL.Machine.FiniteState
                                     newInst.State,
                                     newInst.AnnotationIndex,
                                     newInst.Registers
-                                 );
+                                );
                                 if (!traversed.Contains(key))
                                 {
                                     instStack.Push(newInst);
