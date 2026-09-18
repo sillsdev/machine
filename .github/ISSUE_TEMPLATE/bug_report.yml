@@ -8,6 +8,19 @@ body:
     attributes:
       value: |
         Please remove secrets and private project data from examples and logs.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: >-
+        Three short sentences: the symptom, the smallest trigger, and what it
+        costs. Detail goes in the fields below.
+      placeholder: |
+        A USFM attribute is dropped when the tokenizer runs under tr-TR.
+        Any marker containing an ASCII i splits at the wrong index on a Turkish locale.
+        Round-tripping a Turkish project silently loses the attribute.
+    validations:
+      required: true
   - type: input
     id: package
     attributes:

@@ -21,11 +21,27 @@ no "improve", no component prefix the labels already carry.
 Bad: *Tokenizer improvements*
 Good: *USFM attribute is dropped when the locale is tr-TR*
 
+## The lede
+
+Three short sentences, each doing a different job. Nothing else before them.
+
+1. **The symptom.** What goes wrong, in the reader's terms.
+2. **The trigger.** The smallest condition that produces it - input, locale,
+   platform, version.
+3. **The cost.** Who is blocked, what is lost, or what the caller sees instead.
+
+Good: *A USFM attribute is dropped when the tokenizer runs under tr-TR. Any
+marker containing an ASCII `i` splits at the wrong index on a Turkish locale.
+Round-tripping a Turkish project silently loses the attribute.*
+
+For a feature, the same three: what is missing, when it bites, what it costs.
+
+Keep each sentence under about 25 words. Everything longer goes in the body.
+
 ## The body
 
-Short paragraphs or bullets, never a wall. Lead with the symptom and the one
-fact that makes it reproducible. Everything else is a labelled line someone can
-scan. Write `Unknown` where you do not know, and say how to find out.
+Short paragraphs or bullets, never a wall. Everything is a labelled line someone
+can scan. Write `Unknown` where you do not know, and say how to find out.
 
 **Bug** - affected package or API; version or commit, OS, runtime; the smallest
 input that shows it; expected vs actual; sanitized log or exception; when it
