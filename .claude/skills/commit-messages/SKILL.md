@@ -5,22 +5,22 @@ description: How to write a commit message in sillsdev/machine - imperative subj
 
 # Commit messages
 
-A concise, imperative, sentence-case subject naming the actual change, under
-about 72 characters, with no terminal punctuation:
+Name the change in an imperative, sentence-case subject under about 72
+characters, with no terminal punctuation:
 
 - `Fix bug in MergeEquivalentAnalyses (#493)`
 - `Port changes from sillsdev/machine.py#336 (#498)`
 
-If there is a body, leave a blank line after the subject, wrap at about 80
-columns, and say what changed and why. Reference a GitHub issue when one exists.
+A body, when there is one: blank line after the subject, wrapped at about 80
+columns, saying what changed and why. Reference a GitHub issue when one exists.
 
-Two things the history will mislead you about:
+## Two traps in the history
 
-- The `(#N)` suffix is added by GitHub when a pull request is squashed. Never
-  type it into a local commit.
-- Older commits carry Jira identifiers such as `LT-22605`. That is historical;
-  use a GitHub issue reference for new work.
+1. The `(#N)` suffix is added by GitHub when a pull request is squashed. Never
+   type it into a local commit.
+2. Older commits carry Jira identifiers such as `LT-22605`. That is historical;
+   use a GitHub issue reference.
 
-The 72-character limit is not enforced, and longer subjects exist. Do not
-rewrite shared history to satisfy it, or to fix a message on a pushed branch -
-add a corrective commit unless the author asks for the rewrite.
+The 72-character limit is not enforced and longer subjects exist. Do not rewrite
+shared history to satisfy it, or to fix a message on a pushed branch - add a
+corrective commit unless the author asks for the rewrite.
