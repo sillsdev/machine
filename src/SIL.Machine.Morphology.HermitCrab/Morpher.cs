@@ -65,6 +65,18 @@ namespace SIL.Machine.Morphology.HermitCrab
             RuleSelector = rule => true;
 
             _morphemes = new ReadOnlyObservableCollection<Morpheme>(morphemes);
+            IsPartial = GetPartialMorphemes().Count() > 0;
+        }
+
+        public IEnumerable<Morpheme> GetPartialMorphemes()
+        {
+            var morphemes = new HashSet<Morpheme>();
+            foreach (Morpheme morpheme in _morphemes)
+            {
+                if (morpheme.IsPartial)
+                    morphemes.Add(morpheme);
+            }
+            return morphemes;
         }
 
         public ITraceManager TraceManager
@@ -87,6 +99,16 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// Merged analyses will be expanded if lexical lookup succeeds.
         /// </summary>
         public bool MergeEquivalentAnalyses { get; set; }
+
+        /// <summary>
+        /// A Morpher is partial if any of the elements are partial.
+        /// </summary>
+        public bool IsPartial { get; }
+
+        /// <summary>
+        /// Enforce final templates even if some of the morphemes were partial.
+        /// </summary>
+        public bool AlwaysEnforceFinalTemplates { get; set; }
 
         /// <summary>
         /// Caps the concurrency used within a single parse or generation -- analysis cascade,
@@ -490,6 +512,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                             SyntacticFeatureStruct = input.SyntacticFeatureStruct,
                             Stratum = input.Stratum,
                         };
+                        // Don't update Morpher.IsPartial even if lexEntry.IsPartial is true.
+                        // We don't mind if final templates are filtered during analysis in this case.
                         lexEntry.Allomorphs.Add(root);
                         // Point the root allomorph to the lexical pattern in FieldWorks.
                         if (lexicalPattern.Morpheme != null)
