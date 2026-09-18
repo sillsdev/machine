@@ -1,7 +1,8 @@
 ## Quick summary
 
-<!-- First sentence: what a caller can now do, or what stopped being broken.
-Then the reviewer's main unknown and its answer. Under 200 words. -->
+<!-- Three short sentences, nothing else: (1) what a caller can now do, or what
+stopped being broken; (2) the reviewer's first unknown, answered; (3) what this
+does not touch. Never open with "This PR refactors...". -->
 
 ## Where to look
 

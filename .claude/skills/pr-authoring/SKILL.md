@@ -14,15 +14,26 @@ Do not push, open, or edit a PR unless the author asked for it.
 
 ## The lede
 
-First sentence: what a caller can now do, or what stopped being broken. Not what
-you did, not how long it took, not which files moved.
+Three short sentences, each doing a different job. Nothing else before them.
+
+1. **What it does.** What a caller can now do, or what stopped being broken.
+   Not what you did, not how long it took, not which files moved.
+2. **The reviewer's first unknown, answered.** Usually "what breaks?" or "why is
+   it this big?" Answer it here; do not make them read for it.
+3. **The boundary.** What the change does not touch, or the one condition that
+   keeps it safe.
 
 Bad: *This PR refactors the tokenizer and adds some tests.*
-Good: *USFM markers now split identically under tr-TR; they used to lose the
-attribute on a Turkish locale.*
 
-If the change is invisible to callers, say what it protects instead: *Agents can
+Good: *USFM markers now split identically under tr-TR, where the attribute used
+to be dropped. No public signature changes - the fix is one comparison, from
+culture-aware to ordinal. Nothing outside `UsfmTokenizer` is touched.*
+
+If the change is invisible to callers, lead with what it protects: *Agents can
 no longer land a comment that narrates its own history.*
+
+Keep each sentence under about 25 words. If a sentence needs a subordinate
+clause to survive, it belongs in the body.
 
 ## Body
 
@@ -31,7 +42,7 @@ empty:
 
 ```markdown
 ## Quick summary
-<The lede, then the reviewer's main unknown and its answer. Two short paragraphs.>
+<The three-sentence lede. Nothing else in this section.>
 
 ## Where to look
 - <risk> -- <the test, invariant, or gate that pins it>

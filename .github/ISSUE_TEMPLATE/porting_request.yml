@@ -8,6 +8,15 @@ body:
     attributes:
       value: |
         A merged PR normally creates this issue automatically. Use this form when no generated issue exists.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: >-
+        Three short sentences: the behavior to port, why it matters here, and
+        what is out of scope. Detail goes in the fields below.
+    validations:
+      required: true
   - type: input
     id: source_pr
     attributes:
