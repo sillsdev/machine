@@ -13,6 +13,9 @@ Say WHAT the code guarantees and WHY, in the present tense. Do not narrate HOW
 it works - the comment should survive an equivalent rewrite. A member summary
 describes that member's own contract, not its caller's.
 
+Match the file you are editing. Placement, density, and idiom are local here;
+read what is already there before you add to it, and use the terms it uses.
+
 ## Never write these
 
 `scripts/comment-hygiene.ps1` fails on them over the lines your branch adds:
@@ -39,16 +42,27 @@ excluded. Every line fits **120 display columns**.
 `///` blocks and PowerShell block comments are exempt from the budget, not from
 the content rules or the width limit.
 
-Over budget? It belongs in an XML summary, or the code should express it
-directly.
+Over budget? Shorten it, or let the code express it directly. Do not convert a
+`//` block to `///` to buy the exemption.
+
+The tree already holds comments over budget. They are known debt, not a
+convention: do not copy them, and do not sweep them either. Shorten one when you
+are already changing the code it describes.
 
 ## XML documentation
 
-One `<summary>` above the member, including a public constructor with
-parameters. Omit `<param>` and `<returns>` that only restate a name or type;
-keep them for units, nullability, ownership, or real result semantics. Document
-every parameter or none. No file headers, no divider comments, no fact repeated
-in both the summary and the parameters.
+Prefer none. An undocumented public type is the norm here, several projects use
+`///` nowhere at all, and HermitCrab's heavier use is not a model to copy.
+`SIL.Machine.Morphology.HermitCrab`, `SIL.Machine.Tokenization.SentencePiece`,
+and `SIL.Machine.Translation.TensorFlow` do not set `GenerateDocumentationFile`
+at all, so a `///` block there ships nothing to a consumer.
+
+Write one only when a caller needs a contract the signature cannot state: units,
+nullability, ownership, an exception they must handle. Then one `<summary>`
+above the member. Omit `<param>` and `<returns>` that only restate a name or
+type; keep them for real result semantics. Document every parameter or none. No
+file headers, no divider comments, no fact repeated in both the summary and the
+parameters.
 
 A test comment explains a non-obvious fixture or setup constraint. It does not
 restate the test name.

@@ -54,6 +54,9 @@ Under 200 words. Drop any section that would be empty.
 <Fixes #N only for a real issue. For machine.py work, link the source PR.>
 ```
 
+This mirrors `.github/PULL_REQUEST_TEMPLATE.md`. If the two ever differ, the
+template is what contributors actually see; fix this to match it.
+
 ## 3. Put the reasoning below the rule
 
 Everything longer goes under a `---`, in closed `<details>` blocks: *Reading

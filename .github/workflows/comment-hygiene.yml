@@ -12,8 +12,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Separate from CI Build so the report arrives in about a minute instead of
-  # waiting on the native build, the Release build, and the test matrix.
+  # Separate from CI Build so the report does not wait on the native build, the
+  # Release build, and the test matrix.
   comment_hygiene:
     name: Report comment hygiene (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
