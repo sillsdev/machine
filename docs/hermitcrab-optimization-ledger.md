@@ -85,6 +85,7 @@ copy-on-write design through `CloneForEngine`; see `docs/optimizations/shape-sha
 | 11 | Tandem lexical intersection (T2) | Kill doomed branches early via the lexicon | The oracle only sees lexical unreachability. The expensive words fail on checks that run *after* lexical lookup succeeds | Pooled **23.5%** dead steps vs a 30% gate; one failure word at exactly **0.0%** dead |
 | 21 | **Memo-key caching on the frozen `Word`** | Keys are built ~28x per distinct state, which looked like a cheap win. | High count did not imply high cost; caching would add state and invalidation complexity around negligible work. | **CLOSED:** all `AnalysisStateKey` construction and hashing on Amharic measured **3 ms of 81,707 ms = 0.0%**. |
 | 12 | Pool small short-lived collections | Fewer allocations, faster | `HashSet/Dictionary.Clear()` is O(capacity); Gen0 already beats pooling at this size | -15–17% bytes but **+8.6% wall**, +12% on the parallel battery. Reverted |
+| 23 | **`(State, AnnotationIndex)` traversal dedupe** (PR #511) | `Advance` forks per `Optional` annotation, so instances are exponential in optional count and independent of `|States|`; keying on state+position bounds it at `N * |States|` | The key omits what filters the traversal. Variable bindings gate later arcs; registers carry the captures `AllSubmatches` consumers read | **112 of 20,000 differential-fuzz cases change `Match()`** (108 bindings, 4 shortened ranges) while `AllMatches().First()` is identical in all 20,000. Narrowed to the deterministic method with no capture groups: **0 divergences**, full bound preserved. Extension censuses: environment matchers are **0.20%/1.18%** of instances (Amharic/Mbugwe); the analysis rules' apparent **93.95%** collapse is **99.7% alternate captures**. See `rejected-optimizations/state-position-traversal-dedup.md` |
 
 ## Closed before building — motivation refuted by measurement
 
@@ -109,13 +110,14 @@ copy-on-write design through `CloneForEngine`; see `docs/optimizations/shape-sha
 
 ## The lesson that generalises
 
-Three independent measurements, three boundaries, same collapse:
+Four independent measurements, four boundaries, same collapse:
 
 | measurement | key used | apparent | sound |
 | --- | --- | --- | --- |
 | synthesis-input dedupe (#6) | order-insensitive | 9,774x | 15–40% |
 | fold-entry census | trail position only | 6,476x | not established |
 | fold-step sharing (#5) | trail position only | 3.22x / 8.10x | **hits = 0** |
+| FSA traversal dedupe (#23) | state + position | 93.95% collapsible | **0.28%** register-identical |
 
 **The redundancy in HermitCrab's synthesis is apparent, not real. The trail is what makes each
 step distinct, and every measurement showing large shareable work is measuring a key that omits
