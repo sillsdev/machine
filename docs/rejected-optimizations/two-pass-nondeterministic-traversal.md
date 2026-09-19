@@ -12,3 +12,7 @@ the same direction. Toggle hooks, alternate algorithms, and counters were remove
 
 Reopen only with a corpus whose automata have substantial equivalent active-state convergence and a census
 showing that capture reconstruction is cheaper than the current pooled traversal.
+
+**See also** `state-position-traversal-dedup.md`, which drops bindings from the key instead of keeping them
+and skips capture reconstruction entirely. It is cheaper than this experiment and unsound for the same
+reason this one was expensive: the captures are load-bearing for `AllSubmatches` callers.
