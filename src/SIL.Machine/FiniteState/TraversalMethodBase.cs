@@ -463,7 +463,8 @@ namespace SIL.Machine.FiniteState
 
         private readonly Tuple<State<TData, TOffset>, int> _finalState = new Tuple<State<TData, TOffset>, int>(
             null,
-            -1);
+            -1
+        );
 
         /// <summary>
         /// Creates a lattice.
