@@ -85,7 +85,7 @@ namespace SIL.Machine.FiniteState
                                 instStack.Push(newInst);
                                 traversed.Add(key);
                             }
-                        if (isInstReusable)
+                            if (isInstReusable)
                                 releaseInstance = false;
                             varBindings = null;
                         }

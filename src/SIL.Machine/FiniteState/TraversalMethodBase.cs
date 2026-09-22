@@ -461,7 +461,9 @@ namespace SIL.Machine.FiniteState
             _cachedInstances.Enqueue(inst);
         }
 
-        private readonly Tuple<State<TData, TOffset>, int> _finalState = new Tuple<State<TData, TOffset>, int>(null, -1);
+        private readonly Tuple<State<TData, TOffset>, int> _finalState = new Tuple<State<TData, TOffset>, int>(
+            null,
+            -1);
 
         /// <summary>
         /// Creates a lattice.

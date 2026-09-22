@@ -39,8 +39,7 @@ public class TraversalDedupMinimalCasesTests : PhoneticTestsBase
         Pattern<AnnotatedStringData, int> pattern = Pattern<AnnotatedStringData, int>
             .New()
             .Annotation(FeatureStruct.New(PhoneticFeatSys).Feature("high").EqualToVariable("v0").Value)
-            .OneOrMore
-            .Value;
+            .OneOrMore.Value;
 
         var data = new AnnotatedStringData(new string('a', 5));
         data.Annotations.Add(0, 2, Ann("voice-", "high-", "back-"), false);
