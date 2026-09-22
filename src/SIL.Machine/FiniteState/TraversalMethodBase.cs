@@ -473,15 +473,17 @@ namespace SIL.Machine.FiniteState
         /// Each node has a list of incoming arcs that are [Instance, Arc] pairs.
         /// The Instance encodes the previous node.
         /// </summary>
-        protected IDictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>> CreateFstLattice()
+        protected IDictionary<
+            Tuple<State<TData, TOffset>, int>,
+            IList<Tuple<TInst, Arc<TData, TOffset>>>
+        > CreateFstLattice()
         {
-            return new Dictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>>
-            (
+            return new Dictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>>(
                 AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int>>(StateKeyEquals, StateKeyGetHashCode)
             );
         }
 
-       /// <summary>
+        /// <summary>
         /// Check whether instance is already recorded in lattice.
         /// If not, adds instance to lattice.
         /// Also adds [origInstance, arc] to instance's incoming arcs.
@@ -490,7 +492,8 @@ namespace SIL.Machine.FiniteState
             IDictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>> lattice,
             TInst instance,
             TInst origInstance,
-            Arc<TData, TOffset> arc)
+            Arc<TData, TOffset> arc
+        )
         {
             var stateKey = Tuple.Create(instance.State, instance.AnnotationIndex);
             bool recorded = lattice.TryGetValue(stateKey, out IList<Tuple<TInst, Arc<TData, TOffset>>> incoming);
@@ -508,7 +511,8 @@ namespace SIL.Machine.FiniteState
         protected void RecordFinalArc(
             IDictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>> lattice,
             TInst origInstance,
-            Arc<TData, TOffset> arc)
+            Arc<TData, TOffset> arc
+        )
         {
             bool recorded = lattice.TryGetValue(_finalState, out IList<Tuple<TInst, Arc<TData, TOffset>>> incoming);
             if (!recorded)
@@ -526,7 +530,8 @@ namespace SIL.Machine.FiniteState
         /// </summary>
         protected List<FstResult<TData, TOffset>> ExtractResults(
             IDictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>> lattice,
-            bool allMatches)
+            bool allMatches
+        )
         {
             List<FstResult<TData, TOffset>> newResults = new List<FstResult<TData, TOffset>>();
             IList<Tuple<TInst, Arc<TData, TOffset>>> incoming;
@@ -545,7 +550,8 @@ namespace SIL.Machine.FiniteState
         private IList<TInst> ExpandInstances(
             TInst instance,
             IDictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>> lattice,
-            bool allMatches)
+            bool allMatches
+        )
         {
             IList<TInst> instances = new List<TInst>();
             IList<FstResult<TData, TOffset>> curResults = new List<FstResult<TData, TOffset>>();
@@ -578,7 +584,8 @@ namespace SIL.Machine.FiniteState
             TInst instance,
             Arc<TData, TOffset> arc,
             IList<TInst> instances,
-            IList<FstResult<TData, TOffset>> curResults)
+            IList<FstResult<TData, TOffset>> curResults
+        )
         {
             if (CheckInputMatch(arc, instance.AnnotationIndex, instance.VariableBindings))
             {
