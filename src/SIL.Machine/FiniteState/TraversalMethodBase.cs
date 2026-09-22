@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
@@ -458,6 +459,161 @@ namespace SIL.Machine.FiniteState
         protected void ReleaseInstance(TInst inst)
         {
             _cachedInstances.Enqueue(inst);
+        }
+
+        private readonly Tuple<State<TData, TOffset>, int> _finalState = new Tuple<State<TData, TOffset>, int>(null, -1);
+
+        /// <summary>
+        /// Creates a lattice.
+        /// A lattice is a graph that represents the space of traversals as a packed forest.
+        /// The nodes are [State, AnnotationIndex] pairs.
+        /// Each node has a list of incoming arcs that are [Instance, Arc] pairs.
+        /// The Instance encodes the previous node.
+        /// </summary>
+        protected IDictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>> CreateFstLattice()
+        {
+            return new Dictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>>
+            (
+                AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int>>(StateKeyEquals, StateKeyGetHashCode)
+            );
+        }
+
+       /// <summary>
+        /// Check whether instance is already recorded in lattice.
+        /// If not, adds instance to lattice.
+        /// Also adds [origInstance, arc] to instance's incoming arcs.
+        /// </summary>
+        protected bool RecordedInstance(
+            IDictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>> lattice,
+            TInst instance,
+            TInst origInstance,
+            Arc<TData, TOffset> arc)
+        {
+            var stateKey = Tuple.Create(instance.State, instance.AnnotationIndex);
+            bool recorded = lattice.TryGetValue(stateKey, out IList<Tuple<TInst, Arc<TData, TOffset>>> incoming);
+            if (!recorded)
+            {
+                // Add stateKey to lattice.
+                incoming = new List<Tuple<TInst, Arc<TData, TOffset>>>();
+                lattice[stateKey] = incoming;
+            }
+            // Add [origInstance, arc] to incoming.
+            incoming.Add(new Tuple<TInst, Arc<TData, TOffset>>(origInstance, arc));
+            return recorded;
+        }
+
+        protected void RecordFinalArc(
+            IDictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>> lattice,
+            TInst origInstance,
+            Arc<TData, TOffset> arc)
+        {
+            bool recorded = lattice.TryGetValue(_finalState, out IList<Tuple<TInst, Arc<TData, TOffset>>> incoming);
+            if (!recorded)
+            {
+                // Add _finalState to lattice.
+                incoming = new List<Tuple<TInst, Arc<TData, TOffset>>>();
+                lattice[_finalState] = incoming;
+            }
+            // Add [origInstance, arc] to incoming.
+            incoming.Add(new Tuple<TInst, Arc<TData, TOffset>>(origInstance, arc));
+        }
+
+        /// <summary>
+        /// Extract the results encoded in lattice under the final state.
+        /// </summary>
+        protected List<FstResult<TData, TOffset>> ExtractResults(
+            IDictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>> lattice,
+            bool allMatches)
+        {
+            List<FstResult<TData, TOffset>> newResults = new List<FstResult<TData, TOffset>>();
+            IList<Tuple<TInst, Arc<TData, TOffset>>> incoming;
+            if (!lattice.TryGetValue(_finalState, out incoming))
+                return newResults;
+            foreach (Tuple<TInst, Arc<TData, TOffset>> pair in incoming)
+            {
+                foreach (TInst instance in ExpandInstances(pair.Item1, lattice, allMatches))
+                {
+                    AdvanceInstance(instance, pair.Item2, null, newResults);
+                }
+            }
+            return newResults;
+        }
+
+        private IList<TInst> ExpandInstances(
+            TInst instance,
+            IDictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>> lattice,
+            bool allMatches)
+        {
+            IList<TInst> instances = new List<TInst>();
+            IList<FstResult<TData, TOffset>> curResults = new List<FstResult<TData, TOffset>>();
+            var stateKey = Tuple.Create(instance.State, instance.AnnotationIndex);
+            bool recorded = lattice.TryGetValue(stateKey, out IList<Tuple<TInst, Arc<TData, TOffset>>> incoming);
+            if (!recorded)
+            {
+                // The starting instance.
+                instances.Add(CopyInstance(instance));
+                return instances;
+            }
+            foreach (Tuple<TInst, Arc<TData, TOffset>> pair in incoming)
+            {
+                foreach (TInst source in ExpandInstances(pair.Item1, lattice, allMatches))
+                {
+                    AdvanceInstance(source, pair.Item2, instances, curResults);
+                }
+            }
+            if (false && !allMatches && instances.Count > 1)
+            {
+                instances.Sort(InstanceCompare);
+                TInst first = instances.First();
+                instances.Clear();
+                instances.Add(first);
+            }
+            return instances;
+        }
+
+        private void AdvanceInstance(
+            TInst instance,
+            Arc<TData, TOffset> arc,
+            IList<TInst> instances,
+            IList<FstResult<TData, TOffset>> curResults)
+        {
+            if (CheckInputMatch(arc, instance.AnnotationIndex, instance.VariableBindings))
+            {
+                foreach (TInst ni in Advance(instance, instance.VariableBindings, arc, curResults))
+                {
+                    instances?.Add(ni);
+                }
+            }
+        }
+
+        private int InstanceCompare(TInst x, TInst y)
+        {
+            int compare = 0;
+            if (x.Priorities != null)
+            {
+                foreach (Tuple<int, int> priorityPair in x.Priorities.Zip(y.Priorities))
+                {
+                    compare = priorityPair.Item1.CompareTo(priorityPair.Item2);
+                    if (compare != 0)
+                        break;
+                }
+            }
+            return compare;
+        }
+
+        private bool StateKeyEquals(Tuple<State<TData, TOffset>, int> x, Tuple<State<TData, TOffset>, int> y)
+        {
+            if (x.Item1 == null || y.Item1 == null)
+                return x.Item1 == y.Item1;
+            return x.Item1.Equals(y.Item1) && x.Item2.Equals(y.Item2);
+        }
+
+        private int StateKeyGetHashCode(Tuple<State<TData, TOffset>, int> m)
+        {
+            int code = 23;
+            code = code * 31 + (m.Item1 != null ? m.Item1.GetHashCode() : 0);
+            code = code * 31 + m.Item2.GetHashCode();
+            return code;
         }
     }
 }

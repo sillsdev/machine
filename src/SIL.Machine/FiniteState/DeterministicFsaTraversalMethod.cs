@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.FiniteState
 {
@@ -36,19 +34,19 @@ namespace SIL.Machine.FiniteState
             );
 
             var curResults = new List<FstResult<TData, TOffset>>();
-            var states = new HashSet<Tuple<State<TData, TOffset>, int>>(
-                AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int>>(StateKeyEquals, StateKeyGetHashCode)
-            );
+            var lattice = !allMatches ? CreateFstLattice() : null;
 
             while (instStack.Count != 0)
             {
                 DeterministicFsaTraversalInstance<TData, TOffset> inst = instStack.Pop();
+                DeterministicFsaTraversalInstance<TData, TOffset> origInst = !allMatches ? CopyInstance(inst) : null;
 
                 bool releaseInstance = true;
                 foreach (Arc<TData, TOffset> arc in inst.State.Arcs)
                 {
                     if (CheckInputMatch(arc, inst.AnnotationIndex, inst.VariableBindings))
                     {
+                        int resultCount = !allMatches ? curResults.Count : 0;
                         foreach (
                             DeterministicFsaTraversalInstance<TData, TOffset> ni in Advance(
                                 inst,
@@ -60,12 +58,10 @@ namespace SIL.Machine.FiniteState
                         {
                             if (!allMatches)
                             {
-                                var stateKey = Tuple.Create(ni.State, ni.AnnotationIndex);
-                                if (states.Contains(stateKey))
-                                {
+                                if (curResults.Count > resultCount)
+                                    RecordFinalArc(lattice, origInst, arc);
+                                if (RecordedInstance(lattice, ni, origInst, arc))
                                     continue;
-                                }
-                                states.Add(stateKey);
                             }
                             instStack.Push(ni);
                         }
@@ -79,22 +75,15 @@ namespace SIL.Machine.FiniteState
                     ReleaseInstance(inst);
             }
 
+            if (!allMatches)
+            {
+                var newResults = ExtractResults(lattice, allMatches);
+                curResults = newResults;
+            }
+
             CheckAcceptingStartState(initAnns, initRegisters, curResults);
 
             return curResults;
-        }
-
-        private bool StateKeyEquals(Tuple<State<TData, TOffset>, int> x, Tuple<State<TData, TOffset>, int> y)
-        {
-            return x.Item1.Equals(y.Item1) && x.Item2.Equals(y.Item2);
-        }
-
-        private int StateKeyGetHashCode(Tuple<State<TData, TOffset>, int> m)
-        {
-            int code = 23;
-            code = code * 31 + m.Item1.GetHashCode();
-            code = code * 31 + m.Item2.GetHashCode();
-            return code;
         }
 
         protected override DeterministicFsaTraversalInstance<TData, TOffset> CreateInstance()
