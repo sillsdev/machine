@@ -541,7 +541,7 @@ namespace SIL.Machine.FiniteState
             {
                 foreach (TInst instance in ExpandInstances(pair.Item1, lattice, allMatches))
                 {
-                    AdvanceInstance(instance, pair.Item2, null, newResults);
+                    AdvanceInstance(instance, pair.Item2, null, newResults, null, 0);
                 }
             }
             return newResults;
@@ -567,10 +567,10 @@ namespace SIL.Machine.FiniteState
             {
                 foreach (TInst source in ExpandInstances(pair.Item1, lattice, allMatches))
                 {
-                    AdvanceInstance(source, pair.Item2, instances, curResults);
+                    AdvanceInstance(source, pair.Item2, instances, curResults, instance.State, instance.AnnotationIndex);
                 }
             }
-            if (false && !allMatches && instances.Count > 1)
+            if (!allMatches && instances.Count > 1)
             {
                 instances.Sort(InstanceCompare);
                 TInst first = instances.First();
@@ -584,14 +584,17 @@ namespace SIL.Machine.FiniteState
             TInst instance,
             Arc<TData, TOffset> arc,
             IList<TInst> instances,
-            IList<FstResult<TData, TOffset>> curResults
+            IList<FstResult<TData, TOffset>> curResults,
+            State<TData, TOffset> state,
+            int annotationIndex
         )
         {
             if (CheckInputMatch(arc, instance.AnnotationIndex, instance.VariableBindings))
             {
                 foreach (TInst ni in Advance(instance, instance.VariableBindings, arc, curResults))
                 {
-                    instances?.Add(ni);
+                    if (instances != null && ni.State == state && ni.AnnotationIndex == annotationIndex)
+                        instances.Add(ni);
                 }
             }
         }
