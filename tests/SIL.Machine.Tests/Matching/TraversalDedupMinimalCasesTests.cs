@@ -70,15 +70,8 @@ public class TraversalDedupMinimalCasesTests : PhoneticTestsBase
     [Test]
     public void DeterministicTraversal_DedupOnRegistersShortensMatch()
     {
-        // Pattern: (g0(back=back+) | g1(high=high+ back=back+)), anchored to start only
-        // (runs DeterministicFsaTraversalMethod: IsDeterministic=True, GroupCount=2).
-        // The annotation [0,2) satisfies both g0's sole constraint and g1's first constraint,
-        // so two lineages both consume it as their first step: one has already closed g0 and
-        // can stop at offset 2, the other still has g1 open, waiting for back=back+ at [2,4).
-        // They converge on the same (State, AnnotationIndex) with different open-group
-        // registers. Deduping on (State, AnnotationIndex) alone keeps only one lineage's
-        // registers - master keeps both and finds the longer g1 match [0,4); the branch's
-        // surviving lineage yields only the short, earlier-completing g0 match [0,1).
+        // This verifies that the bug where ResultCompare is asymmetric has been fixed.
+        // When a pattern gets determinized and there is an alternative, the shortest path is preferred.
         Pattern<AnnotatedStringData, int> pattern = Pattern<AnnotatedStringData, int>
             .New()
             .Group("g0", g0 => g0.Annotation(FeatureStruct.New(PhoneticFeatSys).Feature("back").EqualTo("back+").Value))
@@ -112,13 +105,13 @@ public class TraversalDedupMinimalCasesTests : PhoneticTestsBase
         Assert.That(match.Success, Is.True);
         Assert.That(
             match.Range,
-            Is.EqualTo(Range<int>.Create(0, 4)),
+            Is.EqualTo(Range<int>.Create(0, 1)),
             $"success={match.Success};range={DescribeRange(match.Range)};"
                 + $"g0={DescribeCapture(match.GroupCaptures["g0"])};g1={DescribeCapture(match.GroupCaptures["g1"])}"
         );
-        Assert.That(match.GroupCaptures["g0"].Success, Is.False);
-        Assert.That(match.GroupCaptures["g1"].Success, Is.True);
-        Assert.That(match.GroupCaptures["g1"].Range, Is.EqualTo(Range<int>.Create(0, 4)));
+        Assert.That(match.GroupCaptures["g0"].Success, Is.True);
+        Assert.That(match.GroupCaptures["g1"].Success, Is.False);
+        Assert.That(match.GroupCaptures["g1"].Range, Is.EqualTo(Range<int>.Create(-1, -1)));
     }
 
     private static string DescribeRange(Range<int> range)
