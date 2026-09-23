@@ -567,7 +567,14 @@ namespace SIL.Machine.FiniteState
             {
                 foreach (TInst source in ExpandInstances(pair.Item1, lattice, allMatches))
                 {
-                    AdvanceInstance(source, pair.Item2, instances, curResults, instance.State, instance.AnnotationIndex);
+                    AdvanceInstance(
+                        source,
+                        pair.Item2,
+                        instances,
+                        curResults,
+                        instance.State,
+                        instance.AnnotationIndex
+                    );
                 }
             }
             if (!allMatches && instances.Count > 1)
