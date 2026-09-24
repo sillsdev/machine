@@ -39,7 +39,9 @@ namespace SIL.Machine.FiniteState
             while (instStack.Count != 0)
             {
                 DeterministicFsaTraversalInstance<TData, TOffset> inst = instStack.Pop();
-                DeterministicFsaTraversalInstance<TData, TOffset> origInst = !allMatches ? CopyInstanceAndBindings(inst) : null;
+                DeterministicFsaTraversalInstance<TData, TOffset> origInst = !allMatches
+                    ? CopyInstanceAndBindings(inst)
+                    : null;
 
                 bool releaseInstance = true;
                 foreach (Arc<TData, TOffset> arc in inst.State.Arcs)
