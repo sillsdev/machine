@@ -454,6 +454,16 @@ namespace SIL.Machine.FiniteState
             return ni;
         }
 
+        protected TInst CopyInstanceAndBindings(TInst inst)
+        {
+            TInst ni = CopyInstance(inst);
+            if (inst.VariableBindings != null)
+            {
+                ni.VariableBindings = inst.VariableBindings.Clone();
+            }
+            return ni;
+        }
+
         protected abstract TInst CreateInstance();
 
         protected void ReleaseInstance(TInst inst)
@@ -461,10 +471,14 @@ namespace SIL.Machine.FiniteState
             _cachedInstances.Enqueue(inst);
         }
 
-        private readonly Tuple<State<TData, TOffset>, int> _finalState = new Tuple<State<TData, TOffset>, int>(
-            null,
-            -1
-        );
+        protected class LatticeNodeKey
+        {
+            public State<TData, TOffset> State { get; set; }
+            public int AnnotationIndex { get; set; }
+            public VariableBindings VariableBindings { get; set; }
+        }
+
+        private readonly LatticeNodeKey _finalState = new LatticeNodeKey();
 
         /// <summary>
         /// Creates a lattice.
@@ -473,13 +487,10 @@ namespace SIL.Machine.FiniteState
         /// Each node has a list of incoming arcs that are [Instance, Arc] pairs.
         /// The Instance encodes the previous node.
         /// </summary>
-        protected IDictionary<
-            Tuple<State<TData, TOffset>, int>,
-            IList<Tuple<TInst, Arc<TData, TOffset>>>
-        > CreateFstLattice()
+        protected IDictionary<LatticeNodeKey, IList<Tuple<TInst, Arc<TData, TOffset>>>> CreateFstLattice()
         {
-            return new Dictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>>(
-                AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int>>(StateKeyEquals, StateKeyGetHashCode)
+            return new Dictionary<LatticeNodeKey, IList<Tuple<TInst, Arc<TData, TOffset>>>>(
+                AnonymousEqualityComparer.Create<LatticeNodeKey>(LatticeNodeKeyEquals, LatticeNodeKeyGetHashCode)
             );
         }
 
@@ -489,19 +500,24 @@ namespace SIL.Machine.FiniteState
         /// Also adds [origInstance, arc] to instance's incoming arcs.
         /// </summary>
         protected bool RecordedInstance(
-            IDictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>> lattice,
+            IDictionary<LatticeNodeKey, IList<Tuple<TInst, Arc<TData, TOffset>>>> lattice,
             TInst instance,
             TInst origInstance,
             Arc<TData, TOffset> arc
         )
         {
-            var stateKey = Tuple.Create(instance.State, instance.AnnotationIndex);
-            bool recorded = lattice.TryGetValue(stateKey, out IList<Tuple<TInst, Arc<TData, TOffset>>> incoming);
+            var nodeKey = new LatticeNodeKey()
+            {
+                State = instance.State,
+                AnnotationIndex = instance.AnnotationIndex,
+                VariableBindings = instance.VariableBindings?.Clone(),
+            };
+            bool recorded = lattice.TryGetValue(nodeKey, out IList<Tuple<TInst, Arc<TData, TOffset>>> incoming);
             if (!recorded)
             {
-                // Add stateKey to lattice.
+                // Add nodeKey to lattice.
                 incoming = new List<Tuple<TInst, Arc<TData, TOffset>>>();
-                lattice[stateKey] = incoming;
+                lattice[nodeKey] = incoming;
             }
             // Add [origInstance, arc] to incoming.
             incoming.Add(new Tuple<TInst, Arc<TData, TOffset>>(origInstance, arc));
@@ -509,7 +525,7 @@ namespace SIL.Machine.FiniteState
         }
 
         protected void RecordFinalArc(
-            IDictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>> lattice,
+            IDictionary<LatticeNodeKey, IList<Tuple<TInst, Arc<TData, TOffset>>>> lattice,
             TInst origInstance,
             Arc<TData, TOffset> arc
         )
@@ -529,7 +545,7 @@ namespace SIL.Machine.FiniteState
         /// Extract the results encoded in lattice under the final state.
         /// </summary>
         protected List<FstResult<TData, TOffset>> ExtractResults(
-            IDictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>> lattice,
+            IDictionary<LatticeNodeKey, IList<Tuple<TInst, Arc<TData, TOffset>>>> lattice,
             bool allMatches
         )
         {
@@ -549,18 +565,23 @@ namespace SIL.Machine.FiniteState
 
         private IList<TInst> ExpandInstances(
             TInst instance,
-            IDictionary<Tuple<State<TData, TOffset>, int>, IList<Tuple<TInst, Arc<TData, TOffset>>>> lattice,
+            IDictionary<LatticeNodeKey, IList<Tuple<TInst, Arc<TData, TOffset>>>> lattice,
             bool allMatches
         )
         {
             IList<TInst> instances = new List<TInst>();
             IList<FstResult<TData, TOffset>> curResults = new List<FstResult<TData, TOffset>>();
-            var stateKey = Tuple.Create(instance.State, instance.AnnotationIndex);
-            bool recorded = lattice.TryGetValue(stateKey, out IList<Tuple<TInst, Arc<TData, TOffset>>> incoming);
+            LatticeNodeKey nodeKey = new LatticeNodeKey()
+            {
+                State = instance.State,
+                AnnotationIndex = instance.AnnotationIndex,
+                VariableBindings = instance.VariableBindings?.Clone(),
+            };
+            bool recorded = lattice.TryGetValue(nodeKey, out IList<Tuple<TInst, Arc<TData, TOffset>>> incoming);
             if (!recorded)
             {
                 // The starting instance.
-                instances.Add(CopyInstance(instance));
+                instances.Add(CopyInstanceAndBindings(instance));
                 return instances;
             }
             foreach (Tuple<TInst, Arc<TData, TOffset>> pair in incoming)
@@ -596,7 +617,15 @@ namespace SIL.Machine.FiniteState
             int annotationIndex
         )
         {
-            if (CheckInputMatch(arc, instance.AnnotationIndex, instance.VariableBindings))
+            if (arc.Input.IsEpsilon)
+            {
+                TInst ni = EpsilonAdvance(instance, arc, curResults);
+                if (instances != null && ni.State == state && ni.AnnotationIndex == annotationIndex)
+                {
+                    instances.Add(ni);
+                }
+            }
+            else if (CheckInputMatch(arc, instance.AnnotationIndex, instance.VariableBindings))
             {
                 foreach (TInst ni in Advance(instance, instance.VariableBindings, arc, curResults))
                 {
@@ -621,18 +650,23 @@ namespace SIL.Machine.FiniteState
             return compare;
         }
 
-        private bool StateKeyEquals(Tuple<State<TData, TOffset>, int> x, Tuple<State<TData, TOffset>, int> y)
+        private bool LatticeNodeKeyEquals(LatticeNodeKey x, LatticeNodeKey y)
         {
-            if (x.Item1 == null || y.Item1 == null)
-                return x.Item1 == y.Item1;
-            return x.Item1.Equals(y.Item1) && x.Item2.Equals(y.Item2);
+            if (x.State == null || y.State == null)
+                return x.State == y.State;
+            if (x.VariableBindings == null)
+                return x.State.Equals(y.State) && x.AnnotationIndex.Equals(y.AnnotationIndex);
+            return x.State.Equals(y.State)
+                && x.AnnotationIndex.Equals(y.AnnotationIndex)
+                && x.VariableBindings.Equals(y.VariableBindings);
         }
 
-        private int StateKeyGetHashCode(Tuple<State<TData, TOffset>, int> m)
+        private int LatticeNodeKeyGetHashCode(LatticeNodeKey m)
         {
             int code = 23;
-            code = code * 31 + (m.Item1 != null ? m.Item1.GetHashCode() : 0);
-            code = code * 31 + m.Item2.GetHashCode();
+            code = code * 31 + (m.State != null ? m.State.GetHashCode() : 0);
+            code = code * 31 + m.AnnotationIndex.GetHashCode();
+            code = code * 31 + (m.VariableBindings != null ? m.VariableBindings.GetHashCode() : 0);
             return code;
         }
     }
