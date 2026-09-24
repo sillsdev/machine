@@ -89,6 +89,14 @@ namespace SIL.Machine.Morphology.HermitCrab
         public bool MergeEquivalentAnalyses { get; set; }
 
         /// <summary>
+        /// When unapplying a rule that copies a part more than once (reduplication), skip matches whose
+        /// copies cannot unify segment by segment. Such a match can never survive synthesis, so this removes
+        /// only doomed analyses; on reduplication-heavy grammars it is the difference between a parse that
+        /// exhausts memory and one that finishes in seconds.
+        /// </summary>
+        public bool PruneDisagreeingCopies { get; set; }
+
+        /// <summary>
         /// Caps the concurrency used within a single parse or generation -- analysis cascade,
         /// affix-template unapplication and synthesis alike. A value of 1 runs the work fully
         /// sequentially, and is the only configuration eligible for the analysis-cascade memo (see

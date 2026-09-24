@@ -965,8 +965,9 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("sɯɯpu"), "50 SIMUL");
     }
 
-    [Test]
-    public void ReduplicationRules()
+    [TestCase(false)]
+    [TestCase(true)]
+    public void ReduplicationRules(bool pruneCopies)
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
         var cons = FeatureStruct
@@ -1015,7 +1016,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         );
         Morphophonemic.MorphologicalRules.Add(redup);
 
-        var morpher = new Morpher(TraceManager, Language);
+        var morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("sasag"), "RED 32");
 
         var voicing = new RewriteRule
@@ -1033,7 +1034,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         );
         Allophonic.PhonologicalRules.Add(voicing);
 
-        morpher = new Morpher(TraceManager, Language);
+        morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("sazag"), "RED 32");
 
         var affrication = new RewriteRule
@@ -1050,7 +1051,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         );
         Allophonic.PhonologicalRules.Add(affrication);
 
-        morpher = new Morpher(TraceManager, Language);
+        morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("tsazag"), "RED 32");
 
         redup.Allomorphs.Clear();
@@ -1066,7 +1067,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(TraceManager, Language);
+        morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("tsagag"), "32 RED");
 
         Allophonic.PhonologicalRules.Clear();
@@ -1084,7 +1085,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(TraceManager, Language);
+        morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("sagsag"), "32 RED");
         AssertMorphsEqual(morpher.ParseWord("sasibudbud"), "38 RED");
 
@@ -1115,7 +1116,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         );
         Allophonic.PhonologicalRules.Add(gDelete);
 
-        morpher = new Morpher(TraceManager, Language);
+        morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("saag"), "32 RED");
 
         gDelete.Subrules.Clear();
@@ -1126,7 +1127,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(TraceManager, Language);
+        morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("saga"), "32 RED");
 
         Allophonic.PhonologicalRules.Clear();
@@ -1152,7 +1153,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(TraceManager, Language);
+        morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("buiuib"), "30 RED", "31 RED");
     }
 
@@ -1900,8 +1901,9 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("bubib"), "42 PRES", "43 PRES");
     }
 
-    [Test]
-    public void ModifyFromInputRules()
+    [TestCase(false)]
+    [TestCase(true)]
+    public void ModifyFromInputRules(bool pruneCopies)
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
         var vowel = FeatureStruct
@@ -1941,7 +1943,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         );
         Morphophonemic.MorphologicalRules.Add(sSuffix);
 
-        var morpher = new Morpher(TraceManager, Language);
+        var morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("puso"), "52 PL");
     }
 
