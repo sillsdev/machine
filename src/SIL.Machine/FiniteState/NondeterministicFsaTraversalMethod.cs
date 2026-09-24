@@ -46,7 +46,9 @@ namespace SIL.Machine.FiniteState
             while (instStack.Count != 0)
             {
                 NondeterministicFsaTraversalInstance<TData, TOffset> inst = instStack.Pop();
-                NondeterministicFsaTraversalInstance<TData, TOffset> origInst = !allMatches ? CopyInstanceAndBindings(inst) : null;
+                NondeterministicFsaTraversalInstance<TData, TOffset> origInst = !allMatches
+                    ? CopyInstanceAndBindings(inst)
+                    : null;
 
                 bool releaseInstance = true;
                 VariableBindings varBindings = null;
