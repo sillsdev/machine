@@ -39,6 +39,11 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         protected IEnumerable<ShapeNode> GetSkippedOptionalNodes(Shape shape, Range<ShapeNode> range)
         {
+            return SkippedOptionalNodes(shape, range);
+        }
+
+        internal static IEnumerable<ShapeNode> SkippedOptionalNodes(Shape shape, Range<ShapeNode> range)
+        {
             ShapeNode node = range.Start.Prev;
             var skippedNodes = new List<ShapeNode>();
             while (node.Annotation.Optional)
