@@ -130,6 +130,7 @@ namespace SIL.Machine.Corpora
             }
 
             bool addedVerseText = false;
+            bool duplicateVerse = false;
 
             string start = null;
             for (int i = 0; i < verseRefs.Count; i++)
@@ -191,6 +192,10 @@ namespace SIL.Machine.Corpora
                 else
                 {
                     start = verseRefs[i].Verse;
+                    if (verseRefs[i].Equals(_prevVerseRef))
+                        duplicateVerse = true;
+                    else
+                        duplicateVerse = false;
                     _prevVerseRef = verseRefs[i];
                 }
                 verseRef = verseRefs[i];
@@ -200,7 +205,8 @@ namespace SIL.Machine.Corpora
             {
                 AddTrailingTokens();
                 string end = start != _prevVerseRef.Verse ? "-" + _prevVerseRef.Verse : "";
-                _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
+                if (!duplicateVerse)
+                    _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
                 _skip = false;
                 _insertChapterIndex = -1;
                 _prevVerseRef = verseRef;
@@ -232,14 +238,7 @@ namespace SIL.Machine.Corpora
             while (_verseBoundary + offset < state.Index)
             {
                 UsfmToken token = state.Tokens[_verseBoundary + offset];
-                if (
-                    IsPreservedTrailingParagraphMarker(
-                        token,
-                        _verseBoundary + offset + 1 < state.Tokens.Count
-                            ? state.Tokens[_verseBoundary + offset + 1]
-                            : null
-                    )
-                )
+                if (IsPreservedTrailingParagraphMarker(state.Tokens, _verseBoundary + offset))
                 {
                     inPreservedParagraph = true;
                 }
@@ -276,9 +275,15 @@ namespace SIL.Machine.Corpora
             _trailingVerseTokens.Clear();
         }
 
-        private bool IsPreservedTrailingParagraphMarker(UsfmToken token, UsfmToken nextToken)
+        private bool IsPreservedTrailingParagraphMarker(IReadOnlyList<UsfmToken> tokens, int index)
         {
-            return (token.Marker == "p" && nextToken != null && nextToken.Type == UsfmTokenType.Verse)
+            UsfmToken token = tokens[index];
+            UsfmToken nextToken = index + 1 >= tokens.Count ? null : tokens[index + 1];
+            return (
+                    token.Type == UsfmTokenType.Paragraph
+                    && nextToken != null
+                    && (nextToken.Type == UsfmTokenType.Verse || IsPreservedTrailingParagraphMarker(tokens, index + 1))
+                )
                 || token.Type == UsfmTokenType.Paragraph && TrailingParagraphMarkerPatterns.IsMatch(token.Marker);
         }
     }
