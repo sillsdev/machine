@@ -165,13 +165,6 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 _allomorph,
                 output.MorphologicalRuleApplicationCount.ToString()
             );
-            if (outputNewMorph == null)
-            {
-                // There are no new output morphs in a truncation rule,
-                // so we add its allomorph to the last output shape.
-                string morphID = output.MorphologicalRuleApplicationCount.ToString();
-                output.MarkMorph(new List<ShapeNode>() { output.Shape.Last }, _allomorph, morphID);
-            }
             var markedAllomorphs = new HashSet<Allomorph>();
             foreach (Annotation<ShapeNode> inputMorph in match.Input.Morphs)
             {
@@ -204,6 +197,13 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     }
                 }
                 markedAllomorphs.Add(allomorph);
+            }
+            if (outputNewMorph == null)
+            {
+                // Truncation and zero-width rules have no new morph. Mark the last node after the
+                // loop, so a wrapped allomorph ending there keeps it and this rule's ID sorts after.
+                string morphID = output.MorphologicalRuleApplicationCount.ToString();
+                output.MarkMorph(new List<ShapeNode>() { output.Shape.Last }, _allomorph, morphID);
             }
 
             output.MprFeatures.AddOutput(_allomorph.OutMprFeatures);
