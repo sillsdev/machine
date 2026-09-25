@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using SIL.Machine.Annotations;
+using SIL.Machine.FeatureModel;
 using SIL.Machine.Rules;
 using SIL.ObjectModel;
 
@@ -47,18 +48,25 @@ namespace SIL.Machine.Morphology.HermitCrab
                     );
                     break;
                 case MorphologicalRuleOrder.Unordered:
-                    _mrulesRule =
-                        morpher.MaxDegreeOfParallelism == 1
-                            ? (RuleCascade<Word, ShapeNode>)
-                                new MemoizedCombinationRuleCascade(mrules, FreezableEqualityComparer<Word>.Default)
-                            : new ParallelCombinationRuleCascade<Word, ShapeNode>(
-                                mrules,
-                                true,
-                                FreezableEqualityComparer<Word>.Default
-                            )
-                            {
-                                MaxDegreeOfParallelism = morpher.MaxDegreeOfParallelism,
-                            };
+                    if (morpher.MaxDegreeOfParallelism == 1)
+                    {
+                        _mrulesRule = new CombinationRuleCascade<Word, ShapeNode>(
+                            mrules,
+                            true,
+                            FreezableEqualityComparer<Word>.Default
+                        );
+                    }
+                    else
+                    {
+                        _mrulesRule = new ParallelCombinationRuleCascade<Word, ShapeNode>(
+                            mrules,
+                            true,
+                            FreezableEqualityComparer<Word>.Default
+                        )
+                        {
+                            MaxDegreeOfParallelism = morpher.MaxDegreeOfParallelism,
+                        };
+                    }
                     break;
             }
         }
@@ -127,11 +135,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             _prulesRule.Apply(input);
             input.Freeze();
-            IDictionary<AnalysisStateKey, Word> wordCache = null;
+            IDictionary<AnalysisMergeKey, Word> wordCache = null;
             // Don't merge if tracing because it messes up the tracing.
             bool mergeEquivalentAnalyses = _morpher.MergeEquivalentAnalyses && !_morpher.TraceManager.IsTracing;
             if (mergeEquivalentAnalyses)
-                wordCache = new Dictionary<AnalysisStateKey, Word>();
+                wordCache = new Dictionary<AnalysisMergeKey, Word>();
 
             // AnalysisStratumRule.Apply should cover the inverse of SynthesisStratumRule.Apply.
             IEnumerable<Word> mruleOutWords = ApplyTemplates(input).Concat(ApplyMorphologicalRules(input));
@@ -150,10 +158,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                 }
                 // Skip intermediate sources from phonological rules, templates, and morphological rules.
                 mruleOutWord.Source = origInput;
-                AnalysisStateKey key = default;
+                AnalysisMergeKey key = default;
                 if (mergeEquivalentAnalyses)
                 {
-                    key = AnalysisStateKey.PinAndKey(mruleOutWord);
+                    key = new AnalysisMergeKey(mruleOutWord);
                     if (wordCache.TryGetValue(key, out Word canonicalWord))
                     {
                         canonicalWord.Alternatives.Add(mruleOutWord);
@@ -190,38 +198,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        // The affix-template battery, memoized by AnalysisStateKey against its own table. On
-        // template-heavy grammars this dominates parse time, which is why it is memoized separately from
-        // the mrule cascade. See AnalysisScope.InProgress for why no re-entry guard is needed here.
-        private IEnumerable<Word> ApplyTemplateBattery(Word input)
-        {
-            // Scope presence is the single source of truth for whether the memo is active; Morpher decides
-            // that once, at install time. Linear strata stay unmemoized because the key-completeness audit
-            // covers only the Unordered cascade.
-            AnalysisScope scope = input.AnalysisScope;
-            if (scope == null || _stratum.MorphologicalRuleOrder != MorphologicalRuleOrder.Unordered)
-                return _templatesRule.Apply(input);
-
-            AnalysisStateKey key = AnalysisStateKey.PinAndKey(input);
-            if (scope.TryReplay(scope.TemplateMemo, key, input, out List<Word> replayed))
-            {
-                if (replayed.Count == 0)
-                {
-                    scope.TemplateNogoodHits++;
-                    return replayed;
-                }
-                scope.TemplateMemoHits++;
-                return replayed;
-            }
-
-            var results = new List<Word>(_templatesRule.Apply(input));
-            scope.Store(scope.TemplateMemo, key, input, results);
-            return results;
-        }
-
         private IEnumerable<Word> ApplyTemplates(Word input)
         {
-            foreach (Word tempOutWord in ApplyTemplateBattery(input).Distinct(FreezableEqualityComparer<Word>.Default))
+            foreach (Word tempOutWord in _templatesRule.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
             {
                 switch (_stratum.MorphologicalRuleOrder)
                 {
@@ -241,6 +220,91 @@ namespace SIL.Machine.Morphology.HermitCrab
                         }
                         break;
                 }
+            }
+        }
+
+        internal readonly struct AnalysisMergeKey : IEquatable<AnalysisMergeKey>
+        {
+            private readonly Shape _shape;
+            private readonly Stratum _stratum;
+            private readonly FeatureStruct _syntacticFS;
+            private readonly FeatureStruct _realizationalFS;
+            private readonly int _nonHeadCount;
+            private readonly IReadOnlyDictionary<IMorphologicalRule, int> _ruleCounts;
+            private readonly int _hashCode;
+
+            public AnalysisMergeKey(Word word)
+            {
+                if (!word.IsFrozen)
+                    throw new ArgumentException(
+                        "The word must be frozen before equivalent analyses can be merged.",
+                        nameof(word)
+                    );
+
+                _shape = word.Shape;
+                _stratum = word.Stratum;
+                _syntacticFS = word.SyntacticFeatureStruct;
+                _realizationalFS = word.RealizationalFeatureStruct;
+                _nonHeadCount = word.NonHeadCount;
+                _ruleCounts = word.UnappliedRuleCounts;
+
+                _shape.Freeze();
+                _syntacticFS.Freeze();
+                _realizationalFS.Freeze();
+
+                int hash = 17;
+                hash = hash * 31 + _shape.GetFrozenHashCode();
+                hash = hash * 31 + (_stratum?.GetHashCode() ?? 0);
+                hash = hash * 31 + _syntacticFS.GetFrozenHashCode();
+                hash = hash * 31 + _realizationalFS.GetFrozenHashCode();
+                hash = hash * 31 + _nonHeadCount;
+                if (_ruleCounts != null)
+                {
+                    int multisetHash = 0;
+                    foreach (KeyValuePair<IMorphologicalRule, int> kvp in _ruleCounts)
+                        multisetHash ^= (kvp.Key.GetHashCode() * 397) ^ kvp.Value;
+                    hash = hash * 31 + multisetHash;
+                }
+                _hashCode = hash;
+            }
+
+            public override int GetHashCode() => _hashCode;
+
+            public override bool Equals(object obj) => obj is AnalysisMergeKey other && Equals(other);
+
+            public bool Equals(AnalysisMergeKey other)
+            {
+                if (_hashCode != other._hashCode)
+                    return false;
+                if (_nonHeadCount != other._nonHeadCount || !ReferenceEquals(_stratum, other._stratum))
+                    return false;
+                if (!_shape.ValueEquals(other._shape))
+                    return false;
+                if (
+                    !_syntacticFS.ValueEquals(other._syntacticFS)
+                    || !_realizationalFS.ValueEquals(other._realizationalFS)
+                )
+                    return false;
+                return RuleCountsEqual(_ruleCounts, other._ruleCounts);
+            }
+
+            private static bool RuleCountsEqual(
+                IReadOnlyDictionary<IMorphologicalRule, int> a,
+                IReadOnlyDictionary<IMorphologicalRule, int> b
+            )
+            {
+                int aCount = a?.Count ?? 0;
+                int bCount = b?.Count ?? 0;
+                if (aCount != bCount)
+                    return false;
+                if (aCount == 0)
+                    return true;
+                foreach (KeyValuePair<IMorphologicalRule, int> kvp in a)
+                {
+                    if (!b.TryGetValue(kvp.Key, out int otherCount) || otherCount != kvp.Value)
+                        return false;
+                }
+                return true;
             }
         }
     }

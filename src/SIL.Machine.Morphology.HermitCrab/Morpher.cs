@@ -25,10 +25,6 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly ITraceManager _traceManager;
         private readonly ReadOnlyObservableCollection<Morpheme> _morphemes;
         private readonly IList<RootAllomorph> _lexicalPatterns = new List<RootAllomorph>();
-        private long _memoHits;
-        private long _nogoodHits;
-        private long _templateMemoHits;
-        private long _templateNogoodHits;
 
         public Morpher(ITraceManager traceManager, Language lang, int maxDegreeOfParallelism = 0)
         {
@@ -83,21 +79,15 @@ namespace SIL.Machine.Morphology.HermitCrab
         public int MaxAlternatives { get; set; }
 
         /// <summary>
-        /// Merge analyses that are equivalent for every analysis-side rule (see <see cref="AnalysisStateKey"/>).
+        /// Merge analyses with equivalent state for every analysis-side rule.
         /// Merged analyses will be expanded if lexical lookup succeeds.
         /// </summary>
         public bool MergeEquivalentAnalyses { get; set; }
 
         /// <summary>
-        /// Caps the concurrency used within a single parse or generation -- analysis cascade,
-        /// affix-template unapplication and synthesis alike. A value of 1 runs the work fully
-        /// sequentially, and is the only configuration eligible for the analysis-cascade memo (see
-        /// <see cref="MemoizedCombinationRuleCascade"/>). The default of 0, like any value below 1, leaves
-        /// concurrency unbounded. Constructor-only, because it determines how the analysis rules compile.
-        /// <para>
-        /// This must remain a pure performance knob: nothing that changes which analyses a parse returns
-        /// may be gated on it, or the memoized and unmemoized configurations stop being comparable.
-        /// </para>
+        /// Caps concurrency within a parse or generation, including the analysis cascade, affix-template
+        /// unapplication, and synthesis. A value of 1 runs the work sequentially; values below 1 leave
+        /// concurrency unbounded. This is constructor-only because it determines how the analysis rules compile.
         /// </summary>
         public int MaxDegreeOfParallelism { get; }
 
@@ -114,24 +104,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 MaxDegreeOfParallelism = MaxDegreeOfParallelism >= 1 ? MaxDegreeOfParallelism : uncappedDegree,
             };
-        }
-
-        /// <summary>
-        /// Memo-hit totals over the parses this Morpher has completed; a parse that throws discards its
-        /// counts. Per-Morpher rather than per-process so one test's counts cannot leak into another's.
-        /// </summary>
-        internal long MemoHits => Interlocked.Read(ref _memoHits);
-        internal long NogoodHits => Interlocked.Read(ref _nogoodHits);
-        internal long TemplateMemoHits => Interlocked.Read(ref _templateMemoHits);
-        internal long TemplateNogoodHits => Interlocked.Read(ref _templateNogoodHits);
-
-        // Interlocked because one Morpher may be parsing on several threads at once.
-        private void AccumulateMemoDiagnostics(AnalysisScope scope)
-        {
-            Interlocked.Add(ref _memoHits, scope.MemoHits);
-            Interlocked.Add(ref _nogoodHits, scope.NogoodHits);
-            Interlocked.Add(ref _templateMemoHits, scope.TemplateMemoHits);
-            Interlocked.Add(ref _templateNogoodHits, scope.TemplateNogoodHits);
         }
 
         public Func<LexEntry, bool> LexEntrySelector { get; set; }
@@ -165,10 +137,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             Shape shape = _lang.SurfaceStratum.CharacterDefinitionTable.Segment(word);
 
             var input = new Word(_lang.SurfaceStratum, shape);
-            // Installing a scope is what enables the memo. Never while tracing: traces must stay
-            // byte-identical to the unmemoized engine.
-            AnalysisScope scope = !_traceManager.IsTracing && MaxDegreeOfParallelism == 1 ? new AnalysisScope() : null;
-            input.AnalysisScope = scope;
             input.Freeze();
             if (_traceManager.IsTracing)
                 _traceManager.AnalyzeWord(_lang, input);
@@ -176,8 +144,6 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             // Unapply rules
             var analyses = new ConcurrentQueue<Word>(_analysisRule.Apply(input));
-            if (scope != null)
-                AccumulateMemoDiagnostics(scope);
 
 #if OUTPUT_ANALYSES
             var lines = new List<string>();
@@ -435,9 +401,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                 foreach (RootAllomorph allomorph in entry.Allomorphs)
                 {
                     Word newWord = input.Clone();
-                    // Synthesis never reads the memo, and keeping the reference would pin both tables for
-                    // as long as the caller holds the returned words.
-                    newWord.AnalysisScope = null;
                     newWord.RootAllomorph = allomorph;
                     if (_traceManager.IsTracing)
                         _traceManager.SynthesizeWord(_lang, newWord);
@@ -510,8 +473,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                         }
                         // Create a new word that uses the root allomorph.
                         Word newWord = input.Clone();
-                        // Synthesis never reads the memo; see LexicalLookup.
-                        newWord.AnalysisScope = null;
                         newWord.RootAllomorph = root;
                         if (_traceManager.IsTracing)
                             _traceManager.SynthesizeWord(_lang, newWord);
