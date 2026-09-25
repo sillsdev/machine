@@ -152,10 +152,7 @@ public class IdentityRuleSignatureMorphDropTests
     [Test]
     public void Fen_BareRootControl_IdentityWrapsRootDirectly_StableAndCorrect()
     {
-        // Control: mrIdentity's own morph coincides with the ROOT's own span, not with a
-        // DIFFERENT rule's own affix boundary -- there is no same-range collision here, so this
-        // is unaffected by either defect and was stable across every run measured in this
-        // session.
+        // Control: mrIdentity wraps the root directly, so no two rules share an affix boundary.
         string path = WriteTempGrammar();
         try
         {
@@ -172,9 +169,7 @@ public class IdentityRuleSignatureMorphDropTests
     [Test]
     public void Feno_NoIdentityRuleApplies_StableAndCorrect()
     {
-        // Control: after mrPtoQ alone, the accumulated feature value is unambiguous (q), so
-        // mrIdentity's own gate (requires p) genuinely refuses -- also unaffected by the
-        // collision (mrIdentity never applies at all here), and stable across every run measured.
+        // Control: after mrPtoQ alone the value is q, so mrIdentity (requires p) never applies.
         string path = WriteTempGrammar();
         try
         {
@@ -191,23 +186,8 @@ public class IdentityRuleSignatureMorphDropTests
     [Test]
     public void Fenos_IdentityWrapsOutermost_IsFlakyPendingTheSeparateBidirListDefect()
     {
-        // THE bug pin. Measured this session, over independent fresh Language+Morpher parses of
-        // this exact grammar/word: BEFORE the ApplyRhs fix, the correct signature
-        // ("FEN+PTOQ+QTOP+IDENT|fenos;FEN+PTOQ+QTOP|fenos") was never observed across dozens of
-        // tries -- QTOP's own ID was always either dropped or reordered. AFTER the fix, the
-        // correct signature is reached in roughly 45-50% of independent fresh parses -- a real,
-        // large improvement, but not a guaranteed one, because of a second, separate, unfixed
-        // defect: BidirList<TNode> (src/SIL.Machine/DataStructures/BidirList.cs) seeds its
-        // skip-list level assignment from an unseeded `new Random()`, and that randomness
-        // measurably leaks into which of two same-range annotations keeps its content (see
-        // words.yaml for the full writeup and the seed=42 reproduction that isolates it). That
-        // defect is a shared, widely-used data structure and is NOT fixed here.
-        //
-        // This test asserts the fix's actual, honest guarantee -- the correct signature is
-        // reachable, not that it is the only one a bounded number of runs can produce. With a
-        // measured per-trial success rate of ~45-50%, the chance every one of 100 independent
-        // trials misses it is astronomically small ((0.5)^100), so this is not itself a flaky
-        // assertion despite pinning a fix for a flaky underlying phenomenon.
+        // The fix makes the correct signature reachable in about half of fresh parses; the rest
+        // come from BidirList's unseeded Random (a separate defect), so 100 trials must see it.
         string path = WriteTempGrammar();
         try
         {

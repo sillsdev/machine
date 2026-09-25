@@ -200,21 +200,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             }
             if (outputNewMorph == null)
             {
-                // There are no new output morphs in a truncation rule (or a zero-width identity
-                // rule -- CopyFromInput with no InsertSegments), so we add its allomorph to the
-                // last output shape node. This runs AFTER the loop above (which re-marks every
-                // allomorph this rule wraps) rather than before it: when this rule's own affix
-                // ends at the exact same shape-node boundary as a wrapped allomorph's own affix
-                // (e.g. a zero-width rule applied immediately outside one whose own suffix is the
-                // shape's last segment), both allomorphs' MarkMorph calls claim that single node,
-                // and Word.MarkMorph's node.Annotation reparenting (via AnnotationList.Add) always
-                // gives the LAST caller sole ownership of it, leaving the other's morph annotation
-                // empty. Marking here, after the loop, guarantees the wrapped allomorph's own
-                // morph is established (and keeps the node) first, and that this rule's own
-                // (possibly now-empty) morph sorts after it -- which is what the signature's
-                // application-order rendering (Word.AllomorphsInMorphOrder) needs: an empty morph
-                // annotation still carries this rule's own morpheme ID, and the sort order is what
-                // determines whether that ID is rendered before or after the allomorph it wraps.
+                // Truncation and zero-width rules have no new morph. Mark the last node after the
+                // loop, so a wrapped allomorph ending there keeps it and this rule's ID sorts after.
                 string morphID = output.MorphologicalRuleApplicationCount.ToString();
                 output.MarkMorph(new List<ShapeNode>() { output.Shape.Last }, _allomorph, morphID);
             }
