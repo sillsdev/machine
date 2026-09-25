@@ -6,10 +6,8 @@ using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 
 namespace SIL.Machine.Morphology.HermitCrab;
 
-// MergeEquivalentAnalyses folds equivalent analyses of a stratum into one canonical word, and only that
-// canonical word is unapplied against the strata below. Sharing a shape is therefore not enough to make
-// two analyses interchangeable: they have to agree on everything an analysis-side rule reads, which is
-// what AnalysisStateKey covers.
+// MergeEquivalentAnalyses folds equivalent stratum analyses into one canonical word, then unapplies it
+// below. A lower rule may inspect feature state as well as shape.
 [TestFixture]
 public class MergeEquivalentAnalysesTests : HermitCrabTestBase
 {
@@ -31,7 +29,7 @@ public class MergeEquivalentAnalysesTests : HermitCrabTestBase
         AffixProcessRule vRule = Suffix("vRule", v, v, Table1, "t");
         AffixProcessRule anyRule = Suffix("anyRule", FeatureStruct.New().Value, v, Table1, "t");
         // The cascade runs the stratum's rules in reverse order of registration, and the first analysis to
-        // reach a given key becomes the canonical word, so registration order decides which one that is.
+        // reach the same analysis state first becomes canonical, so registration order decides which one.
         if (unconstrainedFirst)
             Allophonic.MorphologicalRules.Add(vRule);
         Allophonic.MorphologicalRules.Add(anyRule);
