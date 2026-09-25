@@ -130,6 +130,7 @@ namespace SIL.Machine.Corpora
             }
 
             bool addedVerseText = false;
+            bool duplicateVerse = false;
 
             string start = null;
             for (int i = 0; i < verseRefs.Count; i++)
@@ -150,7 +151,8 @@ namespace SIL.Machine.Corpora
                     )
                     {
                         AddTrailingTokens();
-                        _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
+                        if (!duplicateVerse)
+                            _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
                         if (!addedVerseText && state.Index + 1 < state.Tokens.Count)
                         {
                             UsfmToken nextToken = state.Tokens[state.Index + 1];
@@ -164,12 +166,14 @@ namespace SIL.Machine.Corpora
                         _tokens.Add(new UsfmToken(UsfmTokenType.Chapter, "c", "", "", verseRefs[i].Chapter));
                         _tokens.Add(new UsfmToken(UsfmTokenType.Paragraph, "nb", "", "", ""));
                         start = verseRefs[i].Verse;
+                        duplicateVerse = false;
                         _prevVerseRef = verseRefs[i];
                     }
                     else if (_prevVerseRef.VerseNum + 1 != verseRefs[i].VerseNum)
                     {
                         AddTrailingTokens();
-                        _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
+                        if (!duplicateVerse)
+                            _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
                         if (!addedVerseText && state.Index + 1 < state.Tokens.Count)
                         {
                             UsfmToken nextToken = state.Tokens[state.Index + 1];
@@ -181,16 +185,24 @@ namespace SIL.Machine.Corpora
                             }
                         }
                         start = verseRefs[i].Verse;
+                        duplicateVerse = false;
                         _prevVerseRef = verseRefs[i];
                     }
                     else
                     {
+                        // The duplicated verse was already written, so the range starts after it.
+                        if (duplicateVerse)
+                        {
+                            start = verseRefs[i].Verse;
+                            duplicateVerse = false;
+                        }
                         _prevVerseRef = verseRefs[i];
                     }
                 }
                 else
                 {
                     start = verseRefs[i].Verse;
+                    duplicateVerse = verseRefs[i].Equals(_prevVerseRef);
                     _prevVerseRef = verseRefs[i];
                 }
                 verseRef = verseRefs[i];
@@ -200,7 +212,8 @@ namespace SIL.Machine.Corpora
             {
                 AddTrailingTokens();
                 string end = start != _prevVerseRef.Verse ? "-" + _prevVerseRef.Verse : "";
-                _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
+                if (!duplicateVerse)
+                    _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
                 _skip = false;
                 _insertChapterIndex = -1;
                 _prevVerseRef = verseRef;
@@ -208,6 +221,8 @@ namespace SIL.Machine.Corpora
             else
             {
                 _skip = true;
+                // Markers that introduce a dropped verse would otherwise be flushed at the next kept verse.
+                _trailingVerseTokens.Clear();
             }
         }
 
@@ -232,14 +247,7 @@ namespace SIL.Machine.Corpora
             while (_verseBoundary + offset < state.Index)
             {
                 UsfmToken token = state.Tokens[_verseBoundary + offset];
-                if (
-                    IsPreservedTrailingParagraphMarker(
-                        token,
-                        _verseBoundary + offset + 1 < state.Tokens.Count
-                            ? state.Tokens[_verseBoundary + offset + 1]
-                            : null
-                    )
-                )
+                if (IsPreservedTrailingParagraphMarker(state.Tokens, _verseBoundary + offset))
                 {
                     inPreservedParagraph = true;
                 }
@@ -276,9 +284,15 @@ namespace SIL.Machine.Corpora
             _trailingVerseTokens.Clear();
         }
 
-        private bool IsPreservedTrailingParagraphMarker(UsfmToken token, UsfmToken nextToken)
+        private bool IsPreservedTrailingParagraphMarker(IReadOnlyList<UsfmToken> tokens, int index)
         {
-            return (token.Marker == "p" && nextToken != null && nextToken.Type == UsfmTokenType.Verse)
+            UsfmToken token = tokens[index];
+            UsfmToken nextToken = index + 1 >= tokens.Count ? null : tokens[index + 1];
+            return (
+                    token.Type == UsfmTokenType.Paragraph
+                    && nextToken != null
+                    && (nextToken.Type == UsfmTokenType.Verse || IsPreservedTrailingParagraphMarker(tokens, index + 1))
+                )
                 || token.Type == UsfmTokenType.Paragraph && TrailingParagraphMarkerPatterns.IsMatch(token.Marker);
         }
     }
