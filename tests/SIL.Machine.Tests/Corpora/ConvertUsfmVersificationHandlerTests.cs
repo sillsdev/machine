@@ -889,6 +889,35 @@ public class ConvertUsfmVersificationHandlerTests
         AssertUsfmEquals(target, result);
     }
 
+    [Test]
+    public void GetUsfm_MergedVerses_RangeExtendsPastMergedVerse()
+    {
+        // Original vs. Russian Orthodox
+        // LEV 14:55-56 = LEV 14:55
+
+        string usfm =
+            @"\id LEV
+\c 14
+\p
+\v 55 for leprosy in a garment or in a house,
+\v 56-57 for a swelling, a rash, or a spot, to determine when something is clean or unclean.
+";
+
+        string target = UpdateUsfm(
+            usfm,
+            sourceVersification: ScrVers.Original,
+            targetVersification: ScrVers.RussianOrthodox
+        );
+        string result =
+            @"\id LEV
+\c 14
+\p
+\v 55 for leprosy in a garment or in a house,
+\v 56 for a swelling, a rash, or a spot, to determine when something is clean or unclean.
+";
+        AssertUsfmEquals(target, result);
+    }
+
     private static string UpdateUsfm(string source, ScrVers sourceVersification, ScrVers targetVersification)
     {
         source = source.Trim().ReplaceLineEndings("\r\n") + "\r\n";
