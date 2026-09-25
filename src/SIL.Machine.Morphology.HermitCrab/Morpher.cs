@@ -61,6 +61,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             MaxStemCount = 2;
             MaxAlternatives = 0;
             MergeEquivalentAnalyses = true;
+            PruneDisagreeingCopies = true;
             LexEntrySelector = entry => true;
             RuleSelector = rule => true;
 
@@ -91,8 +92,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <summary>
         /// When unapplying a rule that copies a part more than once (reduplication), skip matches whose
         /// copies cannot unify segment by segment. Such a match can never survive synthesis, so this removes
-        /// only doomed analyses; on reduplication-heavy grammars it is the difference between a parse that
-        /// exhausts memory and one that finishes in seconds.
+        /// only doomed analyses. On by default.
         /// </summary>
         public bool PruneDisagreeingCopies { get; set; }
 

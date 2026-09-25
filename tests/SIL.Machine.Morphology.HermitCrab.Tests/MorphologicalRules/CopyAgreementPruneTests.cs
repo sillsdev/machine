@@ -9,6 +9,12 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 [TestFixture]
 public class CopyAgreementPruneTests : HermitCrabTestBase
 {
+    [Test]
+    public void PruningIsOnByDefault()
+    {
+        Assert.That(new Morpher(TraceManager, Language).PruneDisagreeingCopies, Is.True);
+    }
+
     [TestCase(false, 3)]
     [TestCase(true, 1)]
     public void FullCopyKeepsOnlyTheSplitWhoseCopiesAgree(bool pruneCopies, int expectedOutputs)
