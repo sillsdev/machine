@@ -41,6 +41,26 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginUnapplyTemplate(_template, input);
 
+            // Do not allow a final template to unapply if we don't need to worry about partials
+            // and a non-template was last unapplied.
+            if (
+                (!_morpher.IsPartial || _morpher.AlwaysEnforceFinalTemplates)
+                && input.FinalTemplateState == FinalTemplateState.NonTemplate
+                && _template.IsFinal
+            )
+            {
+                if (_morpher.TraceManager.IsTracing)
+                {
+                    _morpher.TraceManager.EndUnapplyTemplate(
+                        _template,
+                        input,
+                        false,
+                        FailureReason.NonPartialRuleProhibitedAfterFinalTemplate
+                    );
+                }
+                return Enumerable.Empty<Word>();
+            }
+
             Word inWord = input.Clone();
             inWord.Freeze();
 
@@ -63,13 +83,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (!_template.Slots[i].Optional)
                 {
                     if (_morpher.TraceManager.IsTracing)
-                        _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, false);
+                        _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, false, FailureReason.None);
                     return;
                 }
             }
 
             if (_morpher.TraceManager.IsTracing)
-                _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, true);
+                _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, true, FailureReason.None);
             output.Add(inWord);
         }
 
@@ -101,7 +121,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                             if (!_template.Slots[i].Optional)
                             {
                                 if (_morpher.TraceManager.IsTracing)
-                                    _morpher.TraceManager.EndUnapplyTemplate(_template, work.Item1, false);
+                                    _morpher.TraceManager.EndUnapplyTemplate(_template, work.Item1, false, FailureReason.None);
                                 add = false;
                                 break;
                             }
@@ -110,7 +130,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         if (add)
                         {
                             if (_morpher.TraceManager.IsTracing)
-                                _morpher.TraceManager.EndUnapplyTemplate(_template, work.Item1, true);
+                                _morpher.TraceManager.EndUnapplyTemplate(_template, work.Item1, true, FailureReason.None);
                             outStack.Push(work.Item1);
                         }
                     }

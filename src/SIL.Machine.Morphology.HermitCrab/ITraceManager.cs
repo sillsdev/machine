@@ -43,7 +43,7 @@
         void PhonologicalRuleNotUnapplied(IPhonologicalRule rule, int subruleIndex, Word input);
 
         void BeginUnapplyTemplate(AffixTemplate template, Word input);
-        void EndUnapplyTemplate(AffixTemplate template, Word output, bool unapplied);
+        void EndUnapplyTemplate(AffixTemplate template, Word output, bool unapplied, FailureReason reason);
 
         void MorphologicalRuleUnapplied(IMorphologicalRule rule, int subruleIndex, Word input, Word output);
         void MorphologicalRuleNotUnapplied(IMorphologicalRule rule, int subruleIndex, Word input);

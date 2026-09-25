@@ -58,10 +58,14 @@
             );
         }
 
-        public void EndUnapplyTemplate(AffixTemplate template, Word output, bool unapplied)
+        public void EndUnapplyTemplate(AffixTemplate template, Word output, bool unapplied, FailureReason reason)
         {
             ((Trace)output.CurrentTrace).Children.Add(
-                new Trace(TraceType.TemplateAnalysisOutput, template) { Output = unapplied ? output : null }
+                new Trace(TraceType.TemplateAnalysisOutput, template)
+                {
+                    Output = unapplied ? output : null,
+                    FailureReason = reason,
+                }
             );
         }
 
