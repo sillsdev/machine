@@ -51,11 +51,11 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 if (_morpher.TraceManager.IsTracing)
                 {
-                    _morpher.TraceManager.TemplateNotUnapplied(
+                    _morpher.TraceManager.EndUnapplyTemplate(
                         _template,
                         input,
-                        FailureReason.NonPartialRuleProhibitedAfterFinalTemplate,
-                        null
+                        false,
+                        FailureReason.NonPartialRuleProhibitedAfterFinalTemplate
                     );
                 }
                 return Enumerable.Empty<Word>();
@@ -83,13 +83,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (!_template.Slots[i].Optional)
                 {
                     if (_morpher.TraceManager.IsTracing)
-                        _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, false);
+                        _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, false, FailureReason.None);
                     return;
                 }
             }
 
             if (_morpher.TraceManager.IsTracing)
-                _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, true);
+                _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, true, FailureReason.None);
             output.Add(inWord);
         }
 
@@ -121,7 +121,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                             if (!_template.Slots[i].Optional)
                             {
                                 if (_morpher.TraceManager.IsTracing)
-                                    _morpher.TraceManager.EndUnapplyTemplate(_template, work.Item1, false);
+                                    _morpher.TraceManager.EndUnapplyTemplate(_template, work.Item1, false, FailureReason.None);
                                 add = false;
                                 break;
                             }
@@ -130,7 +130,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         if (add)
                         {
                             if (_morpher.TraceManager.IsTracing)
-                                _morpher.TraceManager.EndUnapplyTemplate(_template, work.Item1, true);
+                                _morpher.TraceManager.EndUnapplyTemplate(_template, work.Item1, true, FailureReason.None);
                             outStack.Push(work.Item1);
                         }
                     }

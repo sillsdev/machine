@@ -58,10 +58,14 @@
             );
         }
 
-        public void EndUnapplyTemplate(AffixTemplate template, Word output, bool unapplied)
+        public void EndUnapplyTemplate(AffixTemplate template, Word output, bool unapplied, FailureReason reason)
         {
             ((Trace)output.CurrentTrace).Children.Add(
-                new Trace(TraceType.TemplateAnalysisOutput, template) { Output = unapplied ? output : null }
+                new Trace(TraceType.TemplateAnalysisOutput, template)
+                {
+                    Output = unapplied ? output : null,
+                    FailureReason = reason,
+                }
             );
         }
 
@@ -81,13 +85,6 @@
         {
             ((Trace)input.CurrentTrace).Children.Add(
                 new Trace(TraceType.MorphologicalRuleAnalysis, rule) { SubruleIndex = subruleIndex, Input = input }
-            );
-        }
-
-        public void TemplateNotUnapplied(AffixTemplate template, Word input, FailureReason reason, object failureObj)
-        {
-            ((Trace)input.CurrentTrace).Children.Add(
-                new Trace(TraceType.TemplateAnalysisOutput, template) { Input = input, FailureReason = reason }
             );
         }
 
