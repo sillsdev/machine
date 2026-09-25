@@ -151,7 +151,8 @@ namespace SIL.Machine.Corpora
                     )
                     {
                         AddTrailingTokens();
-                        _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
+                        if (!duplicateVerse)
+                            _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
                         if (!addedVerseText && state.Index + 1 < state.Tokens.Count)
                         {
                             UsfmToken nextToken = state.Tokens[state.Index + 1];
@@ -165,12 +166,14 @@ namespace SIL.Machine.Corpora
                         _tokens.Add(new UsfmToken(UsfmTokenType.Chapter, "c", "", "", verseRefs[i].Chapter));
                         _tokens.Add(new UsfmToken(UsfmTokenType.Paragraph, "nb", "", "", ""));
                         start = verseRefs[i].Verse;
+                        duplicateVerse = false;
                         _prevVerseRef = verseRefs[i];
                     }
                     else if (_prevVerseRef.VerseNum + 1 != verseRefs[i].VerseNum)
                     {
                         AddTrailingTokens();
-                        _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
+                        if (!duplicateVerse)
+                            _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", "", "", start + end));
                         if (!addedVerseText && state.Index + 1 < state.Tokens.Count)
                         {
                             UsfmToken nextToken = state.Tokens[state.Index + 1];
@@ -182,20 +185,24 @@ namespace SIL.Machine.Corpora
                             }
                         }
                         start = verseRefs[i].Verse;
+                        duplicateVerse = false;
                         _prevVerseRef = verseRefs[i];
                     }
                     else
                     {
+                        // The duplicated verse was already written, so the range starts after it.
+                        if (duplicateVerse)
+                        {
+                            start = verseRefs[i].Verse;
+                            duplicateVerse = false;
+                        }
                         _prevVerseRef = verseRefs[i];
                     }
                 }
                 else
                 {
                     start = verseRefs[i].Verse;
-                    if (verseRefs[i].Equals(_prevVerseRef))
-                        duplicateVerse = true;
-                    else
-                        duplicateVerse = false;
+                    duplicateVerse = verseRefs[i].Equals(_prevVerseRef);
                     _prevVerseRef = verseRefs[i];
                 }
                 verseRef = verseRefs[i];
