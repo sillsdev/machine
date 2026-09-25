@@ -9,6 +9,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
     {
         private readonly Morpher _morpher;
         private readonly AnalysisAffixProcessAllomorphRuleSpec _spec;
+        private readonly bool _hasRepeatedParts;
 
         public CopyAgreementPatternRule(
             Morpher morpher,
@@ -19,11 +20,12 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         {
             _morpher = morpher;
             _spec = ruleSpec;
+            _hasRepeatedParts = ruleSpec.HasRepeatedParts;
         }
 
         protected override IEnumerable<Word> ApplyImpl(Word input, ShapeNode start)
         {
-            bool prune = _morpher.PruneDisagreeingCopies && _spec.HasRepeatedParts;
+            bool prune = _morpher.PruneDisagreeingCopies && _hasRepeatedParts;
             var results = new List<Word>();
             foreach (Match<Word, ShapeNode> match in Matcher.AllMatches(input, start))
             {
