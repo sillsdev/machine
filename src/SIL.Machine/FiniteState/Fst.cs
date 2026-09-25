@@ -387,7 +387,7 @@ namespace SIL.Machine.FiniteState
                 }
 
                 List<FstResult<TData, TOffset>> curResults = traversalMethod
-                    .Traverse(ref annIndex, initRegisters, cmds, initAnns)
+                    .Traverse(ref annIndex, initRegisters, cmds, initAnns, allMatches)
                     .ToList();
                 if (curResults.Count > 0)
                 {
@@ -424,7 +424,7 @@ namespace SIL.Machine.FiniteState
                 compare = -compare;
             if (IsDeterministic)
             {
-                compare = x.IsLazy ? -compare : compare;
+                compare = (x.IsLazy || y.IsLazy) ? -compare : compare;
             }
             else if (compare == 0)
             {

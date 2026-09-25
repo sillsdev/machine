@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
@@ -91,7 +92,8 @@ namespace SIL.Machine.FiniteState
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
             IList<TagMapCommand> initCmds,
-            ISet<int> initAnns
+            ISet<int> initAnns,
+            bool allMatches
         );
 
         protected static void ExecuteCommands(
@@ -452,11 +454,245 @@ namespace SIL.Machine.FiniteState
             return ni;
         }
 
+        protected TInst CopyInstanceAndBindings(TInst inst)
+        {
+            TInst ni = CopyInstance(inst);
+            if (inst.VariableBindings != null)
+            {
+                ni.VariableBindings = inst.VariableBindings.Clone();
+            }
+            return ni;
+        }
+
         protected abstract TInst CreateInstance();
 
         protected void ReleaseInstance(TInst inst)
         {
             _cachedInstances.Enqueue(inst);
+        }
+
+        protected class LatticeNode
+        {
+            public State<TData, TOffset> State { get; set; }
+            public int AnnotationIndex { get; set; }
+            public VariableBindings VariableBindings { get; set; }
+        }
+
+        protected class LatticeArc
+        {
+            public TInst Instance { get; set; }
+            public Arc<TData, TOffset> Arc { get; set; }
+            public IList<TInst> Instances { get; set; }
+        }
+
+        private readonly LatticeNode _finalState = new LatticeNode();
+
+        /// <summary>
+        /// Creates a lattice.
+        /// A lattice is a graph that represents the space of traversals as a packed forest.
+        /// The nodes are [State, AnnotationIndex] pairs.
+        /// Each node has a list of incoming arcs that are [Instance, Arc] pairs.
+        /// The Instance encodes the previous node.
+        /// </summary>
+        protected IDictionary<LatticeNode, IList<LatticeArc>> CreateFstLattice()
+        {
+            return new Dictionary<LatticeNode, IList<LatticeArc>>(
+                AnonymousEqualityComparer.Create<LatticeNode>(LatticeNodeKeyEquals, LatticeNodeKeyGetHashCode)
+            );
+        }
+
+        /// <summary>
+        /// Check whether instance is already recorded in lattice.
+        /// If not, adds instance to lattice.
+        /// Also adds [origInstance, arc] to instance's incoming arcs.
+        /// </summary>
+        protected bool RecordedInstance(
+            IDictionary<LatticeNode, IList<LatticeArc>> lattice,
+            TInst instance,
+            TInst origInstance,
+            Arc<TData, TOffset> arc
+        )
+        {
+            var nodeKey = new LatticeNode()
+            {
+                State = instance.State,
+                AnnotationIndex = instance.AnnotationIndex,
+                VariableBindings = instance.VariableBindings?.Clone(),
+            };
+            bool recorded = lattice.TryGetValue(nodeKey, out IList<LatticeArc> incoming);
+            if (!recorded)
+            {
+                // Add nodeKey to lattice.
+                incoming = new List<LatticeArc>();
+                lattice[nodeKey] = incoming;
+            }
+            // Add [origInstance, arc] to incoming.
+            incoming.Add(new LatticeArc() { Instance = origInstance, Arc = arc });
+            return recorded;
+        }
+
+        protected void RecordFinalArc(
+            IDictionary<LatticeNode, IList<LatticeArc>> lattice,
+            TInst origInstance,
+            Arc<TData, TOffset> arc
+        )
+        {
+            bool recorded = lattice.TryGetValue(_finalState, out IList<LatticeArc> incoming);
+            if (!recorded)
+            {
+                // Add _finalState to lattice.
+                incoming = new List<LatticeArc>();
+                lattice[_finalState] = incoming;
+            }
+            // Add [origInstance, arc] to incoming.
+            incoming.Add(new LatticeArc() { Instance = origInstance, Arc = arc });
+        }
+
+        /// <summary>
+        /// Extract the results encoded in lattice under the final state.
+        /// </summary>
+        protected List<FstResult<TData, TOffset>> ExtractResults(
+            IDictionary<LatticeNode, IList<LatticeArc>> lattice,
+            bool allMatches
+        )
+        {
+            List<FstResult<TData, TOffset>> newResults = new List<FstResult<TData, TOffset>>();
+            IList<LatticeArc> incoming;
+            if (!lattice.TryGetValue(_finalState, out incoming))
+                return newResults;
+            foreach (LatticeArc latticeArc in incoming)
+            {
+                foreach (TInst instance in ExpandArcInstances(latticeArc, lattice, allMatches))
+                {
+                    AdvanceInstance(instance, latticeArc.Arc, null, newResults, null, 0);
+                }
+            }
+            return newResults;
+        }
+
+        private IList<TInst> ExpandArcInstances(
+            LatticeArc latticeArc,
+            IDictionary<LatticeNode, IList<LatticeArc>> lattice,
+            bool allMatches
+        )
+        {
+            if (latticeArc.Instances == null)
+            {
+                latticeArc.Instances = ExpandInstances(latticeArc.Instance, lattice, allMatches);
+            }
+            IList<TInst> instances = new List<TInst>();
+            foreach (TInst instance in latticeArc.Instances)
+            {
+                instances.Add(CopyInstanceAndBindings(instance));
+            }
+            return instances;
+        }
+
+        private IList<TInst> ExpandInstances(
+            TInst instance,
+            IDictionary<LatticeNode, IList<LatticeArc>> lattice,
+            bool allMatches
+        )
+        {
+            IList<TInst> instances = new List<TInst>();
+            IList<FstResult<TData, TOffset>> curResults = new List<FstResult<TData, TOffset>>();
+            LatticeNode nodeKey = new LatticeNode()
+            {
+                State = instance.State,
+                AnnotationIndex = instance.AnnotationIndex,
+                VariableBindings = instance.VariableBindings?.Clone(),
+            };
+            bool recorded = lattice.TryGetValue(nodeKey, out IList<LatticeArc> incoming);
+            if (!recorded)
+            {
+                // The starting instance.
+                instances.Add(CopyInstanceAndBindings(instance));
+                return instances;
+            }
+            foreach (LatticeArc latticeArc in incoming)
+            {
+                foreach (TInst source in ExpandArcInstances(latticeArc, lattice, allMatches))
+                {
+                    AdvanceInstance(
+                        source,
+                        latticeArc.Arc,
+                        instances,
+                        curResults,
+                        instance.State,
+                        instance.AnnotationIndex
+                    );
+                }
+            }
+            if (!allMatches && instances.Count > 1)
+            {
+                instances.Sort(InstanceCompare);
+                TInst first = instances.First();
+                instances.Clear();
+                instances.Add(first);
+            }
+            return instances;
+        }
+
+        private void AdvanceInstance(
+            TInst instance,
+            Arc<TData, TOffset> arc,
+            IList<TInst> instances,
+            IList<FstResult<TData, TOffset>> curResults,
+            State<TData, TOffset> state,
+            int annotationIndex
+        )
+        {
+            if (arc.Input.IsEpsilon)
+            {
+                TInst ni = EpsilonAdvance(instance, arc, curResults);
+                if (instances != null && ni.State == state && ni.AnnotationIndex == annotationIndex)
+                {
+                    instances.Add(ni);
+                }
+            }
+            else if (CheckInputMatch(arc, instance.AnnotationIndex, instance.VariableBindings))
+            {
+                foreach (TInst ni in Advance(instance, instance.VariableBindings, arc, curResults))
+                {
+                    if (instances != null && ni.State == state && ni.AnnotationIndex == annotationIndex)
+                        instances.Add(ni);
+                }
+            }
+        }
+
+        private int InstanceCompare(TInst x, TInst y)
+        {
+            int compare = 0;
+            if (x.Priorities != null)
+            {
+                foreach (Tuple<int, int> priorityPair in x.Priorities.Zip(y.Priorities))
+                {
+                    compare = priorityPair.Item1.CompareTo(priorityPair.Item2);
+                    if (compare != 0)
+                        break;
+                }
+            }
+            return compare;
+        }
+
+        private bool LatticeNodeKeyEquals(LatticeNode x, LatticeNode y)
+        {
+            if (x.State == null || y.State == null)
+                return x.State == y.State;
+            if (x.VariableBindings == null)
+                return x.State.Equals(y.State) && x.AnnotationIndex.Equals(y.AnnotationIndex);
+            return x.State.Equals(y.State)
+                && x.AnnotationIndex.Equals(y.AnnotationIndex)
+                && x.VariableBindings.Equals(y.VariableBindings);
+        }
+
+        private int LatticeNodeKeyGetHashCode(LatticeNode m)
+        {
+            int code = 23;
+            code = code * 31 + (m.State != null ? m.State.GetHashCode() : 0);
+            code = code * 31 + m.AnnotationIndex.GetHashCode();
+            code = code * 31 + (m.VariableBindings != null ? m.VariableBindings.GetHashCode() : 0);
+            return code;
         }
     }
 }
