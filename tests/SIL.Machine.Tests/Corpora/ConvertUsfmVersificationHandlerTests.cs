@@ -447,6 +447,41 @@ public class ConvertUsfmVersificationHandlerTests
     }
 
     [Test]
+    public void GetUsfm_ParagraphIntroducingDroppedVerse_IsDropped()
+    {
+        // Russian Orthodox vs. Original
+        // DAN 3:24-90 = DAG 3:24-90
+        // DAN 3:91-100 = DAN 3:24-33
+
+        string usfm =
+            @"\id DAN - Test
+\c 3
+\p
+\v 1-23 Text
+\v 24-50 Dropped text
+\q1
+\v 51-90 More dropped text
+\p
+\v 91-100 More text
+";
+
+        string target = UpdateUsfm(
+            usfm,
+            sourceVersification: ScrVers.RussianOrthodox,
+            targetVersification: ScrVers.Original
+        );
+        string result =
+            @"\id DAN - Test
+\c 3
+\p
+\v 1-23 Text
+\p
+\v 24-33 More text
+";
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
     public void GetUsfm_DropVerseText()
     {
         string usfm =

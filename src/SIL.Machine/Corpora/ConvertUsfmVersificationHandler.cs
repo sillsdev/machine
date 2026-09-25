@@ -221,6 +221,8 @@ namespace SIL.Machine.Corpora
             else
             {
                 _skip = true;
+                // Markers that introduce a dropped verse would otherwise be flushed at the next kept verse.
+                _trailingVerseTokens.Clear();
             }
         }
 
