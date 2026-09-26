@@ -1,0 +1,66 @@
+# oracle-provenance: founding-oracle machine-commit=8bad193454a14422a3be59c3156513691ae3da3b verified-date=2026-09-15
+# Expected parses are derived from the grammar and checked against C#; see ../../docs/template-category-sharing.md.
+language: Mbalantic
+inspired_by: ["synthetic agglutinative-Bantoid cross-template + free-fluctuation probe (not modeling any real language)"]
+sources:
+  - "https://github.com/sillsdev/machine/issues/505"
+  - "src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/SynthesisStratumRule.cs"
+requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  All four template-slot rules explicitly set outputPartOfSpeech. FieldWorks HCLoader.LoadAffixTemplate
+  (HCLoader.cs:1672-1735) obtains slot rules from IMoInflAffMsa; LoadInflAffixProcessRule
+  (976-1006) sets required syntactic features but never OutSyntacticFeatureStruct. The ordinary
+  derivational loader can set output POS, but that does not provide a path for these slot-only rules.
+words:
+  - word: kolo
+    note: KOLO bare root, no affixes -- a plain control.
+    parses:
+      - signature: "KOLO|kolo"
+        rules: []
+
+  - word: pakolosa
+    note: KOLO + template A applied fully (mrPfxA prefix "pa-" + mrSfxA suffix "-sa").
+    parses:
+      - signature: "PFXA+KOLO+SFXA|pakolosa"
+        rules: [mrPfxA, mrSfxA]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: takolola
+    note: KOLO + template B applied fully (mrPfxB prefix "ta-" + mrSfxB suffix "-la").
+    parses:
+      - signature: "PFXB+KOLO+SFXB|takolola"
+        rules: [mrPfxB, mrSfxB]
+
+  - word: pakolola
+    note: >-
+      THE distinguishing row: template A's prefix ("pa-") + template B's suffix ("-la") -- the
+      cross-template join mixing a naive foma-lexc encoding (one shared per-category continuation
+      class instead of per-template exclusivity) can synthesize as a candidate. No single
+      AffixTemplate contains both mrPfxA and mrSfxB, so this has NO valid derivation at all. A
+      conforming engine must reject it; this is the fixture's actual pathology pin (and required a
+      real grammar fix to hold -- see ../../docs/template-category-sharing.md).
+    expect_fail: true
+    # Structural attribution: no complete template path exists; not a traced rule rejection.
+    blocked_by: [mrPfxA, mrSfxB]
+
+  - word: takolosa
+    note: The mirror-image cross-template mix (template B's prefix + template A's suffix) -- also structurally impossible, a second negative control.
+    expect_fail: true
+    # Structural attribution, not a traced rule rejection.
+    blocked_by: [mrPfxB, mrSfxA]
+
+  - word: mbili
+    note: >-
+      Free-fluctuation multiplicity: two lexically distinct posV roots
+      (eMbiliA "arrive", eMbiliB "count") happen to share the identical phonetic shape "mbili", so
+      the bare surface is genuinely ambiguous between them -- a real multi-entry analysis multiset
+      for one surface string, not a single unambiguous parse.
+    parses:
+      - signature: "MBILIA|mbili"
+        gloss: arrive
+        rules: []
+      - signature: "MBILIB|mbili"
+        gloss: count
+        rules: []
