@@ -1,0 +1,150 @@
+# Compounding breadth. See grammar.xml's header, especially on why the patterns are bounded.
+#
+# Oracle: the C# founding oracle (conformance/adapters/hc-dotnet-wrapper.sh batch over a Debug build
+# of src/SIL.Machine.Morphology.HermitCrab.Tool). Every signature is transcribed from that run.
+#
+# Six discriminating negative controls, each isolating one declaration:
+#   kaki   NonHeadRequiredHeadFeatures: "ki" is number=sg where the rule requires a plural non-head.
+#   kati   NonHeadRequiredFootFeatures: "ti" is class=b where the rule requires class=a.
+#   kamtu  CompoundingRule@multipleApplication="0" on crNever, which would join with an "m".
+#   kaptu  CompoundingRule@isActive="no" on crDecoy, which would join with a "p".
+#   kutu   HeadRequiredHeadFeatures: "ku" is number=pl where the rule requires a singular head.
+#   patu   HeadRequiredFootFeatures: "pa" is class=b where the rule requires a class=a head.
+#
+# CONVERSION HISTORY (fieldworks_producible: false -> true). This fixture used to also carry a
+# seventh control, "kaitu", isolating CompoundingSubrule@isActive="no" on a rule (crJoinInsert) built
+# solely to host that one inactive subrule (deliberately not a second subrule inside crJoin -- an
+# earlier draft tried that and hand-mutating a copy showed it can never be evidenced that way: a
+# CompoundingRule with two active subrules only ever finds an unapplication through the FIRST one
+# declared, regardless of which one a counterfactual activates). HCLoader's compounding-rule loaders
+# (LoadEndoCompoundingRule/LoadExoCompoundingRule, HCLoader.cs:1842-2001) always synthesize exactly
+# one CompoundingSubrule per CompoundingRule directly from the LibLCM compound rule's own MSAs, with
+# no per-subrule Disabled/isActive filter at all -- a FieldWorks compound rule can never have its own
+# only subrule considered inactive while the rule itself stays active, so crJoinInsert/kaitu is
+# removed outright rather than converted. Re-run against the C# founding oracle after the removal:
+# 35/35 fixtures still pass, and every remaining word's signature is unchanged.
+#
+# COVERAGE LOST, NAMED PLAINLY: CompoundingSubrule@isActive="no" (per-subrule deactivation) is no
+# longer exercised by ANY fixture in this corpus, producible or not -- grep-confirmed the only other
+# occurrence of "CompoundingSubrule isActive" in conformance/ was this one. It is not duplicated by
+# edge-cases/loader-isactive-breadth's own isActive census (that grammar has no CompoundingRule at
+# all) or by any other fixture. CompoundingRule@isActive="no" itself (crDecoy, above) is unaffected
+# and stays covered by kaptu.
+
+language: CompoundingBreadth
+inspired_by: ["synthetic compounding-constraint probe (not modeling any real language)"]
+sources:
+  - "conformance/semantic-coverage-baseline.txt compounding todo entries"
+requires: []
+fieldworks_producible: true
+words:
+  - word: ka
+    note: Bare head root, number=sg, class=a.
+    parses:
+      - signature: "KA|ka"
+        rules: []
+        exercises:
+          - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: tu
+    note: Bare non-head root, number=pl, class=a.
+    parses:
+      - signature: "TU|tu"
+        rules: []
+        exercises:
+          - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: katu
+    note: >-
+      The compound crJoin admits: singular class-a head, plural class-a non-head. All four
+      head/non-head required-feature elements are satisfied here.
+    parses:
+      - signature: "KA+TU|katu"
+        rules: [crJoin]
+        exercises:
+          - "CompoundingRule"
+
+  - word: katumi
+    note: >-
+      THE distinguishing row for CompoundingRule.outputPartOfSpeech->MorphologicalRule.requiredPartsOfSpeech:
+      KA+TU compounded (crJoin, outputPartOfSpeech="posOther") then attempting mrTplSuf ("-mi") --
+      mrTplSuf requires posN, and crJoin's compound is posOther, a genuine CONFLICT, so mrTplSuf can
+      never apply to it. This is NOT a vacuous-absence trick (SynthesisCompoundingRule.cs seeds the
+      output's syntactic features from the HEAD's own required POS -- posN here -- before
+      outputPartOfSpeech's PriorityUnion overwrites it, so a compound's result is never actually
+      "unset"): removing crJoin's own outputPartOfSpeech (the writer) lets that seeded posN survive
+      unoverwritten, which is EXACTLY what mrTplSuf requires, so it applies. Removing mrTplSuf's own
+      requiredPartsOfSpeech (the reader) instead lets it apply regardless of part of speech. Either
+      severance reaches the identical successful parse independently. katu (above) is the control
+      showing the compound is otherwise well-formed without mrTplSuf.
+    expect_fail: true
+    blocked_by: [crJoin]
+    exercises:
+      - "CompoundingRule"
+    claimed_cells:
+      - cell: "PartOfSpeech::CompoundingRule.outputPartOfSpeech->MorphologicalRule.requiredPartsOfSpeech::McDc:AbsentGatedForm"
+        severing: >-
+          either crJoin's own CompoundingRule.outputPartOfSpeech="posOther" (the writer) or
+          mrTplSuf's own MorphologicalRule.requiredPartsOfSpeech="posN" gate (the reader) -- severing
+          either alone unblocks this word
+        before: "ok::-"
+        after: "ok::KA+TU+TPLSUF|katumi"
+        distinct_from: katu
+        proof: >-
+          katumi is KA+TU (crJoin's compound, tagged posOther) attempting mrTplSuf; with both
+          constructs intact the part-of-speech conflict (posOther vs. mrTplSuf's own required posN)
+          blocks it, so this has zero parses. Removing either the writer (crJoin's own
+          outputPartOfSpeech, so the compound's output keeps the head's own seeded posN instead of
+          being overwritten to posOther) or the reader (mrTplSuf's requiredPartsOfSpeech) lets the
+          rule apply anyway, producing KA+TU+TPLSUF|katumi -- the AbsentGatedForm arm: the required
+          part of speech is ABSENT (overwritten away, though never from KA's own declaration) and the
+          rule's requirement GATES on it.
+
+  - word: kaki
+    note: Negative control for NonHeadRequiredHeadFeatures. "ki" is singular, not plural.
+    expect_fail: true
+    exercises:
+      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: kati
+    note: Negative control for NonHeadRequiredFootFeatures. "ti" is class=b, not class=a.
+    expect_fail: true
+    exercises:
+      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: kamtu
+    note: >-
+      Negative control for CompoundingRule@multipleApplication="0". crNever would join with an "m" at
+      the junction, and a rule capped at zero applications can never appear in a traced rule list, so
+      this failing word is its only possible evidence.
+    expect_fail: true
+    blocked_by: [crNever]
+    neutralizes:
+      - crNever
+    exercises:
+      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: kaptu
+    note: Negative control for CompoundingRule@isActive="no". crDecoy would join with a "p".
+    expect_fail: true
+    blocked_by: [crDecoy]
+    neutralizes:
+      - crDecoy
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: kutu
+    note: >-
+      Negative control for HeadRequiredHeadFeatures. "ku" is number=pl, but crJoin requires a
+      singular head, so no rule can use it as a head.
+    expect_fail: true
+    exercises:
+      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: patu
+    note: >-
+      Negative control for HeadRequiredFootFeatures. "pa" is class=b, but crJoin requires a class=a
+      head, so no rule can use it as a head.
+    expect_fail: true
+    exercises:
+      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"

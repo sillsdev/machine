@@ -1,0 +1,50 @@
+# oracle-provenance: founding-oracle machine-commit=a20bce1231fab308810fa5a531257eef24f5df1b verified-date=2026-09-15
+# Expected identities follow forward derivations, not a Rust parser run.
+language: SharedTemplateUnconstrainedSuffix
+inspired_by: ["synthetic shared-template probe, not a model of a real language"]
+sources:
+  - "https://github.com/sillsdev/machine/issues/505"
+  - "https://github.com/sillsdev/machine/pull/493"
+  - "tests/SIL.Machine.Morphology.HermitCrab.Tests/AffixTemplateTests.cs: SameRuleUsedInMultipleTemplates_AffixHasNoRequiredFeatures"
+requires: []
+fieldworks_producible: true
+words:
+  - word: mi
+    note: The noun root has no applicable inflection template.
+    parses:
+      - signature: "NROOT|mi"
+        rules: []
+  - word: mivd
+    note: The ordinary N-to-IV verbalizer feeds the IV template's mandatory shared suffix.
+    parses:
+      - signature: "NROOT+IVERB+PAST|mivd"
+        rules: [mrIverb, mrPast]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
+  - word: tid
+    note: The TV root licenses the other template using the identical suffix rule.
+    parses:
+      - signature: "TVROOT+PAST|tid"
+        rules: [mrPast]
+  - word: ki
+    note: The unrelated-category root exists and has no applicable template.
+    parses:
+      - signature: "AROOT|ki"
+        rules: []
+  - word: miv
+    note: The IV template is applicable but its mandatory suffix is missing.
+    expect_fail: true
+  - word: ti
+    note: The TV template is applicable but its mandatory suffix is missing.
+    expect_fail: true
+  - word: mid
+    note: The noun has not been verbalized; neither suffix-only template licenses it.
+    expect_fail: true
+  - word: kid
+    note: Neither template licenses the unrelated-category root.
+    expect_fail: true
+  - word: kivd
+    note: The verbalizer requires N, not the unrelated root category A.
+    expect_fail: true
+  - word: mivdd
+    note: One mandatory slot supplies one suffix; a second application is unavailable.
+    expect_fail: true
