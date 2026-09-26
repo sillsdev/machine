@@ -447,6 +447,34 @@ words:
         exercises:
           - "AffixProcessRule: reduplication (ReduplicationHint)"
 
+  - word: pam
+    note: PAM ("beat", posV5), bare root. The initial "p" has no nasal to its left, so post-nasal voicing does not apply.
+    parses:
+      - signature: "PAM|pam"
+        gloss: beat
+        rules: []
+        exercises: []
+
+  - word: pambam
+    note: >-
+      PAM fully reduplicated: mrRedup gives "pampam", then prNasalMutation's posV5 subrule voices
+      the second copy's "p" after the first copy's final "m". The surface copies differ ("pam" vs
+      "bam"), so analysis must accept a copy pair whose second member was changed by later phonology.
+    parses:
+      - signature: "PAM+RED|pambam"
+        gloss: beat-RED
+        rules: [mrRedup, prNasalMutation]
+        exercises:
+          - "AffixProcessRule: reduplication (ReduplicationHint)"
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: pampam
+    note: The un-mutated reduplicated shape. Voicing is obligatory after a nasal, so synthesis of PAM+RED always yields "pambam" and this surface has no analysis.
+    expect_fail: true
+    blocked_by: [prNasalMutation]
+    exercises:
+      - "AffixProcessRule: reduplication (ReduplicationHint)"
+
   - word: andika
     note: AND ("write", posV4) + FV only ("-a") -- the obligatory Final Vowel slot filled, both optional extension slots (causative, applicative) skipped entirely.
     parses:

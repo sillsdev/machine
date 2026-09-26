@@ -311,6 +311,15 @@
               <LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncNasal" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment>
             </Environment>
           </PhonologicalSubrule>
+          <!-- Reduplication x phonology: the same post-nasal voicing on posV5, so full reduplication of a
+               nasal-final, p-initial root ("pam" -> "pampam") feeds voicing of the SECOND copy only
+               ("pambam"). The two copies then differ on the surface; analysis must still pair them. -->
+          <PhonologicalSubrule requiredPartsOfSpeech="posV5">
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncVoicedBilabial" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncNasal" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
         </PhonologicalSubrules>
       </PhonologicalRule>
       <!-- Bucket-2 coverage: same post-nasal-voicing minor rule as prNasalMutation, but MPR-feature
@@ -671,6 +680,13 @@
             <Allomorphs><Allomorph id="aKimbia"><PhoneticShape>kimbia</PhoneticShape></Allomorph></Allomorphs>
             <MorphemeId>KIMB</MorphemeId>
             <Gloss>run</Gloss>
+          </LexicalEntry>
+          <!-- reduplication x post-nasal voicing (posV5): "beat", nasal-final and p-initial so only the
+               second copy's "p" follows a nasal. -->
+          <LexicalEntry id="ePam" partOfSpeech="posV5">
+            <Allomorphs><Allomorph id="aPam"><PhoneticShape>pam</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>PAM</MorphemeId>
+            <Gloss>beat</Gloss>
           </LexicalEntry>
           <!-- syntactic feature agreement (posV6): "cook" (an invented CVC root). -->
           <LexicalEntry id="eDab" partOfSpeech="posV6">

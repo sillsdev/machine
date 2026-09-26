@@ -194,6 +194,71 @@ words:
         exercises:
           - "AffixProcessRule: reduplication (ReduplicationHint)"
 
+  - word: hasa
+    note: HASA ("carry", posRedup), bare root. Its "h" is word-initial, not between vowels, so prHDel does not apply.
+    parses:
+      - signature: "HASA|hasa"
+        gloss: carry
+        rules: []
+        exercises: []
+
+  - word: hasaasa
+    note: >-
+      HASA with full reduplication: "hasa"+"hasa" = "hasahasa", then prHDel deletes the SECOND copy's
+      "h", which now stands between vowels. The first copy keeps its word-initial "h", so the two
+      surface copies differ in length ("hasa" vs "asa").
+    parses:
+      - signature: "RDPL+HASA|hasaasa"
+        gloss: RED.FULL-carry
+        rules: [mrRedupFull, prHDel]
+        exercises:
+          - "AffixProcessRule: reduplication (ReduplicationHint)"
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: hasahasa
+    note: The un-deleted fully reduplicated shape. prHDel is obligatory between vowels, so synthesis of RDPL+HASA always yields "hasaasa" and this surface has no analysis.
+    expect_fail: true
+    blocked_by: [prHDel]
+    exercises:
+      - "AffixProcessRule: reduplication (ReduplicationHint)"
+
+  - word: haasa
+    note: >-
+      HASA with CV- reduplication: "ha"+"ha"+"sa" = "hahasa", then prHDel deletes the reduplicated
+      "h" between the two "a"s. The CV copy pair is "ha" and "a" on the surface.
+    parses:
+      - signature: "RDP+HASA|haasa"
+        gloss: RED-carry
+        rules: [mrRedupCV, prHDel]
+        exercises:
+          - "AffixProcessRule: reduplication (ReduplicationHint)"
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: titula
+    note: >-
+      TULA with fixed-"i" CV- reduplication: mrRedupHi copies "t" and "u" twice and overwrites the
+      reduplicant's vowel with "i" (ModifyFromInput), "t"+"i"+"t"+"u"+"la" = "titula". The copied
+      vowel pair differs by design.
+    parses:
+      - signature: "RDPI+TULA|titula"
+        gloss: RED.I-help
+        rules: [mrRedupHi]
+        exercises:
+          - "AffixProcessRule: reduplication (ReduplicationHint)"
+
+  - word: hiasa
+    note: >-
+      HASA with fixed-"i" CV- reduplication: "hi"+"hasa" = "hihasa", then prHDel deletes the second
+      "h" between "i" and "a". Both copied parts now differ on the surface: the vowel by
+      ModifyFromInput, the consonant by deletion.
+    parses:
+      - signature: "RDPI+HASA|hiasa"
+        gloss: RED.I-carry
+        rules: [mrRedupHi, prHDel]
+        exercises:
+          - "AffixProcessRule: reduplication (ReduplicationHint)"
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
   - word: tula
     note: TULA bare root, no reduplication -- a plain control.
     parses:

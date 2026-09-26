@@ -193,6 +193,7 @@
            change), matching metathesis/simple_rule + complex_rule + not_unapplied exactly. -->
       <SegmentNaturalClass id="ncI"><Name>I</Name><Segment segment="cI" /></SegmentNaturalClass>
       <SegmentNaturalClass id="ncU"><Name>U</Name><Segment segment="cU" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncH"><Name>H</Name><Segment segment="cH" /></SegmentNaturalClass>
     </NaturalClasses>
     <PhonologicalRuleDefinitions>
       <!-- affix-shapes/noncontiguous's allophonic rewrite (prule1): a -> i / _ [voiced consonant].
@@ -206,6 +207,25 @@
             <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncVowelI" /></PhoneticSequence></PhoneticOutput>
             <Environment>
               <RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncVoicedCons" /></PhoneticSequence></PhoneticTemplate></RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- Reduplication x deletion: h-deletion before "a", h -> nothing / V _ a, scoped to posRedup (the right context is
+           "a" only: analysis inserts a candidate "h" wherever the context holds regardless of POS, and an
+           optional "h" between "u" and "i" blocks the metathesis words' own analysis).
+           Reduplicating an h-initial root puts the SECOND copy's "h" between vowels, so only that copy
+           loses it ("hasa" -> "hasahasa" -> "hasaasa"). The root "tula" has no "h", so its words are
+           untouched. -->
+      <PhonologicalRule id="prHDel">
+        <Name>hDeletion</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncH" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule requiredPartsOfSpeech="posRedup">
+            <PhoneticOutput><PhoneticSequence /></PhoneticOutput>
+            <Environment>
+              <LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncVowel" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment>
+              <RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncLowVowel" /></PhoneticSequence></PhoneticTemplate></RightEnvironment>
             </Environment>
           </PhonologicalSubrule>
         </PhonologicalSubrules>
@@ -307,8 +327,8 @@
            reduplication, truncation, isolated Copy/Insert linker, noncontiguous perf) + the
            POS-scoped noncontiguous rewrite. Every morphology root is rooted here. -->
       <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered"
-        morphologicalRules="mrInfixUm mrCircum mrRedupCV mrRedupFull mrTrunc mrLnk mrPerf"
-        phonologicalRules="prNonContig">
+        morphologicalRules="mrInfixUm mrCircum mrRedupCV mrRedupFull mrRedupHi mrTrunc mrLnk mrPerf"
+        phonologicalRules="prNonContig prHDel">
         <Name>Morphology</Name>
         <MorphologicalRuleDefinitions>
           <!-- affix-shapes/infix: actor-voice -um- infixed after the first consonant. -->
@@ -375,6 +395,29 @@
               </MorphologicalSubrule>
             </MorphologicalSubrules>
             <MorphemeId>RDPL</MorphemeId>
+          </MorphologicalRule>
+          <!-- CV- reduplication with a fixed "i" in the reduplicant (fixed segmentism): the consonant
+               and vowel are separate parts, each copied twice, and the reduplicant's vowel is
+               overwritten by ModifyFromInput ("tula" -> "ti"+"tula"). -->
+          <MorphologicalRule id="mrRedupHi" requiredPartsOfSpeech="posRedup" outputPartOfSpeech="posRedup">
+            <Name>redupFixedI</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subRedupHi">
+                <MorphologicalInput>
+                  <PhoneticSequence id="rhC"><SimpleContext naturalClass="ncConsonant" /></PhoneticSequence>
+                  <PhoneticSequence id="rhV"><SimpleContext naturalClass="ncVowel" /></PhoneticSequence>
+                  <PhoneticSequence id="rhRest"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput redupMorphType="prefix">
+                  <CopyFromInput index="rhC" />
+                  <ModifyFromInput index="rhV"><SimpleContext naturalClass="ncVowelI" /></ModifyFromInput>
+                  <CopyFromInput index="rhC" />
+                  <CopyFromInput index="rhV" />
+                  <CopyFromInput index="rhRest" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>RDPI</MorphemeId>
           </MorphologicalRule>
           <!-- affix-shapes/truncate (subtraction): delete a literal trailing "e" (a subtractive
                incomplete-phase / subtractive-perfective typological pattern, cited in provenance). -->
@@ -444,6 +487,11 @@
             <Allomorphs><Allomorph id="aTula"><PhoneticShape>tula</PhoneticShape></Allomorph></Allomorphs>
             <MorphemeId>TULA</MorphemeId>
             <Gloss>help</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eHasa" partOfSpeech="posRedup">
+            <Allomorphs><Allomorph id="aHasa"><PhoneticShape>hasa</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>HASA</MorphemeId>
+            <Gloss>carry</Gloss>
           </LexicalEntry>
           <LexicalEntry id="ePure" partOfSpeech="posTrunc">
             <Allomorphs><Allomorph id="aPure"><PhoneticShape>pure</PhoneticShape></Allomorph></Allomorphs>
