@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>FreeFluctuatingAllomorphPair</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posRoot"><Name>root</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- requires: [] - zero PhonologicalRule/MetathesisRule elements. A PhonologicalFeatureSystem
+         is still declared, giving every segment a UNIQUE symbol, for the same pre-existing Tier-1
+         reason edge-cases/disjunctive-recheck's own header names: without it a SegmentNaturalClass
+         constraint (ncS below) degrades to "any segment" in this port's bridge layer, which would
+         make the disjunctive contrast row (kots) pass for the wrong reason. -->
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featPh">
+        <Name>ph</Name>
+        <Symbols>
+          <Symbol id="symP">p</Symbol><Symbol id="symO">o</Symbol><Symbol id="symL">l</Symbol><Symbol id="symE">e</Symbol>
+          <Symbol id="symK">k</Symbol><Symbol id="symI">i</Symbol><Symbol id="symT">t</Symbol><Symbol id="symS">s</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="t1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cp"><Representations><Representation>p</Representation></Representations><FeatureValue feature="featPh" symbolValues="symP" /></SegmentDefinition>
+        <SegmentDefinition id="co"><Representations><Representation>o</Representation></Representations><FeatureValue feature="featPh" symbolValues="symO" /></SegmentDefinition>
+        <SegmentDefinition id="cl"><Representations><Representation>l</Representation></Representations><FeatureValue feature="featPh" symbolValues="symL" /></SegmentDefinition>
+        <SegmentDefinition id="ce"><Representations><Representation>e</Representation></Representations><FeatureValue feature="featPh" symbolValues="symE" /></SegmentDefinition>
+        <SegmentDefinition id="ck"><Representations><Representation>k</Representation></Representations><FeatureValue feature="featPh" symbolValues="symK" /></SegmentDefinition>
+        <SegmentDefinition id="ci"><Representations><Representation>i</Representation></Representations><FeatureValue feature="featPh" symbolValues="symI" /></SegmentDefinition>
+        <SegmentDefinition id="ct"><Representations><Representation>t</Representation></Representations><FeatureValue feature="featPh" symbolValues="symT" /></SegmentDefinition>
+        <SegmentDefinition id="cs"><Representations><Representation>s</Representation></Representations><FeatureValue feature="featPh" symbolValues="symS" /></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <SegmentNaturalClass id="ncS"><Name>Sclass</Name><Segment segment="cs" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered" morphologicalRules="ruleS">
+        <Name>S</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- Unconstrained suffix "-s", used only to give eOrd's allomorph 0 a following "s" to be
+               disjunctively gated against. -->
+          <MorphologicalRule id="ruleS" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>sSuffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subS">
+                <MorphologicalInput><PhoneticSequence id="sStem"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="sStem" /><InsertSegments><PhoneticShape>s</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SSFX</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <!-- eAlt: THE construct. Two allomorphs, BOTH totally unconstrained (no
+               RequiredEnvironments, isBound defaults false on each) - identical (empty) constraint
+               sets, so per pg_rules::validity::allomorphs_valid_impl (C# Allomorph.
+               FreeFluctuatesWith) the two free-fluctuate and EITHER is accepted, with no
+               first-listed-wins ordering applied between them. -->
+          <LexicalEntry id="eAlt" partOfSpeech="posRoot">
+            <Allomorphs>
+              <Allomorph id="aPol"><PhoneticShape>pol</PhoneticShape></Allomorph>
+              <Allomorph id="aPel"><PhoneticShape>pel</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>ALT</MorphemeId>
+            <Gloss>alt</Gloss>
+          </LexicalEntry>
+          <!-- eOrd: the CONTRASTIVE negative control - structurally almost identical (also two root
+               allomorphs of one entry) but the two allomorphs' constraint sets DIFFER (allomorph 0 is
+               environment-restricted, allomorph 1 is not), so they do NOT free-fluctuate: this is
+               ordinary disjunctive gating, not the construct this fixture pins. Sharpens exactly what
+               "free" means in FreeFluctuation - accepting either only when the constraints truly
+               compare equal, never merely because an entry has more than one allomorph. -->
+          <LexicalEntry id="eOrd" partOfSpeech="posRoot">
+            <Allomorphs>
+              <Allomorph id="aKit0">
+                <PhoneticShape>kit</PhoneticShape>
+                <RequiredEnvironments>
+                  <Environment>
+                    <RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncS" /></PhoneticSequence></PhoneticTemplate></RightEnvironment>
+                  </Environment>
+                </RequiredEnvironments>
+              </Allomorph>
+              <Allomorph id="aKot1"><PhoneticShape>kot</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>ORD</MorphemeId>
+            <Gloss>ord</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>ProcessMorphologyInPlaceMutation</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posRoot"><Name>root</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- requires: [] - zero PhonologicalRule/MetathesisRule elements; the one changing construct
+         here (mrAblaut's ModifyFromInput, tense realized purely by mutating the root's own segment,
+         no affix at all) is MorphologicalRule/RootAllomorph machinery. A PhonologicalFeatureSystem is
+         still declared, fully specified (every segment a unique symbol), because self-check's
+         analysis-direction reversal and Shape.ToRegexString's rendering both require the mutated
+         segment's target and output to be a FeatureNaturalClass over a fully-specified system, same
+         reasoning as languages/fusional-realizational-morphology's own mrAblaut section.
+
+         The root is deliberately a SINGLE segment, not a realistic multi-consonant shape: this
+         crate's own classify_affix (emit.rs) classifies a MorphologicalOutput with ANY CopyFromInput
+         action alongside a ModifyFromInput as Role::Infix (a non-Copy action strictly between two
+         Copy actions), not Role::Process - confirmed empirically while authoring this fixture, and
+         it is why languages/fusional-realizational-morphology's own 3-part pre/target/post mrAblaut
+         shape is NOT the right template for a ProcessMorphology witness. Only a Modify-only RHS with
+         NO CopyFromInput at all (capability.rs's own ABLAUT_PROCESS_XML unit fixture) reaches
+         Role::Process, and a single fixed-position segment is the only input shape that stays
+         Modify-only while still being self-check-verifiable. The CONSTRUCT this pins (a category
+         realized purely by featural mutation, no affix) is realistic even though this particular
+         root is minimal; see STAGING.md. -->
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featId">
+        <Name>id</Name>
+        <Symbols>
+          <Symbol id="fI">i</Symbol><Symbol id="fA">a</Symbol><Symbol id="fU">u</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <HeadFeatures>
+      <SymbolicFeature id="featTense"><Name>tense</Name><Symbols><Symbol id="symPast">past</Symbol></Symbols></SymbolicFeature>
+    </HeadFeatures>
+    <CharacterDefinitionTable id="t1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="ci"><Representations><Representation>i</Representation></Representations><FeatureValue feature="featId" symbolValues="fI" /></SegmentDefinition>
+        <SegmentDefinition id="ca"><Representations><Representation>a</Representation></Representations><FeatureValue feature="featId" symbolValues="fA" /></SegmentDefinition>
+        <SegmentDefinition id="cu"><Representations><Representation>u</Representation></Representations><FeatureValue feature="featId" symbolValues="fU" /></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <!-- mrAblaut's target ("i") and output ("a"). -->
+      <FeatureNaturalClass id="ncAblautI"><Name>AblautI</Name><FeatureValue feature="featId" symbolValues="fI" /></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncAblautA"><Name>AblautA</Name><FeatureValue feature="featId" symbolValues="fA" /></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered" morphologicalRules="mrAblaut">
+        <Name>S</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- No affix at all: past tense is realized purely by mutating the root segment "i" to
+               "a" via ModifyFromInput - classify_affix reads a Modify-only RHS (zero CopyFromInput
+               actions) as Role::Process, and allomorph_drops_lhs_material cannot fire (the input has
+               exactly one part). -->
+          <MorphologicalRule id="mrAblaut" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>ablautPast</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subAblaut">
+                <MorphologicalInput><PhoneticSequence id="tgt"><SimpleContext naturalClass="ncAblautI" /></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><ModifyFromInput index="tgt"><SimpleContext naturalClass="ncAblautA" /></ModifyFromInput></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featTense" symbolValues="symPast" /></OutputHeadFeatures>
+            <MorphemeId>ABLAUT</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <!-- eI: the mutable root - spelled with mrAblaut's own target segment, so mrAblaut can
+               derive surface "a" from it (the primary construct-exhibiting positive pin: "a" must
+               show BOTH a bare-eA reading and this ablaut-derived reading, not just one). -->
+          <LexicalEntry id="eI" partOfSpeech="posRoot">
+            <Allomorphs><Allomorph id="aI"><PhoneticShape>i</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT</MorphemeId>
+            <Gloss>i-root</Gloss>
+          </LexicalEntry>
+          <!-- eA: an UNRELATED root that happens to already be spelled with mrAblaut's own OUTPUT
+               segment. Red-on-revert: surface "a" must parse EXACTLY TWICE - once as this entry
+               bare, once as eI's ablaut-derived past form. If the ProcessMorphology compile path
+               (crate::emit::is_structural_rule admitting Role::Process, replaying pg_rules::morph::
+               synthesize) were broken, the second analysis would silently disappear and "a" would
+               wrongly drop to one parse. -->
+          <LexicalEntry id="eA" partOfSpeech="posRoot">
+            <Allomorphs><Allomorph id="aA"><PhoneticShape>a</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>AROOT</MorphemeId>
+            <Gloss>a-root</Gloss>
+          </LexicalEntry>
+          <!-- eU: a plain structural control - mrAblaut's output class (ncAblautA) only ever
+               contains "a", so it can never derive "u"; this pins that the mutation does not leak
+               onto an unrelated segment. -->
+          <LexicalEntry id="eU" partOfSpeech="posRoot">
+            <Allomorphs><Allomorph id="aU"><PhoneticShape>u</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>UROOT</MorphemeId>
+            <Gloss>u-root</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
