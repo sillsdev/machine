@@ -268,7 +268,9 @@ internal sealed class RoslynCompilationGraph
     {
         AnalyzerMetadataInspection[] pending = input
             .Analyzers.Where(analyzer =>
-                analyzer.Disposition == AnalyzerDisposition.SdkOwnedSourceGeneratorPendingProbe
+                analyzer.Disposition
+                    is AnalyzerDisposition.SdkOwnedSourceGeneratorPendingProbe
+                        or AnalyzerDisposition.VettedThirdPartySourceGeneratorPendingProbe
             )
             .ToArray();
         if (pending.Length == 0)
@@ -285,7 +287,7 @@ internal sealed class RoslynCompilationGraph
                 {
                     throw new CompilerInputException(
                         "source-generator-probe",
-                        $"Admitted SDK generator assembly '{analyzer.Path}' exposed no C# generators."
+                        $"Admitted pending-probe generator assembly '{analyzer.Path}' exposed no C# generators."
                     );
                 }
                 generators.AddRange(loaded);
@@ -326,7 +328,7 @@ internal sealed class RoslynCompilationGraph
             {
                 throw new CompilerInputException(
                     "source-generator-probe",
-                    "An admitted SDK source generator produced output or diagnostics."
+                    "An admitted pending-probe source generator produced output or diagnostics."
                 );
             }
             return generators.Count;
@@ -339,7 +341,7 @@ internal sealed class RoslynCompilationGraph
         {
             throw new CompilerInputException(
                 "source-generator-probe",
-                "An admitted SDK source generator failed during the zero-output probe.",
+                "An admitted pending-probe source generator failed during the zero-output probe.",
                 exception
             );
         }

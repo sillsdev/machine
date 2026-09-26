@@ -513,11 +513,25 @@ public sealed class DotnetMsbuildCompilationGraphLoaderTests
                     ),
                 Is.True
             );
+            // PCRE.NET.Analyzers.dll is a transitive analyzer of every node via the "machine"
+            // project reference, reaching every node regardless of target framework.
+            Assert.That(
+                graph.CompilerInputs.All(pair =>
+                    pair.Value.Analyzers.Count(analyzer =>
+                        analyzer.Disposition == AnalyzerDisposition.VettedThirdPartySourceGeneratorPendingProbe
+                    ) == 1
+                ),
+                Is.True
+            );
             Assert.That(
                 graph
                     .CompilerInputs.Where(pair => pair.Key.TargetFramework == "netstandard2.0")
                     .All(pair =>
-                        pair.Value.Analyzers.All(analyzer => analyzer.Disposition == AnalyzerDisposition.Ordinary)
+                        pair.Value.Analyzers.All(analyzer =>
+                            analyzer.Disposition
+                                is AnalyzerDisposition.Ordinary
+                                    or AnalyzerDisposition.VettedThirdPartySourceGeneratorPendingProbe
+                        )
                     ),
                 Is.True
             );

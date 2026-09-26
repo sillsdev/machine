@@ -20,6 +20,7 @@ internal enum AnalyzerDisposition
 {
     Ordinary,
     SdkOwnedSourceGeneratorPendingProbe,
+    VettedThirdPartySourceGeneratorPendingProbe,
 }
 
 internal sealed record CompilerInputModel(

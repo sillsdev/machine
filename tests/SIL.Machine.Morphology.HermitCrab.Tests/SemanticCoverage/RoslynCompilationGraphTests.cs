@@ -99,16 +99,19 @@ public sealed class RoslynCompilationGraphTests
         {
             Assert.That(graph.Nodes, Has.Count.EqualTo(16));
             Assert.That(graph.Nodes.Values.All(node => node.Diagnostics.Errors.Count == 0), Is.True);
+            // net10.0 nodes probe the SDK reference-pack generators (8 instances) plus the vetted
+            // PCRE.NET.Analyzers.dll generator; netstandard2.0 nodes only reach the latter,
+            // transitively via "machine".
             Assert.That(
                 graph
                     .Nodes.Values.Where(node => node.Key.TargetFramework == "net10.0")
-                    .All(node => node.ProbedSdkGeneratorCount > 0),
+                    .All(node => node.ProbedSdkGeneratorCount == 9),
                 Is.True
             );
             Assert.That(
                 graph
                     .Nodes.Values.Where(node => node.Key.TargetFramework == "netstandard2.0")
-                    .All(node => node.ProbedSdkGeneratorCount == 0),
+                    .All(node => node.ProbedSdkGeneratorCount == 1),
                 Is.True
             );
             Assert.That(

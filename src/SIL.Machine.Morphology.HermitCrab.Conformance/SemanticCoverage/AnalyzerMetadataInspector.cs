@@ -96,6 +96,26 @@ internal static class AnalyzerMetadataInspector
         }
     }
 
+    /// <summary>
+    /// Third-party (non-SDK) generator assemblies pinned by content hash and manually verified to produce
+    /// zero generated sources across every project in this repository'''s audited compilation graph. Each
+    /// entry only skips the blind command-line-level rejection in <see cref="CSharpCommandLineInputParser"/>;
+    /// <c>RoslynCompilationGraph.RunPendingGeneratorProbe</c> still runs the real generator against every
+    /// node'''s compilation and fails closed if it ever produces output, a diagnostic, or an exception. A
+    /// package upgrade changes the hash and falls back to "unsupported-source-generator" until a maintainer
+    /// re-verifies the new build and records its hash here.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<string, string> VettedThirdPartyGeneratorHashes = new Dictionary<
+        string,
+        string
+    >(StringComparer.Ordinal)
+    {
+        // PCRE.NET.Analyzers.dll 1.6.0 (PcreCallsInterceptorGenerator). Verified with
+        // EmitCompilerGeneratedFiles=true: zero generated files on every audited project, since none
+        // call an interceptable PCRE API.
+        ["6ee48afec14737e30000d8c9b965c1b23ed8ffc3a2b38bdf45825297d153eb96"] = "PCRE.NET.Analyzers 1.6.0",
+    };
+
     private static AnalyzerMetadataInspection CreateInspection(
         string path,
         bool isSourceGenerator,
@@ -112,7 +132,9 @@ internal static class AnalyzerMetadataInspector
             && IsKnownSdkGenerator(Path.GetFileName(path), simpleAssemblyName)
             && IsAdmittedDirectory(path, admittedSdkAnalyzerDirectories)
                 ? AnalyzerDisposition.SdkOwnedSourceGeneratorPendingProbe
-                : AnalyzerDisposition.Ordinary;
+            : isSourceGenerator && VettedThirdPartyGeneratorHashes.ContainsKey(sha256)
+                ? AnalyzerDisposition.VettedThirdPartySourceGeneratorPendingProbe
+            : AnalyzerDisposition.Ordinary;
         return new AnalyzerMetadataInspection(
             path,
             isSourceGenerator,

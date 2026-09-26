@@ -160,10 +160,7 @@ internal static class CSharpCommandLineInputParser
             )
             .ToArray();
         string[] sourceGenerators = analyzers
-            .Where(analyzer =>
-                analyzer.IsSourceGenerator
-                && analyzer.Disposition != AnalyzerDisposition.SdkOwnedSourceGeneratorPendingProbe
-            )
+            .Where(analyzer => analyzer.IsSourceGenerator && !IsPendingProbe(analyzer.Disposition))
             .Select(analyzer => analyzer.Path)
             .ToArray();
         if (sourceGenerators.Length != 0)
@@ -180,6 +177,12 @@ internal static class CSharpCommandLineInputParser
         CompilerAuxiliaryInput[] analyzerConfigs = parsed.AnalyzerConfigPaths.Select(ReadAuxiliaryInput).ToArray();
         return new CompilerInputModel(parsed, symbols.ToArray(), sources, analyzers, additionalFiles, analyzerConfigs);
     }
+
+    /// <summary>Whether a disposition defers the source-generator question to a later real probe.</summary>
+    private static bool IsPendingProbe(AnalyzerDisposition disposition) =>
+        disposition
+            is AnalyzerDisposition.SdkOwnedSourceGeneratorPendingProbe
+                or AnalyzerDisposition.VettedThirdPartySourceGeneratorPendingProbe;
 
     private static void VerifyToolchain(CompilerToolchainIdentity queried)
     {
