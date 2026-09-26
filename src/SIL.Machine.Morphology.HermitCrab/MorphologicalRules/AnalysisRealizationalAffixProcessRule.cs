@@ -22,7 +22,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             foreach (AffixProcessAllomorph allo in rule.Allomorphs)
             {
                 _rules.Add(
-                    new MultiplePatternRule<Word, ShapeNode>(
+                    new CopyAgreementPatternRule(
+                        morpher,
                         new AnalysisAffixProcessAllomorphRuleSpec(allo),
                         new MatcherSettings<ShapeNode>
                         {
