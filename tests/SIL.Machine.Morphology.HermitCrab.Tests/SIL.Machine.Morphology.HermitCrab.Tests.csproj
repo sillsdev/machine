@@ -12,6 +12,8 @@
 		<NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
 	</PropertyGroup>
 
+	<Import Project="../../eng/HcRoslynCompilerReferences.props" />
+
 	<ItemGroup>
 		<PackageReference Include="coverlet.msbuild" Version="6.0.4">
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -21,6 +23,7 @@
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		  <PrivateAssets>all</PrivateAssets>
 		</PackageReference>
+		<PackageReference Include="JsonSchema.Net" Version="9.4.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
 		<PackageReference Include="NUnit" Version="4.4.0" />
 		<PackageReference Include="NUnit.Analyzers" Version="4.11.2">
@@ -36,6 +39,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj" />
 		<ProjectReference Include="..\..\src\SIL.Machine\SIL.Machine.csproj" />
+		<ProjectReference Include="..\..\src\SIL.Machine.Morphology.HermitCrab.Conformance\SIL.Machine.Morphology.HermitCrab.Conformance.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
