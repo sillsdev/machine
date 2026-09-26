@@ -1,0 +1,141 @@
+# oracle-provenance: forward-synthesis
+#
+# THIS FIXTURE FAILS AGAINST hc.dll TODAY, ON PURPOSE. Every word here records the founding
+# oracle's own output except `zudiua`, which records the answer forward synthesis proves is correct
+# and which the oracle currently loses. The fixture is written before the engine fix, so it goes red
+# now and green when the fix lands; a red result here is the expected state, not a broken fixture.
+# The correct answer was derived from the grammar rather than from any engine: apply the rules in
+# order, check each rule's RequiredHeadFeatures against the previous rule's OutputHeadFeatures, and
+# see that the chain builds the surface. An engine that cannot invert a derivation it can perform is
+# wrong regardless of which engine it is. Every OTHER word is oracle-recorded, so the fixture still
+# pins current behaviour everywhere the current behaviour is right.
+# Verified against the C# founding oracle (hc.dll, via hc-conformance.exe self-check mode --
+# `hc-conformance.exe --fixtures conformance --propose --include-pathological` built from this
+# worktree, branch conformance/exact-analysis-fs-divergence at d3b7643d). Every signature below EXCEPT
+# `zudiua`'s is transcribed verbatim from that run's --propose output; `zudiua`'s is hand-derived,
+# for the reason given above.
+#
+# PINS CURRENT C# BEHAVIOUR EVERYWHERE THAT BEHAVIOUR IS RIGHT. It also records one parse LOSS that
+# the owner's own research characterizes as a pre-existing bug (see below), present under both
+# master's Add semantics and PR #494's PriorityUnion, and NOT present in HC-Rust's "exact analysis
+# feature structure" mode (PanGloss branch fix/exact-analysis-fs). This fixture exists so that
+# loss shows up as a conformance failure against hc.dll itself, so the engine fix has a red test to
+# turn green.
+#
+# Mechanism: analysis (un-application) walks a derivation outside-in. mrOuter's own
+# OutputHeadFeatures (tense=past) is folded onto the stem as it is un-applied and never fully
+# retracted before mrInner is tried next; mrInner's own OutputHeadFeatures (tense=pres) is then
+# checked for unifiability against a stem that still carries the leftover tense=past, and the check
+# fails, refusing the whole derivation. This is exactly
+# `AnalysisSyntacticFeatureMerge.CanUnapply`/`MergeRequired`'s Add and PriorityUnion branches
+# (sillsdev/machine research branch perf/pr494-priority-union,
+# src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/AnalysisSyntacticFeatureMerge.cs); on
+# current master (no toggle exists there yet) `AnalysisAffixProcessRule.Apply`'s own IsUnifiable gate
+# has the same Add-only behaviour, so the loss reproduces without any research code at all. Documented
+# as `OverrideLoss_TenseFlipFlop_AddAndPriorityUnionLoseTheParse_ExactFindsIt` in
+# tests/SIL.Machine.Morphology.HermitCrab.Tests/MorphologicalRules/AnalysisSyntacticFeatureMergeTests.cs
+# on that same branch, and in docs/pr494-review.md section 4 ("it fixes a pre-existing master bug: a
+# rule whose Out overrides an inner rule's Out ... loses the parse under Add and PriorityUnion because
+# neither removes the stale Out feature").
+#
+# Word list:
+#   zud      bare root control -- the grammar loads and the root parses unaffixed.
+#   zudi     mrInner alone -- writes tense=pres, no gate to fail. Control that mrInner works in
+#            isolation.
+#   zudu     mrOuter alone -- writes tense=past, no gate to fail. Control that mrOuter works in
+#            isolation.
+#   zudua    root+mrOuter+mrOutermost (mrInner SKIPPED). mrOuter's tense=past write is exactly what
+#            mrOutermost's RequiredHeadFeatures checks, and nothing else intervenes to clobber it.
+#            THE fixture's own non-vacuousness control: a three-morph chain through the very same
+#            override-then-gate pair parses cleanly whenever mrInner (the rule whose own re-unification
+#            is what actually fails) is not part of the chain.
+#   zudia    root+mrInner+mrOutermost (mrOuter SKIPPED). mrOutermost requires tense=past, but only
+#            mrInner ran (tense=pres) -- negative control that mrOutermost's gate is a real feature
+#            check, not vacuously satisfied by any suffix chain of the right length.
+#   zudiua   root+mrInner+mrOuter+mrOutermost, the FULL chain. THE bug pin: this word has a genuine,
+#            structurally well-formed 4-morph analysis -- root, then mrInner's own tense=pres write,
+#            then mrOuter's own tense=past override, then mrOutermost's tense=past gate -- and the
+#            founding oracle returns NO analysis of it at all (signature "-"), because mrInner's
+#            re-unification against the leftover tense=past fails first. HC-Rust's exact-analysis-fs
+#            mode strips the rule's own output-feature paths before re-unifying and DOES find this
+#            parse, which is the divergence this fixture exists to catch.
+
+language: ChainedOutputFeatureOverrideLoss
+inspired_by: ["synthetic chained-suffix tense-override probe (not modeling any real language)"]
+sources:
+  - "src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/AnalysisAffixProcessRule.cs"
+  - "perf/pr494-priority-union:src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/AnalysisSyntacticFeatureMerge.cs"
+  - "perf/pr494-priority-union:docs/pr494-review.md (section 4, OverrideLoss_TenseFlipFlop)"
+  - "PanGloss rust/crates/pg-parse/tests/exact_analysis_fs_recall.rs (fix/exact-analysis-fs branch)"
+requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  MorphologicalRuleOrder: HCLoader hardcodes Unordered at every Stratum it builds (HCLoader.cs:227,
+  230,374) and can never emit `linear`. This fixture declares its Stratum `morphologicalRuleOrder=
+  "linear"` (grammar.xml) so the three-suffix chain is unambiguous by construction; not re-verified
+  against an `unordered` re-run since the point under test (analysis-side feature bookkeeping, not
+  morphotactic ordering) does not depend on that declaration either way. Follows the same precedent
+  and citation as edge-cases/feature-gating-breadth.
+words:
+  - word: zud
+    note: Bare root, unaffixed, untensed. Control that the grammar loads and the root parses on its own.
+    parses:
+      - signature: "ZUD|zud"
+        rules: []
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: zudi
+    note: mrInner alone. No RequiredHeadFeatures to fail; writes tense=pres via OutputHeadFeatures.
+    parses:
+      - signature: "ZUD+INNER|zudi"
+        rules: [mrInner]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: zudu
+    note: mrOuter alone. No RequiredHeadFeatures to fail; writes tense=past via OutputHeadFeatures.
+    parses:
+      - signature: "ZUD+OUTER|zudu"
+        rules: [mrOuter]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: zudua
+    note: >-
+      root+mrOuter+mrOutermost, mrInner skipped. Non-vacuousness control: the very same
+      override-then-gate pair (mrOuter writes tense=past, mrOutermost requires it) succeeds cleanly
+      whenever mrInner is not part of the chain -- the loss on zudiua below is specific to mrInner's
+      own re-unification, not a general failure of this gate.
+    parses:
+      - signature: "ZUD+OUTER+OUTERMOST|zudua"
+        rules: [mrOuter, mrOutermost]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: zudia
+    note: >-
+      root+mrInner+mrOutermost, mrOuter skipped. Negative control: mrOutermost requires tense=past,
+      but only mrInner ran (tense=pres survives unclobbered), so the gate genuinely refuses -- it is
+      not vacuously satisfied by any three-morph chain of the right shape.
+    expect_fail: true
+    blocked_by: [mrOutermost]
+    exercises:
+      - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: zudiua
+    note: >-
+      THE bug pin, and the one word in this fixture that does NOT record current engine behaviour.
+      root+mrInner+mrOuter+mrOutermost is a well-formed four-morph chain: forward synthesis runs
+      zud (no tense) -> mrInner writes tense=pres -> mrOuter writes tense=past -> mrOutermost's
+      RequiredHeadFeatures tense=past is satisfied. Compare zudua above, the same gate pair one rule
+      shorter, which parses cleanly. The founding oracle nonetheless finds ZERO analyses here:
+      mrOuter's own tense=past write is folded onto the stem during analysis and never retracted, so
+      mrInner's own OutputHeadFeatures (tense=pres) fails unification when mrInner is tried next and
+      the whole derivation is refused. The signature below is what a correct engine must return, so
+      this entry FAILS against hc.dll today by design -- see the header for why that is deliberate.
+    parses:
+      - signature: "ZUD+INNER+OUTER+OUTERMOST|zudiua"
+        rules: [mrInner, mrOuter, mrOutermost]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"

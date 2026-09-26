@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Pins a C# engine defect, not a grammar error. A MetathesisRule whose leftSwitch names the EARLIER
+     of its two pattern groups, with the pair occurring in a root, makes the engine throw
+     System.InvalidOperationException "Failed to compare two elements in the array", wrapping
+     System.ArgumentException "Only nodes from the same list can be compared." That is an internal
+     invariant violation during analysis, not a diagnosable problem with this document.
+
+     multipleApplicationOrder is NOT the trigger, though an earlier reading of this crash said it was:
+     it reproduces under both orderings, and the ordering value is covered with real evidence in
+     edge-cases/feature-system-breadth. The trigger is purely the switch-name order, which is why the
+     rule below names its groups in the natural order that a grammar author would reach for first.
+
+     Fixed upstream by sillsdev/machine#471, which normalizes both metathesis specs to order by pattern
+     position rather than by switch name. Delete this fixture, or convert it to the real signature,
+     when that lands and the submodule pointer moves.
+
+     Reduced to the smallest grammar that still throws: two segments with distinct feature bundles, a
+     natural class for each, one metathesis rule swapping them, and one root containing the pair. -->
+<HermitCrabInput>
+  <Language>
+    <Name>MetathesisComparisonCrash</Name>
+    <PartsOfSpeech><PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech></PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons">
+        <Name>cons</Name>
+        <Symbols>
+          <Symbol id="consPlus">+cons</Symbol>
+          <Symbol id="consMinus">-cons</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cT">
+          <Representations><Representation>t</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="consPlus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cI">
+          <Representations><Representation>i</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="consMinus" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <SegmentNaturalClass id="ncT"><Name>tOnly</Name><Segment segment="cT" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncI"><Name>iOnly</Name><Segment segment="cI" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <MetathesisRule id="mtSwap" leftSwitch="mtLeft" rightSwitch="mtRight" multipleApplicationOrder="rightToLeftIterative">
+        <Name>swapRightToLeft</Name>
+        <StructuralDescription>
+          <PhoneticTemplate>
+            <PhoneticSequence>
+              <SimpleContext id="mtLeft" naturalClass="ncT" />
+              <SimpleContext id="mtRight" naturalClass="ncI" />
+            </PhoneticSequence>
+          </PhoneticTemplate>
+        </StructuralDescription>
+      </MetathesisRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" phonologicalRules="mtSwap">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eTi" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aTi"><PhoneticShape>ti</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TI</MorphemeId>
+            <Gloss>ti</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- MPR overwrite-group order dependence. Closes the one coverage gap
+     edge-cases/morphotactic-attribute-breadth deliberately leaves open: that fixture's own
+     appendGroup/groupDecoy pair pins outputType="append" vs. "overwrite" as a static contrast (its
+     Main stratum is Linear, so mrMB then mrMA always applies in that one fixed order), but never
+     shows the consequence that matters on an UNORDERED stratum: that "overwrite" makes the same
+     two rules' relative order change the final MPR state, and a THIRD rule gated on
+     requiredMPRFeatures can therefore succeed under one order and fail under the reverse. No
+     existing fixture combines an unordered stratum with two rules writing one overwrite group
+     (morphotactic-attribute-breadth's own unordered stratum, Second, holds a single MPR-inert rule).
+
+     Two isolated probes, on two roots that share no letters, so a change to one construct's outcome
+     can never be misread as evidence about the other:
+
+       overwriteGroup (mprX, mprY, outputType="overwrite", the DTD/loader default) over root "dabo":
+       mrSetX and mrSetY each set one member and nothing else. On this Unordered stratum
+       (CombinationRuleCascade, SynthesisStratumRule.cs) both relative orders are reachable, and
+       because each rule inserts a distinct fixed suffix, the concatenated surface string is a
+       fingerprint of exactly which order fired (the same technique morphotactic-attribute-breadth's
+       own kulgimo/topsakanabu rows use for slot-order controls); applying X then Y leaves only mprY
+       (MprFeatureSet.AddOutput removes any group member absent from the new output before unioning);
+       applying Y then X leaves only mprX. mrGateX's requiredMPRFeatures="mprX" then succeeds only
+       through the second derivation.
+
+       appendGroup (mprP, mprQ, outputType="append", matchType="all") over root "femo": mrSetP and
+       mrSetQ are the append-policy mirror of mrSetX/mrSetY. Because append never evicts, mrGatePQ's
+       requiredMPRFeatures="mprP mprQ" succeeds under BOTH orders: the control that attributes the
+       overwrite probe's order-sensitivity to outputType itself, not to some other difference between
+       the two probes' rule shapes (which are otherwise identical). -->
+<HermitCrabInput>
+  <Language>
+    <Name>MprOverwriteOrderDependence</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <MorphologicalPhonologicalRuleFeatures>
+      <MorphologicalPhonologicalRuleFeature id="mprX">X</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprY">Y</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprP">P</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprQ">Q</MorphologicalPhonologicalRuleFeature>
+      <!-- outputType="overwrite" is the construct under test: on this Unordered stratum, whichever
+           of mrSetX/mrSetY applies LAST evicts the other's feature from this group. -->
+      <MorphologicalPhonologicalRuleFeatureGroup matchType="any" outputType="overwrite" features="mprX mprY">
+        <Name>overwriteGroup</Name>
+      </MorphologicalPhonologicalRuleFeatureGroup>
+      <!-- outputType="append" is the control: neither mrSetP nor mrSetQ evicts the other, in either
+           order, so mrGatePQ's requiredMPRFeatures="mprP mprQ" (matchType="all": both must be
+           present) succeeds regardless of which applied first. -->
+      <MorphologicalPhonologicalRuleFeatureGroup matchType="all" outputType="append" features="mprP mprQ">
+        <Name>appendGroup</Name>
+      </MorphologicalPhonologicalRuleFeatureGroup>
+    </MorphologicalPhonologicalRuleFeatures>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="sA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sE"><Representations><Representation>e</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sF"><Representations><Representation>f</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sQ"><Representations><Representation>q</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sV"><Representations><Representation>v</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sX"><Representations><Representation>x</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sY"><Representations><Representation>y</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sZ"><Representations><Representation>z</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered"
+               morphologicalRules="mrSetX mrSetY mrGateX mrSetP mrSetQ mrGatePQ">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrSetX" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>setX</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSetX">
+                <MorphologicalInput><PhoneticSequence id="stemSetX"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprX"><CopyFromInput index="stemSetX" /><InsertSegments><PhoneticShape>xa</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SETX</MorphemeId>
+            <Gloss>setx</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrSetY" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>setY</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSetY">
+                <MorphologicalInput><PhoneticSequence id="stemSetY"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprY"><CopyFromInput index="stemSetY" /><InsertSegments><PhoneticShape>yu</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SETY</MorphemeId>
+            <Gloss>sety</Gloss>
+          </MorphologicalRule>
+          <!-- The probe: this rule can only apply where mprX is CURRENTLY present in the running MPR
+               set, so it distinguishes which of mrSetX/mrSetY applied last on overwriteGroup. -->
+          <MorphologicalRule id="mrGateX" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>gateX</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subGateX">
+                <MorphologicalInput requiredMPRFeatures="mprX"><PhoneticSequence id="stemGateX"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemGateX" /><InsertSegments><PhoneticShape>zi</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>GATEX</MorphemeId>
+            <Gloss>gatex</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrSetP" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>setP</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSetP">
+                <MorphologicalInput><PhoneticSequence id="stemSetP"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprP"><CopyFromInput index="stemSetP" /><InsertSegments><PhoneticShape>pi</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SETP</MorphemeId>
+            <Gloss>setp</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrSetQ" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>setQ</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSetQ">
+                <MorphologicalInput><PhoneticSequence id="stemSetQ"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprQ"><CopyFromInput index="stemSetQ" /><InsertSegments><PhoneticShape>qu</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SETQ</MorphemeId>
+            <Gloss>setq</Gloss>
+          </MorphologicalRule>
+          <!-- The control: requires BOTH append-group members, which append's non-evicting policy
+               guarantees regardless of whether mrSetP or mrSetQ applied last. -->
+          <MorphologicalRule id="mrGatePQ" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>gatePQ</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subGatePQ">
+                <MorphologicalInput requiredMPRFeatures="mprP mprQ"><PhoneticSequence id="stemGatePQ"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemGatePQ" /><InsertSegments><PhoneticShape>vo</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>GATEPQ</MorphemeId>
+            <Gloss>gatepq</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eDabo" partOfSpeech="posN">
+            <Allomorphs>
+              <Allomorph id="aDabo"><PhoneticShape>dabo</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>DABO</MorphemeId>
+            <Gloss>root.dabo</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eFemo" partOfSpeech="posN">
+            <Allomorphs>
+              <Allomorph id="aFemo"><PhoneticShape>femo</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>FEMO</MorphemeId>
+            <Gloss>root.femo</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

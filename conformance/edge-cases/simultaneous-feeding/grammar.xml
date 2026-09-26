@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Synthetic feature-changing overlap probe, matching RewriteRuleTests.MultipleApplicationRules. -->
+<HermitCrabInput>
+  <Language>
+    <Name>SimultaneousFeeding</Name>
+    <PartsOfSpeech><PartOfSpeech id="posDemo"><Name>demo</Name></PartOfSpeech></PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="consP">+</Symbol><Symbol id="consM">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featHigh"><Name>high</Name><Symbols><Symbol id="highP">+</Symbol><Symbol id="highM">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featBack"><Name>back</Name><Symbols><Symbol id="backP">+</Symbol><Symbol id="backM">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featRound"><Name>round</Name><Symbols><Symbol id="roundP">+</Symbol><Symbol id="roundM">-</Symbol></Symbols></SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="table1"><Name>Main</Name><SegmentDefinitions>
+      <SegmentDefinition id="cG"><Representations><Representation>g</Representation></Representations><FeatureValue feature="featCons" symbolValues="consP" /><FeatureValue feature="featHigh" symbolValues="highM" /><FeatureValue feature="featBack" symbolValues="backM" /><FeatureValue feature="featRound" symbolValues="roundM" /></SegmentDefinition>
+      <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations><FeatureValue feature="featCons" symbolValues="consM" /><FeatureValue feature="featHigh" symbolValues="highP" /><FeatureValue feature="featBack" symbolValues="backM" /><FeatureValue feature="featRound" symbolValues="roundM" /></SegmentDefinition>
+      <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations><FeatureValue feature="featCons" symbolValues="consM" /><FeatureValue feature="featHigh" symbolValues="highP" /><FeatureValue feature="featBack" symbolValues="backP" /><FeatureValue feature="featRound" symbolValues="roundP" /></SegmentDefinition>
+      <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations><FeatureValue feature="featCons" symbolValues="consM" /><FeatureValue feature="featHigh" symbolValues="highM" /><FeatureValue feature="featBack" symbolValues="backP" /><FeatureValue feature="featRound" symbolValues="roundM" /></SegmentDefinition>
+    </SegmentDefinitions></CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncHighVowel"><Name>HighVowel</Name><FeatureValue feature="featCons" symbolValues="consM" /><FeatureValue feature="featHigh" symbolValues="highP" /></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncFrontHigh"><Name>FrontHigh</Name><FeatureValue feature="featCons" symbolValues="consM" /><FeatureValue feature="featHigh" symbolValues="highP" /><FeatureValue feature="featBack" symbolValues="backM" /><FeatureValue feature="featRound" symbolValues="roundM" /></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncBackRound"><Name>BackRound</Name><FeatureValue feature="featBack" symbolValues="backP" /><FeatureValue feature="featRound" symbolValues="roundP" /></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncCons"><Name>Cons</Name><FeatureValue feature="featCons" symbolValues="consP" /></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prFeed" multipleApplicationOrder="simultaneous">
+        <Name>feeding</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncHighVowel" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules><PhonologicalSubrule requiredPartsOfSpeech="posDemo">
+          <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncBackRound" /></PhoneticSequence></PhoneticOutput>
+          <Environment><LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncFrontHigh" /><SimpleContext naturalClass="ncCons" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment></Environment>
+        </PhonologicalSubrule></PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata><Stratum characterDefinitionTable="table1" phonologicalRules="prFeed"><Name>Main</Name><LexicalEntries>
+      <LexicalEntry id="eGigi" partOfSpeech="posDemo"><Allomorphs><Allomorph id="aGigi"><PhoneticShape>gigigi</PhoneticShape></Allomorph></Allomorphs><MorphemeId>GIGI</MorphemeId><Gloss>gigi-root</Gloss></LexicalEntry>
+      <LexicalEntry id="eGaba" partOfSpeech="posDemo"><Allomorphs><Allomorph id="aGaba"><PhoneticShape>gaga</PhoneticShape></Allomorph></Allomorphs><MorphemeId>GABA</MorphemeId><Gloss>gaga-control</Gloss></LexicalEntry>
+    </LexicalEntries></Stratum></Strata>
+  </Language>
+</HermitCrabInput>
