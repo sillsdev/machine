@@ -1,0 +1,38 @@
+language: IterativeEpenthesisCascade
+inspired_by: ["synthetic two-rule iterative cursor probe (not modeling any real language)"]
+sources:
+  - "RewriteRuleTests.EpenthesisRules final rule1/rule2 reconfiguration"
+requires: [phonology]
+# FieldWorks verdict relies on the task-provided HCLoader.cs facts; that external source is not in
+# this worktree. Ordinary PhRegularRule constructs cover both iterative epentheses.
+fieldworks_producible: true
+words:
+  - word: uoaa
+    note: Rule-1-only control; the empty-LHS first rule inserts the back-rounded o between u and a, while POS gating excludes rule 2.
+    parses:
+      - signature: "FIRST|uoaa"
+        gloss: first-control
+        rules: [prRule1, prRule2]
+  - word: uata
+    note: Rule-2-only control; the empty-LHS second rule inserts t between two vowels with the required two-vowel left context, while POS gating excludes rule 1.
+    parses:
+      - signature: "SECOND|uata"
+        gloss: second-control
+        rules: [prRule1, prRule2]
+  - word: uotaa
+    note: Iterative combined positive; rule 1 creates the new left-hand site, and rule 2's cursor then prevents the overlapping old site from also firing.
+    parses:
+      - signature: "BOTH|uotaa"
+        gloss: both-rules
+        rules: [prRule1, prRule2]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+  - word: uotaata
+    note: Iterative longer-root positive; the cursor reaches the two non-conflicting sites and leaves the overlapping middle site uninserted.
+    parses:
+      - signature: "OVER|uotaata"
+        gloss: overlap-control
+        rules: [prRule1, prRule2]
+  - word: uotatata
+    note: Discriminating negative; a simultaneous-shaped implementation would apply rule 2 at all three overlapping post-rule-1 sites, but the iterative cursor accepts only the two non-conflicting sites.
+    expect_fail: true
