@@ -1,0 +1,60 @@
+#	Triage of every coverage obligation, with status derived mechanically from gate-obligations.tsv
+#	and dataflow-obligations.tsv -- never hand-marked.
+#	bucket 1 = a word in an existing grammar should do it
+#	bucket 2 = needs a small grammar change HCLoader can produce and real morphology exhibits
+#	bucket 3 = legitimate but strained; low value
+#	4-EXCLUDED = nothing can ever cover it
+#	4-TOOLING  = the obligation is real; the harness cannot express it (fix the tool, not the corpus)
+#	4-ENGINE   = the engine decides it but never traces it, so it cannot be observed
+kind	item	bucket	status	construct_in_plain_language	reason
+arm	AllomorphCoOccurrenceRules:Blocked	4-TOOLING	Open	this allomorph may only appear alongside that morpheme	primaryAllomorph/otherAllomorphs are DTD #REQUIRED, so Sever always throws -- no word can ever witness this; needs a whole-element removal primitive
+arm	AllomorphCoOccurrenceRules:Control	4-TOOLING	Open	same, unblocked	same
+arm	MorphemeCoOccurrenceRules:Blocked	4-TOOLING	Open	this morpheme may only appear alongside that one	primaryMorpheme/otherMorphemes are DTD #REQUIRED, same as the allomorph pair
+arm	MorphemeCoOccurrenceRules:Control	4-TOOLING	Open	same, unblocked	same
+arm	HeadRequiredSyntacticFeatureStruct:Blocked	1	COVERED	the head of a compound must carry given features	present in compounding-breadth and a language grammar; severing headPartsOfSpeech changed no word
+arm	HeadRequiredSyntacticFeatureStruct:Control	1	COVERED	same, unblocked	follows the Blocked arm
+arm	NonHeadProdRestrictMprFeatures:Blocked	2	Open	the non-head of a compound must be productive for this rule	no grammar declares nonHeadProdRestrictionsMprFeatures; its trace call works, so a grammar edit alone would cover it
+arm	NonHeadProdRestrictMprFeatures:Control	2	Open	same, unblocked	same
+arm	NonHeadRequiredSyntacticFeatureStruct:Blocked	4-ENGINE	Open	the non-head of a compound must carry given features	AnalysisCompoundingRule.cs:65-73 discards a POS-mismatched nonhead with a bare continue and no trace call, so the synthesis raise site is dead in practice; needs one instrumentation line
+arm	NonHeadRequiredSyntacticFeatureStruct:Control	4-ENGINE	Open	same, unblocked	same
+cell	LexicalEntry.partOfSpeech->AffixTemplate.requiredPartsOfSpeech	2	Open	a slot template applies only to one part of speech	every MorphologicalRule in every fixture redundantly re-declares its template requiredPartsOfSpeech, so severing the template alone never flips a word; needs a slot rule without its own gate
+cell	MorphologicalRule.outputPartOfSpeech->AffixTemplate.requiredPartsOfSpeech	2	Open	a derivation changes category, then a template checks the new one	same redundant re-declaration
+cell	MorphologicalRule.outputPartOfSpeech->MorphologicalRule.requiredPartsOfSpeech	2	Open	a derivation changes category, then a later affix checks it	severing outputPartOfSpeech stops the override rather than blanking the category, so the stem reverts to its pre-derivation POS; needs a reader that rejects THAT value
+cell	MorphologicalRule.outputPartOfSpeech->PhonologicalSubrule.requiredPartsOfSpeech	2	Open	a derivation changes category, then a sound rule checks it	only two rules in the corpus have outputPartOfSpeech != requiredPartsOfSpeech and neither reaches a mismatched same-stratum subrule gate
+cell	LexicalEntry.ruleFeatures->PhonologicalSubrule.requiredMPRFeatures	4-EXCLUDED	Open	a sound rule fires only on roots flagged for it (exception feature / minor rule)	the gate is a plain set-membership test (SynthesisRewriteSubruleSpec.cs:47-49), so severing a feature the ROOT presets can only turn a passing word into a failing one -- never the reverse. Only an affix-conferred or affix-destroyed feature can witness a required gate, which is what the three covered siblings use
+cell	LexicalEntry.ruleFeatures->PhonologicalSubrule.excludedMPRFeatures	2	COVERED	a sound rule skips roots flagged as exceptions	same absence; HCLoader.cs:2058 from FLEx's Excluded rule features
+cell	MorphologicalOutput.MPRFeatures->PhonologicalSubrule.requiredMPRFeatures	2	COVERED	an affix confers a flag that a later sound rule requires	same construct absence, affix-sourced rather than root-sourced
+cell	MorphologicalOutput.MPRFeatures->PhonologicalSubrule.excludedMPRFeatures	2	COVERED	an affix confers a flag that blocks a later sound rule	same construct absence
+cell	MorphologicalOutput.MPRFeatures->MorphologicalInput.excludedMPRFeatures	4-EXCLUDED	COVERED	an affix confers a flag that blocks a later affix	witness is behaviourally genuine but should not have counted: HCLoader populates the reader ONLY from slot.ReferringObjects.OfType<ILexEntryInflType>() (HCLoader.cs:1717, irregular-form blocking), never from an affix output, so no FieldWorks project can produce an affix-conferred version of this chain. Producibility does not compose -- both attributes are producible, the chain is not.
+cell	Allomorph.stemName->MorphologicalRule.requiredStemName	2	Open	a rule demands a specific stem (principal parts)	engine compares stem names by object identity; the only fixture with the reader declares ONE StemName, so no word can flip both sides. templatic-root-modification has two but no requiredStemName rule
+cell	LexicalEntry.ruleFeatures->MorphologicalInput.requiredMPRFeatures	2	Open	a root flag that a later affix requires	swept across all 71 words of both hosting fixtures with no flip; needs the ordering structure ygofz used, not just another word
+cell	CompoundingRule.outputPartOfSpeech->AffixTemplate.requiredPartsOfSpeech	2	Open	a compound gets a category, then a template checks it	outputPartOfSpeech exists only in compounding-breadth, which hosts no template POS gate
+cell	CompoundingRule.outputPartOfSpeech->MorphologicalRule.requiredPartsOfSpeech	2	COVERED	a compound gets a category, then an affix checks it	same: writer and reader are in different fixtures
+cell	CompoundingRule.outputPartOfSpeech->PhonologicalSubrule.requiredPartsOfSpeech	2	Open	a compound gets a category, then a sound rule checks it	same: writer and reader are in different fixtures
+arm	HeadPattern:Blocked	2	Open	the head of a compound must match a phonological shape	no fixture's compounding candidates ever fail a shape match; they match by construction
+arm	HeadPattern:Control	2	Open	same, matching	depends on a shape that can fail
+arm	NonHeadPattern:Blocked	2	Open	the non-head of a compound must match a phonological shape	same as HeadPattern
+arm	NonHeadPattern:Control	2	Open	same, matching	same as HeadPattern
+arm	MaxApplicationCount:Blocked	3	Open	an iterating rule stopped by its own application cap	real (bounded reduplication) but a word must reach the cap exactly; strained to construct
+arm	MaxApplicationCount:Control	3	Open	the same rule under the cap	only meaningful beside the Blocked arm
+arm	NonPartialRuleProhibitedAfterFinalTemplate:Blocked	3	Open	a non-partial rule may not apply after the final template	template-ordering edge; present in a fixture but severing final/partial changed no word
+arm	NonPartialRuleProhibitedAfterFinalTemplate:Control	3	Open	same, permitted	follows the Blocked arm
+arm	NonPartialRuleRequiredAfterNonFinalTemplate:Blocked	3	Open	a non-partial rule is required after a non-final template	no fixture combines a partial rule with an explicit non-final template
+arm	NonPartialRuleRequiredAfterNonFinalTemplate:Control	3	Open	same, satisfied	follows the Blocked arm
+arm	ObligatorySyntacticFeatures:Blocked	4-EXCLUDED	Open	a promised feature never got filled in	HCLoader never sets it, so no FieldWorks project can produce the construct; a witness would prove nothing about real use
+arm	ObligatorySyntacticFeatures:Control	4-EXCLUDED	Open	same, satisfied	same
+arm	SurfaceFormMismatch:Blocked	4-EXCLUDED	Open	the engine's own reconstruction disagreed with the surface	no XML reaches it; a pure engine-internal check with no grammar input
+arm	SurfaceFormMismatch:Control	4-EXCLUDED	Open	same, agreeing	same
+arm	BoundRoot:Control	4-EXCLUDED	Open	a bound root used as a free word	construct sits on Allomorph, which the DTD always nests under LexicalEntry and never under a rule -- no rule identity exists to attribute a Control arm to
+arm	ExcludedMprFeatures:Control	1	COVERED	an affix skipped for a flag it excludes	resolved by GrammarRuleIndex.ResolveAncestorRuleId: MorphologicalInput always nests under a rule, so the control word already in the corpus can now be attributed
+arm	ExcludedStemName:Control	4-EXCLUDED	Open	a rule refusing a specific stem	same: Allomorph has no rule ancestor
+arm	PartialParse:Control	4-EXCLUDED	Open	a parse that consumed only part of the word	construct sits on AffixTemplate, which nests under Stratum and which the DTD never gives an id -- no identity of any kind to attribute to
+arm	RequiredMprFeatures:Control	1	COVERED	an affix firing on a flag it requires	same ancestor resolution
+arm	RequiredStemName:Control	4-EXCLUDED	Open	a rule firing on the stem it demands	same: Allomorph has no rule ancestor
+arm	RequiredSyntacticFeatureStruct:Control	1	COVERED	a rule firing on features it requires	same, via PhonologicalSubrule -> PhonologicalRule
+arm	DisjunctiveAllomorph:Blocked	4-TOOLING	Open	a more specific allomorph pre-empted a general one	reachable through element content and allomorph order, not an attribute; no isolable severance primitive exists
+arm	DisjunctiveAllomorph:Control	4-TOOLING	Open	same, not pre-empted	same
+arm	Environments:Blocked	4-TOOLING	Open	an allomorph rejected by its environment	reachable through RequiredEnvironments/ExcludedEnvironments element content, not an attribute
+arm	Environments:Control	4-TOOLING	Open	same, accepted	same
+arm	Pattern:Blocked	4-TOOLING	Open	a rule's phonological pattern did not match	reachable through PhoneticSequence element content, not an attribute
+arm	Pattern:Control	4-TOOLING	Open	same, matched	same

@@ -35,6 +35,9 @@ dotnet restore || failed+=(restore)
 dotnet csharpier check . || failed+=(csharpier)
 dotnet build --no-restore -c Release || failed+=(build)
 dotnet test --verbosity normal || failed+=(test)
+dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance --   --semantic-coverage --repository-root . || failed+=(semantic-coverage)
+dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance --   --fixtures conformance || failed+=(conformance)
+python conformance/parity-check.py || failed+=(parity-check)
 
 if [ "${#failed[@]}" -ne 0 ]; then
   echo "local_check: FAILED (${failed[*]})"

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Challenges semantic-coverage-proofs.tsv's label-symmetry claim for
+     dtd:enum/VariableFeature/name/%CE%B1: "Greek letters name a phonological variable and carry no
+     order; permuting the name produces identical output, so the 24 values are one mechanism under 24
+     labels." That is true of every fixture the automated sweep actually measures, because none of
+     them declares more than one VariableFeature reachable in a single rule application, but the
+     engine's variable-binding mechanism (VariableBindings, SIL.Machine/FeatureModel/
+     VariableBindings.cs) is a single dictionary keyed by the NAME STRING for the whole match, shared
+     across every VariableFeature the rule declares, not scoped per declared feature. Two co-occurring
+     VariableFeatures that happen to share a name are therefore NOT interchangeable labels: they
+     become the SAME variable, and a value bound while checking one feature gets reused, wrongly,
+     while checking the other.
+
+     This grammar has two VariableFeatures in ONE rule (varBack/featBack, varRound/featRound), each
+     independently self-flipping its own position: a realistic shape (independent vowel-harmony
+     dimensions feeding one rule), not a contrived one. Renaming varBack's name from "α" to "β" (the
+     exact mutation the counterfactual sweep performs, and exactly what would happen if the two
+     variables' names were "permuted" into each other) makes both variables share the name "β". Hand-
+     verified against the C# founding oracle: with distinct names, "au" has no valid surface (the rule
+     fires obligatorily) and "ia" is AU's correct rewritten form; with the collision, this reverses
+     completely: "au" surfaces unchanged and "ia" has no analysis, because the featBack value bound
+     while checking position 1 gets wrongly reused as a stand-in for the featRound check at position 2.
+     Confirmed deterministic across repeated runs, not a fluke.
+
+     featRound's symbols are declared MINUS before PLUS (opposite of featBack's PLUS-before-MINUS)
+     deliberately: both features are still binary, but the LOADER assigns each SymbolicFeatureValue's
+     internal flag bit by ordinal position within its own feature's declared symbol list
+     (SymbolicFeatureValue/UlongSymbolicFeatureValueFlags), and with the two features' polarities
+     declared in the SAME order, the collision's cross-feature bit comparison accidentally still lines
+     up and the bug stays invisible. Declaring them in OPPOSITE order is what actually surfaces the
+     defect; a from-scratch grammar with same-order binary features would not observe it, which is
+     itself part of the finding: the proof's failure is real but its visibility depends on which
+     specific symbol values happen to occupy which ordinal position, not on anything about "which
+     Greek letter" is used. -->
+<HermitCrabInput>
+  <Language>
+    <Name>AlphaVariableNameCollision</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featBack">
+        <Name>back</Name>
+        <Symbols>
+          <Symbol id="bkPlus">+bk</Symbol>
+          <Symbol id="bkMinus">-bk</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featRound">
+        <Name>round</Name>
+        <Symbols>
+          <Symbol id="rdMinus">-rd</Symbol>
+          <Symbol id="rdPlus">+rd</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cI">
+          <Representations><Representation>i</Representation></Representations>
+          <FeatureValue feature="featBack" symbolValues="bkMinus" />
+          <FeatureValue feature="featRound" symbolValues="rdMinus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cY">
+          <Representations><Representation>y</Representation></Representations>
+          <FeatureValue feature="featBack" symbolValues="bkMinus" />
+          <FeatureValue feature="featRound" symbolValues="rdPlus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cA">
+          <Representations><Representation>a</Representation></Representations>
+          <FeatureValue feature="featBack" symbolValues="bkPlus" />
+          <FeatureValue feature="featRound" symbolValues="rdMinus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cU">
+          <Representations><Representation>u</Representation></Representations>
+          <FeatureValue feature="featBack" symbolValues="bkPlus" />
+          <FeatureValue feature="featRound" symbolValues="rdPlus" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <SegmentNaturalClass id="ncVowel">
+        <Name>vowels</Name>
+        <Segment segment="cI" /><Segment segment="cY" /><Segment segment="cA" /><Segment segment="cU" />
+      </SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <!-- Two independent alpha-variable self-flips, each isolated to its own position: position 1
+           flips its OWN backness (variable "alpha", feature featBack); position 2 flips its OWN
+           roundness (variable "beta", feature featRound). Neither position's value depends on the
+           other's under correct semantics; see this file's header for what happens when it does. -->
+      <PhonologicalRule id="prDoubleAlpha">
+        <Name>doubleAlphaFlip</Name>
+        <VariableFeatures>
+          <VariableFeature id="varBack" name="α" phonologicalFeature="featBack" />
+          <VariableFeature id="varRound" name="β" phonologicalFeature="featRound" />
+        </VariableFeatures>
+        <PhoneticInput>
+          <PhoneticSequence>
+            <SimpleContext naturalClass="ncVowel">
+              <AlphaVariables><AlphaVariable variableFeature="varBack" polarity="plus" /></AlphaVariables>
+            </SimpleContext>
+            <SimpleContext naturalClass="ncVowel">
+              <AlphaVariables><AlphaVariable variableFeature="varRound" polarity="plus" /></AlphaVariables>
+            </SimpleContext>
+          </PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <SimpleContext naturalClass="ncVowel">
+                  <AlphaVariables><AlphaVariable variableFeature="varBack" polarity="minus" /></AlphaVariables>
+                </SimpleContext>
+                <SimpleContext naturalClass="ncVowel">
+                  <AlphaVariables><AlphaVariable variableFeature="varRound" polarity="minus" /></AlphaVariables>
+                </SimpleContext>
+              </PhoneticSequence>
+            </PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" phonologicalRules="prDoubleAlpha">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eAu" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aAu"><PhoneticShape>au</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>AU</MorphemeId>
+            <Gloss>au</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
