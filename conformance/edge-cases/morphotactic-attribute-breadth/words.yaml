@@ -1,0 +1,332 @@
+# Morphotactic attribute breadth. See grammar.xml's own header for the design.
+#
+# Oracle: the C# founding oracle, self-check mode
+# (src/SIL.Machine.Morphology.HermitCrab.Conformance's hc-conformance --fixtures conformance,
+# in-process XmlLanguageLoader + Morpher over this fixture's own grammar.xml). Every signature below
+# is transcribed from that run, not hand-derived.
+#
+# CONVERSION HISTORY (fieldworks_producible: false -> true). The pre-conversion grammar exercised
+# five FieldWorks-non-producible constructs (four the pre-conversion notes named, plus one this
+# conversion discovered was never named): a MorphologicalOutput.MPRFeatures write from inside an
+# AffixTemplate Slot (mrUnblockable/mrMB/mrMA); a MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+# collection built entirely from type="require" elements (HCLoader's two co-occurrence loaders build
+# Exclude constraints only); RealizationalRule (mrReal/mrRealDecoy -- HCLoader never constructs one);
+# a custom-named MorphologicalPhonologicalRuleFeatureGroup with outputType="append" (HCLoader only
+# ever builds three hardcoded, always-Overwrite groups); and -- discovered during this conversion,
+# never named in the pre-conversion notes -- LexicalEntry.family plus MorphologicalRule/
+# RealizationalRule@blockable, neither of which HCLoader ever writes at all (grep-confirmed zero hits
+# for "family"/"Family" and for "Blockable" across the whole of HCLoader.cs), so Word.CheckBlocking
+# can never fire for a FieldWorks-produced grammar regardless of family or blockable's declared value.
+#
+# What survived, converted to an equivalent FieldWorks-producible construct:
+#   - The MPR-feature-group construct now uses a FIXED group name ("exceptionFeatures", matchType
+#     "all", the default Overwrite output) matching one of HCLoader's own three hardcoded groups
+#     (HCLoader.cs:168-192) instead of a custom name with outputType="append". This is a POLARITY
+#     FLIP, not a like-for-like swap: outputType="append" itself has no FieldWorks-producible
+#     substitute anywhere (HCLoader never sets Output away from Overwrite), so what survives is
+#     "a real MPR-group interaction happens and is observable" (kulgago/kulgagego below), not "append
+#     specifically". No other fixture in this suite, staged or upstream, previously exercised any of
+#     the three real group names -- see grammar.xml's own comment.
+#   - The co-occurrence-rule construct now uses type="exclude" (HCLoader-producible) instead of
+#     type="require" (never producible, no exception). mrExA/mrExB are a fresh, isolated pair (topke/
+#     topkeko) standing in for the removed require-only material; mrCoA-D lose their co-occurrence
+#     angle entirely (they keep affix-stacking/ordering-discriminator coverage only -- see
+#     topsakatana/topsakanabu).
+#   - The bucket-2 MorphologicalOutput.MPRFeatures->MorphologicalInput.excludedMPRFeatures pair
+#     (mrConferExcl/mrExclReader, topdori/topdo/topri) needed its READER moved into an AffixTemplate
+#     Slot: MorphologicalInput.excludedMPRFeatures and MorphologicalOutput.MPRFeatures have OPPOSITE
+#     placement requirements (see grammar.xml's own comment on mrConferExcl/mrExclReader) -- a fact
+#     this conversion found was never checked for the pre-conversion (both-stratum-level) shape, which
+#     means the pre-conversion false verdict, while correct, did not name this as one of its reasons.
+#   - Main's own morphologicalRuleOrder flipped from "linear" to "unordered": HCLoader hardcodes every
+#     Stratum to Unordered and can never emit "linear" (PROTOCOL.md section 9's fourth usage check).
+#     Re-verified against the oracle under "unordered" -- topdori/topdo/topri, kulba/kuldedede's
+#     repetition caps, and every other word below hold identically; no word's analysis set changed.
+#
+# What did NOT survive, and is not covered by any other fixture (see
+# conformance/docs/engine-only-fixture-retirement.md for the full per-construct disposition):
+#   - RealizationalRule itself (mrReal/mrRealDecoy, kulru/kulsi) -- languages/fusional-realizational-
+#     morphology still exercises RealizationalRule, but stays fieldworks_producible: false for that
+#     construct (see that fixture's own words.yaml); no producible fixture anywhere in this suite
+#     exercises RealizationalRule, because none can.
+#   - LexicalEntry.family + MorphologicalRule/RealizationalRule@blockable + Word.CheckBlocking (bak/
+#     dom/bakgi, sim/rog/simru) -- no producible substitute exists for CheckBlocking itself; this
+#     coverage is gone from the suite's producible half entirely (languages/fusional-realizational-
+#     morphology also exercises it, also staying false for this reason among others).
+#   - The Slot-adjacency ordering discriminators that depended on the removed rules (kulgimo's
+#     unblockableSlot~partialSlot, kulmoru's partialSlot~realSlot) -- the ordering-discriminator
+#     CONSTRUCT itself survives via topsakanabu's coDSlot~mbSlot pair, which needed no changes.
+#   - Raw DTD-enum coverage (conformance/semantic-coverage-baseline.txt), checked after this
+#     conversion by regenerating it: dtd:enum/MorphologicalRule/blockable/false,
+#     dtd:enum/RealizationalRule/blockable/false, dtd:enum/RealizationalRule/isActive/no,
+#     dtd:enum/AllomorphCoOccurrenceRule/type/require, and
+#     dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/isActive/no all went from covered (only by
+#     this fixture) to uncovered anywhere in the whole corpus -- each is the direct, unavoidable
+#     mechanical consequence of removing the ONE non-producible construct that used to carry it (no
+#     value declaring blockable="false" survives once family-blocking is gone; no RealizationalRule
+#     survives at all; AllomorphCoOccurrenceRule@type="require" has no producible substitute, unlike
+#     its Morpheme-level counterpart which stays covered via languages/suffixing-evidential-
+#     adjacency-chain; a custom-named MorphologicalPhonologicalRuleFeatureGroup is non-producible
+#     even isActive="no", since its mere PRESENCE, not its active behavior, is what HCLoader can
+#     never emit). This is a raw HC-engine coverage question, distinct from FieldWorks producibility;
+#     the four AllomorphCoOccurrenceRule adjacency VALUES (adjacentToLeft/adjacentToRight/
+#     somewhereToLeft/somewhereToRight) were also initially lost by this conversion and were
+#     DELIBERATELY restored (topla/toplane, mrExC/mrExD) rather than left as a silent gap -- these
+#     five could not be, because restoring any of them would reintroduce the non-producible
+#     construct that carried them and undo this fixture's own conversion.
+#   - outputType="append" specifically (see above) -- no fixture in this suite has a producible
+#     substitute for it; conformance/edge-cases/mpr-group-overwrite-without-realizational and
+#     conformance/edge-cases/mpr-overwrite-order-dependence remain the only fixtures exercising it,
+#     both still fieldworks_producible: false.
+#
+# COVERAGE.CSV REGRESSION, FOUND AND FIXED separately from the conversion itself: the conversion (and
+# its later WIP expansion) never re-added per-word/per-parse "exercises:" tags, so every word in this
+# fixture silently stopped contributing to conformance/coverage.csv -- the whole MorphotacticAttributeBreadth
+# block (28 rows) vanished with no replacement and no test caught it (parity-check.py and
+# CheckedInCoverageTablesAreUpToDate both only check that coverage.csv matches what WordsYamlLoader
+# actually finds, and a fixture with zero "exercises:" tags matches that trivially). Every word below
+# now carries an "exercises:" tag reflecting what it ACTUALLY tests post-conversion (not a blind copy
+# of the pre-conversion label): topsakatana in particular is relabeled from the removed co-occurrence
+# construct to "Affix template slots", since mrCoA-D no longer carry any co-occurrence rule.
+
+language: MorphotacticAttributeBreadth
+inspired_by: ["synthetic morphotactic-attribute probe (not modeling any real language)"]
+sources:
+  - "conformance/semantic-coverage-baseline.txt morphotactic todo entries"
+requires: []
+fieldworks_producible: true
+words:
+  - word: topdori
+    note: >-
+      THE distinguishing row: TOP + mrConferExcl ("-do") + mrExclReader ("-ri", now reached through
+      finalTemplate's own exclReaderSlot). mrConferExcl's own MorphologicalOutput MPRFeatures write is
+      exactly what mrExclReader's own excludedMPRFeatures excludes, so mrExclReader can never apply
+      once mrConferExcl has -- zero parses.
+    expect_fail: true
+    exercises: ["MPR features/groups"]
+
+  - word: topdo
+    note: TOP + mrConferExcl ("-do") alone -- the control for topdori (above), showing mrConferExcl attaches normally.
+    parses:
+      - signature: "TOP+CONFEREXCL|topdo"
+        rules: [mrConferExcl]
+        exercises: ["MPR features/groups"]
+
+  - word: topri
+    note: TOP + mrExclReader ("-ri") alone, no mrConferExcl -- TOP carries no mprExclFlag on its own, so mrExclReader's exclusion is vacuously satisfied.
+    parses:
+      - signature: "TOP+EXCLREADER|topri"
+        rules: [mrExclReader]
+        exercises: ["MPR features/groups"]
+
+  - word: kul
+    note: Bare free root. The control that the grammar loads and admits a complete word at all.
+    parses:
+      - signature: "KUL|kul"
+        rules: []
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
+
+  - word: kulde
+    note: mrRep2 applied once, well inside its cap of two.
+    parses:
+      - signature: "KUL+TWICE|kulde"
+        rules: [mrRep2]
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
+
+  - word: kuldede
+    note: mrRep2 applied twice, exactly at its cap.
+    parses:
+      - signature: "KUL+TWICE|kuldede"
+        rules: [mrRep2]
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
+
+  - word: kuldedede
+    note: Three copies exceed multipleApplication="2". The upper boundary of the cap.
+    expect_fail: true
+    exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
+
+  - word: kulba
+    note: >-
+      mrRep0 carries multipleApplication="0", so its suffix can never attach and this word has no
+      analysis. The lower boundary of the cap.
+    expect_fail: true
+    blocked_by: [mrRep0]
+    neutralizes:
+      - mrRep0
+    exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
+
+  - word: kulmo
+    note: mrPartial carries partial="true", reached through finalTemplate's own slot.
+    parses:
+      - signature: "KUL+PART|kulmo"
+        rules: [mrPartial]
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
+
+  - word: nap
+    note: eNap carries partial="true" and still parses as a free root (no template involved at all).
+    parses:
+      - signature: "NAP|nap"
+        rules: []
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
+
+  - word: napmo
+    note: >-
+      Negative control for LexicalEntry@partial="true". mrPartial attaches to kul (kulmo) but never to
+      nap: a partial root is gated out of SynthesisAffixTemplatesRule's whole template loop before any
+      individual slot is even considered.
+    expect_fail: true
+    neutralizes:
+      - eNap
+    exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
+
+  - word: kur
+    note: Negative control for Allomorph@isBound="true". aKulBound is not a free word.
+    expect_fail: true
+    exercises: ["Disjunctive allomorphs / free-fluctuation"]
+
+  - word: kulpu
+    note: >-
+      Negative control for AffixTemplate@final="false". mrNF is reachable only through
+      nonFinalTemplate's own slot, and that template's output cannot be a complete word on its own.
+    expect_fail: true
+    blocked_by: [mrNF]
+    neutralizes:
+      - nonFinalTemplate
+    exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
+
+  - word: top
+    note: >-
+      Bare root for the co-occurrence and MPR-feature-group controls below, isolated from every other
+      construct in this fixture.
+    parses:
+      - signature: "TOP|top"
+        rules: []
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
+
+  - word: topsakatana
+    note: >-
+      top + mrCoA/mrCoB/mrCoC/mrCoD, in that order. No co-occurrence rule references any of these
+      four any more (see the conversion-history note above), so this is now a plain affix-stacking
+      control.
+    parses:
+      - signature: "TOP+COA+COB+COC+COD|topsakatana"
+        rules: [mrCoA, mrCoB, mrCoC, mrCoD]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
+
+  - word: topsakanabu
+    note: >-
+      Ordering discriminator for finalTemplate's coDSlot~mbSlot adjacent pair. top + mrCoA/mrCoB/mrCoD
+      (coCSlot skipped) + mrMB, with coDSlot immediately before mbSlot in declared order.
+    parses:
+      - signature: "TOP+COA+COB+COD+MB|topsakanabu"
+        rules: [mrCoA, mrCoB, mrCoD, mrMB]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
+
+  - word: kulge
+    note: kul + mrGrpSetA ("ge") alone -- positive control showing GrpSetA attaches normally on its own.
+    parses:
+      - signature: "KUL+GRPA|kulge"
+        rules: [mrGrpSetA]
+        exercises: ["MPR features/groups"]
+
+  - word: kulgago
+    note: >-
+      Positive baseline for the MPR-group construct: kul + mrGrpSetB ("ga", confers mprB) +
+      mrGrpReq ("go", requires mprB). Nothing evicts mprB, so mrGrpReq succeeds.
+    parses:
+      - signature: "KUL+GRPB+GRPREQ|kulgago"
+        rules: [mrGrpSetB, mrGrpReq]
+        exercises: ["MPR features/groups"]
+
+  - word: kulgagego
+    note: >-
+      kul + mrGrpSetB ("ga", confers mprB) + mrGrpSetA ("ge", confers mprA) + mrGrpReq ("go", requires
+      mprB). mprA and mprB are both members of "exceptionFeatures" (Overwrite output, the only mode
+      HCLoader ever produces), so applying mrGrpSetA after mrGrpSetB evicts mprB group-wide; mrGrpReq
+      then fails. This is the polarity flip from the pre-conversion "kulbubidu" (append mode, where
+      the analogous chain succeeded) -- see the conversion-history note above.
+    expect_fail: true
+    blocked_by: [mrGrpReq]
+    exercises: ["MPR features/groups"]
+
+  - word: topke
+    note: >-
+      top + mrExA ("ke") alone, no mrExB -- the exclusion is vacuously satisfied. Positive control for
+      the AllomorphCoOccurrenceRule/MorphemeCoOccurrenceRule type="exclude" pair.
+    parses:
+      - signature: "TOP+EXA|topke"
+        rules: [mrExA]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+
+  - word: topko
+    note: top + mrExB ("ko") alone, no mrExA -- positive control showing ExB attaches normally with no exclusion active.
+    parses:
+      - signature: "TOP+EXB|topko"
+        rules: [mrExB]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+
+  - word: topkeko
+    note: >-
+      top + mrExA ("ke") + mrExB ("ko"), adjacent. Both the AllomorphCoOccurrenceRule (anywhere) and
+      the MorphemeCoOccurrenceRule (adjacentToRight) exclude this pair, so it is refused twice over --
+      this fixture does not attempt to isolate the two reasons independently.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+
+  - word: topla
+    note: >-
+      top + mrExC ("la") alone, no mrExD -- positive control showing ExC attaches normally with
+      none of the four adjacency exclusions active (ExD absent).
+    parses:
+      - signature: "TOP+EXC|topla"
+        rules: [mrExC]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+
+  - word: topne
+    note: top + mrExD ("ne") alone, no mrExC -- positive control showing ExD attaches normally with none of the four exclusions active (ExC absent).
+    parses:
+      - signature: "TOP+EXD|topne"
+        rules: [mrExD]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+
+  - word: toplane
+    note: >-
+      top + mrExC ("la") + mrExD ("ne"), adjacent (fixed Slot order, nothing declared between
+      exCSlot/exDSlot). Restores dtd:enum/AllomorphCoOccurrenceRule/adjacency/{adjacentToLeft,
+      adjacentToRight,somewhereToLeft,somewhereToRight} coverage: all four rules key on this same
+      ExC/ExD-adjacent fact, so this one word is excluded four separate ways at once.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+
+  - word: pog
+    note: Bare root of the second (Unordered) stratum, used for the MorphologicalRule@partial="true" control below.
+    parses:
+      - signature: "POG|pog"
+        rules: []
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
+
+  - word: pogli
+    note: pogTemplate's own slot (mrPogAffix) filled, template-final.
+    parses:
+      - signature: "POG+POGAFX|pogli"
+        rules: [mrPogAffix]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
+
+  - word: pogti
+    note: >-
+      mrPO applied directly to the bare root (never through a template first), which is why this
+      string is "ti" appended once, not "li" then "ti".
+    parses:
+      - signature: "POG+PO|pogti"
+        rules: [mrPO]
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
+
+  - word: pogliti
+    note: >-
+      Positive control for MorphologicalRule@partial="true". pogTemplate applies first (its slot
+      filled with "li"), setting IsLastAppliedRuleFinal=true; mrPO then applies AFTER that final
+      template only because mrPO itself is partial="true".
+    parses:
+      - signature: "POG+POGAFX+PO|pogliti"
+        rules: [mrPO, mrPogAffix]
+        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]

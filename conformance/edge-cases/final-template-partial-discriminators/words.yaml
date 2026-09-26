@@ -1,0 +1,104 @@
+# oracle-provenance: founding-oracle machine-commit=8bad193454a14422a3be59c3156513691ae3da3b verified-date=2026-09-15
+# Expected parses are derived from the grammar and checked against C#; see ../../docs/final-template-partial-discriminators.md.
+language: FinalTemplatePartialDiscriminators
+inspired_by: ["synthetic final-template partial-rule discriminator probe (not modeling any real language)"]
+sources:
+  - "https://github.com/sillsdev/machine/issues/507"
+  - "src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/SynthesisStratumRule.cs"
+requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  Partial ordinary rules mrGate2Partial/mrGate3Partial set outputPartOfSpeech, but FieldWorks
+  HCLoader.LoadInflAffixProcessRule and LoadUnclassifiedAffixProcessRule (HCLoader.cs:976-1030)
+  set IsPartial without setting OutSyntacticFeatureStruct. Template-only tag rules also set
+  outputPartOfSpeech; LoadAffixTemplate (1672-1735) obtains inflectional rules from IMoInflAffMsa,
+  and LoadInflAffixProcessRule does not set output syntactic features. These combined usages
+  are HC-engine-only, even though partial rules and output POS are individually producible.
+words:
+  - word: dakfaga
+    note: >-
+      Case 1 (Blocked): mrGate1 (ordinary, non-partial) tried immediately after finalTemplateA
+      (final="true") applied. NonPartialRuleProhibitedAfterFinalTemplate refuses it, so this string
+      has no analysis.
+    expect_fail: true
+    blocked_by: [mrGate1]
+
+  - word: dakfa
+    note: Case 1 control. finalTemplateA alone (no mrGate1), proving the template path itself works.
+    parses:
+      - signature: "DAK+FINTAGA|dakfa"
+        rules: [mrFinTagA]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: daknagafa
+    note: >-
+      Case 2 (Permitted): the SAME mrGate1 tried immediately after nonFinalTemplateA (final="false")
+      instead of finalTemplateA. NonPartialRuleProhibitedAfterFinalTemplate does not fire (the last
+      applied rule was not a final template), so mrGate1 attaches; finalTemplateA then closes the
+      derivation.
+    parses:
+      - signature: "DAK+NONFINTAGA+GATE1+FINTAGA|daknagafa"
+        rules: [mrNonFinTagA, mrGate1, mrFinTagA]
+
+  - word: dakna
+    note: >-
+      Negative control: nonFinalTemplateA's own output alone (no rule closes it with a final
+      template) is never a complete word.
+    expect_fail: true
+
+  - word: pilnbvbfb
+    note: >-
+      Case 3 (Blocked): mrGate2Partial (ordinary, partial="true") tried immediately after
+      nonFinalTemplateB (final="false") applied. NonPartialRuleRequiredAfterNonFinalTemplate refuses
+      it (a partial rule cannot complete a non-final-template derivation), so this string has no
+      analysis.
+    expect_fail: true
+    blocked_by: [mrGate2Partial]
+
+  - word: pilnbtbfb
+    note: >-
+      Case 4 (Permitted): mrGate2Complete (ordinary, NOT partial) tried in the identical position.
+      NonPartialRuleRequiredAfterNonFinalTemplate does not fire (the rule itself is not partial), so
+      it attaches; finalTemplateB then closes the derivation.
+    parses:
+      - signature: "PIL+NONFINTAGB+GATE2COMPLETE+FINTAGB|pilnbtbfb"
+        rules: [mrNonFinTagB, mrGate2Complete, mrFinTagB]
+
+  - word: pilnb
+    note: >-
+      Negative control: nonFinalTemplateB's own output alone (no rule closes it with a final
+      template) is never a complete word.
+    expect_fail: true
+
+  - word: pilfb
+    note: Case 3/4 control. finalTemplateB alone (no Branch-B ordinary rule), proving the template path itself works.
+    parses:
+      - signature: "PIL+FINTAGB|pilfb"
+        rules: [mrFinTagB]
+
+  - word: pilfbvb
+    note: >-
+      Case 5 (POSITIVE, partial-dependent): mrGate2Partial (ordinary, partial="true") tried
+      immediately after finalTemplateB (final="true") applied -- the mirror of dakfaga with a
+      partial rule in mrGate1's position. NonPartialRuleProhibitedAfterFinalTemplate does not fire
+      (the rule itself is partial), so it attaches and the derivation is already closed
+      (IsLastAppliedRuleFinal stays true, inherited from finalTemplateB). This parse exists ONLY
+      because mrGate2Partial is partial; it is the positive case that lets FST recall be measured.
+    parses:
+      - signature: "PIL+FINTAGB+GATE2PARTIAL|pilfbvb"
+        rules: [mrFinTagB, mrGate2Partial]
+
+  - word: nibgi
+    note: >-
+      Case 6 (POSITIVE, partial-dependent), Branch C (posZ, root nib): mrGate3Partial (ordinary,
+      partial="true") applies to the root, making the WORD partial. templateZ is applicable to
+      posZ (POS matches) but its one mandatory slot's rule (mrZTagSlot) can never match "nibgi"
+      (it requires the last segment to be "k"), so the template battery yields zero output.
+      Because the word is partial, SynthesisAffixTemplatesRule.cs's line-59 pass-through
+      (`!input.IsPartial && applicableTemplate`) takes its ELSE arm: the word passes through
+      unchanged, closing the derivation with no template morpheme contributed. This parse exists
+      ONLY because the word is partial when the empty battery is reached.
+    parses:
+      - signature: "NIB+GATE3PARTIAL|nibgi"
+        rules: [mrGate3Partial]

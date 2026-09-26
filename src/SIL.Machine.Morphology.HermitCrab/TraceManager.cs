@@ -262,7 +262,12 @@
         public void Failed(Language lang, Word word, FailureReason reason, Allomorph allomorph, object failureObj)
         {
             ((Trace)word.CurrentTrace).Children.Add(
-                new Trace(TraceType.Failed, lang) { Output = word, FailureReason = reason }
+                new Trace(TraceType.Failed, lang)
+                {
+                    Output = word,
+                    FailureReason = reason,
+                    FailureAllomorph = allomorph,
+                }
             );
         }
     }
