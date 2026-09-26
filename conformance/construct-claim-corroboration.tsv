@@ -14,6 +14,12 @@ edge-cases/bistratal-overlapping-segment-representation	basi	-	CharacterDefiniti
 edge-cases/bistratal-overlapping-segment-representation	des	ROOT3|des	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/bistratal-overlapping-segment-representation	eds	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/bistratal-overlapping-segment-representation	sed	ROOT4|sed	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/chained-output-feature-override-loss	zud	ZUD|zud	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/chained-output-feature-override-loss	zudi	ZUD+INNER|zudi	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/chained-output-feature-override-loss	zudia	-	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/chained-output-feature-override-loss	zudiua	ZUD+INNER+OUTER+OUTERMOST|zudiua	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/chained-output-feature-override-loss	zudu	ZUD+OUTER|zudu	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/chained-output-feature-override-loss	zudua	ZUD+OUTER+OUTERMOST|zudua	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/compounding-breadth	ka	KA|ka	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
 edge-cases/compounding-breadth	kaki	-	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
 edge-cases/compounding-breadth	kamtu	-	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
@@ -58,6 +64,7 @@ edge-cases/diacritic-segments	kelîta	WORD+DIM|kelîta	Affix template slots (obl
 edge-cases/diacritic-segments	kelîta	WORD+DIM|kelîta	AffixProcessRule: prefix/suffix/circumfix/infix	Unmapped	-
 edge-cases/diacritic-segments	kelîta	WORD+DIM|kelîta	MorphologicalOutputAction: CopyFromInput/InsertSegments	Confirmed	CopyFromInput,InsertSegments
 edge-cases/diacritic-segments	kelîta	WORD+DIM|kelîta	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	Confirmed	FeatureNaturalClass,SegmentNaturalClass,Segments,naturalClass
+edge-cases/discontinuous-morph-environment	zuaubu	GOOD+GINF+SUFG|zuaubu	AffixProcessRule: prefix/suffix/circumfix/infix	Unmapped	-
 edge-cases/disjunctive-recheck	gray	|gray	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/disjunctive-recheck	grey	|grey	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/disjunctive-recheck	pakda	-	Disjunctive allomorphs / free-fluctuation	Unmapped	-
@@ -102,12 +109,14 @@ edge-cases/feature-system-breadth	tik	-	MetathesisRule	Confirmed	MetathesisRule
 edge-cases/feature-system-breadth	tkl	-	MetathesisRule	Confirmed	MetathesisRule
 edge-cases/feature-system-breadth	tlk	TKL|tlk	MetathesisRule	Confirmed	MetathesisRule
 edge-cases/feature-system-breadth	ts	TS|ts	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	Confirmed	FeatureNaturalClass,SegmentNaturalClass,Segments,naturalClass
+edge-cases/final-template-partial-discriminators	dakfa	DAK+FINTAGA|dakfa	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/free-fluctuating-allomorph-pair	kit	-	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/free-fluctuating-allomorph-pair	kits	ORD+SSFX|kits	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/free-fluctuating-allomorph-pair	kot	ORD|kot	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/free-fluctuating-allomorph-pair	kots	-	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/free-fluctuating-allomorph-pair	pel	ALT|pel	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/free-fluctuating-allomorph-pair	pol	ALT|pol	Disjunctive allomorphs / free-fluctuation	Unmapped	-
+edge-cases/iterative-epenthesis-cascade	uotaa	BOTH|uotaa	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/loader-default-symbol	bat	|bat	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/loader-default-symbol	bdt	-	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/loader-isactive	kat	|kat	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
@@ -198,6 +207,9 @@ edge-cases/right-to-left-anchor-environment	eaa	-	RewriteRule direction (Dir): r
 edge-cases/right-to-left-anchor-environment	eaaa	-	RewriteRule direction (Dir): right-to-left	Unmapped	-
 edge-cases/right-to-left-anchor-environment	eeae	ROOT3|eeae	RewriteRule direction (Dir): right-to-left	Unmapped	-
 edge-cases/right-to-left-anchor-environment	eeee	-	RewriteRule direction (Dir): right-to-left	Unmapped	-
+edge-cases/shared-template-unconstrained-suffix	mivd	NROOT+IVERB+PAST|mivd	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/simultaneous-feeding	gigugu	GIGI|gigugu	RewriteRule Simultaneous	Unmapped	-
+edge-cases/simultaneous-feeding-control-iterative	gigugi	GIGI|gigugi	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/stem-name-restricted-root-allomorph	kap	-	Stem names	Unmapped	-
 edge-cases/stem-name-restricted-root-allomorph	kapom	ROOT+PERS1|kapom	Stem names	Unmapped	-
 edge-cases/stem-name-restricted-root-allomorph	kapur	-	Stem names	Unmapped	-
@@ -228,6 +240,7 @@ edge-cases/synthesis-stratum-render-stale-table	j	ROOTCROSS|	CharacterDefinition
 edge-cases/synthesis-stratum-render-stale-table	j	ROOTCROSS|	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/synthesis-stratum-render-stale-table	k	ROOTSAME|k	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/synthesis-stratum-render-stale-table	w	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/template-category-sharing	pakolosa	PFXA+KOLO+SFXA|pakolosa	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/truncate-morphotactic	ag	+|ag	AffixProcessRule: subtraction/truncation	Unmapped	-
 edge-cases/truncate-morphotactic	as	+|as	AffixProcessRule: subtraction/truncation	Unmapped	-
 edge-cases/truncate-morphotactic	bag	-	AffixProcessRule: subtraction/truncation	Unmapped	-
@@ -294,6 +307,13 @@ languages/fusional-realizational-morphology	yxped	THEMEY+THEMEX+PED|yxped	MPR fe
 languages/fusional-realizational-morphology	yxpedz	-	MPR features/groups	Unmapped	-
 languages/metathesis-phase-isolation	bahain	BAHA+LNK|bahain	AffixProcessRule: prefix/suffix/circumfix/infix	Unmapped	-
 languages/metathesis-phase-isolation	bahain	BAHA+LNK|bahain	MorphologicalOutputAction: CopyFromInput/InsertSegments	Confirmed	CopyFromInput,InsertSegments
+languages/metathesis-phase-isolation	haasa	RDP+HASA|haasa	AffixProcessRule: reduplication (ReduplicationHint)	Unmapped	-
+languages/metathesis-phase-isolation	haasa	RDP+HASA|haasa	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+languages/metathesis-phase-isolation	hasaasa	RDPL+HASA|hasaasa	AffixProcessRule: reduplication (ReduplicationHint)	Unmapped	-
+languages/metathesis-phase-isolation	hasaasa	RDPL+HASA|hasaasa	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+languages/metathesis-phase-isolation	hasahasa	-	AffixProcessRule: reduplication (ReduplicationHint)	Unmapped	-
+languages/metathesis-phase-isolation	hiasa	RDPI+HASA|hiasa	AffixProcessRule: reduplication (ReduplicationHint)	Unmapped	-
+languages/metathesis-phase-isolation	hiasa	RDPI+HASA|hiasa	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 languages/metathesis-phase-isolation	idil	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 languages/metathesis-phase-isolation	katabɯd	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 languages/metathesis-phase-isolation	katibɯd	KTB+PERF|katibɯd	AffixProcessRule: prefix/suffix/circumfix/infix	Unmapped	-
@@ -308,6 +328,7 @@ languages/metathesis-phase-isolation	pui	PU+3SGI|pui	AffixProcessRule: prefix/su
 languages/metathesis-phase-isolation	pur	PURE+INCP|pur	AffixProcessRule: subtraction/truncation	Unmapped	-
 languages/metathesis-phase-isolation	sumulat	SULAT+AV|sumulat	AffixProcessRule: prefix/suffix/circumfix/infix	Unmapped	-
 languages/metathesis-phase-isolation	sumulat	SULAT+AV|sumulat	MorphologicalOutputAction: CopyFromInput/InsertSegments	Confirmed	CopyFromInput,InsertSegments
+languages/metathesis-phase-isolation	titula	RDPI+TULA|titula	AffixProcessRule: reduplication (ReduplicationHint)	Unmapped	-
 languages/metathesis-phase-isolation	tulatula	RDPL+TULA|tulatula	AffixProcessRule: reduplication (ReduplicationHint)	Unmapped	-
 languages/metathesis-phase-isolation	tutula	RDP+TULA|tutula	AffixProcessRule: reduplication (ReduplicationHint)	Unmapped	-
 languages/polysynthetic-stratal-derivation-chain	akupitat	-	CompoundingRule	Confirmed	CompoundingRule
@@ -418,6 +439,9 @@ languages/suffixing-extension-slot-ordering	nba	PPO|nba	RewriteSubruleDef gating
 languages/suffixing-extension-slot-ordering	nbael	-	MPR features/groups	Unmapped	-
 languages/suffixing-extension-slot-ordering	npa	-	RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level	Unmapped	-
 languages/suffixing-extension-slot-ordering	npael	PPO+PHDESTROY|npael	MPR features/groups	Unmapped	-
+languages/suffixing-extension-slot-ordering	pambam	PAM+RED|pambam	AffixProcessRule: reduplication (ReduplicationHint)	Unmapped	-
+languages/suffixing-extension-slot-ordering	pambam	PAM+RED|pambam	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+languages/suffixing-extension-slot-ordering	pampam	-	AffixProcessRule: reduplication (ReduplicationHint)	Unmapped	-
 languages/suffixing-extension-slot-ordering	sekhw	-	MPR features/groups	Unmapped	-
 languages/suffixing-extension-slot-ordering	sekwh	SEK+ENDW+ENDH|sekwh	MPR features/groups	Unmapped	-
 languages/suffixing-extension-slot-ordering	sekwz	-	MPR features/groups	Unmapped	-

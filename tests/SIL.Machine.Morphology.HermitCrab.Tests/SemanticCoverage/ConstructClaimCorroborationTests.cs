@@ -34,10 +34,10 @@ public sealed class ConstructClaimCorroborationTests
             $"rows={rows.Count} confirmed={confirmed} contradicted={contradicted} unmapped={unmapped}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(482));
-        Assert.That(confirmed, Is.EqualTo(210));
+        Assert.That(rows, Has.Count.EqualTo(506));
+        Assert.That(confirmed, Is.EqualTo(216));
         Assert.That(contradicted, Is.EqualTo(12));
-        Assert.That(unmapped, Is.EqualTo(260));
+        Assert.That(unmapped, Is.EqualTo(278));
     }
 
     [Test]

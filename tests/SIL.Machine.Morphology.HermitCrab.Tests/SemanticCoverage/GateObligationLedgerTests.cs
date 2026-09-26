@@ -42,9 +42,9 @@ public sealed class GateObligationLedgerTests
         Assert.That(gates, Is.EqualTo(23));
         Assert.That(worthCovering, Is.EqualTo(42));
         Assert.That(evidenced + notEvidenced, Is.EqualTo(rows.Count));
-        Assert.That(evidenced, Is.EqualTo(14));
-        Assert.That(blockedEvidenced, Is.EqualTo(9));
-        Assert.That(controlEvidenced, Is.EqualTo(5));
+        Assert.That(evidenced, Is.EqualTo(16));
+        Assert.That(blockedEvidenced, Is.EqualTo(10));
+        Assert.That(controlEvidenced, Is.EqualTo(6));
     }
 
     [Test]
@@ -111,7 +111,7 @@ public sealed class GateObligationLedgerTests
     }
 
     [Test]
-    public void EvidencedRowsAreExactlyTheseFourteenAndEachCarriesAFixtureAndWord()
+    public void EvidencedRowsAreExactlyTheseSixteenAndEachCarriesAFixtureAndWord()
     {
         string root = RepositoryRoot();
         IReadOnlyList<GateObligationLedger.Row> rows = GateObligationLedger.Read(root);
@@ -130,6 +130,8 @@ public sealed class GateObligationLedgerTests
                     ("HeadProdRestrictMprFeatures", "Control"),
                     ("HeadRequiredSyntacticFeatureStruct", "Blocked"),
                     ("HeadRequiredSyntacticFeatureStruct", "Control"),
+                    ("NonPartialRuleRequiredAfterNonFinalTemplate", "Blocked"),
+                    ("NonPartialRuleRequiredAfterNonFinalTemplate", "Control"),
                     ("PartialParse", "Blocked"),
                     ("RequiredMprFeatures", "Blocked"),
                     ("RequiredMprFeatures", "Control"),
@@ -143,7 +145,7 @@ public sealed class GateObligationLedgerTests
     }
 
     [Test]
-    public void FiveGatesHaveBothArmsEvidenced()
+    public void SixGatesHaveBothArmsEvidenced()
     {
         string root = RepositoryRoot();
         IReadOnlyList<GateObligationLedger.Row> rows = GateObligationLedger.Read(root);
@@ -162,6 +164,7 @@ public sealed class GateObligationLedgerTests
                     "ExcludedMprFeatures",
                     "HeadProdRestrictMprFeatures",
                     "HeadRequiredSyntacticFeatureStruct",
+                    "NonPartialRuleRequiredAfterNonFinalTemplate",
                     "RequiredMprFeatures",
                     "RequiredSyntacticFeatureStruct",
                 }
@@ -194,7 +197,7 @@ public sealed class GateObligationLedgerTests
             r.Gate == "RequiredSyntacticFeatureStruct" && r.Arm == "Control"
         );
         Assert.That(requiredSyntacticControl.Status, Is.EqualTo(GateArmStatus.Evidenced));
-        Assert.That(requiredSyntacticControl.Evidence, Does.Contain("PhonologicalSubrule"));
+        Assert.That(requiredSyntacticControl.Evidence, Does.Contain("TraceRuleAttributor"));
     }
 
     [Explicit("Runs a traced engine sweep plus severance re-parses across every gate's triggering fixtures.")]

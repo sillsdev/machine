@@ -30,23 +30,23 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 ### Machine witness (`conformance/interface-witness.tsv`)
 
 - Writer (`LexicalEntry.ruleFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed ruleFeatures from 7 <LexicalEntry> element(s)", example: 'mbe': ok::- -> ok::PPE|mbe
-- Reader (`MorphologicalInput.requiredMPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=RequiredByLoader, mutation="removed requiredMPRFeatures from 4 <MorphologicalInput> element(s)", example: 'mbe': ok::- -> InvalidOperationException: Stack overflow.    at System.Collections.Generic.HashSet`1[[System.Int32, System.Private.Core...
+- Reader (`MorphologicalInput.requiredMPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=RequiredByLoader, mutation="removed requiredMPRFeatures from 4 <MorphologicalInput> element(s)", example: 'mbe': ok::- -> InvalidOperationException: Stack overflow.    at System.Collections.Generic.Dictionary`2[[System.__Canon, System.Private...
 
 ## Grammar citations
 
 ### `languages/suffixing-extension-slot-ordering/grammar.xml`
 
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:617` = "mprConcA mprConcB"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:622` = "mprConcA mprConcC"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:645` = "mprPhX"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:650` = "mprPhExcl"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:658` = "mprExtA mprConcA mprConcB mprConcC"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:714` = "mprRRealTest"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:720` = "mprRRealTest"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:406` = "mprExtA"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:417` = "mprConcA mprConcB"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:427` = "mprConcC mprConcD"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:550` = "mprRRealTest"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:626` = "mprConcA mprConcB"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:631` = "mprConcA mprConcC"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:654` = "mprPhX"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:659` = "mprPhExcl"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:667` = "mprExtA mprConcA mprConcB mprConcC"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:730` = "mprRRealTest"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:736` = "mprRRealTest"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:415` = "mprExtA"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:426` = "mprConcA mprConcB"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:436` = "mprConcC mprConcD"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:559` = "mprRRealTest"
 
 ## Author's prose
 

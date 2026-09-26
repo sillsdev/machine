@@ -20,8 +20,8 @@ conformance/
   PROTOCOL.md           the adapter contract: CLI shape, TSV format, signature algorithm
 ```
 
-Per `conformance/generated/hc-conformance-manifest.v1.json`, today that is **33 fixtures — 8 under
-`languages/`, 25 under `edge-cases/` — holding 446 words in total**, computed by summing the
+Per `conformance/generated/hc-conformance-manifest.v1.json`, today that is **44 fixtures — 8 under
+`languages/`, 36 under `edge-cases/` — holding 536 words in total**, computed by summing the
 manifest's own `caseCount` field per fixture rather than counted by hand. Regenerate the manifest
 with `hc-conformance --generate-manifest`; `--check-manifest` fails the build if the checked-in file
 has drifted from what a fresh scan produces.

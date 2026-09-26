@@ -6,6 +6,12 @@ BistratalOverlappingSegmentRepresentation,sed,ROOT4|sed,"CharacterDefinitionTabl
 BistratalOverlappingSegmentRepresentation,basi,,"CharacterDefinitionTable: more than one table, one per stratum"
 BistratalOverlappingSegmentRepresentation,abis,,"CharacterDefinitionTable: more than one table, one per stratum"
 BistratalOverlappingSegmentRepresentation,eds,,"CharacterDefinitionTable: more than one table, one per stratum"
+ChainedOutputFeatureOverrideLoss,zud,ZUD|zud,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+ChainedOutputFeatureOverrideLoss,zudi,ZUD+INNER|zudi,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+ChainedOutputFeatureOverrideLoss,zudu,ZUD+OUTER|zudu,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+ChainedOutputFeatureOverrideLoss,zudua,ZUD+OUTER+OUTERMOST|zudua,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+ChainedOutputFeatureOverrideLoss,zudia,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+ChainedOutputFeatureOverrideLoss,zudiua,ZUD+INNER+OUTER+OUTERMOST|zudiua,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 CompoundingBreadth,ka,KA|ka,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,tu,TU|tu,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,katu,KA+TU|katu,CompoundingRule
@@ -50,6 +56,7 @@ LatinDiacriticProbe,kelîta,WORD+DIM|kelîta,NaturalClass: Segments vs FeatureNa
 LatinDiacriticProbe,añota,,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 LatinDiacriticProbe,gölta,,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 LatinDiacriticProbe,gül,,Boundary markers (CharacterDefinitionTable)
+DiscontinuousMorphEnvironment,zuaubu,GOOD+GINF+SUFG|zuaubu,AffixProcessRule: prefix/suffix/circumfix/infix
 DisjunctiveRecheckProbe,wak,|wak,Disjunctive allomorphs / free-fluctuation
 DisjunctiveRecheckProbe,wok,,Disjunctive allomorphs / free-fluctuation
 DisjunctiveRecheckProbe,wakta,,Disjunctive allomorphs / free-fluctuation
@@ -94,12 +101,14 @@ FeatureSystemBreadth,ktl,,MetathesisRule
 FeatureSystemBreadth,ts,TS|ts,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 FeatureSystemBreadth,salk,,AffixProcessRule: prefix/suffix/circumfix/infix
 FeatureSystemBreadth,tal,,Element deactivation (isActive) across loader collections
+FinalTemplatePartialDiscriminators,dakfa,DAK+FINTAGA|dakfa,Affix template slots (obligatory/disjunctive/ordering)
 FreeFluctuatingAllomorphPair,pol,ALT|pol,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,pel,ALT|pel,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,kits,ORD+SSFX|kits,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,kots,,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,kot,ORD|kot,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,kit,,Disjunctive allomorphs / free-fluctuation
+IterativeEpenthesisCascade,uotaa,BOTH|uotaa,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 N2-DefaultSymbol,bat,|bat,Boundary markers (CharacterDefinitionTable)
 N2-DefaultSymbol,bdt,,Boundary markers (CharacterDefinitionTable)
 N1-IsActive,kat,|kat,Boundary markers (CharacterDefinitionTable)
@@ -190,6 +199,9 @@ RightToLeftAnchorEnvironment,aea,,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,eaaa,,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,eeae,ROOT3|eeae,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,eeee,,RewriteRule direction (Dir): right-to-left
+SharedTemplateUnconstrainedSuffix,mivd,NROOT+IVERB+PAST|mivd,Affix template slots (obligatory/disjunctive/ordering)
+SimultaneousFeeding,gigugu,GIGI|gigugu,RewriteRule Simultaneous
+SimultaneousFeeding,gigugi,GIGI|gigugi,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 StemNameRestrictedRootAllomorph,tam,ROOT|tam,Stem names
 StemNameRestrictedRootAllomorph,kap,,Stem names
 StemNameRestrictedRootAllomorph,kapom,ROOT+PERS1|kapom,Stem names
@@ -220,6 +232,7 @@ SynthesisStratumRenderStaleTable,j,ROOTCROSS|,CharacterDefinitionTable: cross-ta
 SynthesisStratumRenderStaleTable,k,ROOTSAME|k,"CharacterDefinitionTable: more than one table, one per stratum"
 SynthesisStratumRenderStaleTable,w,,"CharacterDefinitionTable: more than one table, one per stratum"
 SynthesisStratumRenderStaleTable,i,,"CharacterDefinitionTable: more than one table, one per stratum"
+Mbalantic,pakolosa,PFXA+KOLO+SFXA|pakolosa,Affix template slots (obligatory/disjunctive/ordering)
 TruncateRulesProbe,sag,|sag,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,sas,|sas,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,bubibi,|bubibi,AffixProcessRule: subtraction/truncation
@@ -296,6 +309,14 @@ MetathesisPhaseIsolation,keadilan,NMLZ+ADIL|keadilan,AffixProcessRule: prefix/su
 MetathesisPhaseIsolation,keadilan,NMLZ+ADIL|keadilan,MorphologicalOutputAction: CopyFromInput/InsertSegments
 MetathesisPhaseIsolation,tutula,RDP+TULA|tutula,AffixProcessRule: reduplication (ReduplicationHint)
 MetathesisPhaseIsolation,tulatula,RDPL+TULA|tulatula,AffixProcessRule: reduplication (ReduplicationHint)
+MetathesisPhaseIsolation,hasaasa,RDPL+HASA|hasaasa,AffixProcessRule: reduplication (ReduplicationHint)
+MetathesisPhaseIsolation,hasaasa,RDPL+HASA|hasaasa,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+MetathesisPhaseIsolation,hasahasa,,AffixProcessRule: reduplication (ReduplicationHint)
+MetathesisPhaseIsolation,haasa,RDP+HASA|haasa,AffixProcessRule: reduplication (ReduplicationHint)
+MetathesisPhaseIsolation,haasa,RDP+HASA|haasa,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+MetathesisPhaseIsolation,titula,RDPI+TULA|titula,AffixProcessRule: reduplication (ReduplicationHint)
+MetathesisPhaseIsolation,hiasa,RDPI+HASA|hiasa,AffixProcessRule: reduplication (ReduplicationHint)
+MetathesisPhaseIsolation,hiasa,RDPI+HASA|hiasa,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 MetathesisPhaseIsolation,pur,PURE+INCP|pur,AffixProcessRule: subtraction/truncation
 MetathesisPhaseIsolation,bahain,BAHA+LNK|bahain,AffixProcessRule: prefix/suffix/circumfix/infix
 MetathesisPhaseIsolation,bahain,BAHA+LNK|bahain,MorphologicalOutputAction: CopyFromInput/InsertSegments
@@ -402,6 +423,9 @@ SuffixingExtensionSlotOrdering,sekwz,,MPR features/groups
 SuffixingExtensionSlotOrdering,sekwh,SEK+ENDW+ENDH|sekwh,MPR features/groups
 SuffixingExtensionSlotOrdering,sekhw,,MPR features/groups
 SuffixingExtensionSlotOrdering,kimbiakimbia,KIMB+RED|kimbiakimbia,AffixProcessRule: reduplication (ReduplicationHint)
+SuffixingExtensionSlotOrdering,pambam,PAM+RED|pambam,AffixProcessRule: reduplication (ReduplicationHint)
+SuffixingExtensionSlotOrdering,pambam,PAM+RED|pambam,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+SuffixingExtensionSlotOrdering,pampam,,AffixProcessRule: reduplication (ReduplicationHint)
 SuffixingExtensionSlotOrdering,andika,AND+FV|andika,Affix template slots (obligatory/disjunctive/ordering)
 SuffixingExtensionSlotOrdering,andik,,Affix template slots (obligatory/disjunctive/ordering)
 SuffixingExtensionSlotOrdering,andikisha,AND+CAUS+FV|andikisha,Affix template slots (obligatory/disjunctive/ordering)

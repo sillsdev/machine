@@ -30,20 +30,20 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 ### Machine witness (`conformance/interface-witness.tsv`)
 
 - Writer (`MorphologicalOutput.MPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed MPRFeatures from 4 <MorphologicalOutput> element(s)", example: 'nbael': ok::- -> ok::PPO+PHDESTROY|nbael
-- Reader (`MorphologicalInput.requiredMPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=RequiredByLoader, mutation="removed requiredMPRFeatures from 4 <MorphologicalInput> element(s)", example: 'mbe': ok::- -> InvalidOperationException: Stack overflow.    at System.Collections.Generic.HashSet`1[[System.Int32, System.Private.Core...
+- Reader (`MorphologicalInput.requiredMPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=RequiredByLoader, mutation="removed requiredMPRFeatures from 4 <MorphologicalInput> element(s)", example: 'mbe': ok::- -> InvalidOperationException: Stack overflow.    at System.Collections.Generic.Dictionary`2[[System.__Canon, System.Private...
 
 ## Grammar citations
 
 ### `languages/suffixing-extension-slot-ordering/grammar.xml`
 
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:387` = "mprExtA"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:397` = "mprExtB"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:568` = "mprPhY"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:586` = "mprPhX"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:406` = "mprExtA"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:417` = "mprConcA mprConcB"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:427` = "mprConcC mprConcD"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:550` = "mprRRealTest"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:396` = "mprExtA"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:406` = "mprExtB"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:577` = "mprPhY"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:595` = "mprPhX"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:415` = "mprExtA"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:426` = "mprConcA mprConcB"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:436` = "mprConcC mprConcD"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:559` = "mprRRealTest"
 
 ## Author's prose
 

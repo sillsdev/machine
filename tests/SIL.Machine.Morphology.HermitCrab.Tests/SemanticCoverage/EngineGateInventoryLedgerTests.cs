@@ -35,8 +35,8 @@ public sealed class EngineGateInventoryLedgerTests
         );
 
         Assert.That(rows, Has.Count.EqualTo(23));
-        Assert.That(witnessed, Is.EqualTo(17));
-        Assert.That(unreached, Is.EqualTo(6));
+        Assert.That(witnessed, Is.EqualTo(18));
+        Assert.That(unreached, Is.EqualTo(5));
         Assert.That(noDtdAttribute, Is.EqualTo(6));
         Assert.That(witnessed + unreached, Is.EqualTo(rows.Count));
     }
@@ -50,20 +50,7 @@ public sealed class EngineGateInventoryLedgerTests
         Assert.That(rows.All(r => r.RaiseSites != "-" && r.RaiseSites.Length > 0), Is.True);
     }
 
-    // The exact 7 gates the current corpus never fires, each for a distinct, verified reason -- not
-    // "the corpus is thin" but a specific missing shape: HeadPattern/NonHeadPattern need a compounding
-    // candidate whose head/non-head phonetic shape is tried and fails to match (every compounding
-    // fixture's candidates match by construction); MaxApplicationCount needs a rule re-applied to its
-    // own multipleApplication cap within one derivation (no fixture repeats a rule that many times);
-    // NonHeadProdRestrictMprFeatures needs analysis-direction compounding with a candidate root that
-    // fails CompoundingRule.nonHeadProdRestrictionsMprFeatures (no fixture pairs that attribute with a
-    // failing candidate); NonHeadRequiredSyntacticFeatureStruct needs a non-head candidate that fails
-    // CompoundingRule.nonHeadPartsOfSpeech (the corpus's compounding fixtures exercise the head-side
-    // gate -- HeadRequiredSyntacticFeatureStruct is Witnessed -- but never the non-head one failing);
-    // NonPartialRuleRequiredAfterNonFinalTemplate needs a partial="true" rule tried right after an
-    // AffixTemplate final="false" template (no fixture combines the two); ObligatorySyntacticFeatures
-    // needs a rule's own outputObligatoryFeatures promise to go unmet by the time IsWordValid checks it
-    // (no fixture's obligatory-feature rule ever produces a candidate missing that feature).
+    // These gates have no firing fixture in the current corpus.
     [Test]
     public void UnreachedGatesAreTheKnownCorpusGaps()
     {
@@ -80,7 +67,6 @@ public sealed class EngineGateInventoryLedgerTests
                     "NonHeadPattern",
                     "NonHeadProdRestrictMprFeatures",
                     "NonHeadRequiredSyntacticFeatureStruct",
-                    "NonPartialRuleRequiredAfterNonFinalTemplate",
                     "ObligatorySyntacticFeatures",
                 }
             )

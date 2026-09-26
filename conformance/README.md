@@ -90,7 +90,7 @@ subset it claims to support.
 ```
 conformance/
   languages/<name>/    grammar.xml + words.yaml   -- 8 typologically-selected synthetic languages
-  edge-cases/<name>/   grammar.xml + words.yaml   -- 21 micro-grammars for things no shared grammar hosts
+  edge-cases/<name>/   grammar.xml + words.yaml   -- 36 micro-grammars for things no shared grammar hosts
   coverage.csv         GENERATED: language x word x construct
   rules.csv            GENERATED: language x grammar rule id x exercising words
   HermitCrabInput.dtd  the published grammar DTD (byte-identical to the library's embedded copy)
@@ -155,13 +155,14 @@ writes. Full schema: `schema/words.schema.json`.
 
 Each is a dense, synthetic grammar (invented lexemes and segment inventories, no orthographic claim
 about any real language) where ordinary words exercise several constructs at once, rather than a
-one-mechanism probe. `edge-cases/` holds the 25 things no shared grammar can host faithfully:
+one-mechanism probe. `edge-cases/` holds the things no shared grammar can host faithfully:
 loader/XML-semantics probes, an `expect_crash` pin, a `budget_ms` pathological stress case, and
 allomorphy/rewrite pins whose exact rule shape a naturalistic grammar wouldn't contain.
 
-33 fixtures and 446 cases in total, summed from `generated/hc-conformance-manifest.v1.json`. The
-manifest's per-fixture `caseCount` is what `--check-manifest` verifies; these two prose totals are
-hand-copied from it and have already drifted once, so read the manifest, not this sentence.
+Fixture and case totals are summed from `generated/hc-conformance-manifest.v1.json`, not
+hand-copied here: two prose totals in this file have already drifted from the manifest twice, so
+this file no longer states them at all -- read the manifest (`--generate-manifest`/
+`--check-manifest`), whose per-fixture `caseCount` is what those flags verify.
 
 ## What the coverage numbers claim, and what they do not
 

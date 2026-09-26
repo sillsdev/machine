@@ -30,31 +30,32 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 ### Machine witness (`conformance/interface-witness.tsv`)
 
 - Writer (`MorphologicalRule.outputPartOfSpeech` in `languages/suffixing-extension-slot-ordering`): verdict=Unobservable, mutation="removed outputPartOfSpeech from 16 <MorphologicalRule> element(s)"
-- Reader (`PhonologicalSubrule.requiredPartsOfSpeech` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 3 <PhonologicalSubrule> element(s)", example: 'mbe': ok::- -> ok::PPE|mbe
+- Reader (`PhonologicalSubrule.requiredPartsOfSpeech` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 4 <PhonologicalSubrule> element(s)", example: 'mbe': ok::- -> ok::PPE|mbe
 
 ## Grammar citations
 
 ### `languages/suffixing-extension-slot-ordering/grammar.xml`
 
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:359` = "posV2"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:382` = "posV3"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:392` = "posV3"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:402` = "posV3"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:413` = "posV3"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:423` = "posV3"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:438` = "posV5"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:450` = "posV4"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:460` = "posV4"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:470` = "posV4"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:486` = "posV6"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:498` = "posV6"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:514` = "posV7"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:527` = "posV7"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:563` = "posV3req"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:581` = "posV3req"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:368` = "posV2"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:391` = "posV3"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:401` = "posV3"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:411` = "posV3"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:422` = "posV3"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:432` = "posV3"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:447` = "posV5"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:459` = "posV4"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:469` = "posV4"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:479` = "posV4"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:495` = "posV6"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:507` = "posV6"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:523` = "posV7"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:536` = "posV7"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:572` = "posV3req"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:590` = "posV3req"
 - Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:308` = "posV"
-- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:325` = "posV3req"
-- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:340` = "posV3excl"
+- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:317` = "posV5"
+- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:334` = "posV3req"
+- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:349` = "posV3excl"
 
 ## Author's prose
 

@@ -36,11 +36,11 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### `languages/suffixing-extension-slot-ordering/grammar.xml`
 
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:387` = "mprExtA"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:397` = "mprExtB"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:568` = "mprPhY"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:586` = "mprPhX"
-- Reader (gate declared here) `PhonologicalSubrule.requiredMPRFeatures`: `grammar.xml:325` = "mprPhX"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:396` = "mprExtA"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:406` = "mprExtB"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:577` = "mprPhY"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:595` = "mprPhX"
+- Reader (gate declared here) `PhonologicalSubrule.requiredMPRFeatures`: `grammar.xml:334` = "mprPhX"
 
 ## Author's prose
 

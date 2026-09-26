@@ -40,14 +40,14 @@ Ledger evidence: paired witness: severing writer and reader both flip 'mbe' from
 
 ### `languages/suffixing-extension-slot-ordering/grammar.xml`
 
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:617` = "mprConcA mprConcB"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:622` = "mprConcA mprConcC"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:645` = "mprPhX"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:650` = "mprPhExcl"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:658` = "mprExtA mprConcA mprConcB mprConcC"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:714` = "mprRRealTest"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:720` = "mprRRealTest"
-- Reader (gate declared here) `PhonologicalSubrule.excludedMPRFeatures`: `grammar.xml:340` = "mprPhExcl"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:626` = "mprConcA mprConcB"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:631` = "mprConcA mprConcC"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:654` = "mprPhX"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:659` = "mprPhExcl"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:667` = "mprExtA mprConcA mprConcB mprConcC"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:730` = "mprRRealTest"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:736` = "mprRRealTest"
+- Reader (gate declared here) `PhonologicalSubrule.excludedMPRFeatures`: `grammar.xml:349` = "mprPhExcl"
 
 ## Author's prose
 

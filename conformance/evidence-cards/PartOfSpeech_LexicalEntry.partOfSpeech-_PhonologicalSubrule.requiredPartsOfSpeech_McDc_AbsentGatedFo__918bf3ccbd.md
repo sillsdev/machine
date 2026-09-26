@@ -33,23 +33,25 @@ Ledger evidence: paired witness: severing writer and reader both flip 'idil' fro
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`LexicalEntry.partOfSpeech` in `languages/metathesis-phase-isolation`): verdict=Evidenced, mutation="removed partOfSpeech from 9 <LexicalEntry> element(s)", example: 'idil': ok::- -> ok::ADIL|idil
-- Reader (`PhonologicalSubrule.requiredPartsOfSpeech` in `languages/metathesis-phase-isolation`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 1 <PhonologicalSubrule> element(s)", example: 'idil': ok::- -> ok::ADIL|idil
+- Writer (`LexicalEntry.partOfSpeech` in `languages/metathesis-phase-isolation`): verdict=Evidenced, mutation="removed partOfSpeech from 10 <LexicalEntry> element(s)", example: 'idil': ok::- -> ok::ADIL|idil
+- Reader (`PhonologicalSubrule.requiredPartsOfSpeech` in `languages/metathesis-phase-isolation`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 2 <PhonologicalSubrule> element(s)", example: 'idil': ok::- -> ok::ADIL|idil
 
 ## Grammar citations
 
 ### `languages/metathesis-phase-isolation/grammar.xml`
 
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:263` = "posComplexMeta"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:294` = "posSimpleMeta"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:299` = "posNotUnapplied"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:433` = "posInfix"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:438` = "posCircum"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:443` = "posRedup"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:448` = "posTrunc"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:453` = "posLnk"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:458` = "posNonContig"
-- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:205` = "posNonContig"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:283` = "posComplexMeta"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:314` = "posSimpleMeta"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:319` = "posNotUnapplied"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:476` = "posInfix"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:481` = "posCircum"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:486` = "posRedup"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:491` = "posRedup"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:496` = "posTrunc"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:501` = "posLnk"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:506` = "posNonContig"
+- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:206` = "posNonContig"
+- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:224` = "posRedup"
 
 ## Author's prose
 
