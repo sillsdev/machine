@@ -86,9 +86,7 @@ namespace SIL.Machine.Corpora
             _verseRowsMap = new Dictionary<VerseRef, List<RowInfo>>(
                 compareSegments ? VerseRefComparer.Default : VerseRefComparer.IgnoreSegments
             );
-            _updateRowsVersification = ScrVers.English;
-            if (_rows.Count > 0)
-                _updateRowsVersification = _rows.First(r => r.Refs.Count > 0).Refs[0].Versification;
+            _updateRowsVersification = GetRowsVersification(rows);
             _tokens = new List<UsfmToken>();
             _updatedText = new List<UsfmToken>();
             _updateBlocks = new Stack<UsfmUpdateBlock>();
@@ -112,6 +110,13 @@ namespace SIL.Machine.Corpora
             if (_errorHandler == null)
                 _errorHandler = (error) => false;
             _compareSegments = compareSegments;
+        }
+
+        public static ScrVers GetRowsVersification(IReadOnlyList<UpdateUsfmRow> rows)
+        {
+            return rows != null && rows.Count > 0
+                ? rows.First(r => r.Refs.Count > 0).Refs[0].Versification
+                : ScrVers.English;
         }
 
         public IReadOnlyList<UsfmToken> Tokens => _tokens;

@@ -164,7 +164,9 @@ namespace SIL.Machine.Translation
             }
         }
 
-        public ITrainer CreateTrainer(IParallelTextCorpus corpus)
+        public ITrainer CreateTrainer(IParallelTextCorpus corpus) => CreateTrainerCore(corpus);
+
+        protected virtual ITrainer CreateTrainerCore(IParallelTextCorpus corpus)
         {
             CheckDisposed();
 

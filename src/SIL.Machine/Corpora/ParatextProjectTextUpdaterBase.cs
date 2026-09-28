@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -64,7 +65,17 @@ namespace SIL.Machine.Corpora
                 var tokenizer = new UsfmTokenizer(_settings.Stylesheet);
                 IReadOnlyList<UsfmToken> tokens = tokenizer.Tokenize(usfm);
                 tokens = FilterTokensByChapter(tokens, chapters);
-                UsfmParser.Parse(tokens, handler, _settings.Stylesheet, _settings.Versification);
+
+                ScrVers rowsVersification = UpdateUsfmParserHandler.GetRowsVersification(rows);
+                ScrVers parseVersification = _settings.Versification;
+                if (rowsVersification != _settings.Versification)
+                {
+                    var converter = new ConvertUsfmVersificationHandler(rowsVersification);
+                    UsfmParser.Parse(tokens, converter, _settings.Stylesheet, _settings.Versification);
+                    tokens = converter.Tokens;
+                    parseVersification = rowsVersification;
+                }
+                UsfmParser.Parse(tokens, handler, _settings.Stylesheet, parseVersification);
                 return handler.GetUsfm(_settings.Stylesheet);
             }
             catch (Exception ex)

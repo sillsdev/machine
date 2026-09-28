@@ -26,9 +26,10 @@ namespace SIL.Machine.Translation.Thot
             string sourceFileName,
             string targetFileName,
             string prefFileName,
-            ThotWordAlignmentParameters parameters = null
+            ThotWordAlignmentParameters parameters = null,
+            bool emitTrainingAlignments = false
         )
-            : this(modelType, null, prefFileName, parameters)
+            : this(modelType, null, prefFileName, parameters, emitTrainingAlignments)
         {
             _sourceFileName = sourceFileName;
             _targetFileName = targetFileName;
@@ -38,7 +39,8 @@ namespace SIL.Machine.Translation.Thot
             ThotWordAlignmentModelType modelType,
             IParallelTextCorpus corpus,
             string prefFileName,
-            ThotWordAlignmentParameters parameters = null
+            ThotWordAlignmentParameters parameters = null,
+            bool emitTrainingAlignments = false
         )
         {
             _prefFileName = prefFileName;
@@ -46,6 +48,8 @@ namespace SIL.Machine.Translation.Thot
 
             if (parameters == null)
                 parameters = new ThotWordAlignmentParameters();
+
+            EmitTrainingAlignments = emitTrainingAlignments;
 
             _models = new List<(IntPtr, int)>();
             if (modelType == ThotWordAlignmentModelType.FastAlign)
@@ -61,13 +65,6 @@ namespace SIL.Machine.Translation.Thot
                 // Eflomal is a single model that runs its own Bayesian IBM1->HMM->fertility cascade.
                 _isEflomal = true;
                 IntPtr eflomal = Thot.CreateAlignmentModel(modelType);
-                if (eflomal == IntPtr.Zero)
-                {
-                    throw new NotSupportedException(
-                        "Eflomal alignment model is not supported by the installed Thot native library. "
-                            + "A Thot build that includes EflomalAlignmentModel (model type 9) is required."
-                    );
-                }
                 if (parameters.EflomalSeed.HasValue)
                     Thot.swAlignModel_setEflomalSeed(eflomal, parameters.EflomalSeed.Value);
                 if (parameters.EflomalNumSamplers.HasValue)
@@ -197,9 +194,17 @@ namespace SIL.Machine.Translation.Thot
 
         public TrainStats Stats { get; } = new TrainStats();
 
+        public bool EmitTrainingAlignments { get; }
+
         public int MaxCorpusCount { get; set; } = int.MaxValue;
 
         public Task TrainAsync(IProgress<ProgressStatus> progress = null, CancellationToken cancellationToken = default)
+        {
+            Train(progress, cancellationToken);
+            return Task.CompletedTask;
+        }
+
+        public void Train(IProgress<ProgressStatus> progress = null, CancellationToken cancellationToken = default)
         {
             // One step to load the corpus, then for each trained model one step to start training plus
             // one per training iteration. When the Eflomal model uses its automatic schedule, the
@@ -243,6 +248,14 @@ namespace SIL.Machine.Translation.Thot
             Report();
             cancellationToken.ThrowIfCancellationRequested();
 
+            if (EmitTrainingAlignments)
+            {
+                // Retain the alignments computed during training so that they can be returned without a
+                // separate inference pass. Only the final (most refined) model's alignments are needed,
+                // since that is the model used for inference.
+                Thot.swAlignModel_setEmitTrainingAlignments(Handle, true);
+            }
+
             int trainedSegmentCount = 0;
             foreach ((IntPtr handle, int storedIterationCount) in _models)
             {
@@ -274,8 +287,6 @@ namespace SIL.Machine.Translation.Thot
                 Thot.swAlignModel_endTraining(handle);
             }
             Stats.TrainCorpusSize = trainedSegmentCount;
-
-            return Task.CompletedTask;
         }
 
         public virtual void Save()

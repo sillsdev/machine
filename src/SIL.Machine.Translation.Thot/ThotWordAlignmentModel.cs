@@ -13,7 +13,10 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
-    public abstract class ThotWordAlignmentModel : DisposableBase, IIbm1WordAlignmentModel
+    public abstract class ThotWordAlignmentModel
+        : DisposableBase,
+            ITransductiveWordAlignmentModel,
+            IIbm1WordAlignmentModel
     {
         public static ThotWordAlignmentModel Create(ThotWordAlignmentModelType type)
         {
@@ -123,7 +126,9 @@ namespace SIL.Machine.Translation.Thot
             _prefFileName = prefFileName;
         }
 
-        public ITrainer CreateTrainer(IParallelTextCorpus corpus)
+        ITrainer IWordAlignmentModel.CreateTrainer(IParallelTextCorpus corpus) => CreateTrainer(corpus);
+
+        public ThotWordAlignmentModelTrainer CreateTrainer(IParallelTextCorpus corpus)
         {
             CheckDisposed();
 
@@ -154,6 +159,39 @@ namespace SIL.Machine.Translation.Thot
 
             if (!string.IsNullOrEmpty(_prefFileName))
                 Thot.swAlignModel_save(Handle, _prefFileName);
+        }
+
+        public bool EmitTrainingAlignments { get; set; }
+
+        public int TrainingAlignmentCount => (int)Thot.swAlignModel_getNumTrainingAlignments(Handle);
+
+        public WordAlignmentMatrix GetTrainingAlignment(int n)
+        {
+            CheckDisposed();
+
+            if (n < 0 || n >= TrainingAlignmentCount)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(n),
+                    n,
+                    $"The index must be less than the number of retained training alignments ({TrainingAlignmentCount})."
+                );
+            }
+
+            uint iLen = 0;
+            uint jLen = 0;
+            Thot.swAlignModel_getTrainingAlignment(Handle, (uint)n, IntPtr.Zero, ref iLen, ref jLen);
+
+            IntPtr nativeMatrix = Thot.AllocNativeMatrix((int)iLen, (int)jLen);
+            try
+            {
+                Thot.swAlignModel_getTrainingAlignment(Handle, (uint)n, nativeMatrix, ref iLen, ref jLen);
+                return Thot.ConvertNativeMatrixToWordAlignmentMatrix(nativeMatrix, iLen, jLen);
+            }
+            finally
+            {
+                Thot.FreeNativeMatrix(nativeMatrix, iLen);
+            }
         }
 
         public double GetTranslationScore(string sourceWord, string targetWord)
@@ -316,7 +354,7 @@ namespace SIL.Machine.Translation.Thot
             private readonly ThotWordAlignmentModel _model;
 
             public Trainer(ThotWordAlignmentModel model, IParallelTextCorpus corpus)
-                : base(model.Type, corpus, model._prefFileName, model.Parameters)
+                : base(model.Type, corpus, model._prefFileName, model.Parameters, model.EmitTrainingAlignments)
             {
                 _model = model;
                 CloseOnDispose = false;

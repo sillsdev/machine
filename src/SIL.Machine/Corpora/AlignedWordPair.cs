@@ -132,7 +132,7 @@ namespace SIL.Machine.Corpora
             string sourceIndex = SourceIndex < 0 ? "NULL" : SourceIndex.ToString();
             string targetIndex = TargetIndex < 0 ? "NULL" : TargetIndex.ToString();
             sb.Append($"{sourceIndex}-{targetIndex}");
-            if (TranslationScore >= 0)
+            if (TranslationScore >= 0 || AlignmentScore >= 0)
             {
                 sb.Append($":{TranslationScore:0.########}");
                 if (AlignmentScore >= 0)

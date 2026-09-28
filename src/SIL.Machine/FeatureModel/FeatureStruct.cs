@@ -511,6 +511,57 @@ namespace SIL.Machine.FeatureModel
             return _definite.Count > 0;
         }
 
+        /// <summary>
+        /// Removes every feature path that the specified set of feature values defines from this set. Only its
+        /// shape is read, never its values, which is what separates this from <c>Subtract</c>. A nested set
+        /// that is left empty is removed along with its feature.
+        /// </summary>
+        /// <param name="other">The feature value.</param>
+        public void Restrict(FeatureStruct other)
+        {
+            if (other == null)
+                throw new ArgumentNullException("other");
+
+            CheckFrozen();
+            RestrictImpl(other, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
+        }
+
+        private bool RestrictImpl(FeatureStruct other, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited)
+        {
+            other = Dereference(other);
+            // A set restricted by itself keeps nothing; this also stops the loop below mutating what it enumerates.
+            if (ReferenceEquals(this, other))
+            {
+                _definite.Clear();
+                return false;
+            }
+
+            ISet<FeatureStruct> visitedOthers = visited.GetOrCreate(this, () => new HashSet<FeatureStruct>());
+            if (!visitedOthers.Add(other))
+                return _definite.Count > 0;
+
+            foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
+            {
+                FeatureValue thisValue;
+                if (!_definite.TryGetValue(featVal.Key, out thisValue))
+                    continue;
+
+                if (
+                    Dereference(featVal.Value) is FeatureStruct otherFS
+                    && Dereference(thisValue) is FeatureStruct thisFS
+                )
+                {
+                    if (!thisFS.RestrictImpl(otherFS, visited))
+                        _definite.Remove(featVal.Key);
+                }
+                else
+                {
+                    _definite.Remove(featVal.Key);
+                }
+            }
+            return _definite.Count > 0;
+        }
+
         public void Clear()
         {
             CheckFrozen();

@@ -12,52 +12,123 @@ public static class TestHelpers
         Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "data", "toy_corpus_fa");
     public static string ToyCorpusFastAlignConfigFileName => Path.Combine(ToyCorpusFastAlignFolderName, "smt.cfg");
 
-    public static IEnumerable<string> Split(this string segment)
+    public static IReadOnlyList<string> AlignmentStrings(
+        IParallelTextCorpus corpus,
+        IEnumerable<string>? textIds = null
+    )
     {
-        return segment.Split(' ');
+        return
+        [
+            .. corpus
+                .GetRows(textIds)
+                .SelectMany(row =>
+                    row.AlignedWordPairs.Select(wp => new AlignedWordPair(wp.SourceIndex, wp.TargetIndex).ToString())
+                ),
+        ];
     }
+
+    private static readonly string[] SourceLines =
+    [
+        "isthay isyay ayay esttay-N .",
+        "ouyay ouldshay esttay-V oftenyay .",
+        "isyay isthay orkingway ?",
+        "isthay ouldshay orkway-V .",
+        "ityay isyay orkingway .",
+        "orkway-N ancay ebay ardhay !",
+        "ayay esttay-N ancay ebay ardhay .",
+        "isthay isyay ayay ordway !",
+    ];
+
+    private static readonly string[] TargetLines =
+    [
+        "this is a test N .",
+        "you should test V often .",
+        "is this working ?",
+        "this should work V .",
+        "it is working .",
+        "work N can be hard !",
+        "a test N can be hard .",
+        "this is a word !",
+    ];
 
     public static ParallelTextCorpus CreateTestParallelCorpus()
     {
-        var srcCorpus = new DictionaryTextCorpus(
+        return new ParallelTextCorpus(TextCorpus(SourceLines, Row), TextCorpus(TargetLines, Row));
+    }
+
+    // The test corpus with each segment left as one untokenized string, as read from disk.
+    public static ParallelTextCorpus CreateUntokenizedTestParallelCorpus()
+    {
+        return new ParallelTextCorpus(TextCorpus(SourceLines, UntokenizedRow), TextCorpus(TargetLines, UntokenizedRow));
+    }
+
+    private static DictionaryTextCorpus TextCorpus(string[] lines, Func<int, string, TextRow> rowFactory)
+    {
+        return new DictionaryTextCorpus(
+            new MemoryText("text1", [.. lines.Select((line, i) => rowFactory(i + 1, line))])
+        );
+    }
+
+    public static ThotSymmetrizedWordAlignmentModel CreateTrainedModel(
+        IParallelTextCorpus corpus,
+        ThotWordAlignmentModelType modelType = ThotWordAlignmentModelType.FastAlign
+    )
+    {
+        var model = ThotSymmetrizedWordAlignmentModel.Create(modelType);
+        model.Heuristic = SymmetrizationHeuristic.GrowDiagFinalAnd;
+        model.EmitTrainingAlignments = true;
+        using ITrainer trainer = model.CreateTrainer(corpus);
+        trainer.TrainAsync().GetAwaiter().GetResult();
+        trainer.SaveAsync().GetAwaiter().GetResult();
+        return model;
+    }
+
+    public static ParallelTextCorpus CreateTwoTextParallelCorpus()
+    {
+        var src = new DictionaryTextCorpus(
             new MemoryText(
                 "text1",
-                new[]
-                {
-                    Row(1, "isthay isyay ayay esttay-N ."),
-                    Row(2, "ouyay ouldshay esttay-V oftenyay ."),
-                    Row(3, "isyay isthay orkingway ?"),
-                    Row(4, "isthay ouldshay orkway-V ."),
-                    Row(5, "ityay isyay orkingway ."),
-                    Row(6, "orkway-N ancay ebay ardhay !"),
-                    Row(7, "ayay esttay-N ancay ebay ardhay ."),
-                    Row(8, "isthay isyay ayay ordway !"),
-                }
+                [
+                    new TextRow("text1", 1) { Segment = "el gato".Split(' ') },
+                    new TextRow("text1", 2) { Segment = "la casa".Split(' ') },
+                ]
+            ),
+            new MemoryText(
+                "text2",
+                [
+                    new TextRow("text2", 1) { Segment = "el perro corre".Split(' ') },
+                    new TextRow("text2", 2) { Segment = "la mesa".Split(' ') },
+                ]
             )
         );
 
-        var trgCorpus = new DictionaryTextCorpus(
+        var trg = new DictionaryTextCorpus(
             new MemoryText(
                 "text1",
-                new[]
-                {
-                    Row(1, "this is a test N ."),
-                    Row(2, "you should test V often ."),
-                    Row(3, "is this working ?"),
-                    Row(4, "this should work V ."),
-                    Row(5, "it is working ."),
-                    Row(6, "work N can be hard !"),
-                    Row(7, "a test N can be hard ."),
-                    Row(8, "this is a word !"),
-                }
+                [
+                    new TextRow("text1", 1) { Segment = "the cat".Split(' ') },
+                    new TextRow("text1", 2) { Segment = "the house".Split(' ') },
+                ]
+            ),
+            new MemoryText(
+                "text2",
+                [
+                    new TextRow("text2", 1) { Segment = "the dog runs".Split(' ') },
+                    new TextRow("text2", 2) { Segment = "the table".Split(' ') },
+                ]
             )
         );
 
-        return new ParallelTextCorpus(srcCorpus, trgCorpus);
+        return new ParallelTextCorpus(src, trg);
     }
 
     private static TextRow Row(int rowRef, string segment)
     {
         return new TextRow("text1", rowRef) { Segment = segment.Split() };
+    }
+
+    private static TextRow UntokenizedRow(int rowRef, string segment)
+    {
+        return new TextRow("text1", rowRef) { Segment = [segment] };
     }
 }

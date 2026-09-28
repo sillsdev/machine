@@ -39,6 +39,14 @@ internal static class CorporaTestHelpers
         return path;
     }
 
+    public static ITextCorpus CreateTextCorpus(string textId, string[] sentences) =>
+        new DictionaryTextCorpus(
+            new MemoryText(
+                textId,
+                [.. sentences.Select((sentence, i) => new TextRow(textId, i) { Segment = [sentence] })]
+            )
+        );
+
     public static EqualUsingConstraint<string> IgnoreLineEndings(this EqualStringConstraint constraint)
     {
         return constraint.Using(new IgnoreLineEndingsStringComparer());

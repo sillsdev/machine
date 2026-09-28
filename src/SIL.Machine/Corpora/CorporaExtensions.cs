@@ -1282,21 +1282,19 @@ namespace SIL.Machine.Corpora
             }
         }
 
-        private class WordAlignParallelTextCorpus : ParallelTextCorpusBase
+        private class WordAlignParallelTextCorpus : WordAlignParallelTextCorpusBase
         {
             private readonly IParallelTextCorpus _corpus;
             private readonly IWordAligner _aligner;
             private readonly int _batchSize;
 
             public WordAlignParallelTextCorpus(IParallelTextCorpus corpus, IWordAligner aligner, int batchSize)
+                : base(corpus)
             {
                 _corpus = corpus;
                 _aligner = aligner;
                 _batchSize = batchSize;
             }
-
-            public override bool IsSourceTokenized => _corpus.IsSourceTokenized;
-            public override bool IsTargetTokenized => _corpus.IsTargetTokenized;
 
             public override IEnumerable<ParallelTextRow> GetRows(IEnumerable<string> textIds)
             {
