@@ -18,8 +18,8 @@ namespace SIL.Machine.Corpora
             if (versification == null && File.Exists(versificationFileName))
             {
                 string vrsName = Path.GetFileName(projectPath);
-                versification = Scripture.Versification.Table.Implementation.Load(versificationFileName, vrsName);
-                Scripture.Versification.Table.Implementation.RemoveAllUnknownVersifications();
+                versification = SIL.Scripture.Versification.Table.Implementation.Load(versificationFileName, vrsName);
+                SIL.Scripture.Versification.Table.Implementation.RemoveAllUnknownVersifications();
             }
             return versification ?? ScrVers.English;
         }
