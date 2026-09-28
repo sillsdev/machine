@@ -536,8 +536,7 @@ public class MorpherTests : HermitCrabTestBase
         return shape.GetNodes(shape.Range).ToList();
     }
 
-    // A compounding rule and a commuting PAST prefix as peers in one Unordered cascade, so an equal
-    // AnalysisStateKey can be re-arrived at by different unapplication orders.
+    // Keeps compound and affix unapplication on the same unordered cascade.
     private void AddCompoundingAndPrefixRules()
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
@@ -577,7 +576,7 @@ public class MorpherTests : HermitCrabTestBase
     [Test]
     public void ParseWord_SingleThreaded_MatchesParallel_WithCompounding()
     {
-        // MaxDegreeOfParallelism must be a pure no-op on results, independent of the memo it gates.
+        // Both rule types exercise the sequential and parallel cascade paths.
         AddCompoundingAndPrefixRules();
 
         var parallel = new Morpher(TraceManager, Language);
@@ -591,255 +590,6 @@ public class MorpherTests : HermitCrabTestBase
                 singleResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal),
                 Is.EqualTo(parallelResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal)),
                 $"single-threaded parse of '{word}' must match the parallel parse"
-            );
-        }
-    }
-
-    [Test]
-    public void ParseWord_MemoOnMatchesMemoOff_HitCounterGuarded_WithCompounding()
-    {
-        // The standing acceptance gate: analysis-set equality between the memoized sequential cascade and
-        // the unmemoized parallel default, kept non-vacuous by the hit-counter assertion at the end.
-        AddCompoundingAndPrefixRules();
-
-        var memoOff = new Morpher(TraceManager, Language);
-        var memoOn = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
-
-        foreach (string word in new[] { "pʰutdidat", "pʰutdat" })
-        {
-            List<Word> onResult = memoOn.ParseWord(word).ToList();
-            List<Word> offResult = memoOff.ParseWord(word).ToList();
-            Assert.That(
-                onResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal),
-                Is.EqualTo(offResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal)),
-                $"memo-on parse of '{word}' must be analysis-set identical to memo-off"
-            );
-        }
-        TestContext.Out.WriteLine($"positive hits: {memoOn.MemoHits}, nogood hits: {memoOn.NogoodHits}");
-        Assert.That(
-            memoOn.MemoHits + memoOn.NogoodHits,
-            Is.GreaterThan(0),
-            "the memo must actually have hit (positive or nogood) at least once on this grammar -- "
-                + "otherwise this test cannot distinguish a working memo from a no-op one"
-        );
-    }
-
-    [Test]
-    public void ParseWord_MemoOnMatchesMemoOff_ForSelfOpaquingSimultaneousEpenthesis()
-    {
-        // Guards the memo against a Simultaneous-mode epenthesis rule, which AnalysisRewriteRule compiles
-        // as ReapplyType.SelfOpaquing -- a repeat-until-fixpoint loop, and the one rule shape whose
-        // interaction with the nogood cache has a suspected (never reproduced) bug elsewhere. Known gap:
-        // no available fixture drives the loop past a single iteration, so two or more remains untested.
-        var highVowel = FeatureStruct
-            .New(Language.PhonologicalFeatureSystem)
-            .Symbol(HCFeatureSystem.Segment)
-            .Symbol("cons-")
-            .Symbol("voc+")
-            .Symbol("high+")
-            .Value;
-        var highFrontUnrndVowel = FeatureStruct
-            .New(Language.PhonologicalFeatureSystem)
-            .Symbol(HCFeatureSystem.Segment)
-            .Symbol("cons-")
-            .Symbol("voc+")
-            .Symbol("high+")
-            .Symbol("back-")
-            .Symbol("round-")
-            .Value;
-
-        var rule4 = new RewriteRule { Name = "rule4", ApplicationMode = RewriteApplicationMode.Simultaneous };
-        Allophonic.PhonologicalRules.Add(rule4);
-        rule4.Subrules.Add(
-            new RewriteSubrule
-            {
-                Rhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value,
-            }
-        );
-
-        var memoOff = new Morpher(TraceManager, Language);
-        var memoOn = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
-
-        foreach (string word in new[] { "buibui", "bubu", "bibu" })
-        {
-            List<Word> onResult = memoOn.ParseWord(word).ToList();
-            List<Word> offResult = memoOff.ParseWord(word).ToList();
-            Assert.That(
-                onResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal),
-                Is.EqualTo(offResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal)),
-                $"memo-on parse of '{word}' must be analysis-set identical to memo-off"
-            );
-        }
-        // Pinned as an absolute value, not just on-vs-off, so a bug affecting both sides identically
-        // (both wrongly returning empty, say) is still caught.
-        Assert.That(memoOn.ParseWord("buibui").Count(), Is.EqualTo(1));
-    }
-
-    [Test]
-    public void ParseWord_MemoOnMatchesMemoOff_HitCounterGuarded_WithAffixTemplate()
-    {
-        // Two commuting prefixes, not one: a single rule unapplies only once, so no key would ever be
-        // re-arrived at and the template memo would never fire. Unapplying di-then-gu or gu-then-di
-        // reaches the same key by a different trail order, which is what makes the second one replay.
-        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
-
-        var edSuffix = new AffixProcessRule
-        {
-            Id = "TPAST",
-            Name = "template_ed_suffix",
-            Gloss = "PAST",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-        };
-        edSuffix.Allomorphs.Add(
-            new AffixProcessAllomorph
-            {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
-            }
-        );
-        var verbTemplate = new AffixTemplate
-        {
-            Name = "verb_template",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-        };
-        verbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix) { Optional = true });
-        Morphophonemic.AffixTemplates.Add(verbTemplate);
-
-        var diPrefix = new AffixProcessRule
-        {
-            Id = "TDI",
-            Name = "template_di_prefix",
-            Gloss = "DI",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-        };
-        diPrefix.Allomorphs.Add(
-            new AffixProcessAllomorph
-            {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new InsertSegments(Table3, "di+"), new CopyFromInput("1") },
-            }
-        );
-        Morphophonemic.MorphologicalRules.Add(diPrefix);
-
-        var guPrefix = new AffixProcessRule
-        {
-            Id = "TGU",
-            Name = "template_gu_prefix",
-            Gloss = "GU",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-        };
-        guPrefix.Allomorphs.Add(
-            new AffixProcessAllomorph
-            {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new InsertSegments(Table3, "gu+"), new CopyFromInput("1") },
-            }
-        );
-        Morphophonemic.MorphologicalRules.Add(guPrefix);
-
-        var memoOff = new Morpher(TraceManager, Language);
-        var memoOn = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
-
-        foreach (string word in new[] { "digusagd", "disagd", "gusagd", "sagd", "sag" })
-        {
-            List<Word> onResult = memoOn.ParseWord(word).ToList();
-            List<Word> offResult = memoOff.ParseWord(word).ToList();
-            Assert.That(
-                onResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal),
-                Is.EqualTo(offResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal)),
-                $"memo-on parse of '{word}' must be analysis-set identical to memo-off"
-            );
-        }
-        TestContext.Out.WriteLine(
-            $"template positive hits: {memoOn.TemplateMemoHits}, "
-                + $"template nogood hits: {memoOn.TemplateNogoodHits}"
-        );
-        // The graft's effect on final signatures is invisible through synthesis, which re-derives rule
-        // orderings anyway, so this counter -- not the equality assertions above -- is what proves the
-        // memoized path was exercised at all.
-        Assert.That(
-            memoOn.TemplateMemoHits + memoOn.TemplateNogoodHits,
-            Is.GreaterThan(0),
-            "the template memo must actually have hit (positive or nogood) at least once on this "
-                + "grammar -- otherwise this test cannot distinguish a working memo from a no-op one"
-        );
-    }
-
-    [Test]
-    public void ParseWord_MemoOnMatchesMemoOff_OnLinearStratumWithAffixTemplate()
-    {
-        // Every other memo test runs on Unordered strata, leaving Linear -- MorphologicalRuleOrder's
-        // default -- with no end-to-end equivalence gate. AnalysisStratumRuleTests covers the exclusion
-        // that keeps the memo off this path; this covers the results it produces.
-        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
-
-        var edSuffix = new AffixProcessRule
-        {
-            Id = "TPAST",
-            Name = "template_ed_suffix",
-            Gloss = "PAST",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-        };
-        edSuffix.Allomorphs.Add(
-            new AffixProcessAllomorph
-            {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
-            }
-        );
-        var verbTemplate = new AffixTemplate
-        {
-            Name = "verb_template",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-        };
-        verbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix) { Optional = true });
-        Morphophonemic.AffixTemplates.Add(verbTemplate);
-
-        var diPrefix = new AffixProcessRule
-        {
-            Id = "TDI",
-            Name = "template_di_prefix",
-            Gloss = "DI",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-        };
-        diPrefix.Allomorphs.Add(
-            new AffixProcessAllomorph
-            {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new InsertSegments(Table3, "di+"), new CopyFromInput("1") },
-            }
-        );
-        Morphophonemic.MorphologicalRules.Add(diPrefix);
-
-        var guPrefix = new AffixProcessRule
-        {
-            Id = "TGU",
-            Name = "template_gu_prefix",
-            Gloss = "GU",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-        };
-        guPrefix.Allomorphs.Add(
-            new AffixProcessAllomorph
-            {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new InsertSegments(Table3, "gu+"), new CopyFromInput("1") },
-            }
-        );
-        Morphophonemic.MorphologicalRules.Add(guPrefix);
-
-        SetRuleOrder(MorphologicalRuleOrder.Linear);
-        var memoOff = new Morpher(TraceManager, Language);
-        var memoOn = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
-
-        foreach (string word in new[] { "digusagd", "disagd", "gusagd", "sagd", "sag" })
-        {
-            List<Word> onResult = memoOn.ParseWord(word).ToList();
-            List<Word> offResult = memoOff.ParseWord(word).ToList();
-            Assert.That(
-                onResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal),
-                Is.EqualTo(offResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal)),
-                $"Linear-stratum parse of '{word}' must be analysis-set identical with and without the memo"
             );
         }
     }
@@ -901,11 +651,7 @@ public class MorpherTests : HermitCrabTestBase
         });
     }
 
-    // What the memo gates compare, instead of object equality: a replayed Word is not field-for-field
-    // identical to a freshly-computed one. MorphemesInApplicationOrder is the load-bearing part, since it
-    // walks the trail and non-heads that ReplayOnto rewrites; AllomorphsInMorphOrder alone would miss a
-    // broken graft, walking only Shape annotations that ReplayOnto never touches. The root distinguishes
-    // analyses that share a morpheme sequence but not a lexical entry.
+    // Include allomorph identity, application order, and root identity in result comparisons.
     internal static string WordAnalysisSignature(Word word)
     {
         return string.Join("+", word.AllomorphsInMorphOrder.Select(a => a.Morpheme.Id))

@@ -15,8 +15,8 @@ Governs `tests/**/*.cs`.
   when the contract is ordinal identity.
 - For async code, assert cancellation and completion behavior where the change promises
   it; do not hide unobserved tasks.
-- For HermitCrab changes, compare analysis semantics, not only memo-hit counts or
-  execution success. Exercise key completeness, replay, resource caps, and
-  parallel/sequential equivalence when touched.
+- For HermitCrab changes, compare analysis semantics, not only execution success.
+  Exercise state-sensitive merging, resource caps, and parallel/sequential
+  equivalence when touched.
 - Name the test that proves the change. "Where is the test?" is the single most
   common review question in this repository; answer it before it is asked.
