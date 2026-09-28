@@ -148,6 +148,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         }
                         outWord.SyntacticFeatureStruct = syntacticFS;
                     }
+                    outWord.FinalTemplateState = FinalTemplateState.NonTemplate;
                     outWord.MorphologicalRuleUnapplied(_rule);
 
                     outWord.Freeze();
