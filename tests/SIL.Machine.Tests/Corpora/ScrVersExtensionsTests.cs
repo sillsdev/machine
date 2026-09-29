@@ -43,4 +43,54 @@ public class ScrVersExtensionsTests
             Assert.That(ScrVers.Vulgate.HasCrossBookMappings(ScrVers.English));
         }
     }
+
+    [Test]
+    public void IsEquivalent()
+    {
+        ScrVers customVrs1;
+        using (CorporaUtils.VersificationLock.Lock())
+        {
+            string src = "MAT 1:2 = MAT 1:1\nMAT 1:1 = MAT 1:2\n";
+            using var reader = new StringReader(src);
+            customVrs1 = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom");
+            Versification.Table.Implementation.RemoveAllUnknownVersifications();
+        }
+
+        ScrVers customVrs2;
+        using (CorporaUtils.VersificationLock.Lock())
+        {
+            string src = "MAT 1:1 = MAT 1:2\nMAT 1:2 = MAT 1:1\n";
+            using var reader = new StringReader(src);
+            customVrs2 = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom");
+            Versification.Table.Implementation.RemoveAllUnknownVersifications();
+        }
+
+        ScrVers customVrs3;
+        using (CorporaUtils.VersificationLock.Lock())
+        {
+            string src = "MAT 1:1 = MAT 1:2\n# This is a comment\nMAT 1:2 = MAT 1:1\nMAT 1:2 = MAT 1:1\n";
+            using var reader = new StringReader(src);
+            customVrs3 = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom");
+            Versification.Table.Implementation.RemoveAllUnknownVersifications();
+        }
+
+        ScrVers customVrs4;
+        using (CorporaUtils.VersificationLock.Lock())
+        {
+            string src = "&MAT 1:2-3 = MAT 1:2\nMAT 1:4 = MAT 1:3\n";
+            using var reader = new StringReader(src);
+            customVrs4 = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom");
+            Versification.Table.Implementation.RemoveAllUnknownVersifications();
+        }
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(ScrVers.English.IsEquivalentTo(ScrVers.English));
+            Assert.That(!ScrVers.English.IsEquivalentTo(ScrVers.Original));
+            Assert.That(customVrs1.IsEquivalentTo(customVrs1));
+            Assert.That(customVrs1.IsEquivalentTo(customVrs2));
+            Assert.That(customVrs1.IsEquivalentTo(customVrs3));
+            Assert.That(!customVrs1.IsEquivalentTo(customVrs4));
+        }
+    }
 }
