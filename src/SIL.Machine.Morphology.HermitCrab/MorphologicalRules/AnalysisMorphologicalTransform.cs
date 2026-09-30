@@ -54,72 +54,73 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         /// <summary>
         /// Synthesis writes every copy of a part from the same input, and anything that later changes one
         /// copy is unapplied before this rule, so copies proven to disagree segment by segment cannot lead
-        /// to a valid analysis. A copy containing an optional node (an unapplied deletion), or a part the
-        /// rule modifies, cannot be judged and never counts as disagreeing.
+        /// to a valid analysis. A part the rule modifies, or a copy containing an unapplied deletion, is
+        /// never reported as disagreeing.
         /// </summary>
         internal bool HasDisagreeingCopies(Match<Word, ShapeNode> match)
         {
             foreach (KeyValuePair<string, int> capturedPart in _capturedParts)
             {
-                string partName = capturedPart.Key;
-                int copyCount = capturedPart.Value;
-                if (copyCount < 2)
+                if (capturedPart.Value < 2 || _modifyFromInfos.ContainsKey(capturedPart.Key))
                     continue;
 
-                if (_modifyFromInfos.ContainsKey(partName))
-                    continue;
-
-                var copies = new List<List<ShapeNode>>(copyCount);
-                bool partUndecidable = false;
-                for (int i = 0; i < copyCount; i++)
+                if (
+                    TryGetSegmentCopies(match, capturedPart.Key, capturedPart.Value, out List<List<ShapeNode>> copies)
+                    && AnyCopiesDisagree(copies)
+                )
                 {
-                    GroupCapture<ShapeNode> capture = match.GroupCaptures[GetGroupName(partName, i)];
-                    if (!capture.Success)
-                    {
-                        partUndecidable = true;
-                        break;
-                    }
-
-                    List<ShapeNode> nodes = GetCapturedNodes(match.Input.Shape, capture.Range);
-                    if (nodes.Any(node => node.Annotation.Optional))
-                    {
-                        partUndecidable = true;
-                        break;
-                    }
-
-                    copies.Add(nodes.Where(node => node.Annotation.Type() == HCFeatureSystem.Segment).ToList());
-                }
-
-                if (partUndecidable)
-                    continue;
-
-                List<ShapeNode> firstCopy = copies[0];
-                for (int i = 1; i < copies.Count; i++)
-                {
-                    List<ShapeNode> otherCopy = copies[i];
-                    if (firstCopy.Count != otherCopy.Count)
-                        return true;
-
-                    for (int j = 0; j < firstCopy.Count; j++)
-                    {
-                        if (!firstCopy[j].Annotation.FeatureStruct.IsUnifiable(otherCopy[j].Annotation.FeatureStruct))
-                            return true;
-                    }
+                    return true;
                 }
             }
 
             return false;
         }
 
-        /// <summary>
-        /// Includes optional nodes the matcher skipped before the capture when they reach the start of the
-        /// shape, so an unapplied word-initial deletion is still seen.
-        /// </summary>
-        private static List<ShapeNode> GetCapturedNodes(Shape shape, Range<ShapeNode> range)
+        private static bool TryGetSegmentCopies(
+            Match<Word, ShapeNode> match,
+            string partName,
+            int copyCount,
+            out List<List<ShapeNode>> copies
+        )
         {
-            var nodes = new List<ShapeNode>(MorphologicalOutputAction.SkippedOptionalNodes(shape, range));
-            nodes.AddRange(shape.GetNodes(range));
-            return nodes;
+            copies = new List<List<ShapeNode>>(copyCount);
+            for (int i = 0; i < copyCount; i++)
+            {
+                GroupCapture<ShapeNode> capture = match.GroupCaptures[GetGroupName(partName, i)];
+                if (!capture.Success)
+                    return false;
+
+                // an unapplied word-initial deletion sits before the capture, not inside it
+                List<ShapeNode> nodes = MorphologicalOutputAction
+                    .GetSkippedOptionalNodes(match.Input.Shape, capture.Range)
+                    .Concat(match.Input.Shape.GetNodes(capture.Range))
+                    .ToList();
+                if (nodes.Any(node => node.Annotation.Optional))
+                    return false;
+
+                copies.Add(nodes.Where(node => node.Annotation.Type() == HCFeatureSystem.Segment).ToList());
+            }
+            return true;
+        }
+
+        // unifiability is not transitive, so every pair is compared, not just each copy against the first
+        private static bool AnyCopiesDisagree(List<List<ShapeNode>> copies)
+        {
+            for (int i = 0; i < copies.Count; i++)
+            {
+                for (int j = i + 1; j < copies.Count; j++)
+                {
+                    if (copies[i].Count != copies[j].Count)
+                        return true;
+
+                    for (int k = 0; k < copies[i].Count; k++)
+                    {
+                        if (!copies[i][k].Annotation.FeatureStruct.IsUnifiable(copies[j][k].Annotation.FeatureStruct))
+                            return true;
+                    }
+                }
+            }
+            return false;
         }
 
         public Pattern<Word, ShapeNode> Pattern
