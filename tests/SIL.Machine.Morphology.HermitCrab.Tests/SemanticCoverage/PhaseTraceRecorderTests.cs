@@ -123,6 +123,26 @@ public sealed class PhaseTraceRecorderTests
         );
     }
 
+    [TestCase(true, FailureReason.None)]
+    [TestCase(false, FailureReason.None)]
+    [TestCase(false, FailureReason.RequiredSyntacticFeatureStruct)]
+    public void TemplateUnapplicationRecordsItsFailureReason(bool unapplied, FailureReason reason)
+    {
+        var recorder = new PhaseTraceRecorder();
+        ITraceManager trace = recorder;
+        trace.EndUnapplyTemplate(new AffixTemplate { Name = "template" }, null!, unapplied, reason);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                recorder.Events(ParsePhase.AnalysisCandidate),
+                Is.EqualTo(new[] { $"EndUnapplyTemplate(template,{unapplied},{reason})" })
+            );
+            Assert.That(recorder.Events(ParsePhase.SynthesisConfirmation), Is.Empty);
+            Assert.That(recorder.Events(ParsePhase.FinalParse), Is.Empty);
+        });
+    }
+
     private static string[] Kinds(PhaseTraceRecorder recorder, ParsePhase phase) =>
         recorder
             .Events(phase)
