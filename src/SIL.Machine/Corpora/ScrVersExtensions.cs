@@ -77,10 +77,10 @@ namespace SIL.Machine.Corpora
             {
                 if (
                     !(
-                        thisVerse.ChangeVersificationWithSegments(otherVerse.Versification).Equals(otherVerse)
-                        && thisVerse.VerseNum == otherVerse.VerseNum
-                        && thisVerse.ChapterNum == otherVerse.ChapterNum
-                        && thisVerse.BookNum == otherVerse.BookNum
+                        thisVerse
+                            .ChangeVersificationWithSegments(ScrVers.Original)
+                            .Equals(otherVerse.ChangeVersificationWithSegments(ScrVers.Original))
+                        && thisVerse.BBBCCCVVVS == otherVerse.BBBCCCVVVS
                     )
                 )
                 {
