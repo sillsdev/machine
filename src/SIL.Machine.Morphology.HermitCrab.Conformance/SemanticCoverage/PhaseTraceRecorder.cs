@@ -80,8 +80,14 @@ public sealed class PhaseTraceRecorder : ITraceManager
     public void BeginUnapplyTemplate(AffixTemplate template, Word input) =>
         Record(ParsePhase.AnalysisCandidate, "BeginUnapplyTemplate", template?.Name);
 
-    public void EndUnapplyTemplate(AffixTemplate template, Word output, bool unapplied) =>
-        Record(ParsePhase.AnalysisCandidate, "EndUnapplyTemplate", template?.Name, unapplied.ToString());
+    public void EndUnapplyTemplate(AffixTemplate template, Word output, bool unapplied, FailureReason reason) =>
+        Record(
+            ParsePhase.AnalysisCandidate,
+            "EndUnapplyTemplate",
+            template?.Name,
+            unapplied.ToString(),
+            reason.ToString()
+        );
 
     public void MorphologicalRuleUnapplied(IMorphologicalRule rule, int subruleIndex, Word input, Word output) =>
         Record(ParsePhase.AnalysisCandidate, "MorphologicalRuleUnapplied", RuleName(rule), Index(subruleIndex));
