@@ -1,0 +1,26 @@
+directory,category,grammar_name,exercises
+edge-cases/bistratal-overlapping-segment-representation,edge-cases,BistratalOverlappingSegmentRepresentation,"CharacterDefinitionTable: more than one table, one per stratum"
+edge-cases/deep-optional-affix-nesting,edge-cases,PathologicalDeepOptionalAffixNesting,Affix template slots (obligatory/disjunctive/ordering)
+edge-cases/diacritic-segments,edge-cases,LatinDiacriticProbe,Affix template slots (obligatory/disjunctive/ordering);AffixProcessRule: prefix/suffix/circumfix/infix;Boundary markers (CharacterDefinitionTable);MorphologicalOutputAction: CopyFromInput/InsertSegments;NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
+edge-cases/disjunctive-recheck,edge-cases,DisjunctiveRecheckProbe,Disjunctive allomorphs / free-fluctuation
+edge-cases/free-fluctuating-allomorph-pair,edge-cases,FreeFluctuatingAllomorphPair,Disjunctive allomorphs / free-fluctuation
+edge-cases/loader-default-symbol,edge-cases,N2-DefaultSymbol,Boundary markers (CharacterDefinitionTable)
+edge-cases/loader-isactive,edge-cases,N1-IsActive,Boundary markers (CharacterDefinitionTable)
+edge-cases/loader-pattern-shapes,edge-cases,N3-PatternShapes,Boundary markers (CharacterDefinitionTable);CharacterDefinitionTable pattern shapes: optional group / Kleene star
+edge-cases/mpr-gated-exception,edge-cases,Ranavu,RewriteRule direction (Dir): left-to-right
+edge-cases/mpr-group-overwrite-without-realizational,edge-cases,MprGroupOverwriteWithoutRealizational,MPR features/groups
+edge-cases/process-morphology-in-place-mutation,edge-cases,ProcessMorphologyInPlaceMutation,MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
+edge-cases/right-to-left-anchor-environment,edge-cases,RightToLeftAnchorEnvironment,RewriteRule direction (Dir): right-to-left
+edge-cases/simultaneous-epenthesis-cascade,edge-cases,IterativeEpenthesisCascadeProbe,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+edge-cases/stem-name-restricted-root-allomorph,edge-cases,StemNameRestrictedRootAllomorph,Stem names
+edge-cases/strrep-identity,edge-cases,StrRepIdentityProbe,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
+edge-cases/subrule-morphosyntactic-gating,edge-cases,SubruleMorphosyntacticGating,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
+edge-cases/truncate-morphotactic,edge-cases,TruncateRulesProbe,AffixProcessRule: subtraction/truncation
+languages/fusional-realizational-morphology,languages,FusionalRealizationalMorphology,AffixProcessRule: prefix/suffix/circumfix/infix;CompoundingRule;CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features);MPR features/groups;MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext;RealizationalAffixProcessRule;Stem names
+languages/metathesis-phase-isolation,languages,MetathesisPhaseIsolation,AffixProcessRule: prefix/suffix/circumfix/infix;AffixProcessRule: reduplication (ReduplicationHint);AffixProcessRule: subtraction/truncation;Boundary markers (CharacterDefinitionTable);MetathesisRule;MorphologicalOutputAction: CopyFromInput/InsertSegments;RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+languages/polysynthetic-stratal-derivation-chain,languages,PolysyntheticStratalDerivationChain,AffixProcessRule: prefix/suffix/circumfix/infix;Boundary markers (CharacterDefinitionTable);CompoundingRule;Guesser/LexicalGuess;RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge);Stratum (Linear/Unordered rule order)
+languages/prefixal-discontinuous-slot-dependency,languages,PrefixalDiscontinuousSlotDependency,Affix template slots (obligatory/disjunctive/ordering)
+languages/suffixing-evidential-adjacency-chain,languages,SuffixingEvidentialAdjacencyChain,Affix template slots (obligatory/disjunctive/ordering);Disjunctive allomorphs / free-fluctuation;MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+languages/suffixing-extension-slot-ordering,languages,SuffixingExtensionSlotOrdering,Affix template slots (obligatory/disjunctive/ordering);AffixProcessRule: reduplication (ReduplicationHint);MPR features/groups;Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable);RealizationalAffixProcessRule;RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge);Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+languages/suffixing-vowel-harmony,languages,SuffixingVowelHarmony,Affix template slots (obligatory/disjunctive/ordering);AffixProcessRule: prefix/suffix/circumfix/infix;Alpha-variable phonological environments (VariableFeature/AlphaVariables);Boundary markers (CharacterDefinitionTable);NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision;RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge);RewriteRule Simultaneous
+languages/templatic-root-modification,languages,TemplaticRootModification,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule;MorphologicalOutputAction: CopyFromInput/InsertSegments;MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext;RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge);RewriteRule Simultaneous;Stem names

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>Mbalantic</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum
+        characterDefinitionTable="table1"
+        morphologicalRuleOrder="unordered"
+      >
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrPfxA" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>pfxA</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPfxA">
+                <MorphologicalInput><PhoneticSequence id="stemPfxA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>pa</PhoneticShape></InsertSegments><CopyFromInput index="stemPfxA" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PFXA</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrSfxA" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>sfxA</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSfxA">
+                <MorphologicalInput><PhoneticSequence id="stemSfxA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemSfxA" /><InsertSegments><PhoneticShape>sa</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SFXA</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrPfxB" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>pfxB</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPfxB">
+                <MorphologicalInput><PhoneticSequence id="stemPfxB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>ta</PhoneticShape></InsertSegments><CopyFromInput index="stemPfxB" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PFXB</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrSfxB" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>sfxB</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSfxB">
+                <MorphologicalInput><PhoneticSequence id="stemSfxB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemSfxB" /><InsertSegments><PhoneticShape>la</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SFXB</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posV">
+            <Name>templateA</Name>
+            <Slot optional="true" morphologicalRules="mrPfxA"><Name>prefixA</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrSfxA"><Name>suffixA</Name></Slot>
+          </AffixTemplate>
+          <AffixTemplate requiredPartsOfSpeech="posV">
+            <Name>templateB</Name>
+            <Slot optional="true" morphologicalRules="mrPfxB"><Name>prefixB</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrSfxB"><Name>suffixB</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eKolo" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aKolo"><PhoneticShape>kolo</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>KOLO</MorphemeId>
+            <Gloss>root.kolo</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eMbiliA" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aMbiliA"><PhoneticShape>mbili</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>MBILIA</MorphemeId>
+            <Gloss>arrive</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eMbiliB" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aMbiliB"><PhoneticShape>mbili</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>MBILIB</MorphemeId>
+            <Gloss>count</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

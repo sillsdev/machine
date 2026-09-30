@@ -37,3 +37,18 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 dotnet test --verbosity normal
+if [ $? -ne 0 ]; then
+  exit 1
+fi
+
+dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance -- \
+  --semantic-coverage --repository-root .
+if [ $? -ne 0 ]; then
+  exit 1
+fi
+dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance -- \
+  --fixtures conformance
+if [ $? -ne 0 ]; then
+  exit 1
+fi
+python conformance/parity-check.py

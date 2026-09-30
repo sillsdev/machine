@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Synthetic discontinuous-morph environment probe. The root environment is checked separately
+     on each contiguous root piece created by the two-infix morphological rule. -->
+<HermitCrabInput>
+  <Language>
+    <Name>DiscontinuousMorphEnvironment</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posGood"><Name>good</Name></PartOfSpeech>
+      <PartOfSpeech id="posBad"><Name>bad</Name></PartOfSpeech>
+      <PartOfSpeech id="posControl"><Name>control</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featId">
+        <Name>id</Name>
+        <Symbols>
+          <Symbol id="sZ">z</Symbol><Symbol id="sA">a</Symbol><Symbol id="sB">b</Symbol>
+          <Symbol id="sE">e</Symbol><Symbol id="sI">i</Symbol><Symbol id="sD">d</Symbol>
+          <Symbol id="sM">m</Symbol><Symbol id="sO">o</Symbol><Symbol id="sU">u</Symbol>
+          <Symbol id="sX">x</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cZ"><Representations><Representation>z</Representation></Representations><FeatureValue feature="featId" symbolValues="sZ" /></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations><FeatureValue feature="featId" symbolValues="sA" /></SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations><FeatureValue feature="featId" symbolValues="sB" /></SegmentDefinition>
+        <SegmentDefinition id="cE"><Representations><Representation>e</Representation></Representations><FeatureValue feature="featId" symbolValues="sE" /></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations><FeatureValue feature="featId" symbolValues="sI" /></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations><FeatureValue feature="featId" symbolValues="sD" /></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations><FeatureValue feature="featId" symbolValues="sM" /></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations><FeatureValue feature="featId" symbolValues="sO" /></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations><FeatureValue feature="featId" symbolValues="sU" /></SegmentDefinition>
+        <SegmentDefinition id="cX"><Representations><Representation>x</Representation></Representations><FeatureValue feature="featId" symbolValues="sX" /></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <SegmentNaturalClass id="ncU"><Name>U</Name><Segment segment="cU" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrSuffixGood mrSuffixBad mrGoodInfix mrBadInfix">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrSuffixGood" requiredPartsOfSpeech="posGood" outputPartOfSpeech="posGood">
+            <Name>uSuffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSuffix">
+                <MorphologicalInput><PhoneticSequence id="suffixStem"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="suffixStem" /><InsertSegments><PhoneticShape>u</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SUFG</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrSuffixBad" requiredPartsOfSpeech="posBad" outputPartOfSpeech="posBad">
+            <Name>uSuffixBad</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSuffixBad">
+                <MorphologicalInput><PhoneticSequence id="suffixBadStem"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="suffixBadStem" /><InsertSegments><PhoneticShape>u</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SUFB</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrGoodInfix" requiredPartsOfSpeech="posGood" outputPartOfSpeech="posGood">
+            <Name>goodInfix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subGoodInfix">
+                <MorphologicalInput>
+                  <PhoneticSequence id="goodFirst"><SimpleContext naturalClass="ncAny" /></PhoneticSequence>
+                  <PhoneticSequence id="goodMiddle"><SimpleContext naturalClass="ncAny" /></PhoneticSequence>
+                  <PhoneticSequence id="goodLast"><SimpleContext naturalClass="ncAny" /></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="goodFirst" /><InsertSegments><PhoneticShape>u</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="goodMiddle" /><InsertSegments><PhoneticShape>u</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="goodLast" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>GINF</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrBadInfix" requiredPartsOfSpeech="posBad" outputPartOfSpeech="posBad">
+            <Name>badInfix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subBadInfix">
+                <MorphologicalInput>
+                  <PhoneticSequence id="badFirst"><SimpleContext naturalClass="ncAny" /></PhoneticSequence>
+                  <PhoneticSequence id="badMiddle"><SimpleContext naturalClass="ncAny" /></PhoneticSequence>
+                  <PhoneticSequence id="badLast"><SimpleContext naturalClass="ncAny" /></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="badFirst" /><InsertSegments><PhoneticShape>u</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="badMiddle" /><InsertSegments><PhoneticShape>x</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="badLast" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>BINF</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eGood" partOfSpeech="posGood">
+            <Allomorphs><Allomorph id="aGood"><PhoneticShape>zab</PhoneticShape><RequiredEnvironments><Environment><RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncU" /></PhoneticSequence></PhoneticTemplate></RightEnvironment></Environment></RequiredEnvironments></Allomorph></Allomorphs>
+            <MorphemeId>GOOD</MorphemeId><Gloss>good-root</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eBadOne" partOfSpeech="posBad">
+            <Allomorphs><Allomorph id="aBadOne"><PhoneticShape>zeb</PhoneticShape><RequiredEnvironments><Environment><RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncU" /></PhoneticSequence></PhoneticTemplate></RightEnvironment></Environment></RequiredEnvironments></Allomorph></Allomorphs>
+            <MorphemeId>BADONE</MorphemeId><Gloss>bad-one</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eBadTwo" partOfSpeech="posBad">
+            <Allomorphs><Allomorph id="aBadTwo"><PhoneticShape>zid</PhoneticShape><RequiredEnvironments><Environment><RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncU" /></PhoneticSequence></PhoneticTemplate></RightEnvironment></Environment></RequiredEnvironments></Allomorph></Allomorphs>
+            <MorphemeId>BADTWO</MorphemeId><Gloss>bad-two</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eControl" partOfSpeech="posControl">
+            <Allomorphs><Allomorph id="aControl"><PhoneticShape>dom</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>CTRL</MorphemeId><Gloss>control</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

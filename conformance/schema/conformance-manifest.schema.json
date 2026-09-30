@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/sillsdev/machine/conformance/schema/conformance-manifest.schema.json",
+  "title": "hc-conformance-manifest/v1",
+  "description": "Provenance and integrity for the conformance fixtures. Not a copy of the ground truth: words.yaml is the canonical authored format and grammar.xml the authoritative grammar; this records paths, formats and hashes only. All paths are canonical repository-relative paths using '/', never relative to this manifest.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "formatVersion",
+    "wordsAuthoringFormatVersion",
+    "grammarFormatVersion",
+    "dtdPath",
+    "dtdSha256",
+    "sourceHash",
+    "fixtures"
+  ],
+  "properties": {
+    "formatVersion": { "const": "hc-conformance-manifest/v1" },
+    "wordsAuthoringFormatVersion": { "const": "hc-conformance-words/v1" },
+    "grammarFormatVersion": { "const": "sil-machine-hermit-crab-input-xml/v1" },
+    "dtdPath": { "$ref": "#/$defs/path" },
+    "dtdSha256": { "$ref": "#/$defs/sha256" },
+    "sourceHash": { "$ref": "#/$defs/sha256" },
+    "fixtures": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/fixture" } }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "path": { "type": "string", "pattern": "^[^\\\\]+$", "minLength": 1 },
+    "fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fixtureId",
+        "category",
+        "displayLanguage",
+        "grammarPath",
+        "grammarSha256",
+        "wordsPath",
+        "wordsSha256",
+        "caseCount",
+        "expectedCrash"
+      ],
+      "properties": {
+        "fixtureId": { "type": "string", "pattern": "^(languages|edge-cases)/[^/]+$" },
+        "category": { "enum": ["language", "edge-case"] },
+        "displayLanguage": { "type": "string", "minLength": 1 },
+        "grammarPath": { "$ref": "#/$defs/path" },
+        "grammarSha256": { "$ref": "#/$defs/sha256" },
+        "wordsPath": { "$ref": "#/$defs/path" },
+        "wordsSha256": { "$ref": "#/$defs/sha256" },
+        "caseCount": { "type": "integer", "minimum": 1 },
+        "expectedCrash": { "type": "boolean" }
+      },
+      "allOf": [
+        {
+          "description": "A crash fixture declares exactly one case.",
+          "if": { "properties": { "expectedCrash": { "const": true } }, "required": ["expectedCrash"] },
+          "then": { "properties": { "caseCount": { "const": 1 } } }
+        }
+      ]
+    }
+  }
+}
