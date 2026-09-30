@@ -112,9 +112,10 @@ namespace SIL.Machine.Morphology.HermitCrab
         public bool AlwaysEnforceFinalTemplates { get; set; }
 
         /// <summary>
-        /// When unapplying a rule that copies a part more than once (reduplication), skip matches whose
-        /// copies cannot unify segment by segment. Such a match can never survive synthesis, so this removes
-        /// only doomed analyses. On by default.
+        /// When unapplying an affix-process or compounding rule that copies a part more than once
+        /// (reduplication), skip matches whose copies cannot unify segment by segment. Such a match can never
+        /// survive synthesis, so this removes only doomed analyses. On by default; ignored while tracing, so
+        /// a trace still shows each such match failing in synthesis.
         /// </summary>
         public bool PruneDisagreeingCopies { get; set; }
 
