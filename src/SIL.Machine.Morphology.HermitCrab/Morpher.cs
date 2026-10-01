@@ -426,6 +426,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         internal IEnumerable<Word> LexicalLookup(Word input)
         {
+            int candidateCount = 0;
             if (_traceManager.IsTracing)
                 _traceManager.LexicalLookup(input.Stratum, input);
             foreach (
@@ -443,9 +444,12 @@ namespace SIL.Machine.Morphology.HermitCrab
                     if (_traceManager.IsTracing)
                         _traceManager.SynthesizeWord(_lang, newWord);
                     newWord.Freeze();
+                    candidateCount++;
                     yield return newWord;
                 }
             }
+            if (_traceManager.IsTracing)
+                _traceManager.LexicalLookupCompleted(input.Stratum, input, candidateCount, false);
         }
 
         /// <summary>
@@ -453,6 +457,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// </summary>
         private IEnumerable<Word> LexicalGuess(Word input)
         {
+            int candidateCount = 0;
             if (_traceManager.IsTracing)
                 _traceManager.LexicalLookup(input.Stratum, input);
             CharacterDefinitionTable table = input.Stratum.CharacterDefinitionTable;
@@ -517,10 +522,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                         if (_traceManager.IsTracing)
                             _traceManager.SynthesizeWord(_lang, newWord);
                         newWord.Freeze();
+                        candidateCount++;
                         yield return newWord;
                     }
                 }
             }
+            if (_traceManager.IsTracing)
+                _traceManager.LexicalLookupCompleted(input.Stratum, input, candidateCount, true);
         }
 
         /// <summary>
@@ -634,13 +642,31 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private bool IsWordValid(Word word)
         {
-            if (
-                !word.RealizationalFeatureStruct.IsUnifiable(word.SyntacticFeatureStruct)
-                || !word.IsAllMorphologicalRulesApplied
-            )
+            if (!word.RealizationalFeatureStruct.IsUnifiable(word.SyntacticFeatureStruct))
             {
                 if (_traceManager.IsTracing)
-                    _traceManager.Failed(_lang, word, FailureReason.PartialParse, null, null);
+                    _traceManager.Failed(
+                        _lang,
+                        word,
+                        FailureReason.PartialParse,
+                        null,
+                        new PartialParseFailure(PartialParseCause.RealizationalFeatureMismatch)
+                    );
+                return false;
+            }
+            if (!word.IsAllMorphologicalRulesApplied)
+            {
+                if (_traceManager.IsTracing)
+                    _traceManager.Failed(
+                        _lang,
+                        word,
+                        FailureReason.PartialParse,
+                        null,
+                        new PartialParseFailure(
+                            PartialParseCause.UnappliedMorphologicalRules,
+                            word.NextMorphologicalRule
+                        )
+                    );
                 return false;
             }
 
