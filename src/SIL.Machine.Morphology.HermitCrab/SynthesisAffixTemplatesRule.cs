@@ -64,7 +64,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 else
                 {
                     Word word = input;
-                    if (!word.IsLastAppliedRuleFinal.HasValue || !word.IsLastAppliedRuleFinal.Value)
+                    if (applicableTemplate && (!word.IsLastAppliedRuleFinal.HasValue || !word.IsLastAppliedRuleFinal.Value))
                     {
                         word = input.Clone();
                         word.IsLastAppliedRuleFinal = true;
