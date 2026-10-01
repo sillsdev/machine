@@ -77,8 +77,18 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             for (int i = index; i >= 0; i--)
             {
+                bool producedOutput = false;
                 foreach (Word outWord in _rules[i].Apply(inWord))
+                {
+                    producedOutput = true;
+                    TraceSlot(inWord, outWord, i, TemplateSlotOutcome.RuleApplied);
                     ApplySlots(outWord, i - 1, output);
+                }
+
+                if (_template.Slots[i].Optional)
+                    TraceSlot(inWord, null, i, TemplateSlotOutcome.OptionalSkipped);
+                else if (!producedOutput)
+                    TraceSlot(inWord, null, i, TemplateSlotOutcome.RequiredUnfilled);
 
                 if (!_template.Slots[i].Optional)
                 {
@@ -116,7 +126,16 @@ namespace SIL.Machine.Morphology.HermitCrab
                                 .Select(res => Tuple.Create(res, i - 1))
                                 .ToArray();
                             if (workItems.Length > 0)
+                            {
+                                foreach (Tuple<Word, int> item in workItems)
+                                    TraceSlot(work.Item1, item.Item1, i, TemplateSlotOutcome.RuleApplied);
                                 to.PushRange(workItems);
+                            }
+
+                            if (_template.Slots[i].Optional)
+                                TraceSlot(work.Item1, null, i, TemplateSlotOutcome.OptionalSkipped);
+                            else if (workItems.Length == 0)
+                                TraceSlot(work.Item1, null, i, TemplateSlotOutcome.RequiredUnfilled);
 
                             if (!_template.Slots[i].Optional)
                             {
@@ -151,6 +170,12 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
 
             output.UnionWith(outStack);
+        }
+
+        private void TraceSlot(Word input, Word output, int index, TemplateSlotOutcome outcome)
+        {
+            if (_morpher.TraceManager.IsTracing)
+                _morpher.TraceManager.TemplateSlotProcessed(_template, index, input, output, true, outcome);
         }
     }
 }

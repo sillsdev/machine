@@ -44,7 +44,17 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
             FeatureStruct realFS;
             if (!_rule.RealizationalFeatureStruct.Unify(input.RealizationalFeatureStruct, out realFS))
+            {
+                if (_morpher.TraceManager.IsTracing)
+                    _morpher.TraceManager.MorphologicalRuleNotUnapplied(
+                        _rule,
+                        -1,
+                        input,
+                        FailureReason.RealizationalFeatureStruct,
+                        _rule.RealizationalFeatureStruct
+                    );
                 return Enumerable.Empty<Word>();
+            }
 
             var output = new List<Word>();
             for (int i = 0; i < _rules.Count; i++)
@@ -64,7 +74,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 }
 
                 if (_morpher.TraceManager.IsTracing && !unapplied)
-                    _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
+                    _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input, FailureReason.Pattern, null);
             }
             return output;
         }

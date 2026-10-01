@@ -81,7 +81,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                             mruleOutWord,
                             FailureReason.PartialParse,
                             null,
-                            null
+                            new PartialParseFailure(
+                                PartialParseCause.UnappliedMorphologicalRules,
+                                mruleOutWord.NextMorphologicalRule
+                            )
                         );
                     }
                 }
