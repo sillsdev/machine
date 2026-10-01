@@ -59,7 +59,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 if (_stratum.PhonologicalRules.Count == 0 && _stratum != _morpher.Language.Strata.Last())
                 {
-                    // Don't close off the rules yet.
+                    // Don't close off the words until the last stratum unless there are phonological rules.
                     Word newWord = mruleOutWord.Clone();
                     newWord.Freeze();
                     if (_morpher.TraceManager.IsTracing)
