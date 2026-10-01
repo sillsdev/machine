@@ -483,6 +483,7 @@ namespace SIL.Machine.FiniteState
             public TInst Instance { get; set; }
             public Arc<TData, TOffset> Arc { get; set; }
             public IList<TInst> Instances { get; set; }
+            public bool Visited { get; set; }
         }
 
         private readonly LatticeNode _finalState = new LatticeNode();
@@ -576,9 +577,19 @@ namespace SIL.Machine.FiniteState
             bool allMatches
         )
         {
+            if (latticeArc.Visited)
+                return new List<TInst>();
             if (latticeArc.Instances == null)
             {
-                latticeArc.Instances = ExpandInstances(latticeArc.Instance, lattice, allMatches);
+                try
+                {
+                    latticeArc.Visited = true;
+                    latticeArc.Instances = ExpandInstances(latticeArc.Instance, lattice, allMatches);
+                }
+                finally
+                {
+                    latticeArc.Visited = false;
+                }
             }
             IList<TInst> instances = new List<TInst>();
             foreach (TInst instance in latticeArc.Instances)
