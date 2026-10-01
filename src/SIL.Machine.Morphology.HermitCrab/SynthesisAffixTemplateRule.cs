@@ -38,8 +38,18 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             for (int i = index; i < _rules.Count; i++)
             {
+                bool producedOutput = false;
                 foreach (Word outWord in _rules[i].Apply(input))
+                {
+                    producedOutput = true;
+                    TraceSlot(input, outWord, i, TemplateSlotOutcome.RuleApplied);
                     ApplySlots(outWord, i + 1, output);
+                }
+
+                if (_template.Slots[i].Optional)
+                    TraceSlot(input, null, i, TemplateSlotOutcome.OptionalSkipped);
+                else if (!producedOutput)
+                    TraceSlot(input, null, i, TemplateSlotOutcome.RequiredUnfilled);
 
                 if (!_template.Slots[i].Optional)
                 {
@@ -52,6 +62,12 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.EndApplyTemplate(_template, input, true);
             output.Add(input);
+        }
+
+        private void TraceSlot(Word input, Word output, int index, TemplateSlotOutcome outcome)
+        {
+            if (_morpher.TraceManager.IsTracing)
+                _morpher.TraceManager.TemplateSlotProcessed(_template, index, input, output, false, outcome);
         }
     }
 }
