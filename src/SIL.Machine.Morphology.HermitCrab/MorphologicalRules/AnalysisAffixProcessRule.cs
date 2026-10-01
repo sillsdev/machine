@@ -49,20 +49,38 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             if (!_morpher.RuleSelector(_rule))
                 return Enumerable.Empty<Word>();
 
-            if (
-                input.GetUnapplicationCount(_rule) >= _rule.MaxApplicationCount
-                || !_outputFS.IsUnifiable(input.SyntacticFeatureStruct)
-            )
+            if (input.GetUnapplicationCount(_rule) >= _rule.MaxApplicationCount)
             {
+                if (_morpher.TraceManager.IsTracing)
+                    _morpher.TraceManager.MorphologicalRuleNotUnapplied(
+                        _rule,
+                        -1,
+                        input,
+                        FailureReason.MaxApplicationCount,
+                        _rule.MaxApplicationCount
+                    );
+                return Enumerable.Empty<Word>();
+            }
+            if (!_outputFS.IsUnifiable(input.SyntacticFeatureStruct))
+            {
+                if (_morpher.TraceManager.IsTracing)
+                    _morpher.TraceManager.MorphologicalRuleNotUnapplied(
+                        _rule,
+                        -1,
+                        input,
+                        FailureReason.OutputSyntacticFeatureStruct,
+                        _outputFS
+                    );
                 return Enumerable.Empty<Word>();
             }
 
             var output = new List<Word>();
             for (int i = 0; i < _rules.Count; i++)
             {
-                bool unapplied = false;
+                bool matched = false;
                 foreach (Word outWord in _rules[i].Apply(input).RemoveDuplicates())
                 {
+                    matched = true;
                     // the paths Out writes describe this rule's output, not the stem it applied to, so they are
                     // stripped rather than carried backwards; what is left must unify with Required
                     outWord.SyntacticFeatureStruct.Restrict(_rule.OutSyntacticFeatureStruct);
@@ -75,6 +93,14 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                             )
                         )
                         {
+                            if (_morpher.TraceManager.IsTracing)
+                                _morpher.TraceManager.MorphologicalRuleNotUnapplied(
+                                    _rule,
+                                    i,
+                                    outWord,
+                                    FailureReason.RequiredSyntacticFeatureStruct,
+                                    _rule.RequiredSyntacticFeatureStruct
+                                );
                             continue;
                         }
 
@@ -91,11 +117,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     if (_morpher.TraceManager.IsTracing)
                         _morpher.TraceManager.MorphologicalRuleUnapplied(_rule, i, input, outWord);
                     output.Add(outWord);
-                    unapplied = true;
                 }
 
-                if (_morpher.TraceManager.IsTracing && !unapplied)
-                    _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
+                if (_morpher.TraceManager.IsTracing && !matched)
+                    _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input, FailureReason.Pattern, null);
             }
             return output;
         }
