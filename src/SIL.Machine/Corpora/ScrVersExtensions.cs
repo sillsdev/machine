@@ -71,7 +71,8 @@ namespace SIL.Machine.Corpora
             foreach (
                 (VerseRef thisVerse, VerseRef otherVerse) in scrVers
                     .AllIncludedVerses()
-                    .Zip(other.AllIncludedVerses())
+                    .Concat(new VerseRef())
+                    .Zip(other.AllIncludedVerses().Concat(new VerseRef()))
                     .Select(tup => (tup.Item1, tup.Item2))
             )
             {
