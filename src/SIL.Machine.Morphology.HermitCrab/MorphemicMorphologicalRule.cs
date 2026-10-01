@@ -16,10 +16,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     _isCliticRule = Stratum != null && Stratum.Name == "Clitics";
                 return (bool)_isCliticRule;
             }
-            set
-            {
-                _isCliticRule = value;
-            }
+            set { _isCliticRule = value; }
         }
 
         public override MorphemeType MorphemeType
