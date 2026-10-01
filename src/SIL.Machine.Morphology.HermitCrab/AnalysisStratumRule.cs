@@ -161,14 +161,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                     }
                 }
                 Word newMruleOutWord = mruleOutWord;
-                if (mruleOutWord.FinalTemplateState != FinalTemplateState.None)
-                {
-                    // Clear FinalTemplateState to allow clitics.
-                    newMruleOutWord = mruleOutWord.Clone();
-                    newMruleOutWord.Source = origInput;
-                    newMruleOutWord.FinalTemplateState = FinalTemplateState.None;
-                    newMruleOutWord.Freeze();
-                }
                 // Only cache a canonical that made it into the output. Two words can have different keys yet
                 // be Word.ValueEquals (UnappliedRuleCounts also counts realizational rules, which never enter
                 // _mruleApps), and a rejected canonical would swallow every later word with its key.
