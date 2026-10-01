@@ -1,7 +1,9 @@
 ﻿namespace SIL.Machine.Morphology.HermitCrab
 {
-    public class TraceManager : ITraceManager
+    public class TraceManager : IDetailedTraceManager
     {
+        private readonly System.Runtime.CompilerServices.ConditionalWeakTable<Word, Trace> _lexicalLookups =
+            new System.Runtime.CompilerServices.ConditionalWeakTable<Word, Trace>();
         public bool IsTracing { get; set; }
 
         public object GenerateWords(Language lang)
@@ -83,8 +85,25 @@
 
         public void MorphologicalRuleNotUnapplied(IMorphologicalRule rule, int subruleIndex, Word input)
         {
+            MorphologicalRuleNotUnapplied(rule, subruleIndex, input, FailureReason.None, null);
+        }
+
+        public void MorphologicalRuleNotUnapplied(
+            IMorphologicalRule rule,
+            int subruleIndex,
+            Word input,
+            FailureReason reason,
+            object failureObj
+        )
+        {
             ((Trace)input.CurrentTrace).Children.Add(
-                new Trace(TraceType.MorphologicalRuleAnalysis, rule) { SubruleIndex = subruleIndex, Input = input }
+                new Trace(TraceType.MorphologicalRuleAnalysis, rule)
+                {
+                    SubruleIndex = subruleIndex,
+                    Input = input,
+                    FailureReason = reason,
+                    FailureObject = failureObj,
+                }
             );
         }
 
@@ -102,6 +121,7 @@
                     SubruleIndex = subruleIndex,
                     Input = input,
                     FailureReason = reason,
+                    FailureObject = failureObj,
                 }
             );
         }
@@ -120,22 +140,37 @@
                     SubruleIndex = subruleIndex,
                     Input = input,
                     FailureReason = reason,
+                    FailureObject = failureObj,
                 }
             );
         }
 
         public void LexicalLookup(Stratum stratum, Word input)
         {
-            ((Trace)input.CurrentTrace).Children.Add(
-                new Trace(TraceType.LexicalLookup, stratum) { Input = input.Clone() }
-            );
+            var trace = new Trace(TraceType.LexicalLookup, stratum) { Input = input.Clone() };
+            ((Trace)input.CurrentTrace).Children.Add(trace);
+            _lexicalLookups.Remove(input);
+            _lexicalLookups.Add(input, trace);
+        }
+
+        public void LexicalLookupCompleted(Stratum stratum, Word input, int candidateCount, bool guessed)
+        {
+            if (_lexicalLookups.TryGetValue(input, out Trace trace))
+            {
+                trace.LexicalCandidateCount = candidateCount;
+                trace.IsLexicalGuess = guessed;
+                _lexicalLookups.Remove(input);
+            }
         }
 
         public void SynthesizeWord(Language lang, Word input)
         {
             var trace = new Trace(TraceType.WordSynthesis, lang) { Input = input.Clone() };
             var curTrace = (Trace)input.CurrentTrace;
-            curTrace.Children.Last.Children.Add(trace);
+            if (input.Source != null && _lexicalLookups.TryGetValue(input.Source, out Trace lookup))
+                lookup.Children.Add(trace);
+            else
+                curTrace.Children.Last.Children.Add(trace);
             input.CurrentTrace = trace;
         }
 
@@ -153,6 +188,7 @@
                 {
                     Output = word,
                     FailureReason = FailureReason.PartialParse,
+                    PartialParseCause = PartialParseCause.NonFinalTemplateAppliedLast,
                 }
             );
         }
@@ -164,6 +200,7 @@
                 {
                     Output = word,
                     FailureReason = FailureReason.PartialParse,
+                    PartialParseCause = PartialParseCause.ApplicableTemplatesNotApplied,
                 }
             );
         }
@@ -201,6 +238,7 @@
                     SubruleIndex = subruleIndex,
                     Input = input.Clone(),
                     FailureReason = reason,
+                    FailureObject = failureObj,
                 }
             );
         }
@@ -245,13 +283,20 @@
                     SubruleIndex = subruleIndex,
                     Input = input,
                     FailureReason = reason,
+                    FailureObject = failureObj,
                 }
             );
         }
 
         public void Blocked(IHCRule rule, Word output)
         {
-            ((Trace)output.CurrentTrace).Children.Add(new Trace(TraceType.Blocked, rule) { Output = output });
+            ((Trace)output.CurrentTrace).Children.Add(
+                new Trace(TraceType.Blocked, rule)
+                {
+                    Output = output,
+                    BlockingEntry = output.RootAllomorph?.Morpheme as LexEntry,
+                }
+            );
         }
 
         public void Successful(Language lang, Word word)
@@ -262,7 +307,35 @@
         public void Failed(Language lang, Word word, FailureReason reason, Allomorph allomorph, object failureObj)
         {
             ((Trace)word.CurrentTrace).Children.Add(
-                new Trace(TraceType.Failed, lang) { Output = word, FailureReason = reason }
+                new Trace(TraceType.Failed, lang)
+                {
+                    Output = word,
+                    FailureReason = reason,
+                    FailureObject = failureObj,
+                    Allomorph = allomorph,
+                    PartialParseCause = (failureObj as PartialParseFailure)?.Cause,
+                }
+            );
+        }
+
+        public void TemplateSlotProcessed(
+            AffixTemplate template,
+            int slotIndex,
+            Word input,
+            Word output,
+            bool analysis,
+            TemplateSlotOutcome outcome
+        )
+        {
+            ((Trace)input.CurrentTrace).Children.Add(
+                new Trace(analysis ? TraceType.TemplateSlotAnalysis : TraceType.TemplateSlotSynthesis, template)
+                {
+                    Input = input,
+                    Output = output,
+                    SlotIndex = slotIndex,
+                    SlotOutcome = outcome,
+                    SlotRule = output == null ? null : ((Trace)output.CurrentTrace).Source as IMorphologicalRule,
+                }
             );
         }
     }

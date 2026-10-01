@@ -249,6 +249,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         internal int MorphologicalRuleApplicationCount => _mruleAppCount;
 
+        internal IMorphologicalRule NextMorphologicalRule => _mruleAppIndex < 0 ? null : _mruleApps[_mruleAppIndex];
+
         internal bool IsAllMorphologicalRulesApplied
         {
             get { return _mruleAppIndex == -1; }
