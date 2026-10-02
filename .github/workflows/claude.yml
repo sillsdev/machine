@@ -1,0 +1,96 @@
+name: Claude Code
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned, labeled]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  claude:
+    # The issue or PR body reaches the prompt, so its author must be a member too. Claude's
+    # own PRs pass: the bot's association is NONE, but it wrote the body and pushed the branch.
+    if: |
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
+        github.event.comment.author_association || github.event.review.author_association ||
+        github.event.issue.author_association) &&
+      (contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
+        github.event.issue.author_association || github.event.pull_request.author_association) ||
+        (github.event.issue.user.login || github.event.pull_request.user.login) == 'claude[bot]') &&
+      ((github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+      (github.event_name == 'issues' && github.event.action != 'labeled' &&
+        !contains(github.event.issue.labels.*.name, 'porting') && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude'))) ||
+      (github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == 'porting'))
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+      actions: read # Required for Claude to read CI results on PRs
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          # Full history so git log and blame can find the commits AGENTS.md cites.
+          fetch-depth: 0
+          # A persisted GITHUB_TOKEN header overrides the action's app token, so pushes would go
+          # out as github-actions[bot] and be denied.
+          persist-credentials: false
+
+      - uses: lukka/get-cmake@v4.2.3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            10.0.x
+
+      - name: Install libgoogle-perftools-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libunwind-dev
+          sudo apt-get install -y libgoogle-perftools-dev
+
+      # A change made from an issue is validated with ./local_check.sh before its PR is opened.
+      - name: sentencepiece4c build
+        run: |
+          cmake -S ${{ github.workspace }}/src/sentencepiece4c -B ${{ github.workspace }}/src/sentencepiece4c/build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build ${{ github.workspace }}/src/sentencepiece4c/build --config Release --target sentencepiece4c
+
+      - name: Restore dependencies
+        run: |
+          dotnet tool restore
+          dotnet restore
+
+      # port-pr reads the Python source as of each source PR's merge commit, so it needs full
+      # history. Outside the workspace, CSharpier and the solution never see it.
+      - name: Clone sillsdev/machine.py
+        run: git clone https://github.com/sillsdev/machine.py.git ../machine.py
+
+      - name: Run Claude Code
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Porting issues are created with this label, so each one starts a port.
+          label_trigger: porting
+
+          # This is an optional setting that allows Claude to read CI results on PRs
+          additional_permissions: |
+            actions: read
+
+          # The action's own prompt ends an issue run with a "Create a PR" link; the
+          # appended prompt has Claude open the pull request itself.
+          claude_args: >-
+            --add-dir ../machine.py
+            --allowedTools "Bash(gh pr create:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh issue view:*),Bash(git log:*),Bash(git blame:*),Bash(git show:*),Bash(git diff:*),Bash(git status:*),Bash(git -C ../machine.py show:*),Bash(git -C ../machine.py cat-file:*),Bash(git -C ../machine.py log:*),Bash(git -C ../machine.py blame:*),Bash(dotnet build:*),Bash(dotnet test:*),Bash(dotnet csharpier:*),Bash(./local_check.sh:*)"
+            --append-system-prompt "When invoked on an issue and you change code, open the pull request yourself once your commits are pushed: gh pr create --base master --head <your branch>. Post its link in your comment in place of a Create a PR link. Write the title and body with the pr-authoring skill, and put Closes #<issue number> in the body. Before opening it, run ./local_check.sh --agent-strict and report its result in the body. Dependencies are already restored, and you work on the branch this action created: where a skill such as port-pr says to restore, create or switch branches, or push, commit on the current branch and push it the way these instructions say. When the issue is labeled porting, port it with the port-pr skill."
+          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
+          # or https://code.claude.com/docs/en/cli-reference for available options
