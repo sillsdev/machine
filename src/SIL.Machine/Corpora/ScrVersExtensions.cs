@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Extensions;
@@ -73,7 +74,6 @@ namespace SIL.Machine.Corpora
                     .AllIncludedVerses()
                     .Concat(new VerseRef())
                     .Zip(other.AllIncludedVerses().Concat(new VerseRef()))
-                    .Select(tup => (tup.Item1, tup.Item2))
             )
             {
                 if (
