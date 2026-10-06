@@ -57,7 +57,17 @@ namespace SIL.Machine.Morphology.HermitCrab
             var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
             foreach (Word mruleOutWord in ApplyMorphologicalRules(input).Concat(ApplyTemplates(input)))
             {
-                if (!(mruleOutWord.IsLastAppliedRuleFinal ?? false))
+                if (_stratum.PhonologicalRules.Count == 0 && _stratum != _morpher.Language.Strata.Last())
+                {
+                    // Don't close off the words until the last stratum unless there are phonological rules.
+                    Word newWord = mruleOutWord.Clone();
+                    newWord.Freeze();
+                    if (_morpher.TraceManager.IsTracing)
+                        _morpher.TraceManager.EndApplyStratum(_stratum, newWord);
+                    output.Add(newWord);
+                    continue;
+                }
+                if (!(mruleOutWord.IsLastAppliedRuleFinal ?? true))
                 {
                     if (_morpher.TraceManager.IsTracing)
                         _morpher.TraceManager.NonFinalTemplateAppliedLast(_stratum, mruleOutWord);

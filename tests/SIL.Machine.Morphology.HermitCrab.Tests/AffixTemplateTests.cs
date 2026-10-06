@@ -346,6 +346,16 @@ public class AffixTemplateTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("sagdvs"), "32 PAST NOM PL");
         AssertMorphsEqual(morpher.ParseWord("sagdmi"), "32 PAST 53");
         AssertMorphsEqual(morpher.ParseWord("sagdmis"), "32 PAST 53 PL");
+
+        // Test rules split between two strata.
+        Allophonic.MorphologicalRules.Add(crule);
+        verbTemplate.IsFinal = true;
+        morpher = new Morpher(TraceManager, Language, 1);
+        AssertMorphsEqual(morpher.ParseWord("sagdbupu"));
+
+        verbTemplate.IsFinal = false;
+        morpher = new Morpher(TraceManager, Language, 1);
+        AssertMorphsEqual(morpher.ParseWord("sagdbupu"), "32 PAST 46");
     }
 
     [Test]
