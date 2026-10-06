@@ -90,7 +90,21 @@ jobs:
           # appended prompt has Claude open the pull request itself.
           claude_args: >-
             --add-dir ../machine.py
-            --allowedTools "Bash(gh pr create:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh issue view:*),Bash(git log:*),Bash(git blame:*),Bash(git show:*),Bash(git diff:*),Bash(git status:*),Bash(git -C ../machine.py show:*),Bash(git -C ../machine.py cat-file:*),Bash(git -C ../machine.py log:*),Bash(git -C ../machine.py blame:*),Bash(dotnet build:*),Bash(dotnet test:*),Bash(dotnet csharpier:*),Bash(./local_check.sh:*)"
-            --append-system-prompt "When invoked on an issue and you change code, open the pull request yourself once your commits are pushed: gh pr create --base master --head <your branch>. Post its link in your comment in place of a Create a PR link. Write the title and body with the pr-authoring skill, and put Closes #<issue number> in the body. Before opening it, run ./local_check.sh --agent-strict and report its result in the body. Dependencies are already restored, and you work on the branch this action created: where a skill such as port-pr says to restore, create or switch branches, or push, commit on the current branch and push it the way these instructions say. When the issue is labeled porting, port it with the port-pr skill."
+            --allowedTools "Bash(gh pr create:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh issue view:*),Bash(git log:*),Bash(git blame:*),Bash(git show:*),Bash(git diff:*),Bash(git status:*),Bash(git -C ../machine.py show:*),Bash(git -C ../machine.py cat-file:*),Bash(git -C ../machine.py log:*),Bash(git -C ../machine.py blame:*),Bash(dotnet build:*),Bash(dotnet test:*),Bash(dotnet csharpier:*),Bash(./local_check.sh:*),Bash(tail:*),Bash(head:*)"
+            --append-system-prompt "When invoked on an issue and you change code, open the pull request yourself once your commits are pushed: gh pr create --base master --head <your branch>. Post its link in your comment in place of a Create a PR link. Write the title and body with the pr-authoring skill, and put Closes #<issue number> in the body. Before opening it, run ./local_check.sh --agent-strict and report its result in the body. Dependencies are already restored, and you work on the branch this action created: where a skill such as port-pr says to restore, create or switch branches, or push, commit on the current branch and push it the way these instructions say. Allowed commands match by prefix, so run dotnet and ./local_check.sh from the repository root as they are, not after cd or inside a wrapper such as timeout. When the issue is labeled porting, port it with the port-pr skill."
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
+
+      # The action hides Claude's output, so the log does not say which calls were denied.
+      # Only the command or target is printed, never file content, and @json keeps it on one
+      # line so a denied command cannot issue a "::" workflow command.
+      - name: Show denied tool calls
+        if: always() && steps.claude.outputs.execution_file != ''
+        continue-on-error: true
+        env:
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+        run: >-
+          jq -r '.[] | select(.type == "result") | .permission_denials[]?
+          | "\(.tool_name): \((.tool_input.command? // .tool_input.file_path? // .tool_input.url?
+          // .tool_input.pattern? // "") | @json | .[:300])"'
+          "$EXECUTION_FILE"
