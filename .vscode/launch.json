@@ -2,36 +2,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Engine Docker",
+            "name": "ServalApi Docker",
             "type": "docker",
-            "containerName": "machine-engine-cntr",
+            "containerName": "serval_cntr",
             "request": "attach",
             "platform": "netCore",
-            "processName": "SIL.Machine.Serval.EngineServer",
+            "processName": "Serval.ApiServer",
             "sourceFileMap": {
                 "/app": "${workspaceFolder}"
-            },
+            }
         },
-        {
-            "name": "Job Docker",
-            "type": "docker",
-            "containerName": "machine-job-cntr",
-            "request": "attach",
-            "platform": "netCore",
-            "processName": "SIL.Machine.Serval.JobServer",
-            "sourceFileMap": {
-                "/app": "${workspaceFolder}"
-            },
-        },
-    ],
-    "compounds": [
-        {
-            "name": "DockerComb",
-            "justMyCode": false,
-            "configurations": [
-                "Engine Docker",
-                "Job Docker"
-            ]
-        }
     ]
 }

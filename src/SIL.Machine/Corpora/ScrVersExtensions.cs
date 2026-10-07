@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using SIL.Extensions;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
@@ -57,6 +60,35 @@ namespace SIL.Machine.Corpora
                     return true;
             }
             return false;
+        }
+
+        public static bool IsEquivalentTo(this ScrVers scrVers, ScrVers other)
+        {
+            if (scrVers.Equals(other))
+                return true;
+
+            // If all verses in the versifications are 1) equal (accounts for mapping)
+            // and 2) graphically identical in regard to book, chapter, and verse, then the versifications are equivalent
+            foreach (
+                (VerseRef thisVerse, VerseRef otherVerse) in scrVers
+                    .AllIncludedVerses()
+                    .Concat(new VerseRef())
+                    .Zip(other.AllIncludedVerses().Concat(new VerseRef()))
+            )
+            {
+                if (
+                    !(
+                        thisVerse
+                            .ChangeVersificationWithSegments(ScrVers.Original)
+                            .Equals(otherVerse.ChangeVersificationWithSegments(ScrVers.Original))
+                        && thisVerse.BBBCCCVVVS == otherVerse.BBBCCCVVVS
+                    )
+                )
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }
