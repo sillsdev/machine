@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>GeminateUnderMerge</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN">
+        <Name>N</Name>
+      </PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons">
+        <Name>consonantal</Name>
+        <Symbols>
+          <Symbol id="consPlus">+</Symbol>
+          <Symbol id="consMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featSyl">
+        <Name>syllabic</Name>
+        <Symbols>
+          <Symbol id="sylPlus">+</Symbol>
+          <Symbol id="sylMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featLong">
+        <Name>long</Name>
+        <Symbols>
+          <Symbol id="longPlus">+</Symbol>
+          <Symbol id="longMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cLong">
+          <Representations>
+            <Representation>c</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="consPlus" />
+          <FeatureValue feature="featSyl" symbolValues="sylMinus" />
+          <FeatureValue feature="featLong" symbolValues="longPlus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cShort">
+          <Representations>
+            <Representation>s</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="consPlus" />
+          <FeatureValue feature="featSyl" symbolValues="sylMinus" />
+          <FeatureValue feature="featLong" symbolValues="longMinus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cVowel">
+          <Representations>
+            <Representation>a</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="consMinus" />
+          <FeatureValue feature="featSyl" symbolValues="sylPlus" />
+          <FeatureValue feature="featLong" symbolValues="longMinus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cFidel">
+          <Representations>
+            <Representation>f</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="consPlus" />
+          <FeatureValue feature="featSyl" symbolValues="sylPlus" />
+          <FeatureValue feature="featLong" symbolValues="longMinus" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncLongC">
+        <Name>Long consonant</Name>
+        <FeatureValue feature="featCons" symbolValues="consPlus" />
+        <FeatureValue feature="featSyl" symbolValues="sylMinus" />
+        <FeatureValue feature="featLong" symbolValues="longPlus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncShortC">
+        <Name>Short consonant</Name>
+        <FeatureValue feature="featCons" symbolValues="consPlus" />
+        <FeatureValue feature="featSyl" symbolValues="sylMinus" />
+        <FeatureValue feature="featLong" symbolValues="longMinus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncVowel">
+        <Name>Vowel</Name>
+        <FeatureValue feature="featCons" symbolValues="consMinus" />
+        <FeatureValue feature="featSyl" symbolValues="sylPlus" />
+        <FeatureValue feature="featLong" symbolValues="longMinus" />
+      </FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prShorten">
+        <Name>shortenLongC</Name>
+        <PhoneticInput>
+          <PhoneticSequence>
+            <SimpleContext naturalClass="ncLongC" />
+          </PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <SimpleContext naturalClass="ncShortC" />
+              </PhoneticSequence>
+            </PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <PhonologicalRule id="prMerge">
+        <Name>mergeShortCAndVowel</Name>
+        <PhoneticInput>
+          <PhoneticSequence>
+            <SimpleContext naturalClass="ncShortC" />
+            <SimpleContext naturalClass="ncVowel" />
+          </PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <Segment segment="cFidel" />
+              </PhoneticSequence>
+            </PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" phonologicalRules="prShorten prMerge">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot">
+            <Allomorphs>
+              <Allomorph id="aRoot">
+                <PhoneticShape>ca</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <MorphemeId>ROOT</MorphemeId>
+            <Gloss>root</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

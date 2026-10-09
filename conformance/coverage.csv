@@ -6,6 +6,14 @@ BistratalOverlappingSegmentRepresentation,sed,ROOT4|sed,"CharacterDefinitionTabl
 BistratalOverlappingSegmentRepresentation,basi,,"CharacterDefinitionTable: more than one table, one per stratum"
 BistratalOverlappingSegmentRepresentation,abis,,"CharacterDefinitionTable: more than one table, one per stratum"
 BistratalOverlappingSegmentRepresentation,eds,,"CharacterDefinitionTable: more than one table, one per stratum"
+BoundaryFirstInNarrowingLhs,kanmo,KAN+BO|kanmo,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+BoundaryFirstInNarrowingLhs,kanmo,KAN+BO|kanmo,Boundary markers (CharacterDefinitionTable)
+BoundaryFirstInNarrowingLhsStrrep,kanmo,KAN+BO|kanmo,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+BoundaryFirstInNarrowingLhsStrrep,kanmo,KAN+BO|kanmo,Boundary markers (CharacterDefinitionTable)
+BoundaryLeftoverInNarrowingLhsStrrep,kamo,KAN+BO|kamo,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+BoundaryLeftoverInNarrowingLhsStrrep,kamo,KAN+BO|kamo,Boundary markers (CharacterDefinitionTable)
+BoundaryMidInNarrowingLhsStrrep,kanmo,KAN+BO|kanmo,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+BoundaryMidInNarrowingLhsStrrep,kanmo,KAN+BO|kanmo,Boundary markers (CharacterDefinitionTable)
 ChainedOutputFeatureOverrideLoss,zud,ZUD|zud,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 ChainedOutputFeatureOverrideLoss,zudi,ZUD+INNER|zudi,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 ChainedOutputFeatureOverrideLoss,zudu,ZUD+OUTER|zudu,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
@@ -33,6 +41,8 @@ CrossTableRootRespelling,m,,"CharacterDefinitionTable: more than one table, one 
 CrossTableRootRespelling,s,,"CharacterDefinitionTable: more than one table, one per stratum"
 PathologicalDeepOptionalAffixNesting,k,K|k,Affix template slots (obligatory/disjunctive/ordering)
 PathologicalDeepOptionalAffixNesting,xxxxxxxxxxxxk,P12+P11+P10+P9+P8+P7+P6+P5+P4+P3+P2+P1+K|xxxxxxxxxxxxk,Affix template slots (obligatory/disjunctive/ordering)
+DefaultSymbolAfterMerge,f,ROOT|f,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+DeletionReinsertedFeatureUnapply,bag,BAGD|bag,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 LatinDiacriticProbe,años,YEAR+PL|años,AffixProcessRule: prefix/suffix/circumfix/infix
 LatinDiacriticProbe,años,YEAR+PL|años,MorphologicalOutputAction: CopyFromInput/InsertSegments
 LatinDiacriticProbe,años,YEAR+PL|años,Affix template slots (obligatory/disjunctive/ordering)
@@ -67,6 +77,8 @@ DisjunctiveRecheckProbe,pitza,,Disjunctive allomorphs / free-fluctuation
 DisjunctiveRecheckProbe,pitda,+|pitda,Disjunctive allomorphs / free-fluctuation
 DisjunctiveRecheckProbe,gray,|gray,Disjunctive allomorphs / free-fluctuation
 DisjunctiveRecheckProbe,grey,|grey,Disjunctive allomorphs / free-fluctuation
+EpenthesisFedMerge,bd,ROOT|bd,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+ExpansionOverlappingTargets,kaaa,KAA1|kaaa,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 FeatureGatingBreadth,kal,KAL|kal,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 FeatureGatingBreadth,kalka,KAL+AGR|kalka,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 FeatureGatingBreadth,tun,TUN|tun,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
@@ -82,6 +94,7 @@ FeatureGatingBreadth,kalkano,KAL+AGR+LOUD|kalkano,Syntactic feature agreement (R
 FeatureGatingBreadth,kalnoka,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 FeatureGatingBreadth,kalmuid,KAL+EMPH+PAST|kalmuid,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 FeatureGatingBreadth,kalidmu,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+FeatureRuleBeforeMerge,butbut,ROOT|butbut,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 FeatureSystemBreadth,ik,AK|ik,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 FeatureSystemBreadth,ak,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 FeatureSystemBreadth,at,AT|at,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
@@ -108,6 +121,7 @@ FreeFluctuatingAllomorphPair,kits,ORD+SSFX|kits,Disjunctive allomorphs / free-fl
 FreeFluctuatingAllomorphPair,kots,,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,kot,ORD|kot,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,kit,,Disjunctive allomorphs / free-fluctuation
+GeminateUnderMerge,f,ROOT|f,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 IterativeEpenthesisCascade,uotaa,BOTH|uotaa,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 N2-DefaultSymbol,bat,|bat,Boundary markers (CharacterDefinitionTable)
 N2-DefaultSymbol,bdt,,Boundary markers (CharacterDefinitionTable)
@@ -135,6 +149,11 @@ N3-PatternShapes,bat,|b[ae]t,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bet,|b[ae]t,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bit,,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bt,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+MergeSubrulesPosRtlTemplate,Gs,TA_V+S|Gs,RewriteRule direction (Dir): right-to-left
+MergeSubrulesPosRtlTemplate,Gs,TA_V+S|Gs,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
+MergeSubrulesPosRtlTemplate,Gs,TA_V+S|Gs,Affix template slots (obligatory/disjunctive/ordering)
+MergeThenMetathesis,aca,ATSA|aca,MetathesisRule
+MergeThenMetathesis,aca,ATSA|aca,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 MetathesisComparisonCrash,ti,,MetathesisRule
 MorphotacticAttributeBreadth,topdori,,MPR features/groups
 MorphotacticAttributeBreadth,topdo,TOP+CONFEREXCL|topdo,MPR features/groups
@@ -200,6 +219,7 @@ RightToLeftAnchorEnvironment,eaaa,,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,eeae,ROOT3|eeae,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,eeee,,RewriteRule direction (Dir): right-to-left
 SharedTemplateUnconstrainedSuffix,mivd,NROOT+IVERB+PAST|mivd,Affix template slots (obligatory/disjunctive/ordering)
+SimultaneousExpansionTerminates,biiiibiiii,ROOT|biiiibiiii,RewriteRule Simultaneous
 SimultaneousFeeding,gigugu,GIGI|gigugu,RewriteRule Simultaneous
 SimultaneousFeeding,gigugi,GIGI|gigugi,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 StemNameRestrictedRootAllomorph,tam,ROOT|tam,Stem names
@@ -243,6 +263,9 @@ TruncateRulesProbe,gbubibi,+|gbubibi,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,gas,++|gas,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,gas,+|gas,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,bag,,AffixProcessRule: subtraction/truncation
+TwoMergesCascadeEnv,teK,TAK+SFX|teK,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+TwoMergesCascadeEnv,teK,TAK+SFX|teK,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
+TwoMergesCascadeEnv,teK,TAK+SFX|teK,Boundary markers (CharacterDefinitionTable)
 FusionalRealizationalMorphology,mun,STEM|mun,Stem names
 FusionalRealizationalMorphology,muno,,Stem names
 FusionalRealizationalMorphology,muns,,Stem names

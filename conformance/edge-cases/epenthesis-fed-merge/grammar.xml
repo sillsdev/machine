@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>EpenthesisFedMerge</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN">
+        <Name>N</Name>
+      </PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featSeg">
+        <Name>segment</Name>
+        <Symbols>
+          <Symbol id="symB">b</Symbol>
+          <Symbol id="symT">t</Symbol>
+          <Symbol id="symI">i</Symbol>
+          <Symbol id="symD">d</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cB">
+          <Representations>
+            <Representation>b</Representation>
+          </Representations>
+          <FeatureValue feature="featSeg" symbolValues="symB" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cT">
+          <Representations>
+            <Representation>t</Representation>
+          </Representations>
+          <FeatureValue feature="featSeg" symbolValues="symT" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cI">
+          <Representations>
+            <Representation>i</Representation>
+          </Representations>
+          <FeatureValue feature="featSeg" symbolValues="symI" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cD">
+          <Representations>
+            <Representation>d</Representation>
+          </Representations>
+          <FeatureValue feature="featSeg" symbolValues="symD" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prEpenthesis">
+        <Name>insertTiAfterBAtEnd</Name>
+        <PhoneticInput />
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <Segment segment="cT" />
+                <Segment segment="cI" />
+              </PhoneticSequence>
+            </PhoneticOutput>
+            <Environment>
+              <LeftEnvironment>
+                <PhoneticTemplate>
+                  <PhoneticSequence>
+                    <Segment segment="cB" />
+                  </PhoneticSequence>
+                </PhoneticTemplate>
+              </LeftEnvironment>
+              <RightEnvironment>
+                <PhoneticTemplate finalBoundaryCondition="true">
+                  <PhoneticSequence />
+                </PhoneticTemplate>
+              </RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <PhonologicalRule id="prMerge">
+        <Name>mergeTi</Name>
+        <PhoneticInput>
+          <PhoneticSequence>
+            <Segment segment="cT" />
+            <Segment segment="cI" />
+          </PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <Segment segment="cD" />
+              </PhoneticSequence>
+            </PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" phonologicalRules="prEpenthesis prMerge">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot">
+            <Allomorphs>
+              <Allomorph id="aRoot">
+                <PhoneticShape>b</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <MorphemeId>ROOT</MorphemeId>
+            <Gloss>root</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
