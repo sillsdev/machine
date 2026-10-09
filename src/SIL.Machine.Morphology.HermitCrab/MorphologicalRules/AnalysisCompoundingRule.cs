@@ -112,8 +112,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                                 Word tempInput = outWord.Clone();
                                 tempInput.CurrentNonHead.RootAllomorph = allo;
                                 tempInput.CurrentTrace = input.CurrentTrace;
-                                _morpher.TraceManager.CompoundingRuleNotUnapplied(
-                                    _rule,
+                                TraceFailure(
                                     i,
                                     tempInput,
                                     FailureReason.NonHeadProdRestrictMprFeatures,
@@ -196,7 +195,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         private void TraceFailure(int index, Word input, FailureReason reason, object failureObj)
         {
             if (_morpher.TraceManager.IsTracing)
-                _morpher.TraceManager.CompoundingRuleNotUnapplied(_rule, index, input, reason, failureObj);
+                _morpher.TraceManager.CompoundingRuleRejected(_rule, index, input, reason, failureObj);
         }
     }
 }

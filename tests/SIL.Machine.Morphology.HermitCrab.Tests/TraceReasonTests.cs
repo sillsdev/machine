@@ -313,6 +313,52 @@ public class TraceReasonTests
         );
     }
 
+    [TestCase("MaxStemCount")]
+    [TestCase("NonHeadLexicalLookup")]
+    [TestCase("NonHeadRequiredSyntacticFeatureStruct")]
+    [TestCase("NonHeadProdRestrictMprFeatures")]
+    public void LegacyTraceManager_ReceivesOnlyTheExistingCompoundingRejection(string reason)
+    {
+        ITraceManager legacy = System.Reflection.DispatchProxy.Create<ITraceManager, LegacyTraceProxy>();
+        var proxy = (LegacyTraceProxy)legacy;
+        proxy.Target = _traceManager;
+        CompoundingRule rule = Compound();
+        if (reason != "NonHeadLexicalLookup")
+            Entry("b");
+        if (reason == "NonHeadRequiredSyntacticFeatureStruct")
+            rule.NonHeadRequiredSyntacticFeatureStruct = Pos("V");
+        else if (reason == "NonHeadProdRestrictMprFeatures")
+            rule.NonHeadProdRestrictionsMprFeatures.Add(new MprFeature { Name = "required" });
+        // the morpher indexes root allomorphs when constructed, so it is built after the entries
+        var morpher = new Morpher(legacy, _language, 1);
+        Morpher detailedMorpher = Morpher();
+        if (reason == "MaxStemCount")
+            morpher.MaxStemCount = detailedMorpher.MaxStemCount = 1;
+        Word input = AnalysisInput("ab");
+        input.Freeze();
+        Word detailedInput = AnalysisInput("ab");
+        detailedInput.Freeze();
+
+        Assert.That(rule.CompileAnalysisRule(morpher).Apply(input), Is.Empty);
+        Assert.That(rule.CompileAnalysisRule(detailedMorpher).Apply(detailedInput), Is.Empty);
+
+        Assert.That(
+            Events(detailedInput).Single(t => t.Type == TraceType.CompoundingRuleAnalysis).FailureReason,
+            Is.EqualTo(Enum.Parse<FailureReason>(reason))
+        );
+        Trace[] failures = Events(input).Where(t => t.Type == TraceType.CompoundingRuleAnalysis).ToArray();
+        if (reason == "NonHeadProdRestrictMprFeatures")
+        {
+            Assert.That(failures.Single().FailureReason, Is.EqualTo(FailureReason.NonHeadProdRestrictMprFeatures));
+            Assert.That(failures.Single().SubruleIndex, Is.EqualTo(-1));
+        }
+        else
+        {
+            Assert.That(failures, Is.Empty);
+            Assert.That(proxy.Calls, Does.Not.Contain(nameof(ITraceManager.CompoundingRuleNotUnapplied)));
+        }
+    }
+
     public class LegacyTraceProxy : System.Reflection.DispatchProxy
     {
         public ITraceManager Target { get; set; } = default!;
