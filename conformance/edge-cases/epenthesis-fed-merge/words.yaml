@@ -1,0 +1,35 @@
+# oracle-provenance: founding-oracle
+# Signatures verified against the C# founding oracle (hc-conformance self-check) built from
+# sillsdev/machine 18cf242f (the integrate-conformance-framework head, PR #480). Ported from the
+# PanGloss conformance-staging fixture of the same name (branch exp/narrow-union-v1, 54497a01),
+# re-verified here rather than transcribed.
+#
+# Regression guard: an EPENTHESIS rule feeds a MERGE (narrowing, 2 -> 1) rule. prEpenthesis inserts
+# "t i" after a word-final b; prMerge then fuses "t i" into d: b -> bti -> bd. Analysis must recover
+# "t i" behind "d" as OPTIONAL material and then unapply the epenthesis so that the bare root b
+# remains reachable. Guards the merge-recovery encoding against an engine that makes the recovered
+# nodes mandatory or otherwise unavailable to the epenthesis rule's analysis side.
+
+language: EpenthesisFedMerge
+inspired_by: ["synthetic epenthesis-feeds-fusion probe (not modeling any real language)"]
+sources:
+  - "sillsdev/machine#539 (narrowing-rule unapplication); PanGloss exp/narrow-union-v1 54497a01 T3"
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/NarrowAnalysisRewriteRuleSpec.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/EpenthesisAnalysisRewriteRuleSpec.cs"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: bd
+    note: >-
+      Synthesis inserts "t i" after the word-final b and then fuses it into d. Analysis must make
+      the recovered "t i" optional before the epenthesis rule is unapplied so that root b is found.
+    provenance: "sillsdev/machine#539 (T3: epenthesis-fed merge regression guard)"
+    parses:
+      - signature: "ROOT|bd"
+        gloss: root
+        rules: [prEpenthesis, prMerge]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+  - word: b
+    note: "Negative control: the epenthesis is obligatory at the root's only site."
+    expect_fail: true

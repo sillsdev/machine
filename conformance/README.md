@@ -90,7 +90,7 @@ subset it claims to support.
 ```
 conformance/
   languages/<name>/    grammar.xml + words.yaml   -- 8 typologically-selected synthetic languages
-  edge-cases/<name>/   grammar.xml + words.yaml   -- 36 micro-grammars for things no shared grammar hosts
+  edge-cases/<name>/   grammar.xml + words.yaml   -- 50 micro-grammars for things no shared grammar hosts
   coverage.csv         GENERATED: language x word x construct
   rules.csv            GENERATED: language x grammar rule id x exercising words
   HermitCrabInput.dtd  the published grammar DTD (byte-identical to the library's embedded copy)

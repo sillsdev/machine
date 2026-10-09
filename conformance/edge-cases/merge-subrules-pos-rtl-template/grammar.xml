@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Synthetic regression guard for a narrowing rule with the less common knobs together: applied
+     rightToLeftIterative, TWO subrules gated by requiredPartsOfSpeech (nouns fuse "ta" to F, verbs to
+     G), and a verb AffixTemplate whose single mandatory slot adds the suffix "s" (reachable only
+     through the template, not stratum-listed). The merge output of a verb therefore always sits
+     before a template suffix. TA_N -> F; TA_V -> ta+s -> Gs; TATA (noun) -> FF (two sites, scanned
+     right to left). -->
+<HermitCrabInput>
+  <Language>
+    <Name>MergeSubrulesPosRtlTemplate</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+      <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="consPlus">+cons</Symbol><Symbol id="consMinus">-cons</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featSyl"><Name>syl</Name><Symbols><Symbol id="sylPlus">+syl</Symbol><Symbol id="sylMinus">-syl</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featTone"><Name>tone</Name><Symbols><Symbol id="toneHi">hi</Symbol><Symbol id="toneLo">lo</Symbol><Symbol id="toneNone">none</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featStrid"><Name>strid</Name><Symbols><Symbol id="stridPlus">+strid</Symbol><Symbol id="stridMinus">-strid</Symbol></Symbols></SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featSyl" symbolValues="sylMinus" /><FeatureValue feature="featTone" symbolValues="toneNone" /><FeatureValue feature="featStrid" symbolValues="stridMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featSyl" symbolValues="sylMinus" /><FeatureValue feature="featTone" symbolValues="toneNone" /><FeatureValue feature="featStrid" symbolValues="stridPlus" /></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations><FeatureValue feature="featCons" symbolValues="consMinus" /><FeatureValue feature="featSyl" symbolValues="sylPlus" /><FeatureValue feature="featTone" symbolValues="toneNone" /><FeatureValue feature="featStrid" symbolValues="stridMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cF"><Representations><Representation>F</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featSyl" symbolValues="sylPlus" /><FeatureValue feature="featTone" symbolValues="toneHi" /><FeatureValue feature="featStrid" symbolValues="stridMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cG"><Representations><Representation>G</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featSyl" symbolValues="sylPlus" /><FeatureValue feature="featTone" symbolValues="toneLo" /><FeatureValue feature="featStrid" symbolValues="stridMinus" /></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prMerge" multipleApplicationOrder="rightToLeftIterative">
+        <Name>mergeTaByPos</Name>
+        <PhoneticInput><PhoneticSequence><Segment segment="cT" /><Segment segment="cA" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule requiredPartsOfSpeech="posN">
+            <PhoneticOutput><PhoneticSequence><Segment segment="cF" /></PhoneticSequence></PhoneticOutput>
+          </PhonologicalSubrule>
+          <PhonologicalSubrule requiredPartsOfSpeech="posV">
+            <PhoneticOutput><PhoneticSequence><Segment segment="cG" /></PhoneticSequence></PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" phonologicalRules="prMerge">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrSfxS" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>sfxS</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSfxS">
+                <MorphologicalInput><PhoneticSequence id="stemS"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemS" /><InsertSegments><PhoneticShape>s</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>S</MorphemeId>
+            <Gloss>s</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posV">
+            <Name>verb</Name>
+            <Slot morphologicalRules="mrSfxS"><Name>suffix</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eTaN" partOfSpeech="posN"><Allomorphs><Allomorph id="aTaN"><PhoneticShape>ta</PhoneticShape></Allomorph></Allomorphs><MorphemeId>TA_N</MorphemeId><Gloss>ta.n</Gloss></LexicalEntry>
+          <LexicalEntry id="eTaV" partOfSpeech="posV"><Allomorphs><Allomorph id="aTaV"><PhoneticShape>ta</PhoneticShape></Allomorph></Allomorphs><MorphemeId>TA_V</MorphemeId><Gloss>ta.v</Gloss></LexicalEntry>
+          <LexicalEntry id="eTata" partOfSpeech="posN"><Allomorphs><Allomorph id="aTata"><PhoneticShape>tata</PhoneticShape></Allomorph></Allomorphs><MorphemeId>TATA</MorphemeId><Gloss>tata</Gloss></LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

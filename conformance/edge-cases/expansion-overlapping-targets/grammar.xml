@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Synthetic. One expansion rule (1 -> 2), long-vowel breaking: A -> a a, left-to-right iterative.
+     Its two-segment output "a a" overlaps with itself inside a run of three short vowels, so "kaaa" is
+     ambiguous between roots KAA1 (k-A-a), KAA2 (k-a-A) and KAAA (k-a-a-a). Un-applying the rule in
+     analysis must consider BOTH overlapping sites (positions 1-2 and 2-3); an implementation that
+     un-applies an expansion rule iteratively (restarting after the first match) sees only one site and
+     loses whichever of KAA1/KAA2 lies on the other. "kaa" (KA, KAA3) has a single site and is the control. -->
+<HermitCrabInput>
+  <Language>
+    <Name>ExpansionOverlappingTargets</Name>
+    <PartsOfSpeech><PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech></PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="consPlus">+cons</Symbol><Symbol id="consMinus">-cons</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featLong"><Name>long</Name><Symbols><Symbol id="longPlus">+long</Symbol><Symbol id="longMinus">-long</Symbol></Symbols></SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featLong" symbolValues="longMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations><FeatureValue feature="featCons" symbolValues="consMinus" /><FeatureValue feature="featLong" symbolValues="longMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cAA"><Representations><Representation>A</Representation></Representations><FeatureValue feature="featCons" symbolValues="consMinus" /><FeatureValue feature="featLong" symbolValues="longPlus" /></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncLongV"><Name>longV</Name><FeatureValue feature="featCons" symbolValues="consMinus" /><FeatureValue feature="featLong" symbolValues="longPlus" /></FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prBreak">
+        <Name>longVowelBreaking</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncLongV" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="cA" /><Segment segment="cA" /></PhoneticSequence></PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" phonologicalRules="prBreak">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eKaa1" partOfSpeech="posN"><Allomorphs><Allomorph id="aKaa1"><PhoneticShape>kAa</PhoneticShape></Allomorph></Allomorphs><MorphemeId>KAA1</MorphemeId><Gloss>kaa1</Gloss></LexicalEntry>
+          <LexicalEntry id="eKaa2" partOfSpeech="posN"><Allomorphs><Allomorph id="aKaa2"><PhoneticShape>kaA</PhoneticShape></Allomorph></Allomorphs><MorphemeId>KAA2</MorphemeId><Gloss>kaa2</Gloss></LexicalEntry>
+          <LexicalEntry id="eKaaa" partOfSpeech="posN"><Allomorphs><Allomorph id="aKaaa"><PhoneticShape>kaaa</PhoneticShape></Allomorph></Allomorphs><MorphemeId>KAAA</MorphemeId><Gloss>kaaa</Gloss></LexicalEntry>
+          <LexicalEntry id="eKa" partOfSpeech="posN"><Allomorphs><Allomorph id="aKa"><PhoneticShape>kA</PhoneticShape></Allomorph></Allomorphs><MorphemeId>KA</MorphemeId><Gloss>ka</Gloss></LexicalEntry>
+          <LexicalEntry id="eKaa3" partOfSpeech="posN"><Allomorphs><Allomorph id="aKaa3"><PhoneticShape>kaa</PhoneticShape></Allomorph></Allomorphs><MorphemeId>KAA3</MorphemeId><Gloss>kaa3</Gloss></LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

@@ -61,6 +61,75 @@ edge-cases/alpha-variable-name-collision	Interface	VariableFeature.phonologicalF
 edge-cases/alpha-variable-name-collision	Construct	Alpha-variable phonological environments (VariableFeature/AlphaVariables)	claimed-confirmed	2 claim(s)
 edge-cases/bistratal-overlapping-segment-representation	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/bistratal-overlapping-segment-representation	Construct	CharacterDefinitionTable: more than one table, one per stratum	claimed-confirmed	5 claim(s)
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/BoundaryDefinition	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/BoundaryDefinitions	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/BoundaryMarker	witnessed	Evidenced
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/CopyFromInput	witnessed	Evidenced
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/Environment	witnessed	Evidenced
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/FeatureNaturalClass	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/InsertSegments	witnessed	Evidenced
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/LeftEnvironment	witnessed	Evidenced
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/MorphologicalInput	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/MorphologicalOutput	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/MorphologicalRule	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/MorphologicalRuleDefinitions	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/MorphologicalSubrule	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/MorphologicalSubrules	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/OptionalSegmentSequence	witnessed	Evidenced
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/PhoneticTemplate	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/Segment	witnessed	Evidenced
+edge-cases/boundary-first-in-narrowing-lhs	Interface	BoundaryMarker.boundary	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/boundary-first-in-narrowing-lhs	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/boundary-first-in-narrowing-lhs	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/boundary-first-in-narrowing-lhs	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/boundary-first-in-narrowing-lhs	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/boundary-first-in-narrowing-lhs	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/boundary-first-in-narrowing-lhs	Construct	Boundary markers (CharacterDefinitionTable)	claimed-confirmed	1 claim(s)
+edge-cases/boundary-first-in-narrowing-lhs	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
+edge-cases/boundary-first-in-narrowing-lhs-strrep	Interface	BoundaryMarker.boundary	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs-strrep	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs-strrep	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/boundary-first-in-narrowing-lhs-strrep	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/boundary-first-in-narrowing-lhs-strrep	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/boundary-first-in-narrowing-lhs-strrep	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs-strrep	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs-strrep	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/boundary-first-in-narrowing-lhs-strrep	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/boundary-first-in-narrowing-lhs-strrep	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/boundary-first-in-narrowing-lhs-strrep	Construct	Boundary markers (CharacterDefinitionTable)	claimed-confirmed	1 claim(s)
+edge-cases/boundary-first-in-narrowing-lhs-strrep	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
+edge-cases/boundary-leftover-in-narrowing-lhs-strrep	Interface	BoundaryMarker.boundary	required-by-dtd	RequiredByDtd
+edge-cases/boundary-leftover-in-narrowing-lhs-strrep	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/boundary-leftover-in-narrowing-lhs-strrep	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/boundary-leftover-in-narrowing-lhs-strrep	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/boundary-leftover-in-narrowing-lhs-strrep	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/boundary-leftover-in-narrowing-lhs-strrep	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/boundary-leftover-in-narrowing-lhs-strrep	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/boundary-leftover-in-narrowing-lhs-strrep	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/boundary-leftover-in-narrowing-lhs-strrep	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/boundary-leftover-in-narrowing-lhs-strrep	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/boundary-leftover-in-narrowing-lhs-strrep	Construct	Boundary markers (CharacterDefinitionTable)	claimed-confirmed	1 claim(s)
+edge-cases/boundary-leftover-in-narrowing-lhs-strrep	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
+edge-cases/boundary-mid-in-narrowing-lhs-strrep	Interface	BoundaryMarker.boundary	required-by-dtd	RequiredByDtd
+edge-cases/boundary-mid-in-narrowing-lhs-strrep	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/boundary-mid-in-narrowing-lhs-strrep	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/boundary-mid-in-narrowing-lhs-strrep	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/boundary-mid-in-narrowing-lhs-strrep	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/boundary-mid-in-narrowing-lhs-strrep	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/boundary-mid-in-narrowing-lhs-strrep	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/boundary-mid-in-narrowing-lhs-strrep	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/boundary-mid-in-narrowing-lhs-strrep	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/boundary-mid-in-narrowing-lhs-strrep	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/boundary-mid-in-narrowing-lhs-strrep	Construct	Boundary markers (CharacterDefinitionTable)	claimed-confirmed	1 claim(s)
+edge-cases/boundary-mid-in-narrowing-lhs-strrep	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
+edge-cases/chained-output-feature-override-loss	Surface	dtd:element/OutputHeadFeatures	witnessed	Evidenced
+edge-cases/chained-output-feature-override-loss	Surface	dtd:element/RequiredHeadFeatures	witnessed	Evidenced
 edge-cases/chained-output-feature-override-loss	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/chained-output-feature-override-loss	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/chained-output-feature-override-loss	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
@@ -76,22 +145,15 @@ edge-cases/compounding-breadth	Surface	dtd:element/AssignedHeadFeatures	witnesse
 edge-cases/compounding-breadth	Surface	dtd:element/CompoundingRule	required-by-dtd	RequiredByDtd
 edge-cases/compounding-breadth	Surface	dtd:element/CompoundingSubrule	required-by-dtd	RequiredByDtd
 edge-cases/compounding-breadth	Surface	dtd:element/CompoundingSubrules	required-by-dtd	RequiredByDtd
-edge-cases/compounding-breadth	Surface	dtd:element/CopyFromInput	witnessed	Evidenced
-edge-cases/compounding-breadth	Surface	dtd:element/FeatureNaturalClass	required-by-dtd	RequiredByDtd
 edge-cases/compounding-breadth	Surface	dtd:element/FootFeatures	required-by-dtd	RequiredByDtd
-edge-cases/compounding-breadth	Surface	dtd:element/HeadFeatures	required-by-dtd	RequiredByDtd
 edge-cases/compounding-breadth	Surface	dtd:element/HeadMorphologicalInput	required-by-dtd	RequiredByDtd
 edge-cases/compounding-breadth	Surface	dtd:element/HeadRequiredFootFeatures	witnessed	Evidenced
 edge-cases/compounding-breadth	Surface	dtd:element/HeadRequiredHeadFeatures	witnessed	Evidenced
-edge-cases/compounding-breadth	Surface	dtd:element/MorphologicalOutput	required-by-dtd	RequiredByDtd
-edge-cases/compounding-breadth	Surface	dtd:element/MorphologicalRuleDefinitions	required-by-dtd	RequiredByDtd
 edge-cases/compounding-breadth	Surface	dtd:element/NonHeadMorphologicalInput	required-by-dtd	RequiredByDtd
 edge-cases/compounding-breadth	Surface	dtd:element/NonHeadRequiredFootFeatures	witnessed	Evidenced
 edge-cases/compounding-breadth	Surface	dtd:element/NonHeadRequiredHeadFeatures	witnessed	Evidenced
-edge-cases/compounding-breadth	Surface	dtd:element/OptionalSegmentSequence	witnessed	Evidenced
 edge-cases/compounding-breadth	Surface	dtd:enum/CompoundingRule/isActive/no	witnessed	Evidenced
 edge-cases/compounding-breadth	Surface	dtd:enum/CompoundingRule/multipleApplication/0	witnessed	Evidenced
-edge-cases/compounding-breadth	Surface	dtd:enum/CompoundingSubrule/isActive/no	witnessed	Evidenced
 edge-cases/compounding-breadth	Interface	CompoundingRule.headPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/compounding-breadth	Interface	CompoundingRule.nonHeadPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/compounding-breadth	Interface	CompoundingRule.outputPartOfSpeech	witnessed	Evidenced
@@ -127,16 +189,26 @@ edge-cases/deep-optional-affix-nesting	Interface	SimpleContext.naturalClass	requ
 edge-cases/deep-optional-affix-nesting	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
 edge-cases/deep-optional-affix-nesting	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/deep-optional-affix-nesting	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	2 claim(s)
+edge-cases/default-symbol-after-merge	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/default-symbol-after-merge	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/default-symbol-after-merge	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/default-symbol-after-merge	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/default-symbol-after-merge	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/default-symbol-after-merge	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/default-symbol-after-merge	Interface	SymbolicFeature.defaultSymbol	present-but-inert	Unobservable
+edge-cases/default-symbol-after-merge	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
+edge-cases/deletion-reinserted-feature-unapply	Surface	dtd:element/RightEnvironment	witnessed	Evidenced
+edge-cases/deletion-reinserted-feature-unapply	Surface	dtd:enum/PhoneticTemplate/finalBoundaryCondition/true	witnessed	Evidenced
+edge-cases/deletion-reinserted-feature-unapply	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/deletion-reinserted-feature-unapply	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/deletion-reinserted-feature-unapply	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/deletion-reinserted-feature-unapply	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/deletion-reinserted-feature-unapply	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/deletion-reinserted-feature-unapply	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/deletion-reinserted-feature-unapply	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/deletion-reinserted-feature-unapply	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
 edge-cases/diacritic-segments	Surface	dtd:element/AffixTemplate	required-by-dtd	RequiredByDtd
-edge-cases/diacritic-segments	Surface	dtd:element/InsertSegments	witnessed	Evidenced
-edge-cases/diacritic-segments	Surface	dtd:element/LeftEnvironment	witnessed	Evidenced
-edge-cases/diacritic-segments	Surface	dtd:element/MorphologicalInput	required-by-dtd	RequiredByDtd
-edge-cases/diacritic-segments	Surface	dtd:element/MorphologicalRule	required-by-dtd	RequiredByDtd
-edge-cases/diacritic-segments	Surface	dtd:element/MorphologicalSubrule	required-by-dtd	RequiredByDtd
-edge-cases/diacritic-segments	Surface	dtd:element/MorphologicalSubrules	required-by-dtd	RequiredByDtd
-edge-cases/diacritic-segments	Surface	dtd:element/PhoneticTemplate	required-by-dtd	RequiredByDtd
 edge-cases/diacritic-segments	Surface	dtd:element/RequiredEnvironments	witnessed	Evidenced
-edge-cases/diacritic-segments	Surface	dtd:element/Segment	witnessed	Evidenced
 edge-cases/diacritic-segments	Surface	dtd:element/Slot	required-by-dtd	RequiredByDtd
 edge-cases/diacritic-segments	Surface	dtd:enum/Slot/optional/true	witnessed	Evidenced
 edge-cases/diacritic-segments	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
@@ -154,6 +226,7 @@ edge-cases/diacritic-segments	Construct	AffixProcessRule: prefix/suffix/circumfi
 edge-cases/diacritic-segments	Construct	Boundary markers (CharacterDefinitionTable)	claimed-confirmed	1 claim(s)
 edge-cases/diacritic-segments	Construct	MorphologicalOutputAction: CopyFromInput/InsertSegments	claimed-confirmed	6 claim(s)
 edge-cases/diacritic-segments	Construct	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	claimed-confirmed	4 claim(s)
+edge-cases/discontinuous-morph-environment	Surface	dtd:enum/Stratum/morphologicalRuleOrder/unordered	witnessed	Evidenced
 edge-cases/discontinuous-morph-environment	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/discontinuous-morph-environment	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/discontinuous-morph-environment	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
@@ -165,7 +238,6 @@ edge-cases/discontinuous-morph-environment	Interface	SimpleContext.naturalClass	
 edge-cases/discontinuous-morph-environment	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/discontinuous-morph-environment	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/discontinuous-morph-environment	Construct	AffixProcessRule: prefix/suffix/circumfix/infix	claimed-unmapped	1 claim(s)
-edge-cases/disjunctive-recheck	Surface	dtd:element/RightEnvironment	witnessed	Evidenced
 edge-cases/disjunctive-recheck	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/disjunctive-recheck	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/disjunctive-recheck	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
@@ -177,12 +249,23 @@ edge-cases/disjunctive-recheck	Interface	SimpleContext.naturalClass	required-by-
 edge-cases/disjunctive-recheck	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/disjunctive-recheck	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/disjunctive-recheck	Construct	Disjunctive allomorphs / free-fluctuation	claimed-unmapped	10 claim(s)
+edge-cases/epenthesis-fed-merge	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/epenthesis-fed-merge	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/epenthesis-fed-merge	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/epenthesis-fed-merge	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/epenthesis-fed-merge	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/epenthesis-fed-merge	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
+edge-cases/expansion-overlapping-targets	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/expansion-overlapping-targets	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/expansion-overlapping-targets	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/expansion-overlapping-targets	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/expansion-overlapping-targets	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/expansion-overlapping-targets	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/expansion-overlapping-targets	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/expansion-overlapping-targets	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
 edge-cases/feature-gating-breadth	Surface	dtd:element/OutputFootFeatures	witnessed	Evidenced
 edge-cases/feature-gating-breadth	Surface	dtd:element/Property	required-by-dtd	RequiredByDtd
-edge-cases/feature-gating-breadth	Surface	dtd:element/RealizationalFeatures	required-by-dtd	RequiredByDtd
-edge-cases/feature-gating-breadth	Surface	dtd:element/RealizationalRule	required-by-dtd	RequiredByDtd
 edge-cases/feature-gating-breadth	Surface	dtd:element/RequiredFootFeatures	witnessed	Evidenced
-edge-cases/feature-gating-breadth	Surface	dtd:element/RequiredHeadFeatures	witnessed	Evidenced
 edge-cases/feature-gating-breadth	Surface	dtd:enum/Stratum/morphologicalRuleOrder/linear	witnessed	Evidenced
 edge-cases/feature-gating-breadth	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/feature-gating-breadth	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
@@ -195,6 +278,13 @@ edge-cases/feature-gating-breadth	Interface	Stratum.characterDefinitionTable	req
 edge-cases/feature-gating-breadth	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/feature-gating-breadth	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	1 claim(s)
 edge-cases/feature-gating-breadth	Construct	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	claimed-confirmed	14 claim(s)
+edge-cases/feature-rule-before-merge	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/feature-rule-before-merge	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/feature-rule-before-merge	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/feature-rule-before-merge	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/feature-rule-before-merge	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/feature-rule-before-merge	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/feature-rule-before-merge	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
 edge-cases/feature-system-breadth	Surface	dtd:element/ComplexFeature	required-by-dtd	RequiredByDtd
 edge-cases/feature-system-breadth	Surface	dtd:element/ExcludedEnvironments	witnessed	Evidenced
 edge-cases/feature-system-breadth	Surface	dtd:element/MetathesisRule	required-by-dtd	RequiredByDtd
@@ -230,6 +320,11 @@ edge-cases/feature-system-breadth	Construct	Element deactivation (isActive) acro
 edge-cases/feature-system-breadth	Construct	MetathesisRule	claimed-confirmed	10 claim(s)
 edge-cases/feature-system-breadth	Construct	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	claimed-confirmed	3 claim(s)
 edge-cases/feature-system-breadth	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	2 claim(s)
+edge-cases/final-template-partial-discriminators	Surface	dtd:element/AffixTemplates	witnessed	Evidenced
+edge-cases/final-template-partial-discriminators	Surface	dtd:enum/AffixTemplate/final/false	witnessed	Evidenced
+edge-cases/final-template-partial-discriminators	Surface	dtd:enum/AffixTemplate/final/true	witnessed	Evidenced
+edge-cases/final-template-partial-discriminators	Surface	dtd:enum/MorphologicalRule/partial/true	witnessed	Evidenced
+edge-cases/final-template-partial-discriminators	Surface	dtd:enum/Stratum/isActive/yes	witnessed	Evidenced
 edge-cases/final-template-partial-discriminators	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/final-template-partial-discriminators	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/final-template-partial-discriminators	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
@@ -252,6 +347,13 @@ edge-cases/free-fluctuating-allomorph-pair	Interface	SimpleContext.naturalClass	
 edge-cases/free-fluctuating-allomorph-pair	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/free-fluctuating-allomorph-pair	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/free-fluctuating-allomorph-pair	Construct	Disjunctive allomorphs / free-fluctuation	claimed-unmapped	6 claim(s)
+edge-cases/geminate-under-merge	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/geminate-under-merge	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/geminate-under-merge	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/geminate-under-merge	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/geminate-under-merge	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/geminate-under-merge	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/geminate-under-merge	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
 edge-cases/iterative-epenthesis-cascade	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/iterative-epenthesis-cascade	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
 edge-cases/iterative-epenthesis-cascade	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
@@ -269,20 +371,16 @@ edge-cases/loader-default-symbol	Interface	Stratum.characterDefinitionTable	requ
 edge-cases/loader-default-symbol	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/loader-default-symbol	Interface	SymbolicFeature.defaultSymbol	present-but-inert	Unobservable
 edge-cases/loader-default-symbol	Construct	Boundary markers (CharacterDefinitionTable)	claimed-confirmed	2 claim(s)
-edge-cases/loader-isactive	Surface	dtd:element/BoundaryDefinition	required-by-dtd	RequiredByDtd
 edge-cases/loader-isactive	Surface	dtd:enum/PhonologicalFeatureSystem/isActive/no	required-by-loader	RequiredByLoader
 edge-cases/loader-isactive	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/loader-isactive	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
 edge-cases/loader-isactive	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
 edge-cases/loader-isactive	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/loader-isactive	Construct	Boundary markers (CharacterDefinitionTable)	claimed-confirmed	2 claim(s)
-edge-cases/loader-isactive-breadth	Surface	dtd:element/AffixTemplates	witnessed	Evidenced
-edge-cases/loader-isactive-breadth	Surface	dtd:element/BoundaryDefinitions	required-by-dtd	RequiredByDtd
 edge-cases/loader-isactive-breadth	Surface	dtd:element/Families	required-by-dtd	RequiredByDtd
 edge-cases/loader-isactive-breadth	Surface	dtd:element/Family	required-by-dtd	RequiredByDtd
 edge-cases/loader-isactive-breadth	Surface	dtd:element/MorphologicalPhonologicalRuleFeature	required-by-dtd	RequiredByDtd
 edge-cases/loader-isactive-breadth	Surface	dtd:element/MorphologicalPhonologicalRuleFeatures	required-by-dtd	RequiredByDtd
-edge-cases/loader-isactive-breadth	Surface	dtd:enum/AffixTemplate/final/true	witnessed	Evidenced
 edge-cases/loader-isactive-breadth	Surface	dtd:enum/AffixTemplate/isActive/no	witnessed	Evidenced
 edge-cases/loader-isactive-breadth	Surface	dtd:enum/AffixTemplate/isActive/yes	witnessed	Evidenced
 edge-cases/loader-isactive-breadth	Surface	dtd:enum/Allomorph/isActive/no	witnessed	Evidenced
@@ -310,7 +408,6 @@ edge-cases/loader-isactive-breadth	Surface	dtd:enum/SegmentDefinition/isActive/y
 edge-cases/loader-isactive-breadth	Surface	dtd:enum/Slot/isActive/no	witnessed	Evidenced
 edge-cases/loader-isactive-breadth	Surface	dtd:enum/Slot/isActive/yes	witnessed	Evidenced
 edge-cases/loader-isactive-breadth	Surface	dtd:enum/Stratum/isActive/no	required-by-loader	RequiredByLoader
-edge-cases/loader-isactive-breadth	Surface	dtd:enum/Stratum/isActive/yes	witnessed	Evidenced
 edge-cases/loader-isactive-breadth	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/loader-isactive-breadth	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/loader-isactive-breadth	Interface	LexicalEntry.family	present-but-inert	Unobservable
@@ -327,6 +424,33 @@ edge-cases/loader-pattern-shapes	Interface	Segment.segment	required-by-dtd	Requi
 edge-cases/loader-pattern-shapes	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/loader-pattern-shapes	Construct	Boundary markers (CharacterDefinitionTable)	claimed-confirmed	3 claim(s)
 edge-cases/loader-pattern-shapes	Construct	CharacterDefinitionTable pattern shapes: optional group / Kleene star	claimed-confirmed	1 claim(s)
+edge-cases/merge-subrules-pos-rtl-template	Interface	AffixTemplate.requiredPartsOfSpeech	witnessed	Evidenced
+edge-cases/merge-subrules-pos-rtl-template	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/merge-subrules-pos-rtl-template	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/merge-subrules-pos-rtl-template	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/merge-subrules-pos-rtl-template	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
+edge-cases/merge-subrules-pos-rtl-template	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/merge-subrules-pos-rtl-template	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/merge-subrules-pos-rtl-template	Interface	PhonologicalSubrule.requiredPartsOfSpeech	witnessed	Evidenced
+edge-cases/merge-subrules-pos-rtl-template	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/merge-subrules-pos-rtl-template	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/merge-subrules-pos-rtl-template	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
+edge-cases/merge-subrules-pos-rtl-template	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/merge-subrules-pos-rtl-template	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/merge-subrules-pos-rtl-template	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	1 claim(s)
+edge-cases/merge-subrules-pos-rtl-template	Construct	RewriteRule direction (Dir): right-to-left	claimed-unmapped	1 claim(s)
+edge-cases/merge-subrules-pos-rtl-template	Construct	RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level	claimed-unmapped	1 claim(s)
+edge-cases/merge-then-metathesis	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/merge-then-metathesis	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/merge-then-metathesis	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/merge-then-metathesis	Interface	MetathesisRule.leftSwitch	required-by-dtd	RequiredByDtd
+edge-cases/merge-then-metathesis	Interface	MetathesisRule.rightSwitch	required-by-dtd	RequiredByDtd
+edge-cases/merge-then-metathesis	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/merge-then-metathesis	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/merge-then-metathesis	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/merge-then-metathesis	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/merge-then-metathesis	Construct	MetathesisRule	claimed-confirmed	1 claim(s)
+edge-cases/merge-then-metathesis	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
 edge-cases/metathesis-comparison-crash	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/metathesis-comparison-crash	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
 edge-cases/metathesis-comparison-crash	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
@@ -340,27 +464,15 @@ edge-cases/metathesis-comparison-crash	Construct	MetathesisRule	claimed-confirme
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:element/AllomorphCoOccurrenceRule	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:element/AllomorphCoOccurrenceRules	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:element/MorphemeCoOccurrenceRule	required-by-dtd	RequiredByDtd
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/AffixTemplate/final/false	witnessed	Evidenced
+edge-cases/morphotactic-attribute-breadth	Surface	dtd:element/MorphologicalPhonologicalRuleFeatureGroup	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/Allomorph/isBound/true	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/AllomorphCoOccurrenceRule/adjacency/adjacentToLeft	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/AllomorphCoOccurrenceRule/adjacency/adjacentToRight	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/AllomorphCoOccurrenceRule/adjacency/somewhereToLeft	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/AllomorphCoOccurrenceRule/adjacency/somewhereToRight	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/AllomorphCoOccurrenceRule/isActive/no	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/AllomorphCoOccurrenceRule/type/require	witnessed	Evidenced
+edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/AllomorphCoOccurrenceRule/type/exclude	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/LexicalEntry/partial/true	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphemeCoOccurrenceRule/adjacency/anywhere	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphemeCoOccurrenceRule/isActive/no	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphemeCoOccurrenceRule/type/require	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/isActive/no	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/outputType/append	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphologicalRule/blockable/false	witnessed	Evidenced
+edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphemeCoOccurrenceRule/type/exclude	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphologicalRule/multipleApplication/0	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphologicalRule/multipleApplication/2	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphologicalRule/partial/true	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/RealizationalRule/blockable/false	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/RealizationalRule/isActive/no	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/Stratum/morphologicalRuleOrder/unordered	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/morphotactic-attribute-breadth	Interface	AllomorphCoOccurrenceRule.otherAllomorphs	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Interface	AllomorphCoOccurrenceRule.primaryAllomorph	required-by-dtd	RequiredByDtd
@@ -384,7 +496,6 @@ edge-cases/morphotactic-attribute-breadth	Construct	Disjunctive allomorphs / fre
 edge-cases/morphotactic-attribute-breadth	Construct	MPR features/groups	claimed-unmapped	6 claim(s)
 edge-cases/morphotactic-attribute-breadth	Construct	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	claimed-confirmed	6 claim(s)
 edge-cases/morphotactic-attribute-breadth	Construct	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	claimed-contradicted	12 claim(s)
-edge-cases/mpr-gated-exception	Surface	dtd:element/Environment	witnessed	Evidenced
 edge-cases/mpr-gated-exception	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/mpr-gated-exception	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/mpr-gated-exception	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
@@ -404,7 +515,6 @@ edge-cases/mpr-gated-exception	Interface	Stratum.characterDefinitionTable	requir
 edge-cases/mpr-gated-exception	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/mpr-gated-exception	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/mpr-gated-exception	Construct	RewriteRule direction (Dir): left-to-right	claimed-unmapped	1 claim(s)
-edge-cases/mpr-group-overwrite-without-realizational	Surface	dtd:element/MorphologicalPhonologicalRuleFeatureGroup	witnessed	Evidenced
 edge-cases/mpr-group-overwrite-without-realizational	Surface	dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/outputType/overwrite	witnessed	Evidenced
 edge-cases/mpr-group-overwrite-without-realizational	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/mpr-group-overwrite-without-realizational	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
@@ -417,6 +527,7 @@ edge-cases/mpr-group-overwrite-without-realizational	Interface	SimpleContext.nat
 edge-cases/mpr-group-overwrite-without-realizational	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/mpr-group-overwrite-without-realizational	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/mpr-group-overwrite-without-realizational	Construct	MPR features/groups	claimed-unmapped	4 claim(s)
+edge-cases/mpr-overwrite-order-dependence	Surface	dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/outputType/append	witnessed	Evidenced
 edge-cases/mpr-overwrite-order-dependence	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/mpr-overwrite-order-dependence	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
 edge-cases/mpr-overwrite-order-dependence	Interface	MorphologicalInput.requiredMPRFeatures	witnessed	Evidenced
@@ -449,7 +560,6 @@ edge-cases/rewrite-analysis-feature-neutralization	Interface	Stratum.phonologica
 edge-cases/rewrite-analysis-feature-neutralization	Construct	CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)	claimed-confirmed	1 claim(s)
 edge-cases/rewrite-analysis-feature-neutralization	Construct	CharacterDefinitionTable: more than one table, one per stratum	claimed-confirmed	5 claim(s)
 edge-cases/rewrite-analysis-feature-neutralization	Construct	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	claimed-confirmed	3 claim(s)
-edge-cases/right-to-left-anchor-environment	Surface	dtd:enum/PhoneticTemplate/finalBoundaryCondition/true	witnessed	Evidenced
 edge-cases/right-to-left-anchor-environment	Surface	dtd:enum/PhonologicalRule/multipleApplicationOrder/rightToLeftIterative	witnessed	Evidenced
 edge-cases/right-to-left-anchor-environment	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/right-to-left-anchor-environment	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
@@ -474,6 +584,13 @@ edge-cases/simultaneous-epenthesis-cascade	Interface	LexicalEntry.partOfSpeech	p
 edge-cases/simultaneous-epenthesis-cascade	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/simultaneous-epenthesis-cascade	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/simultaneous-epenthesis-cascade	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/simultaneous-expansion-terminates	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/simultaneous-expansion-terminates	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/simultaneous-expansion-terminates	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/simultaneous-expansion-terminates	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/simultaneous-expansion-terminates	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/simultaneous-expansion-terminates	Construct	RewriteRule Simultaneous	claimed-unmapped	1 claim(s)
+edge-cases/simultaneous-feeding	Surface	dtd:enum/PhonologicalRule/multipleApplicationOrder/simultaneous	witnessed	Evidenced
 edge-cases/simultaneous-feeding	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/simultaneous-feeding	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
 edge-cases/simultaneous-feeding	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
@@ -490,7 +607,6 @@ edge-cases/simultaneous-feeding-control-iterative	Interface	SimpleContext.natura
 edge-cases/simultaneous-feeding-control-iterative	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/simultaneous-feeding-control-iterative	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/simultaneous-feeding-control-iterative	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
-edge-cases/stem-name-restricted-root-allomorph	Surface	dtd:element/OutputHeadFeatures	witnessed	Evidenced
 edge-cases/stem-name-restricted-root-allomorph	Surface	dtd:element/Region	required-by-dtd	RequiredByDtd
 edge-cases/stem-name-restricted-root-allomorph	Surface	dtd:element/Regions	required-by-dtd	RequiredByDtd
 edge-cases/stem-name-restricted-root-allomorph	Surface	dtd:element/StemName	required-by-dtd	RequiredByDtd
@@ -507,6 +623,7 @@ edge-cases/stem-name-restricted-root-allomorph	Interface	StemName.partsOfSpeech	
 edge-cases/stem-name-restricted-root-allomorph	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/stem-name-restricted-root-allomorph	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/stem-name-restricted-root-allomorph	Construct	Stem names	claimed-unmapped	6 claim(s)
+edge-cases/strrep-identity	Surface	dtd:element/Gloss	witnessed	Evidenced
 edge-cases/strrep-identity	Surface	dtd:element/Segments	witnessed	Evidenced
 edge-cases/strrep-identity	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/strrep-identity	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
@@ -557,8 +674,25 @@ edge-cases/truncate-morphotactic	Interface	SimpleContext.naturalClass	required-b
 edge-cases/truncate-morphotactic	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/truncate-morphotactic	Construct	AffixProcessRule: subtraction/truncation	claimed-unmapped	10 claim(s)
-languages/fusional-realizational-morphology	Surface	dtd:enum/CompoundingRule/blockable/false	witnessed	Evidenced
-languages/fusional-realizational-morphology	Surface	dtd:enum/CompoundingRule/blockable/true	witnessed	Evidenced
+edge-cases/two-merges-cascade-env	Interface	AlphaVariable.variableFeature	required-by-dtd	RequiredByDtd
+edge-cases/two-merges-cascade-env	Interface	BoundaryMarker.boundary	required-by-dtd	RequiredByDtd
+edge-cases/two-merges-cascade-env	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/two-merges-cascade-env	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/two-merges-cascade-env	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/two-merges-cascade-env	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/two-merges-cascade-env	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/two-merges-cascade-env	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/two-merges-cascade-env	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/two-merges-cascade-env	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/two-merges-cascade-env	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/two-merges-cascade-env	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/two-merges-cascade-env	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/two-merges-cascade-env	Interface	VariableFeature.phonologicalFeature	required-by-dtd	RequiredByDtd
+edge-cases/two-merges-cascade-env	Construct	Alpha-variable phonological environments (VariableFeature/AlphaVariables)	claimed-confirmed	1 claim(s)
+edge-cases/two-merges-cascade-env	Construct	Boundary markers (CharacterDefinitionTable)	claimed-confirmed	1 claim(s)
+edge-cases/two-merges-cascade-env	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
+languages/fusional-realizational-morphology	Surface	dtd:element/RealizationalFeatures	witnessed	Evidenced
+languages/fusional-realizational-morphology	Surface	dtd:element/RealizationalRule	required-by-dtd	RequiredByDtd
 languages/fusional-realizational-morphology	Surface	dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/isActive/yes	witnessed	Evidenced
 languages/fusional-realizational-morphology	Surface	dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/matchType/all	witnessed	Evidenced
 languages/fusional-realizational-morphology	Surface	dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/matchType/any	witnessed	Evidenced
@@ -595,6 +729,7 @@ languages/fusional-realizational-morphology	Construct	MPR features/groups	claime
 languages/fusional-realizational-morphology	Construct	MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext	claimed-confirmed	1 claim(s)
 languages/fusional-realizational-morphology	Construct	RealizationalAffixProcessRule	claimed-unmapped	7 claim(s)
 languages/fusional-realizational-morphology	Construct	Stem names	claimed-unmapped	12 claim(s)
+languages/metathesis-phase-isolation	Surface	dtd:element/HeadFeatures	witnessed	Evidenced
 languages/metathesis-phase-isolation	Surface	dtd:enum/MorphologicalOutput/redupMorphType/prefix	witnessed	Evidenced
 languages/metathesis-phase-isolation	Interface	BoundaryMarker.boundary	required-by-dtd	RequiredByDtd
 languages/metathesis-phase-isolation	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
@@ -654,13 +789,13 @@ languages/prefixal-discontinuous-slot-dependency	Construct	Affix template slots 
 languages/suffixing-evidential-adjacency-chain	Surface	dtd:element/MorphemeCoOccurrenceRules	witnessed	Evidenced
 languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/AllomorphCoOccurrenceRule/adjacency/anywhere	witnessed	Evidenced
 languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/AllomorphCoOccurrenceRule/isActive/yes	witnessed	Evidenced
-languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/AllomorphCoOccurrenceRule/type/exclude	witnessed	Evidenced
 languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/MorphemeCoOccurrenceRule/adjacency/adjacentToLeft	witnessed	Evidenced
 languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/MorphemeCoOccurrenceRule/adjacency/adjacentToRight	witnessed	Evidenced
+languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/MorphemeCoOccurrenceRule/adjacency/anywhere	witnessed	Evidenced
 languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/MorphemeCoOccurrenceRule/adjacency/somewhereToLeft	witnessed	Evidenced
 languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/MorphemeCoOccurrenceRule/adjacency/somewhereToRight	witnessed	Evidenced
 languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/MorphemeCoOccurrenceRule/isActive/yes	witnessed	Evidenced
-languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/MorphemeCoOccurrenceRule/type/exclude	witnessed	Evidenced
+languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/MorphemeCoOccurrenceRule/type/require	witnessed	Evidenced
 languages/suffixing-evidential-adjacency-chain	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 languages/suffixing-evidential-adjacency-chain	Interface	AllomorphCoOccurrenceRule.otherAllomorphs	required-by-dtd	RequiredByDtd
 languages/suffixing-evidential-adjacency-chain	Interface	AllomorphCoOccurrenceRule.primaryAllomorph	required-by-dtd	RequiredByDtd
@@ -736,7 +871,6 @@ languages/suffixing-vowel-harmony	Construct	NaturalClass: Segments vs FeatureNat
 languages/suffixing-vowel-harmony	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	8 claim(s)
 languages/suffixing-vowel-harmony	Construct	RewriteRule Simultaneous	claimed-unmapped	9 claim(s)
 languages/templatic-root-modification	Surface	dtd:element/InsertSimpleContext	witnessed	Evidenced
-languages/templatic-root-modification	Surface	dtd:enum/PhonologicalRule/multipleApplicationOrder/simultaneous	witnessed	Evidenced
 languages/templatic-root-modification	Interface	Allomorph.stemName	witnessed	Evidenced
 languages/templatic-root-modification	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 languages/templatic-root-modification	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd

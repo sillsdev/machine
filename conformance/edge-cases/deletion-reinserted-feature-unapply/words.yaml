@@ -1,0 +1,49 @@
+# oracle-provenance: founding-oracle
+# Signatures transcribed verbatim from the C# founding oracle (hc-conformance self-check, --propose)
+# built from sillsdev/machine 18cf242f (the integrate-conformance-framework head, PR #480).
+#
+# Pins the analysis-side interaction between a DELETION rule and a FEATURE rule ordered before it in
+# synthesis. Final devoicing (prFinalDevoice) feeds final t-deletion after a consonant
+# (prFinalTDeletion): BAGD -> bagt -> bag, BAGT -> bag. To find BAGD behind "bag", analysis must
+# re-insert an optional "t" at the end (undoing the deletion) and then undo the devoicing ON THAT
+# RE-INSERTED NODE. Feature-rule analysis targets require an unmodified node
+# (FeatureAnalysisRewriteRuleSpec adds Modified=Clean to the target), so an engine that marks the
+# re-inserted node as modified (sillsdev/machine PR #539 head does, through its `expanding` flag,
+# which is true for an empty-target NarrowAnalysisRewriteRuleSpec) keeps BAGT but loses BAGD.
+# "bak" is the control: the same devoicing is undone on an ordinary surface node (BAG -> bak).
+
+language: DeletionReinsertedFeatureUnapply
+inspired_by: ["synthetic final-devoicing plus final-cluster-simplification probe (not modeling any real language)"]
+sources:
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/NarrowAnalysisRewriteRuleSpec.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/FeatureAnalysisRewriteRuleSpec.cs"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: bag
+    note: >-
+      Two roots: BAGD (bagd -> final devoicing -> bagt -> final t-deletion -> bag) and BAGT (bagt ->
+      bag). BAGD is the witness: it is only reachable if the devoicing rule can still unapply on the
+      "t" that the deletion rule re-inserted during analysis.
+    parses:
+      - signature: "BAGD|bag"
+        rules: [prFinalDevoice, prFinalTDeletion]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+      - signature: "BAGT|bag"
+        rules: [prFinalDevoice, prFinalTDeletion]
+  - word: bak
+    note: >-
+      Control: BAG surfaces as "bak" by final devoicing alone, and BAK is itself. The devoicing is
+      undone here on a plain surface node, so this word must keep both analyses in every engine.
+    parses:
+      - signature: "BAG|bak"
+        rules: [prFinalDevoice, prFinalTDeletion]
+      - signature: "BAK|bak"
+        rules: [prFinalDevoice, prFinalTDeletion]
+  - word: bagd
+    note: Underlying shape of BAGD; final devoicing is obligatory, so this never surfaces.
+    expect_fail: true
+  - word: bagt
+    note: Underlying shape of BAGT; final t-deletion after a consonant is obligatory, so this never surfaces.
+    expect_fail: true

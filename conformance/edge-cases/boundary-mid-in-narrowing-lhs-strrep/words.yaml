@@ -1,0 +1,58 @@
+# oracle-provenance: founding-oracle
+# Signatures transcribed verbatim from the C# founding oracle (hc-conformance self-check, --propose)
+# built from sillsdev/machine 18cf242f (the integrate-conformance-framework head, PR #480).
+#
+# Pins a narrowing rule with a morpheme boundary in the MIDDLE of a three-segment target and a
+# TWO-segment output, in a grammar with NO phonological feature system (segments identified by their
+# string representation alone). prPostNasal: n + b -> n m. "kanmo" is ambiguous between KAN+BO (rule
+# applied, boundary absorbed) and KAN+MO (underlying m, boundary kept), and the founding oracle finds
+# both. Sibling of boundary-first-in-narrowing-lhs-strrep (+ b -> m, same loss) and
+# boundary-leftover-in-narrowing-lhs-strrep (n + b -> m, no loss): what matters is whether the
+# boundary falls inside the first |output| positions of the target.
+#
+# An engine that merges each of the first |output| target segments into the corresponding surface
+# node (sillsdev/machine PR #539) turns the surface "m" into a mandatory node with string set {m, +},
+# which neither the suffix "b" nor the root "n" can consume, so KAN+BO is lost. RED on PR #539 head
+# and on its no-dirty-marks variant alike.
+
+language: BoundaryMidInNarrowingLhsStrrep
+inspired_by: ["synthetic boundary-in-target post-nasal probe (not modeling any real language)"]
+sources:
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/NarrowAnalysisRewriteRuleSpec.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/CharacterDefinitionTable.cs"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: kanmo
+    note: KAN+BO (kan+bo -> kanmo, boundary absorbed) and KAN+MO (kan+mo, no rule). KAN+BO is the witness.
+    parses:
+      - signature: "KAN+BO|kanmo"
+        rules: [mrSfxBo, prPostNasal]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+          - "Boundary markers (CharacterDefinitionTable)"
+      - signature: "KAN+MO|kan+?mo"
+        rules: [mrSfxMo, prPostNasal]
+  - word: kanbo
+    note: The rule is obligatory, so kan+bo never surfaces unchanged.
+    expect_fail: true
+  - word: katbo
+    note: No nasal before the boundary, so the rule does not apply.
+    parses:
+      - signature: "KAT+BO|kat+?bo"
+        rules: [mrSfxBo]
+  - word: katmo
+    note: Underlying suffix m after a non-nasal; the rule output "n m" does not match "t m".
+    parses:
+      - signature: "KAT+MO|kat+?mo"
+        rules: [mrSfxMo]
+  - word: kan
+    note: Bare root.
+    parses:
+      - signature: "KAN|kan"
+        rules: []
+  - word: kat
+    note: Bare root.
+    parses:
+      - signature: "KAT|kat"
+        rules: []

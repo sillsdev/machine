@@ -1,0 +1,52 @@
+# oracle-provenance: founding-oracle
+# Signatures transcribed verbatim from the C# founding oracle (hc-conformance self-check, --propose)
+# built from sillsdev/machine 18cf242f (the integrate-conformance-framework head, PR #480).
+#
+# Regression guard for a narrowing rule (t a -> fused character) applied rightToLeftIterative, with
+# TWO subrules gated by requiredPartsOfSpeech (nouns fuse to F, verbs to G), inside a verb
+# AffixTemplate whose single mandatory slot adds the suffix s (reachable only through the template).
+# TA_N -> F; TA_V -> ta+s -> Gs; TATA (noun, two sites) -> FF. Every engine under test must gate the
+# two outputs by part of speech and must still find the fused root under the template suffix.
+
+language: MergeSubrulesPosRtlTemplate
+inspired_by: ["synthetic part-of-speech-gated syllabary merge (not modeling any real language)"]
+sources:
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/NarrowAnalysisRewriteRuleSpec.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/AnalysisRewriteRule.cs"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: F
+    note: The noun TA_N fused by the noun subrule.
+    parses:
+      - signature: "TA_N|F"
+        rules: [prMerge]
+  - word: Gs
+    note: The verb TA_V with the mandatory template suffix, fused by the verb subrule.
+    parses:
+      - signature: "TA_V+S|Gs"
+        rules: [mrSfxS, prMerge]
+        exercises:
+          - "RewriteRule direction (Dir): right-to-left"
+          - "RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level"
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+  - word: FF
+    note: TATA fused at both sites (right-to-left scan).
+    parses:
+      - signature: "TATA|FF"
+        rules: [prMerge]
+  - word: G
+    note: A verb without its mandatory template suffix is not a word, and no noun fuses to G.
+    expect_fail: true
+  - word: Fs
+    note: The suffix is verb-only and reachable only through the verb template; no verb fuses to F.
+    expect_fail: true
+  - word: ta
+    note: The merge is obligatory for both parts of speech.
+    expect_fail: true
+  - word: tas
+    note: Same, under the suffix.
+    expect_fail: true
+  - word: tata
+    note: Same, two sites.
+    expect_fail: true

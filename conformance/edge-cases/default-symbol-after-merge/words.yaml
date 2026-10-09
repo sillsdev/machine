@@ -1,0 +1,46 @@
+# oracle-provenance: founding-oracle
+# Signatures verified against the C# founding oracle (hc-conformance self-check) built from
+# sillsdev/machine 18cf242f (the integrate-conformance-framework head, PR #480). Ported from the
+# PanGloss conformance-staging fixture of the same name (branch exp/narrow-union-v1, 54497a01),
+# re-verified here rather than transcribed.
+#
+# Regression guard: the geminate-under-merge shape (see edge-cases/geminate-under-merge) with an
+# UNDERSPECIFIED merge output. Feature "nasal" declares defaultSymbol="nasPlus"; the fused character
+# f carries no explicit nasal value, while the merge's input classes omit nasal and the shortening
+# rule's OUTPUT class pins nasal=+. Analysis recovers "s a" behind f, and the shortening rule's
+# analysis side then tests nasal=+ on the recovered consonant: with UseDefaults the feature's
+# declared default supplies +, matching the concrete value on the unmerged path, so ROOT is found.
+# Guards that merge recovery and default-symbol resolution compose (a node recovered by a merge must
+# still fall back to the feature default rather than to "unset").
+
+language: DefaultSymbolAfterMerge
+inspired_by: ["synthetic default-symbol-under-syllabary-fusion probe (not modeling any real language)"]
+sources:
+  - "sillsdev/machine#539 (narrowing-rule unapplication); PanGloss exp/narrow-union-v1 54497a01 T7"
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/NarrowAnalysisRewriteRuleSpec.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/XmlLanguageLoader.cs"
+requires: [phonology]
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  KEEP-ENGINE-ONLY for the same reason as edge-cases/loader-default-symbol: this fixture's
+  ground truth depends on SymbolicFeature.defaultSymbol (the fused character f omits its nasal
+  value deliberately, and the later feature-rule match is satisfied only by the declared default).
+  LoadFeatureSystem (HCLoader.cs:2650-2667) never sets a default value on any SymbolicFeature it
+  builds, so no FieldWorks project can produce this grammar; see
+  conformance/fieldworks-producibility.tsv, row SymbolicFeature.defaultSymbol.
+words:
+  - word: f
+    note: >-
+      After s+a fuses into the nasal-underspecified f, the shortening rule's analysis side pins
+      nasal=+ on the recovered consonant. The feature default supplies +, so ROOT is found exactly
+      as on the fully specified path in edge-cases/geminate-under-merge.
+    provenance: "sillsdev/machine#539 (T7: default symbol after merge interaction guard)"
+    parses:
+      - signature: "ROOT|f"
+        gloss: root
+        rules: [prMerge, prShorten]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+  - word: ca
+    note: "Negative control: the shortening and the fusion are both obligatory."
+    expect_fail: true
