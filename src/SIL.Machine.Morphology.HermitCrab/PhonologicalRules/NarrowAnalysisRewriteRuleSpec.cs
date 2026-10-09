@@ -40,6 +40,9 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         private void Unapply(Match<Word, ShapeNode> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
         {
             ShapeNode curNode = IsTargetEmpty ? range.Start : range.End;
+            ShapeNode targetNode = range.Start;
+            int targetPos = 0;
+            bool expanding = _analysisRhs.Children.Count > _targetCount;
             foreach (
                 Constraint<Word, ShapeNode> constraint in _analysisRhs.Children.CastToConstraints(
                     "The target (left-hand side) of a rewrite rule"
@@ -49,14 +52,31 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 FeatureStruct fs = constraint.FeatureStruct.Clone();
                 if (varBindings != null)
                     fs.ReplaceVariables(varBindings);
-                curNode = targetMatch.Input.Shape.AddAfter(curNode, fs, true);
+                if (targetPos < _targetCount)
+                {
+                    // Union fs into the existing node's feature structure.
+                    targetNode.Annotation.FeatureStruct.Union(fs);
+                    if (expanding)
+                        targetNode.SetDirty(true);
+                    targetNode = targetNode.Next;
+                    targetPos++;
+                }
+                else
+                {
+                    // Add an optional node for fs.
+                    curNode = targetMatch.Input.Shape.AddAfter(curNode, fs, true);
+                    if (expanding)
+                        curNode.SetDirty(true);
+                }
             }
 
-            curNode = range.Start;
-            for (int i = 0; i < _targetCount; i++)
+            // Make the rest of the existing nodes optional.
+            for (int i = targetPos; i < _targetCount; i++)
             {
-                curNode.Annotation.Optional = true;
-                curNode = curNode.Next;
+                targetNode.Annotation.Optional = true;
+                if (expanding)
+                    targetNode.SetDirty(true);
+                targetNode = targetNode.Next;
             }
         }
     }

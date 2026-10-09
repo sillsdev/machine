@@ -85,8 +85,9 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 {
                     // NarrowAnalysisRewriteRuleSpec works for expansion, too.
                     ruleSpec = new NarrowAnalysisRewriteRuleSpec(settings, _rule.Lhs, sr);
-                    mode = RewriteApplicationMode.Simultaneous;
-                    reapplyType = ReapplyType.Deletion;
+                    // Expansion is like epenthesis.
+                    if (_rule.ApplicationMode == RewriteApplicationMode.Simultaneous)
+                        reapplyType = ReapplyType.SelfOpaquing;
                 }
                 Debug.Assert(ruleSpec != null);
 
