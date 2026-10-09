@@ -17,6 +17,25 @@ namespace SIL.Machine.Morphology.HermitCrab
                 traceManager.MorphologicalRuleNotUnapplied(rule, subruleIndex, input);
         }
 
+        /// <summary>
+        /// ITraceManager implementations previously received only the productivity-restriction rejection,
+        /// with no subrule index, so they keep exactly that and nothing more.
+        /// </summary>
+        public static void CompoundingRuleRejected(
+            this ITraceManager traceManager,
+            IMorphologicalRule rule,
+            int subruleIndex,
+            Word input,
+            FailureReason reason,
+            object failureObj
+        )
+        {
+            if (traceManager is IDetailedTraceManager)
+                traceManager.CompoundingRuleNotUnapplied(rule, subruleIndex, input, reason, failureObj);
+            else if (reason == FailureReason.NonHeadProdRestrictMprFeatures)
+                traceManager.CompoundingRuleNotUnapplied(rule, -1, input, reason, failureObj);
+        }
+
         public static void LexicalLookupCompleted(
             this ITraceManager traceManager,
             Stratum stratum,
