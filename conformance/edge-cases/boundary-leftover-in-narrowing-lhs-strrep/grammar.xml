@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Synthetic, ZERO phonological features (every segment is identified by its string representation
+     alone, the state of a FieldWorks project that has not defined phonological features). A narrowing
+     rule with a morpheme boundary in the MIDDLE of a three-segment target and a ONE-segment output:
+       prPostNasal  n + b -> m
+     (3 -> 1, nasal and boundary absorbed into the suffix-initial consonant: the shape of a real
+     syllabary grammar whose "C + V -> fused character" rule has the boundary in second position).
+     Root KAN plus the suffix "+bo" surfaces as "kamo"; KA plus the suffix "+mo" also surfaces as
+     "kamo". Analysing "kamo" must recover both. Sibling probes: boundary-first-in-narrowing-lhs-strrep
+     (+ b -> m) and boundary-mid-in-narrowing-lhs-strrep (n + b -> n m). -->
+<HermitCrabInput>
+  <Language>
+    <Name>BoundaryLeftoverInNarrowingLhsStrrep</Name>
+    <PartsOfSpeech><PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech></PartsOfSpeech>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+      <BoundaryDefinitions>
+        <BoundaryDefinition id="bPlus"><Representations><Representation>+</Representation></Representations></BoundaryDefinition>
+      </BoundaryDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <SegmentNaturalClass id="ncAny"><Name>Any</Name><Segment segment="cK" /><Segment segment="cT" /><Segment segment="cB" /><Segment segment="cN" /><Segment segment="cM" /><Segment segment="cA" /><Segment segment="cO" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prPostNasal">
+        <Name>postNasalSuffixB</Name>
+        <PhoneticInput><PhoneticSequence><Segment segment="cN" /><BoundaryMarker boundary="bPlus" /><Segment segment="cB" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="cM" /></PhoneticSequence></PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" morphologicalRules="mrSfxBo mrSfxMo" phonologicalRules="prPostNasal">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrSfxBo" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>sfxBo</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSfxBo">
+                <MorphologicalInput><PhoneticSequence id="stemBo"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemBo" /><InsertSegments><PhoneticShape>+bo</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>BO</MorphemeId>
+            <Gloss>bo</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrSfxMo" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>sfxMo</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSfxMo">
+                <MorphologicalInput><PhoneticSequence id="stemMo"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemMo" /><InsertSegments><PhoneticShape>+mo</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>MO</MorphemeId>
+            <Gloss>mo</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eKan" partOfSpeech="posN"><Allomorphs><Allomorph id="aKan"><PhoneticShape>kan</PhoneticShape></Allomorph></Allomorphs><MorphemeId>KAN</MorphemeId><Gloss>kan</Gloss></LexicalEntry>
+          <LexicalEntry id="eKat" partOfSpeech="posN"><Allomorphs><Allomorph id="aKat"><PhoneticShape>kat</PhoneticShape></Allomorph></Allomorphs><MorphemeId>KAT</MorphemeId><Gloss>kat</Gloss></LexicalEntry>
+          <LexicalEntry id="eKa" partOfSpeech="posN"><Allomorphs><Allomorph id="aKa"><PhoneticShape>ka</PhoneticShape></Allomorph></Allomorphs><MorphemeId>KA</MorphemeId><Gloss>ka</Gloss></LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

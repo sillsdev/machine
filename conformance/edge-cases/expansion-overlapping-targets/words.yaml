@@ -1,0 +1,47 @@
+# oracle-provenance: founding-oracle
+# Signatures transcribed verbatim from the C# founding oracle (hc-conformance self-check, --propose)
+# built from sillsdev/machine 18cf242f (the integrate-conformance-framework head, PR #480).
+#
+# Pins the analysis-side unapplication of an EXPANSION rule (1 -> 2) whose two-segment output can
+# overlap with itself. prBreak: A -> a a (long-vowel breaking, left-to-right iterative). In "kaaa"
+# the output "a a" occurs at positions 1-2 and 2-3, so the surface is ambiguous between KAA1 (k A a),
+# KAA2 (k a A) and KAAA (k a a a). The founding oracle un-applies expansion simultaneously over every
+# site, so all three roots are found. An engine that un-applies expansion iteratively, restarting
+# after the first match (sillsdev/machine PR #539 head routes expansion through the iterative pattern
+# rule), handles only one of the two overlapping sites and loses KAA1 or KAA2, depending on scan
+# direction. "kaa" has a single site and is the control.
+
+language: ExpansionOverlappingTargets
+inspired_by: ["synthetic long-vowel-breaking probe (not modeling any real language)"]
+sources:
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/AnalysisRewriteRule.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/NarrowAnalysisRewriteRuleSpec.cs"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: kaaa
+    note: >-
+      Three roots: KAA1 (kAa, breaking at positions 1-2), KAA2 (kaA, breaking at positions 2-3) and
+      KAAA (no rule). Both overlapping sites must be undone to find both KAA1 and KAA2.
+    parses:
+      - signature: "KAA1|kaaa"
+        rules: [prBreak]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+      - signature: "KAA2|kaaa"
+        rules: [prBreak]
+      - signature: "KAAA|kaaa"
+        rules: [prBreak]
+  - word: kaa
+    note: "Control with one site: KA (kA -> kaa) and KAA3 (no rule)."
+    parses:
+      - signature: "KA|kaa"
+        rules: [prBreak]
+      - signature: "KAA3|kaa"
+        rules: [prBreak]
+  - word: kAa
+    note: Underlying shape of KAA1; breaking is obligatory, so a long vowel never surfaces.
+    expect_fail: true
+  - word: kA
+    note: Underlying shape of KA; same reason.
+    expect_fail: true
