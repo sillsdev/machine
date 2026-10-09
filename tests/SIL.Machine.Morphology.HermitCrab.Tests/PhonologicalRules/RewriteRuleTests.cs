@@ -590,6 +590,97 @@ public class RewriteRuleTests : HermitCrabTestBase
     }
 
     [Test]
+    public void MergeRuleUnappliesAcrossInterposedOptionalSegment()
+    {
+        var merge = new RewriteRule
+        {
+            Name = "merge",
+            Lhs = Pattern<Word, ShapeNode>
+                .New()
+                .Annotation(Character(Table3, "s"))
+                .Annotation(Character(Table3, "a"))
+                .Annotation(Character(Table3, "g"))
+                .Value,
+        };
+        Morphophonemic.PhonologicalRules.Add(merge);
+        merge.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>
+                    .New()
+                    .Annotation(Character(Table3, "n"))
+                    .Annotation(Character(Table3, "i"))
+                    .Value,
+            }
+        );
+
+        var morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("ni"), "32");
+
+        // Ordered after the merge, so it unapplies first and leaves an optional z inside the span n..i.
+        var deletion = new RewriteRule
+        {
+            Name = "deletion",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "z")).Value,
+        };
+        Morphophonemic.PhonologicalRules.Add(deletion);
+        deletion.Subrules.Add(
+            new RewriteSubrule
+            {
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "n")).Value,
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "i")).Value,
+            }
+        );
+
+        morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("ni"), "32");
+    }
+
+    [Test]
+    public void MergeRuleUnappliesAcrossInterposedOptionalBoundary()
+    {
+        var merge = new RewriteRule
+        {
+            Name = "merge",
+            Lhs = Pattern<Word, ShapeNode>
+                .New()
+                .Annotation(Character(Table3, "s"))
+                .Annotation(Character(Table3, "a"))
+                .Annotation(Character(Table3, "g"))
+                .Value,
+        };
+        Morphophonemic.PhonologicalRules.Add(merge);
+        merge.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>
+                    .New()
+                    .Annotation(Character(Table3, "n"))
+                    .Annotation(Character(Table3, "i"))
+                    .Value,
+            }
+        );
+
+        // Ordered after the merge, so it unapplies first and leaves an optional boundary inside the span n..i.
+        var deletion = new RewriteRule
+        {
+            Name = "deletion",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "+")).Value,
+        };
+        Morphophonemic.PhonologicalRules.Add(deletion);
+        deletion.Subrules.Add(
+            new RewriteSubrule
+            {
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "n")).Value,
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "i")).Value,
+            }
+        );
+
+        var morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("ni"), "32");
+    }
+
+    [Test]
     public void BoundaryRules()
     {
         var highVowel = FeatureStruct
