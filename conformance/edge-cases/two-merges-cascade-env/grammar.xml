@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Synthetic syllabary-style merge cascade (the shape of a real Fidel-type grammar: a consonant and
+     a following "a" fuse into one syllabic character, with and without a morpheme boundary between
+     them), with an earlier vowel-fronting rule whose environment is the fused character:
+       prFront      a -> e / _ [+cons vel]
+       prMerge      [+cons aPlace -syl] a   -> [+cons aPlace +syl]
+       prMergeBdry  [+cons aPlace -syl] + a -> [+cons aPlace +syl]
+     T = fused "ta", K = fused "ka". Root TAKA surfaces as "teK" (taka -> teka -> teK); TAK plus the
+     suffix "+a" also surfaces as "teK" (tak+a -> tek+a -> teK). Analysing "teK" must undo both merges
+     (the node recovered by the second rule must still satisfy the target of the first) and then undo
+     the fronting on "e", whose right-hand environment [+cons vel] has to be satisfied by whatever node
+     now stands where "K" was. Alpha variables copy place through the merges. -->
+<HermitCrabInput>
+  <Language>
+    <Name>TwoMergesCascadeEnv</Name>
+    <PartsOfSpeech><PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech></PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="consPlus">+cons</Symbol><Symbol id="consMinus">-cons</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featSyl"><Name>syl</Name><Symbols><Symbol id="sylPlus">+syl</Symbol><Symbol id="sylMinus">-syl</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featPlace"><Name>place</Name><Symbols><Symbol id="plCor">cor</Symbol><Symbol id="plVel">vel</Symbol><Symbol id="plNone">none</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featFront"><Name>front</Name><Symbols><Symbol id="frPlus">+front</Symbol><Symbol id="frMinus">-front</Symbol></Symbols></SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featSyl" symbolValues="sylMinus" /><FeatureValue feature="featPlace" symbolValues="plCor" /><FeatureValue feature="featFront" symbolValues="frMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featSyl" symbolValues="sylMinus" /><FeatureValue feature="featPlace" symbolValues="plVel" /><FeatureValue feature="featFront" symbolValues="frMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations><FeatureValue feature="featCons" symbolValues="consMinus" /><FeatureValue feature="featSyl" symbolValues="sylPlus" /><FeatureValue feature="featPlace" symbolValues="plNone" /><FeatureValue feature="featFront" symbolValues="frMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cE"><Representations><Representation>e</Representation></Representations><FeatureValue feature="featCons" symbolValues="consMinus" /><FeatureValue feature="featSyl" symbolValues="sylPlus" /><FeatureValue feature="featPlace" symbolValues="plNone" /><FeatureValue feature="featFront" symbolValues="frPlus" /></SegmentDefinition>
+        <SegmentDefinition id="cTA"><Representations><Representation>T</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featSyl" symbolValues="sylPlus" /><FeatureValue feature="featPlace" symbolValues="plCor" /><FeatureValue feature="featFront" symbolValues="frMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cKA"><Representations><Representation>K</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featSyl" symbolValues="sylPlus" /><FeatureValue feature="featPlace" symbolValues="plVel" /><FeatureValue feature="featFront" symbolValues="frMinus" /></SegmentDefinition>
+      </SegmentDefinitions>
+      <BoundaryDefinitions>
+        <BoundaryDefinition id="bPlus"><Representations><Representation>+</Representation></Representations></BoundaryDefinition>
+      </BoundaryDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncC"><Name>C</Name><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featSyl" symbolValues="sylMinus" /></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncFused"><Name>fused</Name><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featSyl" symbolValues="sylPlus" /></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncVelC"><Name>velarC</Name><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featPlace" symbolValues="plVel" /></FeatureNaturalClass>
+      <SegmentNaturalClass id="ncA"><Name>a</Name><Segment segment="cA" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncE"><Name>e</Name><Segment segment="cE" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prFront">
+        <Name>frontingBeforeVelar</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncA" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncE" /></PhoneticSequence></PhoneticOutput>
+            <Environment><RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncVelC" /></PhoneticSequence></PhoneticTemplate></RightEnvironment></Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <PhonologicalRule id="prMerge">
+        <Name>mergeCa</Name>
+        <VariableFeatures><VariableFeature id="varPlace" name="α" phonologicalFeature="featPlace" /></VariableFeatures>
+        <PhoneticInput><PhoneticSequence>
+          <SimpleContext naturalClass="ncC"><AlphaVariables><AlphaVariable variableFeature="varPlace" /></AlphaVariables></SimpleContext>
+          <SimpleContext naturalClass="ncA" />
+        </PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncFused"><AlphaVariables><AlphaVariable variableFeature="varPlace" /></AlphaVariables></SimpleContext></PhoneticSequence></PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <PhonologicalRule id="prMergeBdry">
+        <Name>mergeCBoundaryA</Name>
+        <VariableFeatures><VariableFeature id="varPlace2" name="α" phonologicalFeature="featPlace" /></VariableFeatures>
+        <PhoneticInput><PhoneticSequence>
+          <SimpleContext naturalClass="ncC"><AlphaVariables><AlphaVariable variableFeature="varPlace2" /></AlphaVariables></SimpleContext>
+          <BoundaryMarker boundary="bPlus" />
+          <SimpleContext naturalClass="ncA" />
+        </PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncFused"><AlphaVariables><AlphaVariable variableFeature="varPlace2" /></AlphaVariables></SimpleContext></PhoneticSequence></PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" morphologicalRules="mrSfxA" phonologicalRules="prFront prMerge prMergeBdry">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrSfxA" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>sfxA</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSfxA">
+                <MorphologicalInput><PhoneticSequence id="stemA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemA" /><InsertSegments><PhoneticShape>+a</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SFX</MorphemeId>
+            <Gloss>sfx</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eTaka" partOfSpeech="posN"><Allomorphs><Allomorph id="aTaka"><PhoneticShape>taka</PhoneticShape></Allomorph></Allomorphs><MorphemeId>TAKA</MorphemeId><Gloss>taka</Gloss></LexicalEntry>
+          <LexicalEntry id="eTak" partOfSpeech="posN"><Allomorphs><Allomorph id="aTak"><PhoneticShape>tak</PhoneticShape></Allomorph></Allomorphs><MorphemeId>TAK</MorphemeId><Gloss>tak</Gloss></LexicalEntry>
+          <LexicalEntry id="eKata" partOfSpeech="posN"><Allomorphs><Allomorph id="aKata"><PhoneticShape>kata</PhoneticShape></Allomorph></Allomorphs><MorphemeId>KATA</MorphemeId><Gloss>kata</Gloss></LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
