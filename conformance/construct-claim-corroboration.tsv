@@ -14,6 +14,14 @@ edge-cases/bistratal-overlapping-segment-representation	basi	-	CharacterDefiniti
 edge-cases/bistratal-overlapping-segment-representation	des	ROOT3|des	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/bistratal-overlapping-segment-representation	eds	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/bistratal-overlapping-segment-representation	sed	ROOT4|sed	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/boundary-first-in-narrowing-lhs	kanmo	KAN+BO|kanmo	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/boundary-first-in-narrowing-lhs	kanmo	KAN+BO|kanmo	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/boundary-first-in-narrowing-lhs-strrep	kanmo	KAN+BO|kanmo	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/boundary-first-in-narrowing-lhs-strrep	kanmo	KAN+BO|kanmo	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/boundary-leftover-in-narrowing-lhs-strrep	kamo	KAN+BO|kamo	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/boundary-leftover-in-narrowing-lhs-strrep	kamo	KAN+BO|kamo	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/boundary-mid-in-narrowing-lhs-strrep	kanmo	KAN+BO|kanmo	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/boundary-mid-in-narrowing-lhs-strrep	kanmo	KAN+BO|kanmo	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/chained-output-feature-override-loss	zud	ZUD|zud	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/chained-output-feature-override-loss	zudi	ZUD+INNER|zudi	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/chained-output-feature-override-loss	zudia	-	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
@@ -41,6 +49,8 @@ edge-cases/cross-table-root-respelling	tu	ROOT1+SUF|m	CharacterDefinitionTable: 
 edge-cases/cross-table-root-respelling	tu	ROOT3+SUF|tu	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/deep-optional-affix-nesting	k	K|k	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/deep-optional-affix-nesting	xxxxxxxxxxxxk	P12+P11+P10+P9+P8+P7+P6+P5+P4+P3+P2+P1+K|xxxxxxxxxxxxk	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/default-symbol-after-merge	f	ROOT|f	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/deletion-reinserted-feature-unapply	bag	BAGD|bag	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/diacritic-segments	años	YEAR+PL|años	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/diacritic-segments	años	YEAR+PL|años	AffixProcessRule: prefix/suffix/circumfix/infix	Unmapped	-
 edge-cases/diacritic-segments	años	YEAR+PL|años	MorphologicalOutputAction: CopyFromInput/InsertSegments	Confirmed	CopyFromInput,InsertSegments
@@ -75,6 +85,8 @@ edge-cases/disjunctive-recheck	wak	|wak	Disjunctive allomorphs / free-fluctuatio
 edge-cases/disjunctive-recheck	wakta	-	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/disjunctive-recheck	wok	-	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/disjunctive-recheck	wokta	+|wokta	Disjunctive allomorphs / free-fluctuation	Unmapped	-
+edge-cases/epenthesis-fed-merge	bd	ROOT|bd	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/expansion-overlapping-targets	kaaa	KAA1|kaaa	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/feature-gating-breadth	kal	KAL|kal	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/feature-gating-breadth	kalid	KAL+PAST|kalid	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/feature-gating-breadth	kalidka	-	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
@@ -90,6 +102,7 @@ edge-cases/feature-gating-breadth	nalno	NAL+LOUD|nalno	Syntactic feature agreeme
 edge-cases/feature-gating-breadth	nalnomu	NAL+LOUD+EMPH|nalnomu	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/feature-gating-breadth	tun	TUN|tun	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/feature-gating-breadth	tunka	-	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/feature-rule-before-merge	butbut	ROOT|butbut	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/feature-system-breadth	ak	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/feature-system-breadth	ask	-	Alpha-variable phonological environments (VariableFeature/AlphaVariables)	Confirmed	AlphaVariables,VariableFeature,variableFeature
 edge-cases/feature-system-breadth	at	AT|at	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	Confirmed	FeatureNaturalClass,SegmentNaturalClass,Segments,naturalClass
@@ -116,6 +129,7 @@ edge-cases/free-fluctuating-allomorph-pair	kot	ORD|kot	Disjunctive allomorphs / 
 edge-cases/free-fluctuating-allomorph-pair	kots	-	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/free-fluctuating-allomorph-pair	pel	ALT|pel	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/free-fluctuating-allomorph-pair	pol	ALT|pol	Disjunctive allomorphs / free-fluctuation	Unmapped	-
+edge-cases/geminate-under-merge	f	ROOT|f	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/iterative-epenthesis-cascade	uotaa	BOTH|uotaa	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/loader-default-symbol	bat	|bat	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/loader-default-symbol	bdt	-	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
@@ -143,6 +157,11 @@ edge-cases/loader-pattern-shapes	bat	|b[ae]t	Boundary markers (CharacterDefiniti
 edge-cases/loader-pattern-shapes	bet	|b[ae]t	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/loader-pattern-shapes	bit	-	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/loader-pattern-shapes	bt	-	CharacterDefinitionTable pattern shapes: optional group / Kleene star	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/merge-subrules-pos-rtl-template	Gs	TA_V+S|Gs	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/merge-subrules-pos-rtl-template	Gs	TA_V+S|Gs	RewriteRule direction (Dir): right-to-left	Unmapped	-
+edge-cases/merge-subrules-pos-rtl-template	Gs	TA_V+S|Gs	RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level	Unmapped	-
+edge-cases/merge-then-metathesis	aca	ATSA|aca	MetathesisRule	Confirmed	MetathesisRule
+edge-cases/merge-then-metathesis	aca	ATSA|aca	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/metathesis-comparison-crash	ti	-	MetathesisRule	Confirmed	MetathesisRule
 edge-cases/morphotactic-attribute-breadth	kul	KUL|kul	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	Contradicted	requiredStemName
 edge-cases/morphotactic-attribute-breadth	kulba	-	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	Contradicted	requiredStemName
@@ -208,6 +227,7 @@ edge-cases/right-to-left-anchor-environment	eaaa	-	RewriteRule direction (Dir): 
 edge-cases/right-to-left-anchor-environment	eeae	ROOT3|eeae	RewriteRule direction (Dir): right-to-left	Unmapped	-
 edge-cases/right-to-left-anchor-environment	eeee	-	RewriteRule direction (Dir): right-to-left	Unmapped	-
 edge-cases/shared-template-unconstrained-suffix	mivd	NROOT+IVERB+PAST|mivd	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/simultaneous-expansion-terminates	biiiibiiii	ROOT|biiiibiiii	RewriteRule Simultaneous	Unmapped	-
 edge-cases/simultaneous-feeding	gigugu	GIGI|gigugu	RewriteRule Simultaneous	Unmapped	-
 edge-cases/simultaneous-feeding-control-iterative	gigugi	GIGI|gigugi	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/stem-name-restricted-root-allomorph	kap	-	Stem names	Unmapped	-
@@ -251,6 +271,9 @@ edge-cases/truncate-morphotactic	gbubibi	+|gbubibi	AffixProcessRule: subtraction
 edge-cases/truncate-morphotactic	sa	+|sa	AffixProcessRule: subtraction/truncation	Unmapped	-
 edge-cases/truncate-morphotactic	sag	|sag	AffixProcessRule: subtraction/truncation	Unmapped	-
 edge-cases/truncate-morphotactic	sas	|sas	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/two-merges-cascade-env	teK	TAK+SFX|teK	Alpha-variable phonological environments (VariableFeature/AlphaVariables)	Confirmed	AlphaVariables,VariableFeature,variableFeature
+edge-cases/two-merges-cascade-env	teK	TAK+SFX|teK	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/two-merges-cascade-env	teK	TAK+SFX|teK	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 languages/fusional-realizational-morphology	benox	BEPFX1+NOXV|benox	AffixProcessRule: prefix/suffix/circumfix/infix	Unmapped	-
 languages/fusional-realizational-morphology	ducit	-	RealizationalAffixProcessRule	Unmapped	-
 languages/fusional-realizational-morphology	ducunt	DUC+PL2|ducunt	RealizationalAffixProcessRule	Unmapped	-
