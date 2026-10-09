@@ -30,7 +30,14 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             }
             else
             {
-                Pattern.Children.AddRange(subrule.Rhs.Children.CloneItems());
+                // The matcher skips optional nodes and boundaries, so the matched RHS nodes need not be
+                // adjacent; each is recovered from its own group capture.
+                int i = 0;
+                foreach (PatternNode<Word, ShapeNode> node in subrule.Rhs.Children)
+                {
+                    Pattern.Children.Add(new Group<Word, ShapeNode>("target" + i) { Children = { node.Clone() } });
+                    i++;
+                }
             }
             Pattern.Freeze();
 
@@ -52,11 +59,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 curNode = targetMatch.Input.Shape.AddAfter(curNode, fs, true);
             }
 
-            curNode = range.Start;
             for (int i = 0; i < _targetCount; i++)
             {
-                curNode.Annotation.Optional = true;
-                curNode = curNode.Next;
+                ShapeNode node = targetMatch.GroupCaptures["target" + i].Range.GetStart(targetMatch.Matcher.Direction);
+                node.Annotation.Optional = true;
             }
         }
     }
