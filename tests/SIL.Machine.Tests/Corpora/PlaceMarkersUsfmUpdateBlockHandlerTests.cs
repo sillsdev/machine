@@ -1042,6 +1042,92 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
     }
 
     [Test]
+    public void UpdateUsfm_MarkerBehaviorDisagreesWithAlignmentInfo()
+    {
+        string source = "Section header";
+        string pretranslation = "New section header";
+        PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
+            sourceTokens: Tokenizer.Tokenize(source).ToList(),
+            translationTokens: Tokenizer.Tokenize(pretranslation).ToList(),
+            alignment: ToWordAlignmentMatrix("0-1 1-2"),
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
+        );
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:0/1:s"),
+                pretranslation,
+                new Dictionary<string, object> { { "alignment_info", alignInfo } }
+            ),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "New verse 1"),
+        ];
+        string usfm =
+            @"\id MAT
+\c 1
+\s Section \it header\it*
+\p
+\v 1 Verse 1
+";
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            styleBehavior: UpdateUsfmMarkerBehavior.Strip,
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
+        );
+
+        string result =
+            @"\id MAT
+\c 1
+\s New section header
+\p
+\v 1 New verse 1
+";
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void UpdateUsfm_OtherElementsDoNotAffectEmbedPlacement()
+    {
+        string source = "This is the first part. This is the second part.";
+        string pretranslation = "Esta es la primera parte. Esta es la segunda parte.";
+        string result =
+            @"\id MAT
+\c 1
+\v 1 Esta es la primera parte. Esta es la segunda parte. \f + \ft Footnote\f*
+\q1
+\q2
+";
+        foreach (string milestone in new[] { "", @" \ts-s\*" })
+        {
+            PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
+                sourceTokens: Tokenizer.Tokenize(source).ToList(),
+                translationTokens: Tokenizer.Tokenize(pretranslation).ToList(),
+                alignment: ToWordAlignmentMatrix("0-0 1-1 2-2 3-3 4-4 5-5 6-6 7-7 8-8 9-9 10-10"),
+                paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+                styleBehavior: UpdateUsfmMarkerBehavior.Strip
+            );
+            IReadOnlyList<UpdateUsfmRow> rows =
+            [
+                new UpdateUsfmRow(
+                    ScrRef("MAT 1:1"),
+                    pretranslation,
+                    new Dictionary<string, object> { { "alignment_info", alignInfo } }
+                ),
+            ];
+            string usfm =
+                "\\id MAT\n\\c 1\n"
+                + "\\v 1 This is the first part. This is the second part.\\f + \\ft Footnote\\f*\n"
+                + $"\\q1{milestone}\n\\q2\n";
+
+            string target = UpdateUsfm(rows, usfm, usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]);
+
+            AssertUsfmEquals(target, result);
+        }
+    }
+
+    [Test]
     public void UpdateBlock_AnusvaraTokenization()
     {
         // The anusvara ("ं") is the third to last character in the update rows string
