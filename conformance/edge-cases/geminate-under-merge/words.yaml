@@ -1,0 +1,39 @@
+# oracle-provenance: founding-oracle
+# Signatures verified against the C# founding oracle (hc-conformance self-check) built from
+# sillsdev/machine 18cf242f (the integrate-conformance-framework head, PR #480). Ported from the
+# PanGloss conformance-staging fixture of the same name (branch exp/narrow-union-v1, 54497a01),
+# re-verified here rather than transcribed.
+#
+# Pins the compact shape behind the real-grammar parse losses that motivated this fixture set: a
+# long (geminate) consonant is shortened by a feature rule (prShorten: [+long] -> [-long]), and the
+# resulting short consonant then fuses with the following vowel into one syllabic character
+# (prMerge: s a -> f, the "fidel"-style narrowing rule of a syllabary orthography). Root "ca"
+# surfaces as "f". Analysis must recover "s a" behind "f" and then unapply the shortening on the
+# recovered consonant. An engine that marks the nodes a merge recovers as modified (sillsdev/machine
+# PR #539 head) blocks the feature rule, whose analysis target requires an unmodified node, and
+# loses the only parse.
+
+language: GeminateUnderMerge
+inspired_by: ["synthetic geminate-shortening-under-syllabary-fusion probe (not modeling any real language)"]
+sources:
+  - "sillsdev/machine#539 (narrowing-rule unapplication); PanGloss exp/narrow-union-v1 54497a01 T5"
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/NarrowAnalysisRewriteRuleSpec.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/FeatureAnalysisRewriteRuleSpec.cs"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: f
+    note: >-
+      The long-consonant root is shortened, then the short consonant and the vowel fuse into one
+      surface character. Analysis must still unapply the shortening after undoing the fusion; this
+      is the witness.
+    provenance: "sillsdev/machine#539 (T5: the geminate-under-merge shape loses the parse at the PR head)"
+    parses:
+      - signature: "ROOT|f"
+        gloss: root
+        rules: [prMerge, prShorten]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+  - word: ca
+    note: "Negative control: the shortening and the fusion are both obligatory."
+    expect_fail: true
