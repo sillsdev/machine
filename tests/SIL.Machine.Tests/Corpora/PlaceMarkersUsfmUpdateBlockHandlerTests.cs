@@ -397,10 +397,10 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
     [Test]
     public void UpdateUsfm_VerseRanges()
     {
-        IReadOnlyList<UpdateUsfmRow> rows = Enumerable
-            .Range(1, 6)
-            .Select(i => new UpdateUsfmRow(
-                [ScriptureRef.Parse($"MAT 1:{i}")],
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                [.. Enumerable.Range(1, 5).Select(i => ScriptureRef.Parse($"MAT 1:{i}"))],
                 "New verse range text new paragraph 2",
                 new Dictionary<string, object>
                 {
@@ -415,8 +415,8 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                         )
                     },
                 }
-            ))
-            .ToList();
+            ),
+        ];
         string usfm =
             @"\id MAT
 \c 1
@@ -909,6 +909,222 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
 ";
 
         AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void UpdateUsfm_UnclosedStyleMarkerInNonVerseParagraph()
+    {
+        string source = "(A)";
+        string pretranslation = "(A translated)";
+        PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
+            sourceTokens: Tokenizer.Tokenize(source).ToList(),
+            translationTokens: Tokenizer.Tokenize(pretranslation).ToList(),
+            alignment: ToWordAlignmentMatrix("0-0 1-1 2-2"),
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+        );
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("PSA 119:0/1:d"),
+                pretranslation,
+                new Dictionary<string, object> { { "alignment_info", alignInfo } }
+            ),
+            new UpdateUsfmRow(ScrRef("PSA 119:1"), "New verse 1"),
+        ];
+        string usfm =
+            @"\id PSA
+\c 119
+\d \bd (A)
+\q1
+\v 1 Verse 1
+";
+
+        string target = UpdateUsfm(rows, usfm, usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]);
+
+        string result =
+            @"\id PSA
+\c 119
+\d (A translated)
+\q1
+\v 1 New verse 1
+";
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void UpdateUsfm_UnmatchedEndMarker()
+    {
+        string source = "Section header";
+        string pretranslation = "New section header";
+        PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
+            sourceTokens: Tokenizer.Tokenize(source).ToList(),
+            translationTokens: Tokenizer.Tokenize(pretranslation).ToList(),
+            alignment: ToWordAlignmentMatrix("0-1 1-2"),
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
+        );
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:0/1:s"),
+                pretranslation,
+                new Dictionary<string, object> { { "alignment_info", alignInfo } }
+            ),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "New verse 1"),
+        ];
+        string usfm =
+            @"\id MAT
+\c 1
+\s Section header\it*
+\p
+\v 1 Verse 1
+";
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
+        );
+
+        string result =
+            @"\id MAT
+\c 1
+\s New section header
+\p
+\v 1 New verse 1
+";
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void UpdateUsfm_MultipleTextRowsInVerseRangesAreUpdated()
+    {
+        string source = "This is the first part. This is the second part.";
+        string pretranslation = "Esta es la primera parte. Esta es la segunda parte.";
+        PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
+            sourceTokens: Tokenizer.Tokenize(source).ToList(),
+            translationTokens: Tokenizer.Tokenize(pretranslation).ToList(),
+            alignment: ToWordAlignmentMatrix("0-0 1-1 2-2 3-3 4-4 5-5 6-6 7-7 8-8 9-9 10-10"),
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+        );
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                "Esta es la primera parte.",
+                new Dictionary<string, object> { { "alignment_info", alignInfo } }
+            ),
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:2"),
+                "Esta es la segunda parte.",
+                new Dictionary<string, object> { { "alignment_info", alignInfo } }
+            ),
+        ];
+        string usfm =
+            @"\id MAT
+\c 1
+\v 1-2 This is the first part.
+\p This is the second part.
+";
+
+        string target = UpdateUsfm(rows, usfm, usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]);
+
+        string result =
+            @"\id MAT
+\c 1
+\v 1-2 Esta es la primera parte.
+\p Esta es la segunda parte.
+";
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void UpdateUsfm_MarkerBehaviorDisagreesWithAlignmentInfo()
+    {
+        string source = "Section header";
+        string pretranslation = "New section header";
+        PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
+            sourceTokens: Tokenizer.Tokenize(source).ToList(),
+            translationTokens: Tokenizer.Tokenize(pretranslation).ToList(),
+            alignment: ToWordAlignmentMatrix("0-1 1-2"),
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
+        );
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:0/1:s"),
+                pretranslation,
+                new Dictionary<string, object> { { "alignment_info", alignInfo } }
+            ),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "New verse 1"),
+        ];
+        string usfm =
+            @"\id MAT
+\c 1
+\s Section \it header\it*
+\p
+\v 1 Verse 1
+";
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            styleBehavior: UpdateUsfmMarkerBehavior.Strip,
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
+        );
+
+        string result =
+            @"\id MAT
+\c 1
+\s New section header
+\p
+\v 1 New verse 1
+";
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void UpdateUsfm_OtherElementsDoNotAffectEmbedPlacement()
+    {
+        string source = "This is the first part. This is the second part.";
+        string pretranslation = "Esta es la primera parte. Esta es la segunda parte.";
+        string result =
+            @"\id MAT
+\c 1
+\v 1 Esta es la primera parte. Esta es la segunda parte. \f + \ft Footnote\f*
+\q1
+\q2
+";
+        foreach (string milestone in new[] { "", @" \ts-s\*" })
+        {
+            PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
+                sourceTokens: Tokenizer.Tokenize(source).ToList(),
+                translationTokens: Tokenizer.Tokenize(pretranslation).ToList(),
+                alignment: ToWordAlignmentMatrix("0-0 1-1 2-2 3-3 4-4 5-5 6-6 7-7 8-8 9-9 10-10"),
+                paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+                styleBehavior: UpdateUsfmMarkerBehavior.Strip
+            );
+            IReadOnlyList<UpdateUsfmRow> rows =
+            [
+                new UpdateUsfmRow(
+                    ScrRef("MAT 1:1"),
+                    pretranslation,
+                    new Dictionary<string, object> { { "alignment_info", alignInfo } }
+                ),
+            ];
+            string usfm =
+                "\\id MAT\n\\c 1\n"
+                + "\\v 1 This is the first part. This is the second part.\\f + \\ft Footnote\\f*\n"
+                + $"\\q1{milestone}\n\\q2\n";
+
+            string target = UpdateUsfm(rows, usfm, usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]);
+
+            AssertUsfmEquals(target, result);
+        }
     }
 
     [Test]

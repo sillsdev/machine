@@ -1719,6 +1719,65 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
         AssertUsfmEquals(target, result);
     }
 
+    [Test]
+    public void UpdateUsfm_UnclosedStyleMarkerDoesNotConsumeNextParagraphMarker()
+    {
+        // An unclosed character style is closed implicitly by the next paragraph marker,
+        // which belongs to the paragraph it starts and must survive.
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "New verse 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "New verse 2"),
+        ];
+        string usfm =
+            @"\id MAT
+\c 1
+\q1
+\v 1 Verse 1 \bd Selah
+\b
+\q1
+\v 2 Verse 2
+";
+
+        string target = UpdateUsfm(rows, usfm);
+
+        string result =
+            @"\id MAT
+\c 1
+\q1
+\v 1 New verse 1
+\b
+\q1
+\v 2 New verse 2
+";
+        AssertUsfmEquals(target, result);
+
+        // ...including when the unclosed style is in a non-verse paragraph
+        rows =
+        [
+            new UpdateUsfmRow(ScrRef("MAT 1:0/1:d"), "New title"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "New verse 1"),
+        ];
+        usfm =
+            @"\id MAT
+\c 1
+\d \bd Title
+\q1
+\v 1 Verse 1
+";
+
+        target = UpdateUsfm(rows, usfm);
+
+        result =
+            @"\id MAT
+\c 1
+\d New title
+\q1
+\v 1 New verse 1
+";
+        AssertUsfmEquals(target, result);
+    }
+
     private static ScriptureRef[] ScrRef(params string[] refs) => [.. refs.Select(r => ScriptureRef.Parse(r))];
 
     private static string UpdateUsfm(

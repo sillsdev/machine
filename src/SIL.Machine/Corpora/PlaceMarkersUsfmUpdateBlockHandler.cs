@@ -54,17 +54,7 @@ namespace SIL.Machine.Corpora
                 elements.Count == 0
                 || alignmentInfo.Alignment.RowCount == 0
                 || alignmentInfo.Alignment.ColumnCount == 0
-                || !elements.Any(e =>
-                    (
-                        e.Type == UsfmUpdateBlockElementType.Paragraph
-                        && alignmentInfo.ParagraphBehavior == UpdateUsfmMarkerBehavior.Preserve
-                        && e.Tokens.Count == 1
-                    )
-                    || (
-                        e.Type == UsfmUpdateBlockElementType.Style
-                        && alignmentInfo.StyleBehavior == UpdateUsfmMarkerBehavior.Preserve
-                    )
-                )
+                || !elements.Any(e => e.IsPlaceable(alignmentInfo.ParagraphBehavior, alignmentInfo.StyleBehavior))
             )
             {
                 return block;
@@ -99,10 +89,8 @@ namespace SIL.Machine.Corpora
                 else if (
                     !(
                         element.Type == UsfmUpdateBlockElementType.Embed
-                        || (
-                            element.Type == UsfmUpdateBlockElementType.Text
-                            && element.Tokens[0].ToUsfm().Trim().Length == 0
-                        )
+                        || element.Type == UsfmUpdateBlockElementType.Other
+                        || (element.Type == UsfmUpdateBlockElementType.Text && element.GetText().Trim().Length == 0)
                     )
                 )
                 {
@@ -126,7 +114,7 @@ namespace SIL.Machine.Corpora
                 {
                     if (element.MarkedForRemoval)
                     {
-                        string text = element.Tokens[0].ToUsfm();
+                        string text = element.GetText();
 
                         // Track seen tokens
                         while (
@@ -146,7 +134,7 @@ namespace SIL.Machine.Corpora
                     }
                     else
                     {
-                        targetSentence += element.Tokens[0].ToUsfm();
+                        targetSentence += element.GetText();
                     }
                 }
 
@@ -237,6 +225,10 @@ namespace SIL.Machine.Corpora
             }
             toInsert.Sort((p1, p2) => p1.Index.CompareTo(p2.Index));
             toInsert.AddRange(embedElements.Concat(endElements).Select(e => (targetSentence.Length, e)));
+
+            // In the case of unclosed markers, toInsert might be empty
+            if (toInsert.Count == 0)
+                return block;
 
             // Construct new text tokens to put between markers
             // and reincorporate headers and empty end-of-verse paragraph markers
