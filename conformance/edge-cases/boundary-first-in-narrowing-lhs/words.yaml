@@ -1,0 +1,54 @@
+# oracle-provenance: founding-oracle
+# Signatures transcribed verbatim from the C# founding oracle (hc-conformance self-check, --propose)
+# built from sillsdev/machine 18cf242f (the integrate-conformance-framework head, PR #480).
+#
+# Regression guard: a narrowing rule whose target STARTS with a morpheme boundary, in a grammar
+# WITH a phonological feature system. prPostNasal: + b -> m / [+nas] _ (the suffix-initial b of
+# "+bo" becomes m after a nasal and the boundary is absorbed). "kanmo" is therefore ambiguous between
+# KAN+BO (rule applied) and KAN+MO (underlying m). Analysis must recover both. Segments carry no
+# string identity here, so whatever an engine does to the "m" node when it undoes the rule, the
+# result unifies with "b" and with "m" alike. The ZERO-feature twin
+# (boundary-first-in-narrowing-lhs-strrep) is where this shape actually discriminates.
+
+language: BoundaryFirstInNarrowingLhs
+inspired_by: ["synthetic boundary-in-target post-nasal probe (not modeling any real language)"]
+sources:
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/NarrowAnalysisRewriteRuleSpec.cs"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: kanmo
+    note: >-
+      KAN+BO (kan+bo -> kanmo, boundary absorbed, so no boundary survives in the shape) and KAN+MO
+      (kan+mo, no rule, the boundary survives as an optional marker in the rendered shape).
+    parses:
+      - signature: "KAN+BO|kanmo"
+        rules: [mrSfxBo, prPostNasal]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+          - "Boundary markers (CharacterDefinitionTable)"
+      - signature: "KAN+MO|kan+?mo"
+        rules: [mrSfxMo, prPostNasal]
+  - word: kanbo
+    note: The rule is obligatory after a nasal, so kan+bo never surfaces unchanged.
+    expect_fail: true
+  - word: katbo
+    note: No nasal before the boundary, so the rule does not apply.
+    parses:
+      - signature: "KAT+BO|kat+?bo"
+        rules: [mrSfxBo]
+  - word: katmo
+    note: Underlying suffix m after a non-nasal.
+    parses:
+      - signature: "KAT+MO|kat+?mo"
+        rules: [mrSfxMo]
+  - word: kan
+    note: Bare root.
+    parses:
+      - signature: "KAN|kan"
+        rules: []
+  - word: kat
+    note: Bare root.
+    parses:
+      - signature: "KAT|kat"
+        rules: []

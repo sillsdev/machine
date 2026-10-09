@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Synthetic. Final devoicing feeds final cluster simplification, a common two-rule shape:
+       prFinalDevoice   [+cons +vc] -> [-vc] / _ #
+       prFinalTDeletion t -> 0 / [+cons] _ #
+     Root BAGD surfaces as "bag" (bagd -> bagt -> bag); BAGT also surfaces as "bag". Analysing "bag"
+     must therefore undo the deletion (re-insert an optional "t" at the end) and THEN undo the devoicing
+     on that re-inserted node, so that root BAGD can be found through it. The deletion rule's analysis
+     side is NarrowAnalysisRewriteRuleSpec with an empty target; any implementation that marks the
+     re-inserted node as already-modified (dirty) blocks the feature rule's unapplication on it, because
+     feature-rule analysis targets require an unmodified node. "bak" is the control: there the devoicing
+     is undone on an ordinary surface node. -->
+<HermitCrabInput>
+  <Language>
+    <Name>DeletionReinsertedFeatureUnapply</Name>
+    <PartsOfSpeech><PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech></PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="consPlus">+cons</Symbol><Symbol id="consMinus">-cons</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featVoice"><Name>voice</Name><Symbols><Symbol id="vcPlus">+vc</Symbol><Symbol id="vcMinus">-vc</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featPlace"><Name>place</Name><Symbols><Symbol id="plLab">lab</Symbol><Symbol id="plCor">cor</Symbol><Symbol id="plVel">vel</Symbol><Symbol id="plNone">none</Symbol></Symbols></SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featVoice" symbolValues="vcPlus" /><FeatureValue feature="featPlace" symbolValues="plLab" /></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featVoice" symbolValues="vcPlus" /><FeatureValue feature="featPlace" symbolValues="plCor" /></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featVoice" symbolValues="vcMinus" /><FeatureValue feature="featPlace" symbolValues="plCor" /></SegmentDefinition>
+        <SegmentDefinition id="cG"><Representations><Representation>g</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featVoice" symbolValues="vcPlus" /><FeatureValue feature="featPlace" symbolValues="plVel" /></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featVoice" symbolValues="vcMinus" /><FeatureValue feature="featPlace" symbolValues="plVel" /></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations><FeatureValue feature="featCons" symbolValues="consMinus" /><FeatureValue feature="featVoice" symbolValues="vcPlus" /><FeatureValue feature="featPlace" symbolValues="plNone" /></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncC"><Name>C</Name><FeatureValue feature="featCons" symbolValues="consPlus" /></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncVoicedC"><Name>voicedC</Name><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featVoice" symbolValues="vcPlus" /></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncVoiceless"><Name>voiceless</Name><FeatureValue feature="featVoice" symbolValues="vcMinus" /></FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prFinalDevoice">
+        <Name>finalDevoice</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncVoicedC" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncVoiceless" /></PhoneticSequence></PhoneticOutput>
+            <Environment><RightEnvironment><PhoneticTemplate finalBoundaryCondition="true"><PhoneticSequence /></PhoneticTemplate></RightEnvironment></Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <PhonologicalRule id="prFinalTDeletion">
+        <Name>finalTDeletion</Name>
+        <PhoneticInput><PhoneticSequence><Segment segment="cT" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput />
+            <Environment>
+              <LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncC" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment>
+              <RightEnvironment><PhoneticTemplate finalBoundaryCondition="true"><PhoneticSequence /></PhoneticTemplate></RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" phonologicalRules="prFinalDevoice prFinalTDeletion">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eBagd" partOfSpeech="posN"><Allomorphs><Allomorph id="aBagd"><PhoneticShape>bagd</PhoneticShape></Allomorph></Allomorphs><MorphemeId>BAGD</MorphemeId><Gloss>bagd</Gloss></LexicalEntry>
+          <LexicalEntry id="eBagt" partOfSpeech="posN"><Allomorphs><Allomorph id="aBagt"><PhoneticShape>bagt</PhoneticShape></Allomorph></Allomorphs><MorphemeId>BAGT</MorphemeId><Gloss>bagt</Gloss></LexicalEntry>
+          <LexicalEntry id="eBag" partOfSpeech="posN"><Allomorphs><Allomorph id="aBag"><PhoneticShape>bag</PhoneticShape></Allomorph></Allomorphs><MorphemeId>BAG</MorphemeId><Gloss>bag</Gloss></LexicalEntry>
+          <LexicalEntry id="eBak" partOfSpeech="posN"><Allomorphs><Allomorph id="aBak"><PhoneticShape>bak</PhoneticShape></Allomorph></Allomorphs><MorphemeId>BAK</MorphemeId><Gloss>bak</Gloss></LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
