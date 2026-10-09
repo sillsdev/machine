@@ -55,6 +55,13 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
                     FeatureStruct fs = rhsConstraint.FeatureStruct.AntiFeatureStruct();
                     fs.Subtract(lhsConstraint.FeatureStruct.AntiFeatureStruct());
+                    StringFeatureValue lhsStrRep;
+                    if (lhsConstraint.FeatureStruct.TryGetValue(HCFeatureSystem.StrRep, out lhsStrRep))
+                    {
+                        // StrRep is a built-in feature: inversion adds the input spelling, not its complement.
+                        fs.AddValue(HCFeatureSystem.StrRep, lhsStrRep);
+                        rhsAntiFSs[i].AddValue(HCFeatureSystem.StrRep, lhsStrRep);
+                    }
                     fs.AddValue(HCFeatureSystem.Type, HCFeatureSystem.Segment);
                     _analysisRhs.Children.Add(new Constraint<Word, ShapeNode>(fs));
 
@@ -93,6 +100,17 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                         {
                             return true;
                         }
+                    }
+                }
+                foreach (StringFeature sf in fs.Features.OfType<StringFeature>())
+                {
+                    StringFeatureValue nodeSfv;
+                    if (
+                        node.Annotation.FeatureStruct.TryGetValue(sf, out nodeSfv)
+                        && !nodeSfv.IsSupersetOf(fs.GetValue(sf))
+                    )
+                    {
+                        return true;
                     }
                 }
                 i++;
