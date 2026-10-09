@@ -31,7 +31,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             else
             {
                 // The matcher skips optional nodes and boundaries, so the matched RHS nodes need not be
-                // adjacent; each is recovered from its own group capture.
+                // adjacent; each is recovered from its own group capture, which a quantifier may leave empty.
                 int i = 0;
                 foreach (PatternNode<Word, ShapeNode> node in subrule.Rhs.Children)
                 {
@@ -61,8 +61,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
             for (int i = 0; i < _targetCount; i++)
             {
-                ShapeNode node = targetMatch.GroupCaptures["target" + i].Range.GetStart(targetMatch.Matcher.Direction);
-                node.Annotation.Optional = true;
+                GroupCapture<ShapeNode> capture = targetMatch.GroupCaptures["target" + i];
+                if (!capture.Success)
+                    continue;
+                foreach (ShapeNode node in targetMatch.Input.Shape.GetNodes(capture.Range))
+                    node.Annotation.Optional = true;
             }
         }
     }
