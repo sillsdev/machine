@@ -8,6 +8,44 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules;
 public class StrRepRewriteRuleTests
 {
     [Test]
+    public void LiteralRewriteAfterSegmentClassAnalyzesKadAndRejectsKat()
+    {
+        var table = new CharacterDefinitionTable();
+        foreach (string segment in new[] { "a", "t", "d", "k" })
+            table.AddSegment(segment);
+        var language = new Language();
+        language.SyntacticFeatureSystem.AddPartsOfSpeech(new FeatureSymbol("N"));
+        var stratum = new Stratum(table);
+        language.Strata.Add(stratum);
+        var entry = new LexEntry
+        {
+            Id = "kat",
+            SyntacticFeatureStruct = FeatureStruct.New(language.SyntacticFeatureSystem).Symbol("N").Value,
+        };
+        entry.Allomorphs.Add(new RootAllomorph(new Segments(table, "kat")));
+        stratum.Entries.Add(entry);
+        var vowels = new SegmentNaturalClass(new[] { table["a"] });
+        var rule = new RewriteRule { Lhs = Pattern<Word, ShapeNode>.New().Annotation(table["t"].FeatureStruct).Value };
+        rule.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(table["d"].FeatureStruct).Value,
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowels.FeatureStruct).Value,
+            }
+        );
+        stratum.PhonologicalRules.Add(rule);
+        var morpher = new Morpher(new TraceManager(), language);
+
+        Assert.That(
+            morpher.GenerateWords(entry, Array.Empty<Morpheme>(), new FeatureStruct()),
+            Is.EquivalentTo(new[] { "kad" })
+        );
+        Assert.That(morpher.ParseWord("kad").Select(w => w.RootAllomorph.Morpheme.Id), Is.EqualTo(new[] { "kat" }));
+        foreach (string neighbor in new[] { "kat", "kak", "dat", "tat", "kta", "ka" })
+            Assert.That(morpher.ParseWord(neighbor), Is.Empty, neighbor);
+    }
+
+    [Test]
     public void LiteralRewriteWithoutFeaturesAnalyzesItsSynthesisAndRejectsVacuousUnapplication()
     {
         var table = new CharacterDefinitionTable();
