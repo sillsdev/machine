@@ -28,9 +28,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             foreach (CompoundingSubrule sr in rule.Subrules)
             {
                 _rules.Add(
-                    new DisagreeingCopiesPruningRule(
-                        morpher,
-                        new AnalysisCompoundingSubruleRuleSpec(sr),
+                    new MultiplePatternRule<Word, ShapeNode>(
+                        new AnalysisCompoundingSubruleRuleSpec(sr, morpher),
                         new MatcherSettings<ShapeNode>
                         {
                             Filter = ann => ann.Type() == HCFeatureSystem.Segment,

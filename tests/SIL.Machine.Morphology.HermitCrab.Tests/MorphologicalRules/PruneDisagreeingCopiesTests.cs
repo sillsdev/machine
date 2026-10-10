@@ -47,7 +47,7 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
     }
 
     [Test]
-    public void TracingKeepsDisagreeingCopies()
+    public void TracingStillPrunesDisagreeingCopies()
     {
         (string first, string second) = FindIncompatibleSegments();
         AffixProcessRule rule = CreateCopyRule(SingleSegmentPart());
@@ -59,7 +59,7 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
         {
             List<Word> outputs = new AnalysisAffixProcessRule(CreateMorpher(true), rule).Apply(input).ToList();
 
-            Assert.That(outputs.Count, Is.EqualTo(1));
+            Assert.That(outputs, Is.Empty);
         }
         finally
         {
