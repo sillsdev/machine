@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>FeatureRuleBeforeMerge</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN">
+        <Name>N</Name>
+      </PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons">
+        <Name>consonantal</Name>
+        <Symbols>
+          <Symbol id="consPlus">+</Symbol>
+          <Symbol id="consMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featVoice">
+        <Name>voice</Name>
+        <Symbols>
+          <Symbol id="voicePlus">+</Symbol>
+          <Symbol id="voiceMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featRound">
+        <Name>round</Name>
+        <Symbols>
+          <Symbol id="roundPlus">+</Symbol>
+          <Symbol id="roundMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featBack">
+        <Name>back</Name>
+        <Symbols>
+          <Symbol id="backPlus">+</Symbol>
+          <Symbol id="backMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cB">
+          <Representations>
+            <Representation>b</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="consPlus" />
+          <FeatureValue feature="featVoice" symbolValues="voicePlus" />
+          <FeatureValue feature="featRound" symbolValues="roundMinus" />
+          <FeatureValue feature="featBack" symbolValues="backMinus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cU">
+          <Representations>
+            <Representation>u</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="consMinus" />
+          <FeatureValue feature="featVoice" symbolValues="voiceMinus" />
+          <FeatureValue feature="featRound" symbolValues="roundPlus" />
+          <FeatureValue feature="featBack" symbolValues="backPlus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cI">
+          <Representations>
+            <Representation>i</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="consMinus" />
+          <FeatureValue feature="featVoice" symbolValues="voiceMinus" />
+          <FeatureValue feature="featRound" symbolValues="roundMinus" />
+          <FeatureValue feature="featBack" symbolValues="backMinus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cY">
+          <Representations>
+            <Representation>y</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="consMinus" />
+          <FeatureValue feature="featVoice" symbolValues="voiceMinus" />
+          <FeatureValue feature="featRound" symbolValues="roundPlus" />
+          <FeatureValue feature="featBack" symbolValues="backMinus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cT">
+          <Representations>
+            <Representation>t</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="consPlus" />
+          <FeatureValue feature="featVoice" symbolValues="voiceMinus" />
+          <FeatureValue feature="featRound" symbolValues="roundMinus" />
+          <FeatureValue feature="featBack" symbolValues="backMinus" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncUnroundedFrontVowel">
+        <Name>Unrounded front vowel</Name>
+        <FeatureValue feature="featCons" symbolValues="consMinus" />
+        <FeatureValue feature="featRound" symbolValues="roundMinus" />
+        <FeatureValue feature="featBack" symbolValues="backMinus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncFrontRoundedVowel">
+        <Name>Front rounded vowel</Name>
+        <FeatureValue feature="featCons" symbolValues="consMinus" />
+        <FeatureValue feature="featRound" symbolValues="roundPlus" />
+        <FeatureValue feature="featBack" symbolValues="backMinus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncRoundedVowel">
+        <Name>Rounded vowel</Name>
+        <FeatureValue feature="featCons" symbolValues="consMinus" />
+        <FeatureValue feature="featRound" symbolValues="roundPlus" />
+      </FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prFeature">
+        <Name>roundFrontVowel</Name>
+        <PhoneticInput>
+          <PhoneticSequence>
+            <SimpleContext naturalClass="ncUnroundedFrontVowel" />
+          </PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <SimpleContext naturalClass="ncFrontRoundedVowel" />
+              </PhoneticSequence>
+            </PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <PhonologicalRule id="prMerge">
+        <Name>mergeRoundedVowels</Name>
+        <PhoneticInput>
+          <PhoneticSequence>
+            <SimpleContext naturalClass="ncRoundedVowel" />
+            <SimpleContext naturalClass="ncRoundedVowel" />
+          </PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <Segment segment="cT" />
+              </PhoneticSequence>
+            </PhoneticOutput>
+            <Environment>
+              <LeftEnvironment>
+                <PhoneticTemplate>
+                  <PhoneticSequence>
+                    <Segment segment="cU" />
+                  </PhoneticSequence>
+                </PhoneticTemplate>
+              </LeftEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" phonologicalRules="prFeature prMerge">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot">
+            <Allomorphs>
+              <Allomorph id="aRoot">
+                <PhoneticShape>buiibuii</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <MorphemeId>ROOT</MorphemeId>
+            <Gloss>root</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

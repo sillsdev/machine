@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Feature-system and phonological-rule breadth. Closes the coverage-ledger entries that need a
+     phonological feature system: ComplexFeature (which lives in HeadFeatures, not in the phonological
+     feature system), the deactivation call sites on SymbolicFeature, FeatureValue,
+     SegmentNaturalClass, PhonologicalRule, PhonologicalSubrule and MetathesisRule, a metathesis rule
+     ordered right-to-left, an alpha variable with negative polarity, and an allomorph's
+     ExcludedEnvironments.
+
+     Fully specified on purpose: with requires: [phonology] every segment needs an explicit value for
+     every declared feature, or a natural-class bracket becomes ambiguous and signatures stop being
+     literal.
+
+     Each decoy carries isActive="no" and is named by the word whose failure observes it.
+
+     mtSwap names the LATER pattern group as its left switch. That is the only orientation the engine
+     supports: naming the earlier group crashes it with "Only nodes from the same list can be
+     compared", an internal invariant violation rather than a grammar error, pinned in
+     edge-cases/metathesis-comparison-crash and fixed by sillsdev/machine#471.
+
+     mtSwap's own ordering is unobservable for a different reason: its structural description has
+     exactly one candidate match per input, so scan direction never changes which pair it swaps.
+     mtSwapOverlap exists to give the fixture a metathesis rule where direction DOES matter: its two
+     switch classes deliberately share a segment (K), so a 3-segment run like "tkl" has two
+     overlapping candidate windows, and which one direction finds first decides the result (see
+     eTkl/eTs below).
+
+     Three more decoys needed a live consumer rather than staying unreferenced: cfAgr/prHighTrigger
+     give the ComplexFeature and FeatureValue decoys somewhere real to attach (see eAk and eTs
+     below); mrSuffixK gives ExcludedEnvironments a morpheme boundary to actually be excluded at (see
+     eSal/salk below). ComplexFeature, SymbolicFeature, SegmentNaturalClass and FeatureNaturalClass at
+     isActive="no" each declare a type the loader only adds to its lookup dictionary when active, so a
+     LIVE reference to one throws at load time and no single flip can ever observe it. Each therefore
+     carries an INACTIVE partner that is its sole referent (prDecFeat, prDecNc, prDecFnc, eDecCf), so
+     activating either half alone stays inert or fails to load, and only both together change a word. That three-run necessity check is what CounterfactualGate.EvaluateJointly performs. -->
+<HermitCrabInput>
+  <Language>
+    <Name>FeatureSystemBreadth</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featHigh">
+        <Name>high</Name>
+        <Symbols>
+          <Symbol id="hiPlus">+hi</Symbol>
+          <Symbol id="hiMinus">-hi</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featCons">
+        <Name>cons</Name>
+        <Symbols>
+          <Symbol id="consPlus">+cons</Symbol>
+          <Symbol id="consMinus">-cons</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featPlace">
+        <Name>place</Name>
+        <Symbols>
+          <Symbol id="plNone">none</Symbol>
+          <Symbol id="plCor">cor</Symbol>
+          <Symbol id="plVel">vel</Symbol>
+          <Symbol id="plLat">lat</Symbol>
+          <Symbol id="plSib">sib</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <!-- Decoy: an inactive symbolic feature. Nothing may reference it, or the reference would
+           dangle when it is correctly dropped. -->
+      <SymbolicFeature id="featDecoy" isActive="no">
+        <Name>decoyFeature</Name>
+        <Symbols>
+          <Symbol id="decoyPlus">+dec</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <HeadFeatures>
+      <SymbolicFeature id="hfNumber">
+        <Name>number</Name>
+        <Symbols>
+          <Symbol id="numSg">sg</Symbol>
+          <Symbol id="numPl">pl</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <!-- ComplexFeature is declared here rather than in PhonologicalFeatureSystem, whose content
+           model admits SymbolicFeature only. -->
+      <ComplexFeature id="cfAgr">
+        <Name>agreement</Name>
+      </ComplexFeature>
+      <ComplexFeature id="cfDecoy" isActive="no">
+        <Name>complexDecoy</Name>
+      </ComplexFeature>
+    </HeadFeatures>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cI">
+          <Representations><Representation>i</Representation></Representations>
+          <FeatureValue feature="featHigh" symbolValues="hiPlus" />
+          <FeatureValue feature="featCons" symbolValues="consMinus" />
+          <FeatureValue feature="featPlace" symbolValues="plNone" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cA">
+          <Representations><Representation>a</Representation></Representations>
+          <FeatureValue feature="featHigh" symbolValues="hiMinus" />
+          <FeatureValue feature="featCons" symbolValues="consMinus" />
+          <FeatureValue feature="featPlace" symbolValues="plNone" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cT">
+          <Representations><Representation>t</Representation></Representations>
+          <FeatureValue feature="featHigh" symbolValues="hiMinus" />
+          <FeatureValue feature="featCons" symbolValues="consPlus" />
+          <!-- Decoy: an inactive FeatureValue. Were it loaded, this segment would carry a second,
+               contradictory value for featHigh. -->
+          <FeatureValue feature="featHigh" symbolValues="hiPlus" isActive="no" />
+          <FeatureValue feature="featPlace" symbolValues="plCor" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cK">
+          <Representations><Representation>k</Representation></Representations>
+          <FeatureValue feature="featHigh" symbolValues="hiMinus" />
+          <FeatureValue feature="featCons" symbolValues="consPlus" />
+          <FeatureValue feature="featPlace" symbolValues="plVel" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cL">
+          <Representations><Representation>l</Representation></Representations>
+          <FeatureValue feature="featHigh" symbolValues="hiMinus" />
+          <FeatureValue feature="featCons" symbolValues="consPlus" />
+          <FeatureValue feature="featPlace" symbolValues="plLat" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cS">
+          <Representations><Representation>s</Representation></Representations>
+          <FeatureValue feature="featHigh" symbolValues="hiMinus" />
+          <FeatureValue feature="featCons" symbolValues="consPlus" />
+          <FeatureValue feature="featPlace" symbolValues="plSib" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <SegmentNaturalClass id="ncI"><Name>iOnly</Name><Segment segment="cI" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncA"><Name>aOnly</Name><Segment segment="cA" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncT"><Name>tOnly</Name><Segment segment="cT" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncK"><Name>kOnly</Name><Segment segment="cK" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncV"><Name>vowels</Name><Segment segment="cI" /><Segment segment="cA" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncS"><Name>sOnly</Name><Segment segment="cS" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncL"><Name>lOnly</Name><Segment segment="cL" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncDecoy" isActive="no"><Name>segClassDecoy</Name><Segment segment="cS" /></SegmentNaturalClass>
+      <!-- Decoy: an inactive feature-defined natural class, matched by "i" alone once active. Its
+           partner prDecFnc is the only thing that names it. -->
+      <FeatureNaturalClass id="ncFDecoy" isActive="no">
+        <Name>featClassDecoy</Name>
+        <FeatureValue feature="featHigh" symbolValues="hiPlus" />
+        <FeatureValue feature="featCons" symbolValues="consMinus" />
+      </FeatureNaturalClass>
+      <SegmentNaturalClass id="ncOvA"><Name>tOrKforOverlap</Name><Segment segment="cT" /><Segment segment="cK" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncOvB"><Name>kOrLforOverlap</Name><Segment segment="cK" /><Segment segment="cL" /></SegmentNaturalClass>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <!-- High AND consonant: no active segment satisfies both today (cI is high but a vowel; cT is
+           a consonant but not high), so this bracket is empty unless the decoy FeatureValue below
+           activates and makes cT high too. -->
+      <FeatureNaturalClass id="ncHighCons">
+        <Name>highConsonant</Name>
+        <FeatureValue feature="featHigh" symbolValues="hiPlus" />
+        <FeatureValue feature="featCons" symbolValues="consPlus" />
+      </FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <!-- Live rule: "a" becomes "i" before "k". Its second subrule is an inactive decoy that would
+           instead lower "a" before "t". -->
+      <PhonologicalRule id="prRaise">
+        <Name>raiseBeforeK</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncA" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="cI" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncK" /></PhoneticSequence></PhoneticTemplate></RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+          <PhonologicalSubrule isActive="no">
+            <PhoneticOutput><PhoneticSequence><Segment segment="cI" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncT" /></PhoneticSequence></PhoneticTemplate></RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- Decoy rule: would turn every "i" into "a", undoing the live rule. -->
+      <PhonologicalRule id="prDecoy" isActive="no">
+        <Name>phonRuleDecoy</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncI" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="cA" /></PhoneticSequence></PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- An alpha variable with polarity="minus": the output takes the OPPOSITE value of the
+           variable bound on the input. -->
+      <!-- polarity="minus" on the OUTPUT takes the opposite value of the variable bound on the
+           input, so a vowel before "s" flips its height: underlying "as" surfaces as "is". The class
+           has to be vowels: i and a differ only in high, whereas flipping high on a consonant has no
+           realizable output and made every derivation in this grammar fail. -->
+      <PhonologicalRule id="prAlpha">
+        <Name>flipHighBeforeS</Name>
+        <VariableFeatures>
+          <VariableFeature id="varHigh" name="α" phonologicalFeature="featHigh" />
+        </VariableFeatures>
+        <PhoneticInput>
+          <PhoneticSequence>
+            <SimpleContext naturalClass="ncV">
+              <AlphaVariables><AlphaVariable variableFeature="varHigh" polarity="plus" /></AlphaVariables>
+            </SimpleContext>
+          </PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <SimpleContext naturalClass="ncV">
+                  <AlphaVariables><AlphaVariable variableFeature="varHigh" polarity="minus" /></AlphaVariables>
+                </SimpleContext>
+              </PhoneticSequence>
+            </PhoneticOutput>
+            <Environment>
+              <RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncS" /></PhoneticSequence></PhoneticTemplate></RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- multipleApplicationOrder="rightToLeftIterative" on a live metathesis rule, plus an
+           inactive metathesis decoy. -->
+      <MetathesisRule id="mtSwap" leftSwitch="mtRight" rightSwitch="mtLeft" multipleApplicationOrder="rightToLeftIterative">
+        <Name>swapRightToLeft</Name>
+        <StructuralDescription>
+          <PhoneticTemplate>
+            <PhoneticSequence>
+              <SimpleContext id="mtLeft" naturalClass="ncT" />
+              <SimpleContext id="mtRight" naturalClass="ncI" />
+            </PhoneticSequence>
+          </PhoneticTemplate>
+        </StructuralDescription>
+      </MetathesisRule>
+      <!-- Consumer of the decoy FeatureValue below: "s" becomes "l" after a high consonant. No
+           active segment is a high consonant today, so this rule never fires unless that decoy
+           activates and makes "t" one. -->
+      <PhonologicalRule id="prHighTrigger">
+        <Name>lowerSAfterHighConsonant</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncS" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="cL" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncHighCons" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- Direction genuinely matters here: ncOvA and ncOvB share "k", so a run like "tkl" has two
+           overlapping candidate windows (t-k and k-l) and scan direction decides which one is found
+           first. See eTkl/eTs below for the words that show it. -->
+      <MetathesisRule id="mtSwapOverlap" leftSwitch="ovRight" rightSwitch="ovLeft" multipleApplicationOrder="rightToLeftIterative">
+        <Name>swapOverlapAK</Name>
+        <StructuralDescription>
+          <PhoneticTemplate>
+            <PhoneticSequence>
+              <SimpleContext id="ovLeft" naturalClass="ncOvA" />
+              <SimpleContext id="ovRight" naturalClass="ncOvB" />
+            </PhoneticSequence>
+          </PhoneticTemplate>
+        </StructuralDescription>
+      </MetathesisRule>
+      <!-- Joint partner for SymbolicFeature@isActive="no": the only element naming featDecoy, via a
+           VariableFeature. Inactive, so the baseline never dangles; activating it alone cannot load. -->
+      <PhonologicalRule id="prDecFeat" isActive="no">
+        <Name>kToTdecoy</Name>
+        <VariableFeatures>
+          <VariableFeature id="varDecFeat" name="α" phonologicalFeature="featDecoy" />
+        </VariableFeatures>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncK" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="cT" /></PhoneticSequence></PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- Joint partner for SegmentNaturalClass@isActive="no": the only element naming ncDecoy. -->
+      <PhonologicalRule id="prDecNc" isActive="no">
+        <Name>sToLdecoy</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncDecoy" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="cL" /></PhoneticSequence></PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- Joint partner for FeatureNaturalClass@isActive="no": the only element naming ncFDecoy. -->
+      <PhonologicalRule id="prDecFnc" isActive="no">
+        <Name>iToAdecoy</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncFDecoy" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="cA" /></PhoneticSequence></PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <MetathesisRule id="mtDecoy" isActive="no" leftSwitch="mdLeft" rightSwitch="mdRight">
+        <Name>metathesisDecoy</Name>
+        <StructuralDescription>
+          <PhoneticTemplate>
+            <PhoneticSequence>
+              <SimpleContext id="mdLeft" naturalClass="ncK" />
+              <SimpleContext id="mdRight" naturalClass="ncA" />
+            </PhoneticSequence>
+          </PhoneticTemplate>
+        </StructuralDescription>
+      </MetathesisRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="linear" morphologicalRules="mrSuffixK" phonologicalRules="prRaise prDecoy prAlpha prHighTrigger mtSwap mtSwapOverlap mtDecoy prDecFeat prDecNc prDecFnc">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- Consumer of ExcludedEnvironments below: a suffix beginning with a segment in ncK, so an
+               allomorph excluded before ncK has a morpheme boundary to actually be excluded AT. Applies
+               to every posN root; only "sal" carries the exclusion, so only "salk" is refused. -->
+          <MorphologicalRule id="mrSuffixK" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>sufK</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSufK">
+                <MorphologicalInput><PhoneticSequence id="stemSufK"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemSufK" /><InsertSegments><PhoneticShape>k</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SUF</MorphemeId>
+            <Gloss>SUF</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <!-- AssignedHeadFeatures references cfAgr, so ComplexFeature actually has a consumer:
+               removing it dangles this reference. -->
+          <LexicalEntry id="eAk" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aAk"><PhoneticShape>ak</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures>
+              <FeatureValue feature="cfAgr">
+                <FeatureValue feature="hfNumber" symbolValues="numSg" />
+              </FeatureValue>
+            </AssignedHeadFeatures>
+            <MorphemeId>AK</MorphemeId>
+            <Gloss>ak</Gloss>
+          </LexicalEntry>
+          <!-- Joint partner for ComplexFeature@isActive="no": the only element naming cfDecoy. -->
+          <LexicalEntry id="eDecCf" partOfSpeech="posN" isActive="no">
+            <Allomorphs><Allomorph id="aDecCf"><PhoneticShape>tal</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures>
+              <FeatureValue feature="cfDecoy">
+                <FeatureValue feature="hfNumber" symbolValues="numSg" />
+              </FeatureValue>
+            </AssignedHeadFeatures>
+            <MorphemeId>TAL</MorphemeId>
+            <Gloss>tal</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eAt" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aAt"><PhoneticShape>at</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>AT</MorphemeId>
+            <Gloss>at</Gloss>
+          </LexicalEntry>
+          <!-- ExcludedEnvironments on an allomorph: this form is unavailable before "k". -->
+          <!-- mtDecoy would swap a "k a" pair, so this root surfacing unchanged is what observes its
+               deactivation. -->
+          <!-- Contains the "t i" pair mtSwap swaps, so the root surfaces as "it" and the rule fires. -->
+          <LexicalEntry id="eTi" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aTi"><PhoneticShape>ti</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TI</MorphemeId>
+            <Gloss>ti</Gloss>
+          </LexicalEntry>
+          <!-- Ordering probe for mtSwap~mtSwapOverlap: "tik" has mtSwap's own "t i" pair directly
+               followed by "k". Under this fixture's declared order (mtSwap before mtSwapOverlap),
+               mtSwap fires first ("tik" becomes "itk"), which brings the "t" newly adjacent to "k",
+               a window mtSwapOverlap's own switch classes (ncOvA={t,k}, ncOvB={k,l}) match, so
+               mtSwapOverlap then also fires: "itk" becomes "ikt". Swapping the two rules' order
+               instead lets mtSwapOverlap look first at the unswapped "tik", where no ncOvA/ncOvB
+               window exists yet (the segment before "k" is "i", in neither class), so it does not
+               fire, and only mtSwap's own swap happens: "tik" becomes "itk". See words.yaml's
+               ikt/itk entries. -->
+          <LexicalEntry id="eTik" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aTik"><PhoneticShape>tik</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TIK</MorphemeId>
+            <Gloss>probe.tik</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eKa" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aKa"><PhoneticShape>ka</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>KA</MorphemeId>
+            <Gloss>ka</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eAsk" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aAsk"><PhoneticShape>ask</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ASK</MorphemeId>
+            <Gloss>ask</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eSal" partOfSpeech="posN">
+            <Allomorphs>
+              <Allomorph id="aSal">
+                <PhoneticShape>sal</PhoneticShape>
+                <ExcludedEnvironments>
+                  <Environment>
+                    <RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncK" /></PhoneticSequence></PhoneticTemplate></RightEnvironment>
+                  </Environment>
+                </ExcludedEnvironments>
+              </Allomorph>
+            </Allomorphs>
+            <MorphemeId>SAL</MorphemeId>
+            <Gloss>sal</Gloss>
+          </LexicalEntry>
+          <!-- mtSwapOverlap's overlap probe: "t" and "k" share membership in both switch classes. -->
+          <LexicalEntry id="eTkl" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aTkl"><PhoneticShape>tkl</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TKL</MorphemeId>
+            <Gloss>tkl</Gloss>
+          </LexicalEntry>
+          <!-- prHighTrigger's probe: unaffected while cT is hiMinus, refused once the decoy makes it
+               hiPlus. -->
+          <LexicalEntry id="eTs" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aTs"><PhoneticShape>ts</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TS</MorphemeId>
+            <Gloss>ts</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

@@ -1,0 +1,53 @@
+# oracle-provenance: founding-oracle
+# Signatures transcribed verbatim from the C# founding oracle (hc-conformance self-check, --propose)
+# built from sillsdev/machine 18cf242f (the integrate-conformance-framework head, PR #480).
+#
+# Regression guard for the syllabary-style merge cascade (two narrowing rules with alpha variables,
+# one of them with a morpheme boundary in the middle of its target, the shape a real Fidel-type
+# grammar has) fed by an earlier vowel-fronting rule whose environment is the fused character.
+# Analysing "teK" must (1) undo prMergeBdry on K, (2) undo prMerge on the node that (1) left (its
+# target class must still unify with that node), and (3) undo prFront on "e" with a right-hand
+# environment [+cons vel] that is satisfied by the node standing where K was. Every engine under
+# test must find both TAKA and TAK+SFX.
+
+language: TwoMergesCascadeEnv
+inspired_by: ["synthetic syllabary merge cascade (not modeling any real language)"]
+sources:
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/NarrowAnalysisRewriteRuleSpec.cs"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: teK
+    note: >-
+      TAKA (taka -> fronting -> teka -> merge -> teK) and TAK+SFX (tak+a -> fronting -> tek+a ->
+      boundary merge -> teK). Both merges and the fronting must all unapply on one analysis path.
+    parses:
+      - signature: "TAK+SFX|teK"
+        rules: [mrSfxA, prFront, prMerge, prMergeBdry]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+          - "Alpha-variable phonological environments (VariableFeature/AlphaVariables)"
+          - "Boundary markers (CharacterDefinitionTable)"
+      - signature: "TAKA|teK"
+        rules: [prFront, prMerge, prMergeBdry]
+  - word: tek
+    note: TAK alone, fronting only (tak -> tek).
+    parses:
+      - signature: "TAK|tek"
+        rules: [prFront]
+  - word: KT
+    note: KATA (kata -> merge twice -> KT); no fronting since no vowel precedes a velar.
+    parses:
+      - signature: "KATA|KT"
+        rules: [prMerge]
+  - word: KTa
+    note: KATA+SFX (kata+a -> KT+a); the suffix vowel is not merged because T is already fused.
+    parses:
+      - signature: "KATA+SFX|KT+?a"
+        rules: [mrSfxA, prMerge]
+  - word: taK
+    note: Fronting before a velar is obligatory, so "ta" before K never surfaces.
+    expect_fail: true
+  - word: taka
+    note: Underlying shape of TAKA; both rules are obligatory.
+    expect_fail: true

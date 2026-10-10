@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>CrossTableRootRespelling</Name>
+    <!-- Isolates cross-table RESPELLING with NO phonological rule anywhere in the grammar: the
+         mechanism is a loader/lookup fact, not a rewrite-rule side effect. In HermitCrab a segment
+         IS its feature bundle; a CharacterDefinitionTable only spells that bundle for its own
+         stratum (CharacterDefinitionTable.GetMatchingStrReps, matching by
+         `FeatureStruct.IsUnifiable` alone). So a root entered on an inner stratum surfaces spelled
+         by whichever FINAL-stratum segment carries the SAME bundle, even when the two tables never
+         share a single character. This differs from edge-cases/bistratal-overlapping-segment-
+         representation (that fixture's two tables OVERLAP in spelling, e.g. both declare "s", and
+         pins that overlapping spelling does NOT imply overlapping identity); here the tables'
+         alphabets are disjoint (Inner: m/q, Final: t/s/u) precisely so no spelling can be mistaken
+         for the mechanism: only bundle equality reaches across.
+
+         Two features (featA, featB), each binary, give four distinct bundles:
+           X = (a1,b1), Y = (a2,b1), Z = (a1,b2), W = (a2,b2)
+         Inner table (tIn):  cA1 "m" = X,  cA2 "q" = Y
+         Final table (tFin): cB1 "t" = X,  cB2 "s" = Z,  cC1 "u" = W (suffix material only)
+         tFin has NO segment carrying Y: the deliberate asymmetry the fixture is built to show.
+
+         ROOT1 ("m", tIn, bundle X) has no representation in tFin's own alphabet, yet surfaces as
+         "t" (cB1, same bundle X) with no rule involved: the positive witness. ROOT2 ("q", tIn,
+         bundle Y) can NEVER surface: no tFin segment carries Y, so no string over tFin's alphabet
+         can ever unify with it at lexical lookup, regardless of spelling; pinned by typing its
+         own raw shape at the surface and transcribing whatever the oracle reports (tFin does not
+         even declare "q" as a character, so tokenization itself fails). ROOT3 ("t", tFin, bundle X)
+         is a NATIVE Final-stratum entry that happens to share ROOT1's respelled surface, so "t" is
+         AMBIGUOUS: respelling coexists with, and is not shadowed by, a native root at the same
+         surface spelling. mrSuffix (Final stratum only) appends "u" (cC1) to any posV stem, so "tu"
+         exercises respelling surviving under affixation. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>V</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featA">
+        <Name>A</Name>
+        <Symbols>
+          <Symbol id="symA1">a1</Symbol>
+          <Symbol id="symA2">a2</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featB">
+        <Name>B</Name>
+        <Symbols>
+          <Symbol id="symB1">b1</Symbol>
+          <Symbol id="symB2">b2</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="tIn">
+      <Name>Inner</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cA1">
+          <Representations><Representation>m</Representation></Representations>
+          <FeatureValue feature="featA" symbolValues="symA1" />
+          <FeatureValue feature="featB" symbolValues="symB1" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cA2">
+          <Representations><Representation>q</Representation></Representations>
+          <FeatureValue feature="featA" symbolValues="symA2" />
+          <FeatureValue feature="featB" symbolValues="symB1" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <CharacterDefinitionTable id="tFin">
+      <Name>Final</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cB1">
+          <Representations><Representation>t</Representation></Representations>
+          <FeatureValue feature="featA" symbolValues="symA1" />
+          <FeatureValue feature="featB" symbolValues="symB1" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cB2">
+          <Representations><Representation>s</Representation></Representations>
+          <FeatureValue feature="featA" symbolValues="symA1" />
+          <FeatureValue feature="featB" symbolValues="symB2" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cC1">
+          <Representations><Representation>u</Representation></Representations>
+          <FeatureValue feature="featA" symbolValues="symA2" />
+          <FeatureValue feature="featB" symbolValues="symB2" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <!-- Universal "matches any single segment" class, used only to write mrSuffix's stem pattern;
+           carries no FeatureValue constraints, so it is not part of the respelling mechanism. -->
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="tIn" morphologicalRuleOrder="unordered">
+        <Name>Inner</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot1" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aRoot1"><PhoneticShape>m</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT1</MorphemeId>
+            <Gloss>root1</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eRoot2" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aRoot2"><PhoneticShape>q</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT2</MorphemeId>
+            <Gloss>root2</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <Stratum characterDefinitionTable="tFin" morphologicalRuleOrder="unordered" morphologicalRules="mrSuffix">
+        <Name>Final</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrSuffix" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>suffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="msSuffix">
+                <MorphologicalInput>
+                  <PhoneticSequence id="stem"><SimpleContext naturalClass="ncAny" /></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="stem" /><InsertSegments><PhoneticShape>u</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SUF</MorphemeId>
+            <Gloss>suf</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot3" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aRoot3"><PhoneticShape>t</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT3</MorphemeId>
+            <Gloss>root3</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

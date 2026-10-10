@@ -1,0 +1,40 @@
+# oracle-provenance: founding-oracle
+# Signatures transcribed verbatim from the C# founding oracle (hc-conformance self-check, --propose)
+# built from sillsdev/machine 18cf242f (the integrate-conformance-framework head, PR #480).
+#
+# Pins a METATHESIS rule ordered before a MERGE (narrowing, 2 -> 1) rule in synthesis:
+# mtTS (t s -> s t) then prMergeST (s t -> c). ATSA -> asta -> aca; ASTA -> aca; ACA -> aca.
+# Analysing "aca" must first undo the merge (recover "s t" behind "c") and then undo the metathesis
+# on the recovered nodes to reach ATSA. Metathesis analysis targets require unmodified nodes
+# (AnalysisMetathesisRuleSpec adds Modified=Clean to its constraints), so an engine that marks the
+# nodes recovered by the merge as modified (sillsdev/machine PR #539 head) keeps ASTA and ACA but
+# loses ATSA.
+
+language: MergeThenMetathesis
+inspired_by: ["synthetic metathesis-feeds-merge probe (not modeling any real language)"]
+sources:
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/AnalysisMetathesisRuleSpec.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/NarrowAnalysisRewriteRuleSpec.cs"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: aca
+    note: >-
+      Three roots: ACA (no rule), ASTA (merge only) and ATSA (metathesis, then merge). ATSA is the
+      witness: it needs the metathesis to unapply on the nodes the merge recovered.
+    parses:
+      - signature: "ACA|aca"
+        rules: [mtTS, prMergeST]
+      - signature: "ASTA|aca"
+        rules: [mtTS, prMergeST]
+      - signature: "ATSA|aca"
+        rules: [mtTS, prMergeST]
+        exercises:
+          - "MetathesisRule"
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+  - word: atsa
+    note: Underlying shape of ATSA; the metathesis is obligatory, so this never surfaces.
+    expect_fail: true
+  - word: asta
+    note: Underlying shape of ASTA; the merge is obligatory, so this never surfaces.
+    expect_fail: true

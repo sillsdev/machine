@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Synthetic. A metathesis rule ordered BEFORE a merge (narrowing, 2 -> 1) rule in synthesis:
+       mtTS       t s -> s t
+       prMergeST  s t -> c
+     Root ATSA surfaces as "aca" (atsa -> asta -> aca); so do ASTA and ACA. Analysing "aca" must first
+     undo the merge (recover "s t" from "c") and then undo the metathesis ON THE RECOVERED NODES to reach
+     ATSA. Metathesis analysis targets require unmodified nodes, so an implementation that marks the
+     merge's recovered nodes as modified loses ATSA while keeping ASTA and ACA. -->
+<HermitCrabInput>
+  <Language>
+    <Name>MergeThenMetathesis</Name>
+    <PartsOfSpeech><PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech></PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="consPlus">+cons</Symbol><Symbol id="consMinus">-cons</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featCont"><Name>cont</Name><Symbols><Symbol id="contPlus">+cont</Symbol><Symbol id="contMinus">-cont</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featStrid"><Name>strid</Name><Symbols><Symbol id="stridPlus">+strid</Symbol><Symbol id="stridMinus">-strid</Symbol></Symbols></SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations><FeatureValue feature="featCons" symbolValues="consMinus" /><FeatureValue feature="featCont" symbolValues="contPlus" /><FeatureValue feature="featStrid" symbolValues="stridMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featCont" symbolValues="contMinus" /><FeatureValue feature="featStrid" symbolValues="stridMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featCont" symbolValues="contPlus" /><FeatureValue feature="featStrid" symbolValues="stridPlus" /></SegmentDefinition>
+        <SegmentDefinition id="cC"><Representations><Representation>c</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featCont" symbolValues="contMinus" /><FeatureValue feature="featStrid" symbolValues="stridPlus" /></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <SegmentNaturalClass id="ncT"><Name>T</Name><Segment segment="cT" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncS"><Name>S</Name><Segment segment="cS" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <!-- leftSwitch names the group that ends up on the LEFT after the swap (the later group, s),
+           the same convention as languages/metathesis-phase-isolation. -->
+      <MetathesisRule id="mtTS" leftSwitch="mS" rightSwitch="mT">
+        <Name>tsToSt</Name>
+        <StructuralDescription>
+          <PhoneticTemplate>
+            <PhoneticSequence>
+              <SimpleContext id="mT" naturalClass="ncT" />
+              <SimpleContext id="mS" naturalClass="ncS" />
+            </PhoneticSequence>
+          </PhoneticTemplate>
+        </StructuralDescription>
+      </MetathesisRule>
+      <PhonologicalRule id="prMergeST">
+        <Name>mergeST</Name>
+        <PhoneticInput><PhoneticSequence><Segment segment="cS" /><Segment segment="cT" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="cC" /></PhoneticSequence></PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" phonologicalRules="mtTS prMergeST">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eAtsa" partOfSpeech="posN"><Allomorphs><Allomorph id="aAtsa"><PhoneticShape>atsa</PhoneticShape></Allomorph></Allomorphs><MorphemeId>ATSA</MorphemeId><Gloss>atsa</Gloss></LexicalEntry>
+          <LexicalEntry id="eAsta" partOfSpeech="posN"><Allomorphs><Allomorph id="aAsta"><PhoneticShape>asta</PhoneticShape></Allomorph></Allomorphs><MorphemeId>ASTA</MorphemeId><Gloss>asta</Gloss></LexicalEntry>
+          <LexicalEntry id="eAca" partOfSpeech="posN"><Allomorphs><Allomorph id="aAca"><PhoneticShape>aca</PhoneticShape></Allomorph></Allomorphs><MorphemeId>ACA</MorphemeId><Gloss>aca</Gloss></LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

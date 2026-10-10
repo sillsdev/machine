@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Synthetic. A narrowing rule whose LEFT-HAND SIDE starts with a morpheme boundary: a suffix-initial
+     "b" becomes "m" after a nasal, written with the boundary inside the target,
+       prPostNasal  + b -> m / [+nas] _
+     (2 -> 1, the boundary is absorbed). Root KAN plus the suffix "+bo" surfaces as "kanmo"; so does
+     KAN plus the suffix "+mo". Analysing "kanmo" must recover both: the "m" may be an underlying
+     suffix "m", or a "+ b" that the rule rewrote. This is a feature grammar: segments carry no string
+     identity, so a union of "m" with the feature structure of the boundary is a wildcard. Compare the
+     zero-feature twin boundary-first-in-narrowing-lhs-strrep. -->
+<HermitCrabInput>
+  <Language>
+    <Name>BoundaryFirstInNarrowingLhs</Name>
+    <PartsOfSpeech><PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech></PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="consPlus">+cons</Symbol><Symbol id="consMinus">-cons</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featNas"><Name>nasal</Name><Symbols><Symbol id="nasPlus">+nas</Symbol><Symbol id="nasMinus">-nas</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featPlace"><Name>place</Name><Symbols><Symbol id="plLab">lab</Symbol><Symbol id="plCor">cor</Symbol><Symbol id="plVel">vel</Symbol><Symbol id="plNone">none</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featRound"><Name>round</Name><Symbols><Symbol id="rdPlus">+rd</Symbol><Symbol id="rdMinus">-rd</Symbol></Symbols></SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featNas" symbolValues="nasMinus" /><FeatureValue feature="featPlace" symbolValues="plVel" /><FeatureValue feature="featRound" symbolValues="rdMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featNas" symbolValues="nasMinus" /><FeatureValue feature="featPlace" symbolValues="plCor" /><FeatureValue feature="featRound" symbolValues="rdMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featNas" symbolValues="nasMinus" /><FeatureValue feature="featPlace" symbolValues="plLab" /><FeatureValue feature="featRound" symbolValues="rdMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featNas" symbolValues="nasPlus" /><FeatureValue feature="featPlace" symbolValues="plCor" /><FeatureValue feature="featRound" symbolValues="rdMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featNas" symbolValues="nasPlus" /><FeatureValue feature="featPlace" symbolValues="plLab" /><FeatureValue feature="featRound" symbolValues="rdMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations><FeatureValue feature="featCons" symbolValues="consMinus" /><FeatureValue feature="featNas" symbolValues="nasMinus" /><FeatureValue feature="featPlace" symbolValues="plNone" /><FeatureValue feature="featRound" symbolValues="rdMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations><FeatureValue feature="featCons" symbolValues="consMinus" /><FeatureValue feature="featNas" symbolValues="nasMinus" /><FeatureValue feature="featPlace" symbolValues="plNone" /><FeatureValue feature="featRound" symbolValues="rdPlus" /></SegmentDefinition>
+      </SegmentDefinitions>
+      <BoundaryDefinitions>
+        <BoundaryDefinition id="bPlus"><Representations><Representation>+</Representation></Representations></BoundaryDefinition>
+      </BoundaryDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncNas"><Name>nasal</Name><FeatureValue feature="featNas" symbolValues="nasPlus" /></FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prPostNasal">
+        <Name>postNasalSuffixB</Name>
+        <PhoneticInput><PhoneticSequence><BoundaryMarker boundary="bPlus" /><Segment segment="cB" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="cM" /></PhoneticSequence></PhoneticOutput>
+            <Environment><LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncNas" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment></Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" morphologicalRules="mrSfxBo mrSfxMo" phonologicalRules="prPostNasal">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrSfxBo" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>sfxBo</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSfxBo">
+                <MorphologicalInput><PhoneticSequence id="stemBo"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemBo" /><InsertSegments><PhoneticShape>+bo</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>BO</MorphemeId>
+            <Gloss>bo</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrSfxMo" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>sfxMo</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSfxMo">
+                <MorphologicalInput><PhoneticSequence id="stemMo"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemMo" /><InsertSegments><PhoneticShape>+mo</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>MO</MorphemeId>
+            <Gloss>mo</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eKan" partOfSpeech="posN"><Allomorphs><Allomorph id="aKan"><PhoneticShape>kan</PhoneticShape></Allomorph></Allomorphs><MorphemeId>KAN</MorphemeId><Gloss>kan</Gloss></LexicalEntry>
+          <LexicalEntry id="eKat" partOfSpeech="posN"><Allomorphs><Allomorph id="aKat"><PhoneticShape>kat</PhoneticShape></Allomorph></Allomorphs><MorphemeId>KAT</MorphemeId><Gloss>kat</Gloss></LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

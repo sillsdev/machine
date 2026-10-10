@@ -1,0 +1,29 @@
+language: SimultaneousFeeding
+inspired_by: ["synthetic overlapping feature-changing rewrite probe (not modeling any real language)"]
+sources:
+  - "RewriteRuleTests.MultipleApplicationRules"
+requires: [phonology]
+# FieldWorks verdict relies on the task-provided HCLoader.cs facts; that external source is not in
+# this worktree. Ordinary PhSegmentRule loading covers this rule shape.
+fieldworks_producible: true
+words:
+  - word: gaga
+    note: Bare control root; it contains no high vowel and is unchanged by the rewrite.
+    parses:
+      - signature: "GABA|gaga"
+        gloss: gaga-control
+        rules: []
+  - word: gigigi
+    note: Underlying control shape; the obligatory rewrite changes its two eligible positions, so the raw shape is rejected.
+    expect_fail: true
+  - word: gigugu
+    note: "Simultaneous-shaped negative: iterative application bleeds the second overlapping rewrite."
+    expect_fail: true
+  - word: gigugi
+    note: "Iterative discriminating positive: the first rewrite changes the environment seen by the second match."
+    parses:
+      - signature: "GIGI|gigugi"
+        gloss: gigi-root
+        rules: [prFeed]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"

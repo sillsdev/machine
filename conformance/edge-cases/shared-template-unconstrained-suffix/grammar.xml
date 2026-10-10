@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>SharedTemplateUnconstrainedSuffix</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>N</Name></PartOfSpeech>
+      <PartOfSpeech id="posTv"><Name>TV</Name></PartOfSpeech>
+      <PartOfSpeech id="posIv"><Name>IV</Name></PartOfSpeech>
+      <PartOfSpeech id="posA"><Name>A</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cV"><Representations><Representation>v</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrIverb">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrPast">
+            <Name>Past suffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPast">
+                <MorphologicalInput><PhoneticSequence id="stemPast"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemPast" /><InsertSegments><PhoneticShape>d</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PAST</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrIverb" requiredPartsOfSpeech="posN" outputPartOfSpeech="posIv">
+            <Name>Intransitive verbalizer</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subIverb">
+                <MorphologicalInput><PhoneticSequence id="stemIverb"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemIverb" /><InsertSegments><PhoneticShape>v</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>IVERB</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posTv">
+            <Name>Transitive</Name>
+            <Slot morphologicalRules="mrPast"><Name>Past TV</Name></Slot>
+          </AffixTemplate>
+          <AffixTemplate requiredPartsOfSpeech="posIv">
+            <Name>Intransitive</Name>
+            <Slot morphologicalRules="mrPast"><Name>Past IV</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eN" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aN"><PhoneticShape>mi</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>NROOT</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eTv" partOfSpeech="posTv">
+            <Allomorphs><Allomorph id="aTv"><PhoneticShape>ti</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TVROOT</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eA" partOfSpeech="posA">
+            <Allomorphs><Allomorph id="aA"><PhoneticShape>ki</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>AROOT</MorphemeId>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
