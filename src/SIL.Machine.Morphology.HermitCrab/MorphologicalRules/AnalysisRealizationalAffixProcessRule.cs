@@ -22,9 +22,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             foreach (AffixProcessAllomorph allo in rule.Allomorphs)
             {
                 _rules.Add(
-                    new DisagreeingCopiesPruningRule(
-                        morpher,
-                        new AnalysisAffixProcessAllomorphRuleSpec(allo),
+                    new MultiplePatternRule<Word, ShapeNode>(
+                        new AnalysisAffixProcessAllomorphRuleSpec(allo, morpher),
                         new MatcherSettings<ShapeNode>
                         {
                             Filter = ann => ann.Type() == HCFeatureSystem.Segment,
