@@ -9,11 +9,27 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         : AnalysisMorphologicalTransform,
             IPatternRuleSpec<Word, ShapeNode>
     {
+        private readonly Morpher _morpher;
+        private readonly bool _hasRepeatedParts;
+
         protected AnalysisMorphologicalTransformRuleSpec(
             IEnumerable<Pattern<Word, ShapeNode>> lhs,
-            IList<MorphologicalOutputAction> rhs
+            IList<MorphologicalOutputAction> rhs,
+            Morpher morpher
         )
-            : base(lhs, rhs) { }
+            : base(lhs, rhs)
+        {
+            _morpher = morpher;
+            _hasRepeatedParts = HasRepeatedParts;
+        }
+
+        protected bool CopiesMayAgree(Match<Word, ShapeNode> match)
+        {
+            return _morpher == null
+                || !_morpher.PruneDisagreeingCopies
+                || !_hasRepeatedParts
+                || !HasDisagreeingCopies(match);
+        }
 
         public bool IsApplicable(Word input)
         {

@@ -9,11 +9,12 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
     {
         private readonly CompoundingSubrule _subrule;
 
-        public AnalysisCompoundingSubruleRuleSpec(CompoundingSubrule subrule)
-            : base(subrule.HeadLhs.Concat(subrule.NonHeadLhs), subrule.Rhs)
+        public AnalysisCompoundingSubruleRuleSpec(CompoundingSubrule subrule, Morpher morpher = null)
+            : base(subrule.HeadLhs.Concat(subrule.NonHeadLhs), subrule.Rhs, morpher)
         {
             _subrule = subrule;
-            Pattern.Acceptable = match => _subrule.HeadLhs.Any(part => IsPartCaptured(match, part.Name));
+            Pattern.Acceptable = match =>
+                _subrule.HeadLhs.Any(part => IsPartCaptured(match, part.Name)) && CopiesMayAgree(match);
             Pattern.Freeze();
         }
 
