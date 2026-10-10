@@ -83,6 +83,31 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
         Assert.That(outputs.Count, Is.EqualTo(expectedOutputs));
     }
 
+    [Test]
+    public void OptionalSegmentThatCannotLineUpIsPruned()
+    {
+        // skipping or keeping the restored segment, every split still pairs the two incompatible segments
+        (string first, string second) = FindIncompatibleSegments();
+        AffixProcessRule rule = CreateCopyRule(FullPart());
+        Word input = CreateInputWithOptionalSecondSegment(first + second + second);
+
+        Assert.That(new AnalysisAffixProcessRule(CreateMorpher(false), rule).Apply(input), Is.Not.Empty);
+        Assert.That(new AnalysisAffixProcessRule(CreateMorpher(true), rule).Apply(input), Is.Empty);
+    }
+
+    [Test]
+    public void OptionalSegmentThatLinesUpWhenSkippedIsKept()
+    {
+        (string first, string second) = FindIncompatibleSegments();
+        AffixProcessRule rule = CreateCopyRule(FullPart());
+        Word input = CreateInputWithOptionalSecondSegment(first + second + first);
+
+        Assert.That(
+            new AnalysisAffixProcessRule(CreateMorpher(true), rule).Apply(input).Count(),
+            Is.EqualTo(new AnalysisAffixProcessRule(CreateMorpher(false), rule).Apply(input).Count())
+        );
+    }
+
     [TestCase(false, 3)]
     [TestCase(true, 1)]
     public void RealizationalFullCopyKeepsOnlyTheSplitWhoseCopiesAgree(bool pruneCopies, int expectedOutputs)
@@ -356,6 +381,14 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
             )
             .First(candidate => !candidate.First.FeatureStruct.IsUnifiable(candidate.Second.FeatureStruct));
         return (pair.First.Representations.First(), pair.Second.Representations.First());
+    }
+
+    private Word CreateInputWithOptionalSecondSegment(string representation)
+    {
+        var input = new Word(Surface, Table3.Segment(representation)) { AnalysisScope = new AnalysisScope() };
+        input.Shape.First.Next.Annotation.Optional = true;
+        input.Freeze();
+        return input;
     }
 
     private Word CreateInput(string representation)
