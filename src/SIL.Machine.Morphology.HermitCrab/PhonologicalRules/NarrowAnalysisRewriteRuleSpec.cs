@@ -42,7 +42,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             ShapeNode curNode = IsTargetEmpty ? range.Start : range.End;
             ShapeNode targetNode = range.Start;
             int targetPos = 0;
-            bool prune = true;
+            bool zipper = true;
             foreach (
                 Constraint<Word, ShapeNode> constraint in _analysisRhs.Children.CastToConstraints(
                     "The target (left-hand side) of a rewrite rule"
@@ -53,7 +53,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 if (varBindings != null)
                     fs.ReplaceVariables(varBindings);
                 if (
-                    prune
+                    zipper
                     && targetPos < _targetCount
                     && constraint.Type() == HCFeatureSystem.Segment
                     && targetNode.Type() == HCFeatureSystem.Segment
@@ -68,7 +68,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 {
                     // Add an optional node for fs.
                     curNode = targetMatch.Input.Shape.AddAfter(curNode, fs, true);
-                    prune = false;
+                    zipper = false;
                 }
             }
 
