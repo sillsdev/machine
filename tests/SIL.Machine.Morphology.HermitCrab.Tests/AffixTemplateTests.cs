@@ -348,6 +348,7 @@ public class AffixTemplateTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("sagdmis"), "32 PAST 53 PL");
 
         // Test rules split between two strata.
+        Morphophonemic.MorphologicalRules.Remove(crule);
         Allophonic.MorphologicalRules.Add(crule);
         verbTemplate.IsFinal = true;
         morpher = new Morpher(TraceManager, Language, 1);

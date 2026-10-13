@@ -62,7 +62,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             // do not allow a non-partial rule to apply unless the input is partial
             if (
                 !_rule.IsTemplateRule
-                && !_rule.IsCliticRule
+                && !_rule.GetIsCliticRule()
                 && (input.IsLastAppliedRuleFinal ?? false)
                 && ((!input.IsPartial && !_rule.IsPartial) || _morpher.AlwaysEnforceFinalTemplates)
             )
@@ -84,7 +84,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             // only allow a non-partial rule to apply unless the input is partial
             if (
                 !_rule.IsTemplateRule
-                && !_rule.IsCliticRule
+                && !_rule.GetIsCliticRule()
                 && input.IsLastAppliedRuleFinal.HasValue
                 && !input.IsLastAppliedRuleFinal.Value
                 && !input.IsPartial
@@ -185,7 +185,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     foreach (Feature obligFeature in _rule.ObligatorySyntacticFeatures)
                         outWord.ObligatorySyntacticFeatures.Add(obligFeature);
 
-                    if (!_rule.IsTemplateRule && !_rule.IsCliticRule)
+                    if (!_rule.IsTemplateRule && !_rule.GetIsCliticRule())
                     {
                         if (_rule.IsPartial)
                             outWord.IsPartial = true;

@@ -5,17 +5,19 @@ namespace SIL.Machine.Morphology.HermitCrab
 {
     public abstract class MorphemicMorphologicalRule : Morpheme, IMorphologicalRule
     {
-        public bool? IsCliticRuleUser;
         public string Name { get; set; }
         public bool IsTemplateRule { get; set; }
-        internal bool IsCliticRule
+        public bool? IsCliticRule { get; set; }
+
+        /// <summary>
+        /// Returns IsCliticRule if set.
+        /// If IsCliticRule is not set, returns whether the rule is in the "Clitics" stratum.
+        /// </summary>
+        internal bool GetIsCliticRule()
         {
-            get
-            {
-                if (IsCliticRuleUser == null)
-                    return Stratum != null && Stratum.Name == "Clitics";
-                return (bool)IsCliticRuleUser;
-            }
+            if (IsCliticRule == null)
+                return Stratum != null && Stratum.Name == "Clitics";
+            return (bool)IsCliticRule;
         }
 
         public override MorphemeType MorphemeType

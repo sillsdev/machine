@@ -83,7 +83,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     if (!_morpher.IsPartial || _morpher.AlwaysEnforceFinalTemplates)
                     {
                         outWord.FinalTemplateState =
-                            (!_rule.IsTemplateRule && !_rule.IsCliticRule)
+                            (!_rule.IsTemplateRule && !_rule.GetIsCliticRule())
                                 ? FinalTemplateState.NonTemplate
                                 : FinalTemplateState.None;
                     }

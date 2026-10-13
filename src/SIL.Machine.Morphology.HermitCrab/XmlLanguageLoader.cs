@@ -862,7 +862,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 Id = (string)mruleElem.Element("MorphemeId"),
                 Gloss = (string)mruleElem.Element("Gloss"),
                 Blockable = (bool?)mruleElem.Attribute("blockable") ?? true,
-                IsCliticRuleUser = (bool?)mruleElem.Attribute("isCliticRule"),
+                IsCliticRule = (bool?)mruleElem.Attribute("isCliticRule"),
                 IsPartial = (bool?)mruleElem.Attribute("partial") ?? false,
             };
             var multApp = (string)mruleElem.Attribute("multipleApplication");
@@ -958,7 +958,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 Id = (string)realRuleElem.Element("MorphemeId"),
                 Gloss = (string)realRuleElem.Element("Gloss"),
                 Blockable = (bool?)realRuleElem.Attribute("blockable") ?? true,
-                IsCliticRuleUser = (bool?)realRuleElem.Attribute("isCliticRule"),
+                IsCliticRule = (bool?)realRuleElem.Attribute("isCliticRule"),
             };
 
             var fs = new FeatureStruct();
