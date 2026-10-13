@@ -248,52 +248,52 @@ public class FstTests : PhoneticTestsBase
         fst.StartState = fst.CreateAcceptingState();
         fst = fst.Determinize();
         var greedy1 = new FstResult<AnnotatedStringData, int>(
-                            fst.RegistersEqualityComparer,
-                            null,
-                            null,
-                            new AnnotatedStringData(""),
-                            null,
-                            0,
-                            false,
-                            new Annotation<int>(Range<int>.Create(1, 2), null),
-                            [],
-                            0
+            fst.RegistersEqualityComparer,
+            null,
+            null,
+            new AnnotatedStringData(""),
+            null,
+            0,
+            false,
+            new Annotation<int>(Range<int>.Create(1, 2), null),
+            [],
+            0
         );
         var greedy4 = new FstResult<AnnotatedStringData, int>(
-                            fst.RegistersEqualityComparer,
-                            null,
-                            null,
-                            new AnnotatedStringData(""),
-                            null,
-                            0,
-                            false,
-                            new Annotation<int>(Range<int>.Create(4, 5), null),
-                            [],
-                            0
+            fst.RegistersEqualityComparer,
+            null,
+            null,
+            new AnnotatedStringData(""),
+            null,
+            0,
+            false,
+            new Annotation<int>(Range<int>.Create(4, 5), null),
+            [],
+            0
         );
         var lazy3 = new FstResult<AnnotatedStringData, int>(
-                            fst.RegistersEqualityComparer,
-                            null,
-                            null,
-                            new AnnotatedStringData(""),
-                            null,
-                            0,
-                            true,
-                            new Annotation<int>(Range<int>.Create(3, 4), null),
-                            [],
-                            0
+            fst.RegistersEqualityComparer,
+            null,
+            null,
+            new AnnotatedStringData(""),
+            null,
+            0,
+            true,
+            new Annotation<int>(Range<int>.Create(3, 4), null),
+            [],
+            0
         );
         var lazy2 = new FstResult<AnnotatedStringData, int>(
-                            fst.RegistersEqualityComparer,
-                            null,
-                            null,
-                            new AnnotatedStringData(""),
-                            null,
-                            0,
-                            true,
-                            new Annotation<int>(Range<int>.Create(2, 3), null),
-                            [],
-                            0
+            fst.RegistersEqualityComparer,
+            null,
+            null,
+            new AnnotatedStringData(""),
+            null,
+            0,
+            true,
+            new Annotation<int>(Range<int>.Create(2, 3), null),
+            [],
+            0
         );
         Assert.That(fst.ResultCompare(greedy1, greedy1), Is.Zero);
         Assert.That(fst.ResultCompare(greedy4, greedy4), Is.Zero);
