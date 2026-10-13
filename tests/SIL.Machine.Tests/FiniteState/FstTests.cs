@@ -240,4 +240,78 @@ public class FstTests : PhoneticTestsBase
         Assert.That(resultsArray.Length, Is.EqualTo(2));
         Assert.That(resultsArray.Select(r => r.Output.String), Is.EquivalentTo(new[] { "cas+.p", "cas.p" }));
     }
+
+    [Test]
+    public void ResultCompare()
+    {
+        var fst = new Fst<AnnotatedStringData, int>(_operations) { UseUnification = false };
+        fst.StartState = fst.CreateAcceptingState();
+        fst = fst.Determinize();
+        var greedy1 = new FstResult<AnnotatedStringData, int>(
+                            fst.RegistersEqualityComparer,
+                            null,
+                            null,
+                            new AnnotatedStringData(""),
+                            null,
+                            0,
+                            false,
+                            new Annotation<int>(Range<int>.Create(1, 2), null),
+                            [],
+                            0
+        );
+        var greedy4 = new FstResult<AnnotatedStringData, int>(
+                            fst.RegistersEqualityComparer,
+                            null,
+                            null,
+                            new AnnotatedStringData(""),
+                            null,
+                            0,
+                            false,
+                            new Annotation<int>(Range<int>.Create(4, 5), null),
+                            [],
+                            0
+        );
+        var lazy3 = new FstResult<AnnotatedStringData, int>(
+                            fst.RegistersEqualityComparer,
+                            null,
+                            null,
+                            new AnnotatedStringData(""),
+                            null,
+                            0,
+                            true,
+                            new Annotation<int>(Range<int>.Create(3, 4), null),
+                            [],
+                            0
+        );
+        var lazy2 = new FstResult<AnnotatedStringData, int>(
+                            fst.RegistersEqualityComparer,
+                            null,
+                            null,
+                            new AnnotatedStringData(""),
+                            null,
+                            0,
+                            true,
+                            new Annotation<int>(Range<int>.Create(2, 3), null),
+                            [],
+                            0
+        );
+        Assert.That(fst.ResultCompare(greedy1, greedy1), Is.Zero);
+        Assert.That(fst.ResultCompare(greedy4, greedy4), Is.Zero);
+        Assert.That(fst.ResultCompare(lazy2, lazy2), Is.Zero);
+        Assert.That(fst.ResultCompare(lazy3, lazy3), Is.Zero);
+
+        Assert.That(fst.ResultCompare(greedy1, greedy4), Is.EqualTo(-fst.ResultCompare(greedy4, greedy1)));
+        Assert.That(fst.ResultCompare(greedy1, lazy3), Is.EqualTo(-fst.ResultCompare(lazy3, greedy1)));
+        Assert.That(fst.ResultCompare(greedy1, lazy2), Is.EqualTo(-fst.ResultCompare(lazy2, greedy1)));
+        Assert.That(fst.ResultCompare(greedy4, lazy3), Is.EqualTo(-fst.ResultCompare(lazy3, greedy4)));
+        Assert.That(fst.ResultCompare(greedy4, lazy2), Is.EqualTo(-fst.ResultCompare(lazy2, greedy4)));
+        Assert.That(fst.ResultCompare(lazy3, lazy2), Is.EqualTo(-fst.ResultCompare(lazy2, lazy3)));
+
+        Assert.That(fst.ResultCompare(greedy1, greedy4), Is.EqualTo(1));
+        Assert.That(fst.ResultCompare(greedy1, lazy3), Is.EqualTo(1));
+        Assert.That(fst.ResultCompare(greedy1, lazy2), Is.EqualTo(1));
+        Assert.That(fst.ResultCompare(greedy4, lazy3), Is.EqualTo(1));
+        Assert.That(fst.ResultCompare(greedy4, lazy2), Is.EqualTo(1));
+        Assert.That(fst.ResultCompare(lazy3, lazy2), Is.EqualTo(1));
+    }
 }
