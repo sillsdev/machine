@@ -60,7 +60,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 )
                 {
                     // Union fs into the existing node's feature structure.
-                    targetNode.Annotation.FeatureStruct.Union(fs);
+                    targetNode.Annotation.FeatureStruct.Union(fs, varBindings);
                     targetNode = targetNode.Next;
                     targetPos++;
                 }
