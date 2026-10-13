@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState;
@@ -241,12 +242,14 @@ public class FstTests : PhoneticTestsBase
         Assert.That(resultsArray.Select(r => r.Output.String), Is.EquivalentTo(new[] { "cas+.p", "cas.p" }));
     }
 
-    [Test]
-    public void ResultCompare()
+    [TestCase(true)]
+    [TestCase(false)]
+    public void ResultCompare(bool leftToRight)
     {
         var fst = new Fst<AnnotatedStringData, int>(_operations) { UseUnification = false };
         fst.StartState = fst.CreateAcceptingState();
         fst = fst.Determinize();
+        fst.Direction = leftToRight ? Direction.LeftToRight : Direction.RightToLeft;
         var greedy1 = new FstResult<AnnotatedStringData, int>(
             fst.RegistersEqualityComparer,
             null,
@@ -307,11 +310,13 @@ public class FstTests : PhoneticTestsBase
         Assert.That(fst.ResultCompare(greedy4, lazy2), Is.EqualTo(-fst.ResultCompare(lazy2, greedy4)));
         Assert.That(fst.ResultCompare(lazy3, lazy2), Is.EqualTo(-fst.ResultCompare(lazy2, lazy3)));
 
-        Assert.That(fst.ResultCompare(greedy1, greedy4), Is.EqualTo(1));
-        Assert.That(fst.ResultCompare(greedy1, lazy3), Is.EqualTo(1));
-        Assert.That(fst.ResultCompare(greedy1, lazy2), Is.EqualTo(1));
-        Assert.That(fst.ResultCompare(greedy4, lazy3), Is.EqualTo(1));
-        Assert.That(fst.ResultCompare(greedy4, lazy2), Is.EqualTo(1));
-        Assert.That(fst.ResultCompare(lazy3, lazy2), Is.EqualTo(1));
+        // Changing the direction should reverse the result of the comparisons.
+        int result = leftToRight ? 1 : -1;
+        Assert.That(fst.ResultCompare(greedy1, greedy4), Is.EqualTo(result));
+        Assert.That(fst.ResultCompare(greedy1, lazy3), Is.EqualTo(result));
+        Assert.That(fst.ResultCompare(greedy1, lazy2), Is.EqualTo(result));
+        Assert.That(fst.ResultCompare(greedy4, lazy3), Is.EqualTo(result));
+        Assert.That(fst.ResultCompare(greedy4, lazy2), Is.EqualTo(result));
+        Assert.That(fst.ResultCompare(lazy3, lazy2), Is.EqualTo(result));
     }
 }
