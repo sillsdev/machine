@@ -296,7 +296,13 @@ namespace SIL.Machine.Corpora
         public override void EndNote(UsfmParserState state, string marker, bool closed)
         {
             if (closed)
-                CollectUpdatableTokens(state);
+            {
+                // Mirror StartNote: an embed in a duplicate verse is dropped, end marker included.
+                if (DuplicateVerse)
+                    SkipUpdatableTokens(state);
+                else
+                    CollectUpdatableTokens(state);
+            }
             base.EndNote(state, marker, closed);
         }
 
@@ -334,21 +340,26 @@ namespace SIL.Machine.Corpora
             bool closed
         )
         {
-            // strip out char-style markers in verses that are being replaced
-            if (CurrentTextType == ScriptureTextType.Embed)
+            // An implicitly closed character style has no end marker of its own, so the token at
+            // state.Index belongs to whatever closed it. Leave it for the callback that handles it.
+            if (closed)
             {
-                CollectUpdatableTokens(state);
-            }
-            else
-            {
-                ReplaceWithNewTokens(state);
-                if (_styleBehavior == UpdateUsfmMarkerBehavior.Strip)
+                // strip out char-style markers in verses that are being replaced
+                if (CurrentTextType == ScriptureTextType.Embed)
                 {
-                    SkipUpdatableTokens(state);
+                    CollectUpdatableTokens(state);
                 }
                 else
                 {
-                    CollectUpdatableTokens(state);
+                    ReplaceWithNewTokens(state);
+                    if (_styleBehavior == UpdateUsfmMarkerBehavior.Strip)
+                    {
+                        SkipUpdatableTokens(state);
+                    }
+                    else
+                    {
+                        CollectUpdatableTokens(state);
+                    }
                 }
             }
 
