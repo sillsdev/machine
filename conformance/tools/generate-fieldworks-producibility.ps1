@@ -58,7 +58,7 @@ if (-not (Test-Path $TraceManagerPath)) { throw "Cannot find $TraceManagerPath" 
 if (-not (Test-Path $InterfaceInventoryPath)) { throw "Cannot find $InterfaceInventoryPath" }
 
 # ---------------------------------------------------------------------------
-# 1. Mechanically extract the FailureReason subjects (23, excluding None).
+# 1. Mechanically extract the FailureReason subjects (27, excluding None).
 # ---------------------------------------------------------------------------
 $traceManagerText = Get-Content $TraceManagerPath -Raw
 $enumMatch = [regex]::Match($traceManagerText, "public enum FailureReason\s*\{(?<body>[^}]*)\}")
@@ -67,8 +67,8 @@ $failureReasons = $enumMatch.Groups["body"].Value -split "," |
     ForEach-Object { $_.Trim() } |
     Where-Object { $_ -and $_ -ne "None" }
 
-if ($failureReasons.Count -ne 23) {
-    throw "Expected 23 FailureReason members besides None, found $($failureReasons.Count): $($failureReasons -join ', ')"
+if ($failureReasons.Count -ne 27) {
+    throw "Expected 27 FailureReason members besides None, found $($failureReasons.Count): $($failureReasons -join ', ')"
 }
 
 # ---------------------------------------------------------------------------
@@ -246,6 +246,25 @@ Add-Verdict "failure-reason" "MaxApplicationCount" "Yes" @(
     "HCLoader.cs:103-112 (ParserParameters CompoundRules/maxApps parsed into m_CompoundRuleLookup)"
     "HCLoader.cs:1894-1896 (CompoundingRule.MaxApplicationCount assignment)"
 ) "Only ever wired for CompoundingRule, not AffixProcessRule (grep-confirmed single assignment site) -- still reachable via the compounding path."
+
+Add-Verdict "failure-reason" "OutputSyntacticFeatureStruct" "Yes" @(
+    "HCLoader.cs:993,1828 at FieldWorks bd0608da7 (AffixProcessRule.OutSyntacticFeatureStruct)"
+    "HCLoader.cs:1939,2004,2031 at FieldWorks bd0608da7 (CompoundingRule.OutSyntacticFeatureStruct)"
+) "Raised when unapplying an affix or compounding rule whose output features do not unify with the word's."
+
+Add-Verdict "failure-reason" "MaxStemCount" "Yes" @(
+    "HCParser.cs:198 at FieldWorks bd0608da7 (Morpher.MaxStemCount from the parser parameters)"
+    "HCLoader.cs:248-250,1932,1997,2024 at FieldWorks bd0608da7 (default and user compounding rules)"
+) "Raised by compounding unapplication once the non-head count reaches the cap; every FieldWorks project gets compounding rules, the defaults when it defines none."
+
+Add-Verdict "failure-reason" "NonHeadLexicalLookup" "Yes" @(
+    "HCLoader.cs:248-250,1932,1997,2024 at FieldWorks bd0608da7 (default and user compounding rules)"
+) "Raised when a compounding rule's unapplied non-head matches no root allomorph."
+
+Add-Verdict "failure-reason" "RealizationalFeatureStruct" "No" @() (
+    "Raised only by AnalysisRealizationalAffixProcessRule, and HCLoader never builds a RealizationalAffixProcessRule " +
+    "(no reference anywhere in Src/LexText/ParserCore at FieldWorks bd0608da7); see the RealizationalRule loader-gap row."
+)
 
 # --- Interface-inventory subjects (subject_kind = interface-attribute) ------
 
@@ -726,7 +745,7 @@ if ($staleKeys) { throw "Verdict table has entries with no matching subject (sta
 $dupes = $rows | Group-Object subject_kind, subject | Where-Object { $_.Count -gt 1 }
 if ($dupes) { throw "Duplicate subjects in output: $($dupes.Name -join '; ')" }
 
-if ($rows.Count -ne 88) { throw "Expected 88 total rows (23 failure-reason + 60 interface-attribute + 5 loader-gap), got $($rows.Count)" }
+if ($rows.Count -ne 92) { throw "Expected 92 total rows (27 failure-reason + 60 interface-attribute + 5 loader-gap), got $($rows.Count)" }
 
 # ---------------------------------------------------------------------------
 # 5. Emit the TSV.
