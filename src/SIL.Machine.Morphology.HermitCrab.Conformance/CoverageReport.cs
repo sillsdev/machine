@@ -38,6 +38,45 @@ public static class CoverageReport
         return constructs;
     }
 
+    /// <summary>Reads <c>dead-rules-allowed.tsv</c>: one <c>fixture-id TAB rule-id TAB reason</c> row
+    /// per rule a fixture declares on purpose without any word exercising it. The reason column is
+    /// required so that no rule is allowed without saying why.</summary>
+    public static Dictionary<(string FixtureId, string RuleId), string> LoadDeadRuleAllowlist(string path)
+    {
+        var allowed = new Dictionary<(string, string), string>();
+        int lineNumber = 0;
+        foreach (string rawLine in File.ReadAllLines(path))
+        {
+            lineNumber++;
+            if (rawLine.Trim().Length == 0 || rawLine.StartsWith("#", StringComparison.Ordinal))
+                continue;
+            string[] columns = rawLine.Split('\t');
+            if (columns.Length != 3 || columns.Any(c => c.Trim().Length == 0))
+                throw new FormatException($"{path}:{lineNumber}: expected fixture, rule and reason separated by tabs");
+            if (!allowed.TryAdd((columns[0].Trim(), columns[1].Trim()), columns[2].Trim()))
+                throw new FormatException($"{path}:{lineNumber}: duplicate entry");
+        }
+        return allowed;
+    }
+
+    /// <summary>Splits the measured dead rules against the allowlist. <c>Unexpected</c> are dead rules
+    /// nobody has accepted; <c>Stale</c> are accepted rules that some word now exercises, whose entry
+    /// must go so the list cannot drift into accepting rules that are no longer dead.</summary>
+    public static (List<DeadRule> Unexpected, List<(string FixtureId, string RuleId)> Stale) CheckDeadRules(
+        IReadOnlyCollection<DeadRule> deadRules,
+        IReadOnlyDictionary<(string FixtureId, string RuleId), string> allowed
+    )
+    {
+        List<DeadRule> unexpected = deadRules.Where(d => !allowed.ContainsKey((d.FixtureId, d.RuleId))).ToList();
+        var dead = new HashSet<(string, string)>(deadRules.Select(d => (d.FixtureId, d.RuleId)));
+        List<(string, string)> stale = allowed
+            .Keys.Where(k => !dead.Contains(k))
+            .OrderBy(k => k.FixtureId, StringComparer.Ordinal)
+            .ThenBy(k => k.RuleId, StringComparer.Ordinal)
+            .ToList();
+        return (unexpected, stale);
+    }
+
     public static CoverageResult WriteCsvs(List<Fixture> fixtures, string coverageCsvPath, string rulesCsvPath)
     {
         var result = new CoverageResult();
