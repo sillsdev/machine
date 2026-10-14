@@ -122,6 +122,7 @@ FreeFluctuatingAllomorphPair,kots,,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,kot,ORD|kot,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,kit,,Disjunctive allomorphs / free-fluctuation
 GeminateUnderMerge,f,ROOT|f,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+interposed-optional-multi-rhs,de,ABC|de,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 IterativeEpenthesisCascade,uotaa,BOTH|uotaa,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 N2-DefaultSymbol,bat,|bat,Boundary markers (CharacterDefinitionTable)
 N2-DefaultSymbol,bdt,,Boundary markers (CharacterDefinitionTable)

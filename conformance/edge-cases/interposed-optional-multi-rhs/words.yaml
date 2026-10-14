@@ -1,0 +1,46 @@
+# oracle-provenance: forward-synthesis
+# The positive word was forward-derived before the fix, NOT transcribed from the founding oracle: C#
+# before sillsdev/machine#540 loses the parse in narrowing-rule unapplication. With #540 the oracle
+# returns ABC|de, and the self-check trace credits only `merge` for it; the deletion is vacuous on the
+# surface. The rules list below records that observed trace.
+# Ported from the PanGloss conformance-staging fixture of the same name (branch
+# fix/narrow-f3-grouped-capture).
+#
+# Pins a MERGE (narrowing, 3 -> 2) rule whose two-segment output can have an optional node
+# interposed between its halves during analysis. Synthesis: root abc -> merge -> de; "delete x"
+# (x -> 0 / d _ e) is vacuous on the surface. Analysis unapplies the deletion first, which may
+# re-insert an optional x between d and e; the merge's analysis side must then capture BOTH real
+# output positions (d and e) across that optional node to recover abc. Trace:
+# root ABC/abc -> merge abc to de -> surface de (ABC|de); the deletion is vacuous.
+
+language: interposed-optional-multi-rhs
+inspired_by: ["synthetic interposed-optional-node merge probe (not modeling any real language)"]
+sources:
+  - "sillsdev/machine#540 (narrowing-rule unapplication across an interposed optional node); PanGloss fix/narrow-f3-grouped-capture"
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/NarrowAnalysisRewriteRuleSpec.cs"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: de
+    note: >-
+      The witness: root abc fused to de. Analysis re-inserts an optional x between d and e when it
+      undoes the deletion, and the merge must still capture d and e around it to reach ABC.
+    provenance: "sillsdev/machine#540 (interposed optional node between merge output positions)"
+    parses:
+      - signature: "ABC|de"
+        gloss: root
+        rules: [merge]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+  - word: abc
+    note: "Negative control: the merge is obligatory, so the lexical shape never surfaces."
+    expect_fail: true
+  - word: dex
+    note: "Negative control: an x after e is outside the deletion environment and matches no root."
+    expect_fail: true
+  - word: dxe
+    note: "Negative control: an x between d and e is deleted obligatorily, so it never surfaces."
+    expect_fail: true
+  - word: dd
+    note: "Negative control: no root yields dd."
+    expect_fail: true

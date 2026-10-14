@@ -272,6 +272,9 @@ edge-cases/free-fluctuating-allomorph-pair	S	S	SameStage	MorphologicalRule	ruleS
 edge-cases/geminate-under-merge	Main	Main	SameStage	PhonologicalRule	prMerge	PhonologicalRule	prMerge	Overlaps
 edge-cases/geminate-under-merge	Main	Main	SameStage	PhonologicalRule	prShorten	PhonologicalRule	prMerge	Overlaps
 edge-cases/geminate-under-merge	Main	Main	SameStage	PhonologicalRule	prShorten	PhonologicalRule	prShorten	Overlaps
+edge-cases/interposed-optional-multi-rhs	Main	Main	SameStage	PhonologicalRule	delete	PhonologicalRule	delete	Overlaps
+edge-cases/interposed-optional-multi-rhs	Main	Main	SameStage	PhonologicalRule	merge	PhonologicalRule	delete	Overlaps
+edge-cases/interposed-optional-multi-rhs	Main	Main	SameStage	PhonologicalRule	merge	PhonologicalRule	merge	Overlaps
 edge-cases/iterative-epenthesis-cascade	Main	Main	SameStage	PhonologicalRule	prRule1	PhonologicalRule	prRule1	Overlaps
 edge-cases/iterative-epenthesis-cascade	Main	Main	SameStage	PhonologicalRule	prRule1	PhonologicalRule	prRule2	Overlaps
 edge-cases/iterative-epenthesis-cascade	Main	Main	SameStage	PhonologicalRule	prRule2	PhonologicalRule	prRule2	Disjoint

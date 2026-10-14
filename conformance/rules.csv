@@ -76,6 +76,8 @@ FinalTemplatePartialDiscriminators,mrZTagSlot,
 FreeFluctuatingAllomorphPair,ruleS,kits;!kots
 GeminateUnderMerge,prMerge,f
 GeminateUnderMerge,prShorten,f
+interposed-optional-multi-rhs,delete,
+interposed-optional-multi-rhs,merge,de
 IterativeEpenthesisCascade,prRule1,uoaa;uata;uotaa;uotaata
 IterativeEpenthesisCascade,prRule2,uoaa;uata;uotaa;uotaata
 N2-DefaultSymbol,pr1,!bdt

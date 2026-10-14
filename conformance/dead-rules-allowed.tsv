@@ -16,3 +16,4 @@ edge-cases/morphotactic-attribute-breadth	subExA	Primary of an exclude Allomorph
 edge-cases/morphotactic-attribute-breadth	subExC	Named by the adjacency-variant exclude rules; "toplane" exercises the exclusion, not the allomorph.
 edge-cases/morphotactic-attribute-breadth	subExD	Named by the adjacency-variant exclude rules; "toplane" exercises the exclusion, not the allomorph.
 edge-cases/simultaneous-epenthesis-cascade	prule4	Iterative counterpart of the cascade this fixture pins; the parse crashes as expect_crash declares.
+edge-cases/interposed-optional-multi-rhs	delete	Vacuous on every surface: it matters only in analysis, where unapplying it re-inserts the optional x the merge must skip.

@@ -355,6 +355,13 @@ edge-cases/geminate-under-merge	Interface	SimpleContext.naturalClass	required-by
 edge-cases/geminate-under-merge	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/geminate-under-merge	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/geminate-under-merge	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
+edge-cases/interposed-optional-multi-rhs	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/interposed-optional-multi-rhs	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/interposed-optional-multi-rhs	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/interposed-optional-multi-rhs	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/interposed-optional-multi-rhs	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/interposed-optional-multi-rhs	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/interposed-optional-multi-rhs	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
 edge-cases/iterative-epenthesis-cascade	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/iterative-epenthesis-cascade	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
 edge-cases/iterative-epenthesis-cascade	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced

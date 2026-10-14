@@ -130,6 +130,7 @@ edge-cases/free-fluctuating-allomorph-pair	kots	-	Disjunctive allomorphs / free-
 edge-cases/free-fluctuating-allomorph-pair	pel	ALT|pel	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/free-fluctuating-allomorph-pair	pol	ALT|pol	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/geminate-under-merge	f	ROOT|f	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/interposed-optional-multi-rhs	de	ABC|de	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/iterative-epenthesis-cascade	uotaa	BOTH|uotaa	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/loader-default-symbol	bat	|bat	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/loader-default-symbol	bdt	-	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
