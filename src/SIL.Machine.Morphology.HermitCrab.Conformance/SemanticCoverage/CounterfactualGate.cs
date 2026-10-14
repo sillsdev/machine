@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -194,6 +195,10 @@ public static class CounterfactualGate
             var start = ChildProcessEnvironment.CreateStartInfo("dotnet");
             start.RedirectStandardOutput = true;
             start.RedirectStandardError = true;
+            // Outcomes carry surface forms (e.g. "katibɯd"). Without a pinned encoding the pipe uses the
+            // console code page, which rewrites them, so every mutant looks like it changed something.
+            start.StandardOutputEncoding = new UTF8Encoding(false);
+            start.StandardErrorEncoding = new UTF8Encoding(false);
             start.ArgumentList.Add(typeof(CounterfactualGate).Assembly.Location);
             start.ArgumentList.Add("--evaluate-mutant");
             start.ArgumentList.Add(grammarPath);
