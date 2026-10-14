@@ -31,8 +31,7 @@ public static class Runner
         bool includePathological,
         IReadOnlySet<string> engineCapabilities,
         bool propose,
-        TextWriter proposeOutput,
-        bool useMemoization = true
+        TextWriter proposeOutput
     )
     {
         var report = new RunReport();
@@ -43,8 +42,7 @@ public static class Runner
                 includePathological,
                 engineCapabilities,
                 propose,
-                proposeOutput,
-                useMemoization
+                proposeOutput
             );
             if (result == null)
                 report.ExcludedPathologicalCount++;
@@ -59,8 +57,7 @@ public static class Runner
         bool includePathological,
         IReadOnlySet<string> engineCapabilities,
         bool propose,
-        TextWriter proposeOutput,
-        bool useMemoization
+        TextWriter proposeOutput
     )
     {
         var result = new FixtureResult { FixtureId = fixture.Id };
@@ -95,7 +92,7 @@ public static class Runner
         var sw = Stopwatch.StartNew();
         try
         {
-            RunWithBudget(fixture, result, propose, proposeOutput, useMemoization);
+            RunWithBudget(fixture, result, propose, proposeOutput);
             sw.Stop();
             result.ElapsedMs = sw.ElapsedMilliseconds;
 
@@ -160,22 +157,16 @@ result.WordResults
 
     // Mirrors MaterializedRunner.RunWithBudget's watchdog shape (see that method's doc comment) -- a
     // budgeted fixture gets the same "background thread + Task.Wait" timeout enforcement.
-    private static void RunWithBudget(
-        Fixture fixture,
-        FixtureResult result,
-        bool propose,
-        TextWriter proposeOutput,
-        bool useMemoization
-    )
+    private static void RunWithBudget(Fixture fixture, FixtureResult result, bool propose, TextWriter proposeOutput)
     {
         if (!fixture.Words.BudgetMs.HasValue)
         {
-            RunAllWords(fixture, result, propose, proposeOutput, useMemoization);
+            RunAllWords(fixture, result, propose, proposeOutput);
             return;
         }
 
         long budgetMs = fixture.Words.BudgetMs.Value;
-        Task task = Task.Run(() => RunAllWords(fixture, result, propose, proposeOutput, useMemoization));
+        Task task = Task.Run(() => RunAllWords(fixture, result, propose, proposeOutput));
         long marginMs = Math.Max(budgetMs / 5, 1000);
         bool completed;
         try
@@ -190,16 +181,10 @@ result.WordResults
             throw new TimeoutException("watchdog timed out waiting for self-check engine");
     }
 
-    private static void RunAllWords(
-        Fixture fixture,
-        FixtureResult result,
-        bool propose,
-        TextWriter proposeOutput,
-        bool useMemoization
-    )
+    private static void RunAllWords(Fixture fixture, FixtureResult result, bool propose, TextWriter proposeOutput)
     {
         Language language = XmlLanguageLoader.Load(fixture.GrammarPath);
-        Morpher resultMorpher = ConformanceMorpherFactory.Create(language, useMemoization);
+        Morpher resultMorpher = ConformanceMorpherFactory.Create(language);
         Morpher tracingMorpher = ConformanceMorpherFactory.CreateTracing(language);
         GrammarRuleIndex ruleIndex = GrammarRuleIndex.Load(fixture.GrammarPath);
 
@@ -210,8 +195,7 @@ result.WordResults
             bool wasSkipped = false;
             try
             {
-                // This is the conformance oracle. Memoization is enabled by the factory; a mismatch
-                // remains a failure rather than falling back to an unmemoized result.
+                // This is the conformance oracle: a mismatch is a failure, never retried another way.
                 results = resultMorpher.ParseWord(word.Word, out _, guessRoot).ToList();
             }
             catch (InvalidShapeException)
