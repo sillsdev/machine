@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
@@ -193,6 +194,8 @@ internal class Program
         // than abandoned; an abandoned in-process task keeps allocating for the life of the sweep.
         if (mutantGrammar != null)
         {
+            // The parent reads this process's stdout as UTF-8; see CounterfactualGate.RunOnceWithTimeout.
+            Console.OutputEncoding = new UTF8Encoding(false);
             // Per-word timing goes to stderr, prefixed and distinct from the outcome lines on stdout,
             // so a parent process can recover it without it ever contaminating a baseline diff.
             IReadOnlyList<string> outcomes = SemanticCoverage.CounterfactualGate.EvaluateOneGrammar(
