@@ -322,8 +322,7 @@ internal class Program
         if (coverageReport)
         {
             constructsPath ??= Path.Combine(fixturesRoot, "constructs.txt");
-            RunCoverageReport(fixtures, fixturesRoot, constructsPath);
-            return 0;
+            return RunCoverageReport(fixtures, fixturesRoot, constructsPath);
         }
 
         IEngine engine;
@@ -1486,8 +1485,12 @@ internal class Program
 
     private const string OutOfScopeConstruct = "Tracing (TraceType)";
 
-    private static void RunCoverageReport(List<Fixture> fixtures, string fixturesRoot, string constructsPath)
+    /// <summary>Writes coverage.csv and rules.csv, then returns 1 if an in-scope construct has no
+    /// coverage, a rule no word exercises is missing from <c>dead-rules-allowed.tsv</c>, or an
+    /// allowed rule is no longer dead; 0 otherwise.</summary>
+    private static int RunCoverageReport(List<Fixture> fixtures, string fixturesRoot, string constructsPath)
     {
+        bool failed = false;
         string coverageCsvPath = Path.Combine(fixturesRoot, "coverage.csv");
         string rulesCsvPath = Path.Combine(fixturesRoot, "rules.csv");
         CoverageReport.CoverageResult result = CoverageReport.WriteCsvs(fixtures, coverageCsvPath, rulesCsvPath);
@@ -1515,23 +1518,40 @@ internal class Program
             );
             if (uncovered.Count > 0)
             {
+                failed = true;
                 Console.WriteLine($"*** {uncovered.Count} CONSTRUCT(S) AT ZERO COVERAGE ***");
                 foreach (string c in uncovered)
                     Console.WriteLine($"  {c}");
             }
         }
 
-        if (result.DeadRules.Count > 0)
+        string allowlistPath = Path.Combine(fixturesRoot, "dead-rules-allowed.tsv");
+        Dictionary<(string FixtureId, string RuleId), string> allowed = File.Exists(allowlistPath)
+            ? CoverageReport.LoadDeadRuleAllowlist(allowlistPath)
+            : new Dictionary<(string FixtureId, string RuleId), string>();
+        (List<CoverageReport.DeadRule> unexpected, List<(string FixtureId, string RuleId)> stale) =
+            CoverageReport.CheckDeadRules(result.DeadRules, allowed);
+
+        Console.WriteLine();
+        Console.WriteLine(
+            $"dead rules: {result.DeadRules.Count} (exercised by zero words), "
+                + $"{result.DeadRules.Count - unexpected.Count} allowed by {Path.GetFileName(allowlistPath)}"
+        );
+        if (unexpected.Count > 0)
         {
-            Console.WriteLine();
-            Console.WriteLine($"*** {result.DeadRules.Count} DEAD RULE(S) (exercised by zero words) ***");
-            foreach (CoverageReport.DeadRule dead in result.DeadRules)
+            failed = true;
+            Console.WriteLine($"*** {unexpected.Count} DEAD RULE(S) NOT IN {Path.GetFileName(allowlistPath)} ***");
+            foreach (CoverageReport.DeadRule dead in unexpected)
                 Console.WriteLine($"  {dead.FixtureId}: rule '{dead.RuleId}'");
         }
-        else
+        if (stale.Count > 0)
         {
-            Console.WriteLine("0 dead rules across all grammars.");
+            failed = true;
+            Console.WriteLine($"*** {stale.Count} ALLOWED RULE(S) NOW EXERCISED; REMOVE THEIR ENTRIES ***");
+            foreach ((string fixtureId, string ruleId) in stale)
+                Console.WriteLine($"  {fixtureId}: rule '{ruleId}'");
         }
+        return failed ? 1 : 0;
     }
 
     private static void PrintUsage()
@@ -1552,7 +1572,9 @@ internal class Program
                                                 default).
               --no-memoization                 Self-check only: disable analysis memoization for a
                                                 diagnostic comparison. Memoization is on by default.
-              --coverage-report                Print a coverage report instead of running fixtures.
+              --coverage-report                Print a coverage report instead of running fixtures;
+                                                exits 1 on an uncovered construct or an unallowed
+                                                dead rule.
               --constructs <path>               Construct checklist file for --coverage-report
               --semantic-coverage               Recompute generated-surface coverage and check the
                                                 baseline; exits 1 on a new gap or a stale line.
