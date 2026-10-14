@@ -321,11 +321,23 @@ edge-cases/feature-system-breadth	Construct	Element deactivation (isActive) acro
 edge-cases/feature-system-breadth	Construct	MetathesisRule	claimed-confirmed	10 claim(s)
 edge-cases/feature-system-breadth	Construct	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	claimed-confirmed	3 claim(s)
 edge-cases/feature-system-breadth	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	2 claim(s)
-edge-cases/final-template-partial-discriminators	Surface	dtd:element/AffixTemplates	witnessed	Evidenced
+edge-cases/final-template-gap-coverage	Surface	dtd:element/AffixTemplates	witnessed	Evidenced
+edge-cases/final-template-gap-coverage	Surface	dtd:enum/AffixTemplate/final/true	witnessed	Evidenced
+edge-cases/final-template-gap-coverage	Surface	dtd:enum/LexicalEntry/partial/true	witnessed	Evidenced
+edge-cases/final-template-gap-coverage	Surface	dtd:enum/Stratum/isActive/yes	witnessed	Evidenced
+edge-cases/final-template-gap-coverage	Interface	AffixTemplate.requiredPartsOfSpeech	witnessed	Evidenced
+edge-cases/final-template-gap-coverage	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/final-template-gap-coverage	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/final-template-gap-coverage	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/final-template-gap-coverage	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/final-template-gap-coverage	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/final-template-gap-coverage	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/final-template-gap-coverage	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
+edge-cases/final-template-gap-coverage	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/final-template-gap-coverage	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/final-template-gap-coverage	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	2 claim(s)
 edge-cases/final-template-partial-discriminators	Surface	dtd:enum/AffixTemplate/final/false	witnessed	Evidenced
-edge-cases/final-template-partial-discriminators	Surface	dtd:enum/AffixTemplate/final/true	witnessed	Evidenced
 edge-cases/final-template-partial-discriminators	Surface	dtd:enum/MorphologicalRule/partial/true	witnessed	Evidenced
-edge-cases/final-template-partial-discriminators	Surface	dtd:enum/Stratum/isActive/yes	witnessed	Evidenced
 edge-cases/final-template-partial-discriminators	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/final-template-partial-discriminators	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/final-template-partial-discriminators	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
@@ -469,7 +481,6 @@ edge-cases/morphotactic-attribute-breadth	Surface	dtd:element/MorphologicalPhono
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/Allomorph/isBound/true	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/AllomorphCoOccurrenceRule/isActive/no	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/AllomorphCoOccurrenceRule/type/exclude	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/LexicalEntry/partial/true	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphemeCoOccurrenceRule/isActive/no	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphemeCoOccurrenceRule/type/exclude	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphologicalRule/multipleApplication/0	witnessed	Evidenced
@@ -646,6 +657,18 @@ edge-cases/subrule-morphosyntactic-gating	Interface	Stratum.characterDefinitionT
 edge-cases/subrule-morphosyntactic-gating	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/subrule-morphosyntactic-gating	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/subrule-morphosyntactic-gating	Construct	RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level	claimed-unmapped	2 claim(s)
+edge-cases/syntactic-feature-inversion-controls	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/syntactic-feature-inversion-controls	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/syntactic-feature-inversion-controls	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/syntactic-feature-inversion-controls	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/syntactic-feature-inversion-controls	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/syntactic-feature-inversion-controls	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/syntactic-feature-inversion-controls	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/syntactic-feature-inversion-controls	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/syntactic-feature-inversion-controls	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/syntactic-feature-inversion-controls	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/syntactic-feature-inversion-controls	Construct	Disjunctive allomorphs / free-fluctuation	claimed-unmapped	6 claim(s)
+edge-cases/syntactic-feature-inversion-controls	Construct	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	claimed-confirmed	20 claim(s)
 edge-cases/synthesis-stratum-render-stale-table	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/synthesis-stratum-render-stale-table	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
 edge-cases/synthesis-stratum-render-stale-table	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable

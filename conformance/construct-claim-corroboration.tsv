@@ -122,6 +122,8 @@ edge-cases/feature-system-breadth	tik	-	MetathesisRule	Confirmed	MetathesisRule
 edge-cases/feature-system-breadth	tkl	-	MetathesisRule	Confirmed	MetathesisRule
 edge-cases/feature-system-breadth	tlk	TKL|tlk	MetathesisRule	Confirmed	MetathesisRule
 edge-cases/feature-system-breadth	ts	TS|ts	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	Confirmed	FeatureNaturalClass,SegmentNaturalClass,Segments,naturalClass
+edge-cases/final-template-gap-coverage	dukom	DUK+DUALA|dukom	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/final-template-gap-coverage	zaboteshi	ROOTPREFIXC+BOTC+OUTERSUFFIXC|zaboteshi	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/final-template-partial-discriminators	dakfa	DAK+FINTAGA|dakfa	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/free-fluctuating-allomorph-pair	kit	-	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/free-fluctuating-allomorph-pair	kits	ORD+SSFX|kits	Disjunctive allomorphs / free-fluctuation	Unmapped	-
@@ -255,6 +257,32 @@ edge-cases/strrep-identity	pat	+|[(^0)∅]?+?pat	NaturalClass: Segments vs Featu
 edge-cases/strrep-identity	pat	|pat	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	Confirmed	FeatureNaturalClass,SegmentNaturalClass,Segments,naturalClass
 edge-cases/subrule-morphosyntactic-gating	bat	ROOT1+DERIVE|bat	RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level	Unmapped	-
 edge-cases/subrule-morphosyntactic-gating	pat	ROOT1|pat	RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level	Unmapped	-
+edge-cases/syntactic-feature-inversion-controls	bas	BAS|bas	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	basia	BAS+NUM+PERS|basia	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	basiao	BAS+NUM+PERS+GATE|basiao	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	dam	DAM|dam	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	damia	DAM+NUM+PERS|damia	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	damiao	-	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	dat	DAT|dat	Disjunctive allomorphs / free-fluctuation	Unmapped	-
+edge-cases/syntactic-feature-inversion-controls	dati	-	Disjunctive allomorphs / free-fluctuation	Unmapped	-
+edge-cases/syntactic-feature-inversion-controls	datu	-	Disjunctive allomorphs / free-fluctuation	Unmapped	-
+edge-cases/syntactic-feature-inversion-controls	do	DO|do	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	dou	DO+NUM|dou	Disjunctive allomorphs / free-fluctuation	Unmapped	-
+edge-cases/syntactic-feature-inversion-controls	dou	DO+NUM|dou	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	doua	DO+NUM+PERS|doua	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	douao	DO+NUM+PERS+GATE|douao	Disjunctive allomorphs / free-fluctuation	Unmapped	-
+edge-cases/syntactic-feature-inversion-controls	douao	DO+NUM+PERS+GATE|douao	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	sim	SIM|sim	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	sima	SIM+PERS|sima	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	simao	SIM+PERS+GATE|simao	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	sime	SIM+NUMSG|sime	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	simea	SIM+NUMSG+PERS|simea	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	simeao	-	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	simi	SIM+NUM|simi	Disjunctive allomorphs / free-fluctuation	Unmapped	-
+edge-cases/syntactic-feature-inversion-controls	simi	SIM+NUM|simi	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	simia	SIM+NUM+PERS|simia	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	simiao	SIM+NUM+PERS+GATE|simiao	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/syntactic-feature-inversion-controls	simio	SIM+NUM+GATE|simio	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/synthesis-stratum-render-stale-table	i	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/synthesis-stratum-render-stale-table	j	ROOTCROSS|	CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/synthesis-stratum-render-stale-table	j	ROOTCROSS|	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable

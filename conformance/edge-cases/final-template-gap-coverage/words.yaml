@@ -1,0 +1,125 @@
+# oracle-provenance: founding-oracle machine-commit=f150e2a005ce639f7d68ef17fb0db25b2f6aaa3c verified-date=2026-09-15
+# Expected parses are derived from the grammar and checked against C#; see ../../docs/final-template-gap-coverage.md.
+language: FinalTemplateGapCoverage
+inspired_by: ["synthetic final-template dual-role/partial-root/cross-stratum probe (not modeling any real language)"]
+sources:
+  - "https://github.com/sillsdev/machine/issues/507"
+  - "src/SIL.Machine.Morphology.HermitCrab/SynthesisStratumRule.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/AnalysisStratumRule.cs"
+requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  eTikPartial sets LexicalEntry.partial, which HCLoader.LoadLexEntry never reads (grep-confirmed: the
+  loader's LexEntry construction path has no assignment to IsPartial from an XML-side root attribute);
+  a FieldWorks-sourced grammar can produce a partial ordinary rule but never a partial root. mrDualA
+  appearing simultaneously in a Stratum's own morphologicalRules and inside an AffixTemplate Slot is
+  also HC-engine-only, for the same reason template-category-sharing's fixture already gives (HCLoader
+  never emits a rule ID into both places at once from one MoInflAffixTemplate/MoDerivationalAffixMsa
+  reading).
+words:
+  - word: dukom
+    note: >-
+      Branch A control (positive): mrDualA fires exactly once, reached via templateA's mandatory Slot.
+      This is the SAME rule ID that also sits in the Root stratum's own morphologicalRules list, so this
+      one surface form is the join point for both of mrDualA's nominal invocation roles.
+    parses:
+      - signature: "DUK+DUALA|dukom"
+        rules: [mrDualA]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: duk
+    note: >-
+      Branch A negative control: templateA's one Slot is mandatory and applicable to posA, so the bare
+      root alone never closes -- not a rule rejection, a structurally incomplete derivation.
+    expect_fail: true
+
+  - word: dukomom
+    note: >-
+      Branch A (dual-role POSITIVE-for-a-negative-result): the only way to attach mrDualA twice would be
+      once via the Root stratum's ordinary-rule cascade and once via templateA's Slot (or vice versa),
+      but MorphologicalRule's default multipleApplication is 1, so the second attempt -- from EITHER
+      role -- is refused once the first has already fired. Invoking the same rule from both nominal
+      roles does not raise its effective application count; this is the fixture's actual pin that
+      dual-role listing does not silently double an affix.
+    expect_fail: true
+    blocked_by: [mrDualA]
+
+  - word: nokun
+    note: >-
+      Branch B control (positive): mrSlotB is template-only (never Root-stratum-listed) and fires on the
+      NON-partial root, whose shape independently satisfies the Slot's own ends-in-"k" requirement.
+    parses:
+      - signature: "NOKFULL+SLOTB|nokun"
+        rules: [mrSlotB]
+
+  - word: nok
+    note: >-
+      Branch B negative control: templateB's Slot is mandatory and DOES fire on this non-partial root
+      (it ends in "k"), so the unaffixed root alone never closes.
+    expect_fail: true
+
+  - word: tik
+    note: >-
+      Branch B (POSITIVE, root-partial-dependent): eTikPartial sets `partial="true"` on the LEXICAL
+      ENTRY itself (SynthesisAffixTemplatesRule.cs's own `!input.RootAllomorph.Morpheme.IsPartial` gate),
+      not on an ordinary rule. "tik" ends in "k" -- the same shape that lets mrSlotB fire on "nok" above
+      -- so templateB's Slot rule WOULD match if tried; root partiality skips the entire template
+      battery outright before any Slot is even evaluated, and the bare root passes through unaffixed.
+      This is a genuinely different mechanism from final-template-partial-discriminators' NIB case
+      (which used a partial RULE and an inapplicable battery, not a partial ROOT and an applicable one).
+    parses:
+      - signature: "TIKPARTIAL|tik"
+        rules: []
+
+  - word: tikun
+    note: >-
+      Branch B negative control, the direct mirror of "tik": because a partial root never even attempts
+      the template battery, the affixed form for this root has no derivation at all, regardless of
+      whether mrSlotB's own context would have matched.
+    expect_fail: true
+
+  - word: tim
+    note: >-
+      Branch B negative control, NON-partial root, empty battery: "tim" does not end in "k", so
+      templateB's mandatory Slot structurally cannot fire; unlike a partial root or a partial rule,
+      nothing rescues this derivation, so this root has no valid surface form at all under this grammar.
+    expect_fail: true
+
+  - word: zaboteshi
+    note: >-
+      Branch C (POSITIVE, cross-stratum continuation): mrRootPrefixC applies at the root's OWN Root
+      stratum (Depth 0), producing "zabot", which the Root stratum's own pass-through (posC has no
+      template there) forwards, already final, to the Outer stratum (Depth 1). Outer's templateC then
+      applies mrOuterSuffixC, whose Slot is anchored on the FIRST segment being "z" -- true only because
+      the Root-stratum prefix already fired -- closing the derivation there. Analysing this surface form
+      back down therefore must genuinely continue analysis from the Outer stratum into the (lower-depth)
+      Root stratum to reach BOTC; it is not a single-stratum derivation wearing two rule names.
+    parses:
+      - signature: "ROOTPREFIXC+BOTC+OUTERSUFFIXC|zaboteshi"
+        rules: [mrRootPrefixC, mrOuterSuffixC]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: bot
+    note: >-
+      Branch C negative control: the bare root, unprefixed, starts with "b" -- mrOuterSuffixC's Slot
+      requires the first segment to be "z" -- so Outer's mandatory template can never fire on it, and
+      there is no rescue (posC is not partial here).
+    expect_fail: true
+
+  - word: zabot
+    note: >-
+      Branch C negative control: the Root-stratum prefix alone, without Outer's final template, is a
+      non-final-template-parallel case for a rule that lives in a DIFFERENT stratum than its template --
+      the derivation reaches the Outer stratum but the mandatory Slot there is skipped only if it
+      cannot fire, and here it CAN (the shape starts with "z"), so leaving it off is not a valid parse of
+      a shorter word; it is simply an incomplete prefix-only string with no derivation of its own.
+    expect_fail: true
+
+  - word: boteshi
+    note: >-
+      Branch C negative control, the mirror of "bot": even with the Outer-stratum suffix shape appended,
+      the surface does not start with "z", so mrOuterSuffixC's Slot cannot have produced it; there is no
+      derivation that reaches this string without the Root-stratum prefix underneath it.
+    expect_fail: true

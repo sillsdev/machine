@@ -21,7 +21,7 @@ Surface	dtd:element/RequiredFootFeatures	PresentInLanguageGrammarAlready	recorde
 Surface	dtd:element/Segments	EdgeCaseOnly	recorded best evidence: edge-cases/strrep-identity; no languages/* grammar contains this surface at all
 Surface	dtd:element/SimpleContext	PresentInLanguageGrammarAlready	recorded best evidence: edge-cases/alpha-variable-name-collision; also structurally present in a languages/* grammar
 Surface	dtd:enum/AffixTemplate/final/false	EdgeCaseOnly	recorded best evidence: edge-cases/final-template-partial-discriminators; no languages/* grammar contains this surface at all
-Surface	dtd:enum/AffixTemplate/final/true	EdgeCaseOnly	recorded best evidence: edge-cases/final-template-partial-discriminators; no languages/* grammar contains this surface at all
+Surface	dtd:enum/AffixTemplate/final/true	EdgeCaseOnly	recorded best evidence: edge-cases/final-template-gap-coverage; no languages/* grammar contains this surface at all
 Surface	dtd:enum/AffixTemplate/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/AffixTemplate/isActive/yes	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/Allomorph/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
@@ -41,7 +41,7 @@ Surface	dtd:enum/FeatureNaturalClass/isActive/no	EdgeCaseOnly	recorded best evid
 Surface	dtd:enum/FeatureValue/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/feature-system-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/LexicalEntry/isActive/yes	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/LexicalEntry/partial/false	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/LexicalEntry/partial/true	EdgeCaseOnly	recorded best evidence: edge-cases/morphotactic-attribute-breadth; no languages/* grammar contains this surface at all
+Surface	dtd:enum/LexicalEntry/partial/true	EdgeCaseOnly	recorded best evidence: edge-cases/final-template-gap-coverage; no languages/* grammar contains this surface at all
 Surface	dtd:enum/MetathesisRule/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/feature-system-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/MetathesisRule/multipleApplicationOrder/rightToLeftIterative	EdgeCaseOnly	recorded best evidence: edge-cases/feature-system-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/MorphemeCoOccurrenceRule/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/morphotactic-attribute-breadth; no languages/* grammar contains this surface at all
@@ -60,7 +60,7 @@ Surface	dtd:enum/SegmentDefinition/isActive/no	EdgeCaseOnly	recorded best eviden
 Surface	dtd:enum/SegmentNaturalClass/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/feature-system-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/Slot/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/Slot/isActive/yes	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/Stratum/isActive/yes	EdgeCaseOnly	recorded best evidence: edge-cases/final-template-partial-discriminators; no languages/* grammar contains this surface at all
+Surface	dtd:enum/Stratum/isActive/yes	EdgeCaseOnly	recorded best evidence: edge-cases/final-template-gap-coverage; no languages/* grammar contains this surface at all
 Surface	dtd:enum/SymbolicFeature/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/feature-system-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/VariableFeature/name/%CE%B1	PresentInLanguageGrammarAlready	recorded best evidence: edge-cases/alpha-variable-name-collision; also structurally present in a languages/* grammar
 Surface	dtd:enum/VariableFeature/name/%CE%B2	EdgeCaseOnly	recorded best evidence: edge-cases/alpha-variable-name-collision; no languages/* grammar contains this surface at all
@@ -71,9 +71,9 @@ Interface	BoundaryMarker.boundary	NeverWitnessed	present in 6 fixture(s), witnes
 Interface	CompoundingRule.nonHeadPartsOfSpeech	NeverWitnessed	present in 3 fixture(s), witnessed by none
 Interface	CompoundingRule.outputObligatoryFeatures	NeverWitnessed	present in 1 fixture(s), witnessed by none
 Interface	CompoundingRule.outputPartOfSpeech	EdgeCaseOnly	witnessed only by: edge-cases/compounding-breadth
-Interface	CopyFromInput.index	NeverWitnessed	present in 36 fixture(s), witnessed by none
-Interface	FeatureValue.feature	NeverWitnessed	present in 41 fixture(s), witnessed by none
-Interface	FeatureValue.symbolValues	NeverWitnessed	present in 41 fixture(s), witnessed by none
+Interface	CopyFromInput.index	NeverWitnessed	present in 38 fixture(s), witnessed by none
+Interface	FeatureValue.feature	NeverWitnessed	present in 42 fixture(s), witnessed by none
+Interface	FeatureValue.symbolValues	NeverWitnessed	present in 42 fixture(s), witnessed by none
 Interface	HeadMorphologicalInput.excludedMPRFeatures	NeverWitnessed	present in 1 fixture(s), witnessed by none
 Interface	HeadMorphologicalInput.requiredMPRFeatures	NeverWitnessed	present in 1 fixture(s), witnessed by none
 Interface	MetathesisRule.leftSwitch	NeverWitnessed	present in 4 fixture(s), witnessed by none
@@ -83,10 +83,10 @@ Interface	MorphemeCoOccurrenceRule.otherMorphemes	NeverWitnessed	present in 3 fi
 Interface	MorphemeCoOccurrenceRule.primaryMorpheme	NeverWitnessed	present in 3 fixture(s), witnessed by none
 Interface	MorphologicalPhonologicalRuleFeatureGroup.features	NeverWitnessed	present in 5 fixture(s), witnessed by none
 Interface	MorphologicalRule.outputObligatoryFeatures	NeverWitnessed	present in 1 fixture(s), witnessed by none
-Interface	Segment.segment	NeverWitnessed	present in 36 fixture(s), witnessed by none
-Interface	SimpleContext.naturalClass	NeverWitnessed	present in 53 fixture(s), witnessed by none
-Interface	Slot.morphologicalRules	NeverWitnessed	present in 14 fixture(s), witnessed by none
+Interface	Segment.segment	NeverWitnessed	present in 38 fixture(s), witnessed by none
+Interface	SimpleContext.naturalClass	NeverWitnessed	present in 55 fixture(s), witnessed by none
+Interface	Slot.morphologicalRules	NeverWitnessed	present in 15 fixture(s), witnessed by none
 Interface	StemName.partsOfSpeech	NeverWitnessed	present in 4 fixture(s), witnessed by none
-Interface	Stratum.characterDefinitionTable	NeverWitnessed	present in 58 fixture(s), witnessed by none
+Interface	Stratum.characterDefinitionTable	NeverWitnessed	present in 60 fixture(s), witnessed by none
 Interface	SymbolicFeature.defaultSymbol	NeverWitnessed	present in 2 fixture(s), witnessed by none
 Interface	VariableFeature.phonologicalFeature	NeverWitnessed	present in 4 fixture(s), witnessed by none

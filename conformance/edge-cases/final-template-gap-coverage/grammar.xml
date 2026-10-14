@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>FinalTemplateGapCoverage</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posA"><Name>a</Name></PartOfSpeech>
+      <PartOfSpeech id="posB"><Name>b</Name></PartOfSpeech>
+      <PartOfSpeech id="posC"><Name>c</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="sA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sE"><Representations><Representation>e</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sH"><Representations><Representation>h</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sS"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sZ"><Representations><Representation>z</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <SegmentNaturalClass id="ncOnlyK"><Name>OnlyK</Name><Segment segment="sK" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncOnlyZ"><Name>OnlyZ</Name><Segment segment="sZ" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <!-- Root stratum (Depth 0). Every root lives here. Branch A (posA) and Branch B (posB) close
+           entirely within this one stratum. Branch C (posC) only prefixes here; its derivation is not
+           closed until the Outer stratum below applies its own final template. -->
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered"
+               morphologicalRules="mrDualA mrRootPrefixC"
+               isActive="yes">
+        <Name>Root</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- Branch A: mrDualA is named BOTH in this Stratum's own morphologicalRules list (an
+               ordinary rule) AND inside templateA's one Slot below (a template-slot rule). Same rule
+               ID, two nominal invocation roles. -->
+          <MorphologicalRule id="mrDualA" requiredPartsOfSpeech="posA" outputPartOfSpeech="posA">
+            <Name>dualA</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subDualA">
+                <MorphologicalInput><PhoneticSequence id="stemDualA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemDualA" /><InsertSegments><PhoneticShape>om</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>DUALA</MorphemeId>
+            <Gloss>duala</Gloss>
+          </MorphologicalRule>
+          <!-- Branch C: an ordinary rule at the root's OWN (lower-depth) stratum. It never appears in
+               any Slot; it must survive as a stratum-level prefix before the Outer stratum's final
+               template can close the word. -->
+          <MorphologicalRule id="mrRootPrefixC" requiredPartsOfSpeech="posC" outputPartOfSpeech="posC">
+            <Name>rootPrefixC</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subRootPrefixC">
+                <MorphologicalInput><PhoneticSequence id="stemRootPrefixC"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>za</PhoneticShape></InsertSegments><CopyFromInput index="stemRootPrefixC" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>ROOTPREFIXC</MorphemeId>
+            <Gloss>rootprefixc</Gloss>
+          </MorphologicalRule>
+          <!-- Branch B: template-only (never stratum-listed). Its mandatory slot requires the input to
+               END in "k", exactly mirroring mrZTagSlot's own final-template-partial-discriminators
+               pattern, but gated here on a PARTIAL ROOT rather than a partial ordinary rule. -->
+          <MorphologicalRule id="mrSlotB" requiredPartsOfSpeech="posB" outputPartOfSpeech="posB">
+            <Name>slotB</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSlotB">
+                <MorphologicalInput><PhoneticSequence id="stemSlotB"><OptionalSegmentSequence min="0" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence><SimpleContext naturalClass="ncOnlyK" /></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemSlotB" /><InsertSegments><PhoneticShape>un</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SLOTB</MorphemeId>
+            <Gloss>slotb</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posA" final="true">
+            <Name>templateA</Name>
+            <Slot morphologicalRules="mrDualA"><Name>slotA</Name></Slot>
+          </AffixTemplate>
+          <AffixTemplate requiredPartsOfSpeech="posB" final="true">
+            <Name>templateB</Name>
+            <Slot morphologicalRules="mrSlotB"><Name>slotB</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eDuk" partOfSpeech="posA">
+            <Allomorphs><Allomorph id="aDuk"><PhoneticShape>duk</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DUK</MorphemeId>
+            <Gloss>duk</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eNokFull" partOfSpeech="posB">
+            <Allomorphs><Allomorph id="aNokFull"><PhoneticShape>nok</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>NOKFULL</MorphemeId>
+            <Gloss>nokfull</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eTikPartial" partOfSpeech="posB" partial="true">
+            <Allomorphs><Allomorph id="aTikPartial"><PhoneticShape>tik</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TIKPARTIAL</MorphemeId>
+            <Gloss>tikpartial</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eTimNoBattery" partOfSpeech="posB">
+            <Allomorphs><Allomorph id="aTimNoBattery"><PhoneticShape>tim</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TIMNOBATTERY</MorphemeId>
+            <Gloss>timnobattery</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eBotC" partOfSpeech="posC">
+            <Allomorphs><Allomorph id="aBotC"><PhoneticShape>bot</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>BOTC</MorphemeId>
+            <Gloss>botc</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <!-- Outer stratum (Depth 1). Holds posC's ONLY template. A posC root's derivation cannot close
+           in the Root stratum (posC has no template there); it must continue up into this stratum
+           after its Root-stratum prefix rule has (optionally) applied, and, symmetrically, an
+           analysis of a posC surface word must continue its unapplication back DOWN into the lower
+           (Depth 0) Root stratum after this stratum's own final template is stripped, to reach the
+           bare root. -->
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" isActive="yes">
+        <Name>Outer</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- Anchored on the FIRST segment being "z" (only true for a stem that mrRootPrefixC already
+               prefixed with "za-"), so this template's mandatory slot cannot be satisfied by a bare,
+               unprefixed posC root: the Root-stratum prefix is a de facto prerequisite for this
+               stratum's derivation to ever close. -->
+          <MorphologicalRule id="mrOuterSuffixC" requiredPartsOfSpeech="posC" outputPartOfSpeech="posC">
+            <Name>outerSuffixC</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subOuterSuffixC">
+                <MorphologicalInput><PhoneticSequence id="stemOuterSuffixC"><SimpleContext naturalClass="ncOnlyZ" /><OptionalSegmentSequence min="0" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemOuterSuffixC" /><InsertSegments><PhoneticShape>eshi</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>OUTERSUFFIXC</MorphemeId>
+            <Gloss>outersuffixc</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posC" final="true">
+            <Name>templateC</Name>
+            <Slot morphologicalRules="mrOuterSuffixC"><Name>slotC</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

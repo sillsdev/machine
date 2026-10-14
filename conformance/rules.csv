@@ -64,6 +64,10 @@ FeatureSystemBreadth,prDecNc,
 FeatureSystemBreadth,prDecoy,
 FeatureSystemBreadth,prHighTrigger,
 FeatureSystemBreadth,prRaise,ik;ikt
+FinalTemplateGapCoverage,mrDualA,dukom;!dukomom
+FinalTemplateGapCoverage,mrOuterSuffixC,zaboteshi
+FinalTemplateGapCoverage,mrRootPrefixC,zaboteshi
+FinalTemplateGapCoverage,mrSlotB,nokun
 FinalTemplatePartialDiscriminators,mrFinTagA,dakfa;daknagafa
 FinalTemplatePartialDiscriminators,mrFinTagB,pilnbtbfb;pilfb;pilfbvb
 FinalTemplatePartialDiscriminators,mrGate1,!dakfaga;daknagafa
@@ -146,6 +150,10 @@ StrRepIdentityProbe,ruleObj,ndpat;!ndmat;imat;!ipat
 StrRepIdentityProbe,rulePfx,pat;mat;mupat;mumat;!mwpat;mwuta;!muuta;ndpat;imat
 SubruleMorphosyntacticGating,mrDerive,bat
 SubruleMorphosyntacticGating,prGate,pat;bat
+SyntacticFeatureInversionControls,mrGate,simiao;douao;!damiao;basiao;simio;simao;!simeao
+SyntacticFeatureInversionControls,mrNum,simi;simia;simiao;dou;doua;douao;damia;basia;basiao;simio;!dati;!datu
+SyntacticFeatureInversionControls,mrNumSg,sime;simea
+SyntacticFeatureInversionControls,mrPers,sima;simia;simiao;doua;douao;damia;basia;basiao;simao;simea
 SynthesisStratumRenderStaleTable,prItoJ,j
 Mbalantic,mrPfxA,pakolosa;!pakolola
 Mbalantic,mrPfxB,takolola;!takolosa

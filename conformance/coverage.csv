@@ -114,6 +114,8 @@ FeatureSystemBreadth,ktl,,MetathesisRule
 FeatureSystemBreadth,ts,TS|ts,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 FeatureSystemBreadth,salk,,AffixProcessRule: prefix/suffix/circumfix/infix
 FeatureSystemBreadth,tal,,Element deactivation (isActive) across loader collections
+FinalTemplateGapCoverage,dukom,DUK+DUALA|dukom,Affix template slots (obligatory/disjunctive/ordering)
+FinalTemplateGapCoverage,zaboteshi,ROOTPREFIXC+BOTC+OUTERSUFFIXC|zaboteshi,Affix template slots (obligatory/disjunctive/ordering)
 FinalTemplatePartialDiscriminators,dakfa,DAK+FINTAGA|dakfa,Affix template slots (obligatory/disjunctive/ordering)
 FreeFluctuatingAllomorphPair,pol,ALT|pol,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,pel,ALT|pel,Disjunctive allomorphs / free-fluctuation
@@ -247,6 +249,32 @@ StrRepIdentityProbe,imat,+|i+?mat,NaturalClass: Segments vs FeatureNaturalClass/
 StrRepIdentityProbe,ipat,,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 SubruleMorphosyntacticGating,pat,ROOT1|pat,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
 SubruleMorphosyntacticGating,bat,ROOT1+DERIVE|bat,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
+SyntacticFeatureInversionControls,sim,SIM|sim,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,simi,SIM+NUM|simi,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,simi,SIM+NUM|simi,Disjunctive allomorphs / free-fluctuation
+SyntacticFeatureInversionControls,sima,SIM+PERS|sima,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,simia,SIM+NUM+PERS|simia,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,simiao,SIM+NUM+PERS+GATE|simiao,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,do,DO|do,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,dou,DO+NUM|dou,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,dou,DO+NUM|dou,Disjunctive allomorphs / free-fluctuation
+SyntacticFeatureInversionControls,doua,DO+NUM+PERS|doua,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,douao,DO+NUM+PERS+GATE|douao,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,douao,DO+NUM+PERS+GATE|douao,Disjunctive allomorphs / free-fluctuation
+SyntacticFeatureInversionControls,dam,DAM|dam,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,damia,DAM+NUM+PERS|damia,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,damiao,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,bas,BAS|bas,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,basia,BAS+NUM+PERS|basia,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,basiao,BAS+NUM+PERS+GATE|basiao,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,simio,SIM+NUM+GATE|simio,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,simao,SIM+PERS+GATE|simao,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,dat,DAT|dat,Disjunctive allomorphs / free-fluctuation
+SyntacticFeatureInversionControls,dati,,Disjunctive allomorphs / free-fluctuation
+SyntacticFeatureInversionControls,datu,,Disjunctive allomorphs / free-fluctuation
+SyntacticFeatureInversionControls,sime,SIM+NUMSG|sime,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,simea,SIM+NUMSG+PERS|simea,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SyntacticFeatureInversionControls,simeao,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 SynthesisStratumRenderStaleTable,j,ROOTCROSS|,"CharacterDefinitionTable: more than one table, one per stratum"
 SynthesisStratumRenderStaleTable,j,ROOTCROSS|,CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)
 SynthesisStratumRenderStaleTable,k,ROOTSAME|k,"CharacterDefinitionTable: more than one table, one per stratum"

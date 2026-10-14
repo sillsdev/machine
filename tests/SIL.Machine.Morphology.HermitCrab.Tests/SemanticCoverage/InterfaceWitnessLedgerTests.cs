@@ -42,12 +42,12 @@ public sealed class InterfaceWitnessLedgerTests
                 + $"distinctInterfacesEvidenced={distinctInterfacesEverEvidenced}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(583));
-        Assert.That(evidenced, Is.EqualTo(126));
-        Assert.That(requiredByDtd, Is.EqualTo(283));
-        Assert.That(requiredByLoader, Is.EqualTo(42));
+        Assert.That(rows, Has.Count.EqualTo(603));
+        Assert.That(evidenced, Is.EqualTo(129));
+        Assert.That(requiredByDtd, Is.EqualTo(293));
+        Assert.That(requiredByLoader, Is.EqualTo(43));
         Assert.That(timeout, Is.EqualTo(0));
-        Assert.That(unobservable, Is.EqualTo(132));
+        Assert.That(unobservable, Is.EqualTo(138));
         Assert.That(distinctInterfacesEverEvidenced, Is.EqualTo(19));
     }
 

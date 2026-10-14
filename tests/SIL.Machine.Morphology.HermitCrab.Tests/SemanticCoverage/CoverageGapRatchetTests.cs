@@ -28,7 +28,7 @@ public sealed class CoverageGapRatchetTests
         return string.Empty;
     }
 
-    private const int PinnedGapCount = 26;
+    private const int PinnedGapCount = 27;
 
     [Test]
     public void CorpusWideGapCountNeverIncreasesFromThePinnedValue()

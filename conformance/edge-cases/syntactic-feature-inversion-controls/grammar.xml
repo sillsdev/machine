@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Positive and negative controls for machine#504 ("Exact feature inversion"), companion to
+     edge-cases/chained-output-feature-override-loss (the deliberate red for that issue). That
+     fixture pins ONE known loss (a rule's own OutputHeadFeatures re-overwriting a feature an
+     EARLIER rule already wrote, then the earlier rule's own re-unification failing). This fixture
+     is the adequacy argument the issue's remaining work asks for: it exercises the OTHER shapes
+     exact feature inversion has to get right, each independently forward-synthesized and checked
+     against the real oracle rather than sketched algebraically.
+
+     Three head features, all nested one level under the complex feature cfAgr (agr.num, agr.pers,
+     agr.cls), so every check below is a NESTED feature path, never a bare top-level one:
+       mrNum   (rule)    OutputHeadFeatures agr.num=pl.  Two DISJUNCTIVE subrules choose the affix
+                         allomorph ("-i" after a consonant-final stem, "-u" after a vowel-final
+                         one); both write the SAME OutputHeadFeatures regardless of which fires.
+       mrNumSg (rule)    OutputHeadFeatures agr.num=sg via a THIRD, unconstrained affix ("-e"). Not
+                         part of the mrNum/mrPers/mrGate chain conceptually; it exists solely to
+                         give agr.num a genuine CONFLICTING value to test mrGate against (see
+                         eSim's simeao below), the same role eDam's agr.cls=clsB already plays for
+                         agr.cls.
+       mrPers  (rule)    OutputHeadFeatures agr.pers=1. Unconstrained; contributes a DIFFERENT
+                         nested path than mrNum, never touching agr.num.
+       mrGate  (rule)    RequiredHeadFeatures agr.num=pl AND agr.pers=1 AND agr.cls=clsA, all three
+                         checked TOGETHER against whatever the derivation has accumulated so far.
+                         This is UNIFICATION, not presence-checking: a path with no value at all is
+                         compatible with any requirement and mrGate accepts it (see eBas's basiao
+                         below, and simio/simao, which skip mrNum or mrPers outright and still pass
+                         mrGate); a path that already holds a CONFLICTING concrete value is what
+                         actually causes a refusal (eDam's clsB, eSim's simeao via mrNumSg's sg).
+                         num/pers reaching mrGate as pl/1 at all, when both mrNum and mrPers ran,
+                         is still a real MERGE of two rules' independent writes into the one
+                         nested cfAgr structure (neither rule alone provides both); cls surviving
+                         from the root's own AssignedHeadFeatures to mrGate, untouched by any rule
+                         in between, is the PASSTHROUGH check.
+     No two rules ever write the SAME nested path, so this fixture does not re-probe the override-
+     loss mechanism chained-output-feature-override-loss already pins; it probes MERGE (do two
+     independent writes combine?), PASSTHROUGH (does an unwritten value survive?), and the
+     unify-vs-absent distinction above, which are logically separate failure modes for an
+     exact-inversion implementation.
+
+     A GENUINE GAP, stated here rather than papered over: the task that produced this fixture asked
+     for "a feature variable (alpha-style agreement between RequiredHeadFeatures and
+     OutputHeadFeatures)". That construct cannot be written in grammar.xml at all, for a hard
+     structural reason, not a coverage gap in this fixture:
+       - VariableFeature/AlphaVariable (HermitCrabInput.dtd, the SimpleContext/AlphaVariables and
+         MorphologicalSubrule/VariableFeatures productions) exists, but
+         XmlLanguageLoader.LoadVariables (src/SIL.Machine.Morphology.HermitCrab/
+         XmlLanguageLoader.cs) resolves every VariableFeature's "phonologicalFeature" IDREF with
+         `_language.PhonologicalFeatureSystem.GetFeature<SymbolicFeature>(...)`, hardcoded to the
+         PHONOLOGICAL feature system used by segments. There is no code path that resolves a
+         VariableFeature against `_language.SyntacticFeatureSystem` (the HeadFeatures/FootFeatures
+         registry), so a VariableFeature can never name a head feature.
+       - FeatureValue — the only element RequiredHeadFeatures/OutputHeadFeatures/
+         AssignedHeadFeatures ever contain — has exactly two relevant attributes in the DTD:
+         `feature` (an IDREF to the feature) and `symbolValues` (IDREFS to concrete Symbol values).
+         There is no variable/binding attribute at all. XmlLanguageLoader.LoadFeatureStruct (same
+         file) confirms this at the implementation level: it either reads concrete `symbolValues`
+         into a SymbolicFeatureValue or, if the referenced feature is a ComplexFeature, recurses;
+         there is no third branch that produces a bound (unify-by-name) variable value.
+     So alpha-style agreement between a RequiredHeadFeatures and a later OutputHeadFeatures — the
+     PC-PATR-style "these two positions must come out equal, whichever value that turns out to be"
+     — is not expressible through this XML front end for head/foot features, full stop. The closest
+     analog the format supports is what mrGate's agr.cls check above does: a value that is assigned
+     once (here, on the lexical entry, since no rule can conditionally re-assign a symbol per
+     branch) and never overwritten, so a correct implementation must carry it through untouched.
+     eDam's own agr.cls=clsB is the same construct with the OTHER concrete value, verifying this is
+     real value-tracking and not a hardcoded clsA check. This is a real analog, not a substitute for
+     the variable construct — it cannot show that TWO DIFFERENT rule-written positions are forced
+     to the same value only because they share a variable name; it can only show that ONE value
+     already fixed at the root survives. See the words.yaml header for how each word is verified.
+
+     sources: https://github.com/sillsdev/machine/issues/504 -->
+<HermitCrabInput>
+  <Language>
+    <Name>SyntacticFeatureInversionControls</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <HeadFeatures>
+      <ComplexFeature id="cfAgr"><Name>agr</Name></ComplexFeature>
+      <SymbolicFeature id="fNum">
+        <Name>num</Name>
+        <Symbols>
+          <Symbol id="numPl">pl</Symbol>
+          <Symbol id="numSg">sg</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="fPers">
+        <Name>pers</Name>
+        <Symbols><Symbol id="persA">1</Symbol></Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="fCls">
+        <Name>cls</Name>
+        <Symbols>
+          <Symbol id="clsA">a</Symbol>
+          <Symbol id="clsB">b</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </HeadFeatures>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cE"><Representations><Representation>e</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <!-- Not a complete phonological consonant/vowel inventory — just the two segments this
+           fixture's roots actually end in, named for what mrNum's disjunctive pair checks. "t" (see
+           eDat below) is deliberately in NEITHER class: it is the "belongs to neither disjunct"
+           control. -->
+      <SegmentNaturalClass id="ncConsEnding"><Name>consEnding</Name><Segment segment="cS" /><Segment segment="cM" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncVowEnding"><Name>vowEnding</Name><Segment segment="cO" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <!-- morphologicalRuleOrder="linear": makes the mrNum-before-mrPers-before-mrGate chain
+           unambiguous by construction, same reasoning and precedent as
+           edge-cases/chained-output-feature-override-loss. fieldworks_producible is false for the
+           same reason that fixture gives (words.yaml has the full citation): HCLoader hardcodes
+           Unordered at every Stratum it builds and can never emit "linear". -->
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="linear"
+               morphologicalRules="mrNum mrNumSg mrPers mrGate">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- mrNum: the DISJUNCTIVE ALLOMORPH PAIR. subNumCons ("-i") requires a consonant-ending
+               stem; subNumVow ("-u") requires a vowel-ending stem. The two are mutually exclusive by
+               environment (no stem in this fixture's lexicon satisfies both, or neither, except
+               eDat, whose final "t" satisfies neither on purpose — see eDat below). Either subrule
+               that fires writes the SAME OutputHeadFeatures: inversion must recover agr.num=pl
+               regardless of which allomorph the surface form used. -->
+          <MorphologicalRule id="mrNum" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>num</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subNumCons">
+                <MorphologicalInput><PhoneticSequence id="stemNumCons"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemNumCons" /><InsertSegments><PhoneticShape>i</PhoneticShape></InsertSegments></MorphologicalOutput>
+                <RequiredEnvironments>
+                  <Environment><LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncConsEnding" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment></Environment>
+                </RequiredEnvironments>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="subNumVow">
+                <MorphologicalInput><PhoneticSequence id="stemNumVow"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemNumVow" /><InsertSegments><PhoneticShape>u</PhoneticShape></InsertSegments></MorphologicalOutput>
+                <RequiredEnvironments>
+                  <Environment><LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncVowEnding" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment></Environment>
+                </RequiredEnvironments>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="cfAgr"><FeatureValue feature="fNum" symbolValues="numPl" /></FeatureValue></OutputHeadFeatures>
+            <MorphemeId>NUM</MorphemeId>
+            <Gloss>PL</Gloss>
+          </MorphologicalRule>
+          <!-- mrNumSg: unconstrained, single affix "-e". Writes agr.num=sg, the CONFLICTING value
+               against mrNum's agr.num=pl. Its only job is giving mrGate a real value to refuse
+               (see eSim's simeao below), the same role eDam's own agr.cls=clsB already plays. -->
+          <MorphologicalRule id="mrNumSg" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>numSg</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subNumSg">
+                <MorphologicalInput><PhoneticSequence id="stemNumSg"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemNumSg" /><InsertSegments><PhoneticShape>e</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="cfAgr"><FeatureValue feature="fNum" symbolValues="numSg" /></FeatureValue></OutputHeadFeatures>
+            <MorphemeId>NUMSG</MorphemeId>
+            <Gloss>SG</Gloss>
+          </MorphologicalRule>
+          <!-- mrPers: unconstrained. Writes agr.pers=1, a DIFFERENT nested path than mrNum's
+               agr.num, so it contributes rather than overwrites when both apply to the same word. -->
+          <MorphologicalRule id="mrPers" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>pers</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPers">
+                <MorphologicalInput><PhoneticSequence id="stemPers"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemPers" /><InsertSegments><PhoneticShape>a</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="cfAgr"><FeatureValue feature="fPers" symbolValues="persA" /></FeatureValue></OutputHeadFeatures>
+            <MorphemeId>PERS</MorphemeId>
+            <Gloss>1</Gloss>
+          </MorphologicalRule>
+          <!-- mrGate: the MERGE + PASSTHROUGH discriminator. Requires all three nested paths at
+               once: agr.num=pl (mrNum's own write, or mrNumSg's CONFLICTING sg), agr.pers=1
+               (mrPers's own write), agr.cls=clsA (no rule ever writes this — only a lexical
+               entry's own AssignedHeadFeatures does). This is a unification check: a path with NO
+               value reaching mrGate (mrNum or mrPers skipped; eBas's root, which never assigns
+               cls) is compatible with the requirement and does not block the parse. Only a path
+               that already holds a genuinely DIFFERENT concrete value (eDam's clsB, mrNumSg's sg)
+               causes a real refusal. See words.yaml for which of this fixture's words land on
+               which side of that distinction. -->
+          <MorphologicalRule id="mrGate" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>gate</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subGate">
+                <MorphologicalInput><PhoneticSequence id="stemGate"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemGate" /><InsertSegments><PhoneticShape>o</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <RequiredHeadFeatures>
+              <FeatureValue feature="cfAgr">
+                <FeatureValue feature="fNum" symbolValues="numPl" />
+                <FeatureValue feature="fPers" symbolValues="persA" />
+                <FeatureValue feature="fCls" symbolValues="clsA" />
+              </FeatureValue>
+            </RequiredHeadFeatures>
+            <MorphemeId>GATE</MorphemeId>
+            <Gloss>GATE</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <!-- eSim: consonant-ending root (agr.cls=clsA), the fixture's main positive-control root.
+               Exercises mrNum's subNumCons ("-i") arm of the disjunctive pair. -->
+          <LexicalEntry id="eSim" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aSim"><PhoneticShape>sim</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="cfAgr"><FeatureValue feature="fCls" symbolValues="clsA" /></FeatureValue></AssignedHeadFeatures>
+            <MorphemeId>SIM</MorphemeId>
+            <Gloss>sim</Gloss>
+          </LexicalEntry>
+          <!-- eDo: vowel-ending root (agr.cls=clsA), the disjunctive pair's OTHER arm. Exercises
+               mrNum's subNumVow ("-u"). Same cls value as eSim, so the only thing that differs
+               between eSim's and eDo's full chains is which allomorph mrNum used — isolating the
+               disjunctive-pair variable from the merge/passthrough variables. -->
+          <LexicalEntry id="eDo" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aDo"><PhoneticShape>do</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="cfAgr"><FeatureValue feature="fCls" symbolValues="clsA" /></FeatureValue></AssignedHeadFeatures>
+            <MorphemeId>DO</MorphemeId>
+            <Gloss>do</Gloss>
+          </LexicalEntry>
+          <!-- eDam: consonant-ending root, agr.cls=clsB (the OTHER concrete value). Isolates the
+               cls passthrough check: everything else about its chain is identical to eSim's, so a
+               failure at mrGate can only be attributed to cls. -->
+          <LexicalEntry id="eDam" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aDam"><PhoneticShape>dam</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="cfAgr"><FeatureValue feature="fCls" symbolValues="clsB" /></FeatureValue></AssignedHeadFeatures>
+            <MorphemeId>DAM</MorphemeId>
+            <Gloss>dam</Gloss>
+          </LexicalEntry>
+          <!-- eBas: consonant-ending root with NO AssignedHeadFeatures at all — agr.cls is
+               genuinely UNSET, not merely a different value from eDam's. Distinguishes "wrong value
+               present" (eDam's clsB, which conflicts and mrGate refuses) from "no value present"
+               (eBas, which unifies with anything and mrGate ACCEPTS) — verified against the real
+               oracle, not assumed; see words.yaml's basiao entry for the full write-up of why this
+               is correct unification behaviour, not a bug. -->
+          <LexicalEntry id="eBas" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aBas"><PhoneticShape>bas</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>BAS</MorphemeId>
+            <Gloss>bas</Gloss>
+          </LexicalEntry>
+          <!-- eDat: ends in "t", which is in NEITHER ncConsEnding NOR ncVowEnding. Non-vacuousness
+               control for the disjunctive pair: proves mrNum does not default to either allomorph
+               when its environment condition genuinely is not met by either arm. -->
+          <LexicalEntry id="eDat" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aDat"><PhoneticShape>dat</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DAT</MorphemeId>
+            <Gloss>dat</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

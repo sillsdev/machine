@@ -1,0 +1,331 @@
+# oracle-provenance: oracle-recorded
+#
+# EVERY signature below is transcribed verbatim from the founding C# oracle (hc.dll), not hand-
+# derived. Generated via conformance/adapters/hc-dotnet-wrapper.sh's batch mode against this
+# fixture's own grammar.xml (SyntacticFeatureInversionControls), built from this worktree at
+# conformance/oracle-504:
+#   conformance/adapters/hc-dotnet-wrapper.sh batch \
+#     conformance/edge-cases/syntactic-feature-inversion-controls/grammar.xml <words.txt> <out.tsv>
+# Column 5 of that run's output is copied into each `signature:` field unedited; a `-` in that
+# column is transcribed here as `expect_fail: true` with no `parses:` entry, per this fixture's own
+# schema. No word in this fixture is a deliberate red: every signature/failure below is what the
+# oracle already returns today.
+#
+# This fixture is the positive/negative-control companion to
+# edge-cases/chained-output-feature-override-loss (machine#504, "Exact feature inversion"), whose
+# own words.yaml pins ONE known analysis-side loss and states plainly that one red fixture is not
+# enough evidence for a fix to stand on. This fixture supplies the rest of the adequacy argument the
+# issue's remaining work calls for: nested feature paths, a disjunctive allomorph pair, and a
+# multi-rule merge, each independently forward-synthesized (root -> each rule's RequiredHeadFeatures
+# checked against the prior rule's OutputHeadFeatures -> does the surface build) and then checked
+# against the real oracle rather than sketched algebraically. See grammar.xml's own header for the
+# full mechanism write-up (mrNum/mrNumSg/mrPers/mrGate, and the cfAgr.{num,pers,cls} nesting).
+#
+# A CORRECTION made DURING authoring, kept here rather than silently smoothed over (per this
+# project's "record corrections, don't back-edit" convention): the first draft of this fixture
+# predicted that skipping mrNum or mrPers (simio/simao) or leaving agr.cls entirely unassigned
+# (eBas, basiao) would make mrGate refuse the parse, on the theory that a "missing" required
+# feature should fail the same way a genuinely conflicting one does. That theory was WRONG, and the
+# oracle run above is what caught it: RequiredHeadFeatures is a UNIFICATION check, not a presence
+# check. A head-feature path with no value at all is compatible with any requirement (open-world
+# unification), so mrGate accepts basiao/simio/simao; only a path that already holds a DIFFERENT
+# concrete value (eDam's agr.cls=clsB, or mrNumSg's agr.num=sg) genuinely conflicts and is refused.
+# mrNumSg (and the sime/simea/simeao words) were added specifically to give this fixture a real
+# value-conflict negative control for agr.num, once the absence-based one (simio/simao) turned out
+# to be a positive control instead. This is exactly the discipline the parent task asked for: run
+# the real engine and transcribe its output rather than trusting a hand-derived algebraic sketch,
+# including -- especially -- when the sketch is one's own.
+#
+# What this fixture demonstrates, construct by construct:
+#   NESTED FEATURE PATH:    mrNum's OutputHeadFeatures writes agr.num (nested under the complex
+#                            feature cfAgr), and mrGate's RequiredHeadFeatures later reads agr.num
+#                            back out of the SAME nested position. simi/dou (positive, rule alone)
+#                            and simiao/douao (positive, full chain) are the read-back pins.
+#   FEATURE VARIABLE:       NOT EXPRESSIBLE in grammar.xml -- see grammar.xml's header for the exact
+#                            DTD/loader citations. mrGate's agr.cls check (simiao positive, damiao
+#                            negative, basiao positive-via-absence) is the closest achievable analog:
+#                            a value fixed once at the root and never rewritten by any rule, so a
+#                            correct implementation must carry it through untouched. It is NOT a
+#                            substitute for true alpha-style RequiredHeadFeatures/OutputHeadFeatures
+#                            agreement, which would need two rule-written positions forced to the
+#                            same value only because they share a variable name.
+#   DISJUNCTIVE ALLOMORPH:  mrNum's subNumCons ("-i")/subNumVow ("-u") pair, gated by mutually
+#                            exclusive RequiredEnvironments. simi/simiao (consonant arm) and
+#                            dou/douao (vowel arm) both correctly invert to the SAME agr.num=pl,
+#                            proving inversion does not collapse or favor one alternative; dati/datu
+#                            (eDat, whose final "t" satisfies neither arm) prove the pair does not
+#                            fire vacuously when neither environment holds.
+#   MERGE:                  simiao/douao/damia/basia/basiao all require agr.num (mrNum's write) and
+#                            agr.pers (mrPers's write) to combine into the one cfAgr structure mrGate
+#                            reads; neither rule alone provides both (see simi/sima/dou, which each
+#                            supply only their own half). simeao is the merge NEGATIVE control: it
+#                            proves the merge is a real unification, not a rubber stamp -- a
+#                            genuinely conflicting contributed value (mrNumSg's agr.num=sg) is
+#                            refused even though agr.pers=1 and agr.cls=clsA are both fine.
+#
+# fieldworks_producible: false for the same reason edge-cases/chained-output-feature-override-loss
+# gives: HCLoader hardcodes Unordered at every Stratum it builds (HCLoader.cs:227, 230, 374) and can
+# never emit this fixture's declared morphologicalRuleOrder="linear". Not re-verified against an
+# unordered re-run: the point under test (analysis-side feature bookkeeping) does not depend on that
+# declaration, and every rule in this grammar's chain has a distinct final-segment signature ("-i"/
+# "-u"/"-e" vs "-a" vs "-o"), so no alternate rule ordering could reconstruct any of this fixture's
+# surface forms differently even if it were tried. Follows the same precedent and citation as
+# edge-cases/chained-output-feature-override-loss.
+
+language: SyntacticFeatureInversionControls
+inspired_by: ["synthetic nested-agreement probe for machine#504 (not modeling any real language)"]
+sources:
+  - "https://github.com/sillsdev/machine/issues/504"
+  - "src/SIL.Machine.Morphology.HermitCrab/XmlLanguageLoader.cs (LoadVariables, LoadFeatureStruct -- the variable-inexpressibility citations)"
+  - "conformance/edge-cases/chained-output-feature-override-loss (the deliberate red this fixture is a companion to)"
+requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  MorphologicalRuleOrder: HCLoader hardcodes Unordered at every Stratum it builds (HCLoader.cs:227,
+  230, 374) and can never emit `linear`. This fixture declares its Stratum
+  `morphologicalRuleOrder="linear"` (grammar.xml) so the mrNum/mrNumSg-then-mrPers-then-mrGate chain
+  is unambiguous by construction; not re-verified against an `unordered` re-run for the same reason
+  edge-cases/chained-output-feature-override-loss gives (the point under test does not depend on
+  that declaration). Follows the same precedent and citation as that fixture.
+
+words:
+  - word: sim
+    note: Bare root, consonant-ending, agr.cls=clsA. Control that the grammar loads and the root parses unaffixed.
+    parses:
+      - signature: "SIM|sim"
+        rules: []
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: simi
+    note: >-
+      mrNum alone, via subNumCons ("-i"): "sim" ends in "m" (ncConsEnding), so subNumCons's
+      RequiredEnvironments is satisfied and subNumVow's is not. Writes agr.num=pl (nested under
+      cfAgr). Control that the disjunctive pair's CONSONANT arm works in isolation.
+    parses:
+      - signature: "SIM+NUM|simi"
+        rules: [mrNum]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+          - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: sima
+    note: mrPers alone. Writes agr.pers=1 (nested under cfAgr, a DIFFERENT path than agr.num). Control that mrPers works in isolation.
+    parses:
+      - signature: "SIM+PERS|sima"
+        rules: [mrPers]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: simia
+    note: >-
+      mrNum then mrPers, no gate yet. MERGE positive control: agr.num=pl and agr.pers=1 both present
+      afterward, each written by a different rule into a different sub-path of the same complex
+      feature cfAgr, neither overwriting the other.
+    parses:
+      - signature: "SIM+NUM+PERS|simia"
+        rules: [mrNum, mrPers]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: simiao
+    note: >-
+      THE main positive pin: mrNum, mrPers, then mrGate. mrGate's RequiredHeadFeatures reads THREE
+      nested cfAgr sub-paths at once -- agr.num=pl (mrNum's write), agr.pers=1 (mrPers's write),
+      agr.cls=clsA (never written by any rule; survives untouched from eSim's own
+      AssignedHeadFeatures). All three must be simultaneously recoverable for this to parse: nested
+      path read-back, two-rule merge, and untouched-value passthrough, all in one word.
+    parses:
+      - signature: "SIM+NUM+PERS+GATE|simiao"
+        rules: [mrNum, mrPers, mrGate]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: do
+    note: Bare root, vowel-ending, agr.cls=clsA (same cls value as eSim). Control that the grammar loads and the root parses unaffixed.
+    parses:
+      - signature: "DO|do"
+        rules: []
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: dou
+    note: >-
+      mrNum alone, via subNumVow ("-u"): "do" ends in "o" (ncVowEnding), so subNumVow's
+      RequiredEnvironments is satisfied and subNumCons's is not. Writes the SAME agr.num=pl as
+      simi did via the OTHER allomorph. Control that the disjunctive pair's VOWEL arm works in
+      isolation.
+    parses:
+      - signature: "DO+NUM|dou"
+        rules: [mrNum]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+          - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: doua
+    note: mrNum (vowel arm) then mrPers, no gate yet. MERGE positive control, same shape as simia but via the other disjunctive allomorph.
+    parses:
+      - signature: "DO+NUM+PERS|doua"
+        rules: [mrNum, mrPers]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: douao
+    note: >-
+      THE disjunctive-pair NON-COLLAPSE pin: the exact same three-way mrGate check that simiao
+      passes via subNumCons also passes here via subNumVow. Since eSim and eDo share the same
+      agr.cls=clsA, the only thing that differs between simiao's and douao's derivations is which
+      allomorph mrNum used -- proving inversion recovers agr.num=pl correctly regardless of which
+      alternative fired, rather than only implementing the read-back path for one of the two.
+    parses:
+      - signature: "DO+NUM+PERS+GATE|douao"
+        rules: [mrNum, mrPers, mrGate]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+          - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: dam
+    note: Bare root, consonant-ending, agr.cls=clsB (the OTHER concrete cls value from eSim/eDo). Control that the grammar loads and the root parses unaffixed.
+    parses:
+      - signature: "DAM|dam"
+        rules: []
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: damia
+    note: >-
+      mrNum then mrPers, no gate yet. Non-vacuousness control for damiao below: proves the chain up
+      to (but not including) mrGate genuinely builds for "dam", so damiao's failure can only be
+      attributed to mrGate's own cls check, not to something else being broken about this root.
+    parses:
+      - signature: "DAM+NUM+PERS|damia"
+        rules: [mrNum, mrPers]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: damiao
+    note: >-
+      THE cls-conflict NEGATIVE control. mrNum and mrPers both succeed exactly as they did for
+      damia (see above); mrGate then requires agr.cls=clsA, but "dam" was assigned agr.cls=clsB, a
+      genuinely DIFFERENT concrete value -- not an absence, a real conflict. Contrast with basiao
+      below, where cls is entirely unset rather than conflicting, and the parse succeeds.
+    expect_fail: true
+    blocked_by: [mrGate]
+    exercises:
+      - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: bas
+    note: Bare root, consonant-ending, NO AssignedHeadFeatures at all (agr.cls is genuinely unset, not merely a different value). Control that the grammar loads and the root parses unaffixed.
+    parses:
+      - signature: "BAS|bas"
+        rules: []
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: basia
+    note: mrNum then mrPers, no gate yet. Non-vacuousness control for basiao below, same role as damia above.
+    parses:
+      - signature: "BAS+NUM+PERS|basia"
+        rules: [mrNum, mrPers]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: basiao
+    note: >-
+      THE unify-vs-absent POSITIVE control (see this file's header correction). "bas" never assigns
+      agr.cls at all, so when mrGate requires agr.cls=clsA, there is no conflicting value to refuse
+      -- an unset feature path unifies with any requirement. This parses successfully, in direct
+      contrast with damiao above (a genuinely conflicting clsB DOES refuse). The first draft of this
+      fixture predicted this word would fail; the oracle run corrected that prediction, which is why
+      this entry -- not a hand-derived guess -- is what ships.
+    parses:
+      - signature: "BAS+NUM+PERS+GATE|basiao"
+        rules: [mrNum, mrPers, mrGate]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: simio
+    note: >-
+      mrNum then mrGate, mrPers SKIPPED (legal: linear order only constrains the RELATIVE order of
+      rules that apply, and mrNum still precedes mrGate here). mrGate requires agr.pers=1, which was
+      never written; per the same unify-vs-absent distinction as basiao, an unset path does not
+      block the parse. Positive control demonstrating merge completeness is not required for mrGate
+      to accept a derivation, only the absence of a genuine conflict.
+    parses:
+      - signature: "SIM+NUM+GATE|simio"
+        rules: [mrNum, mrGate]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: simao
+    note: >-
+      mrPers then mrGate, mrNum SKIPPED (symmetric with simio above: mrPers still precedes mrGate).
+      mrGate requires agr.num=pl, never written here; unset, so it does not block the parse. Same
+      unify-vs-absent lesson as simio/basiao, from the other missing path.
+    parses:
+      - signature: "SIM+PERS+GATE|simao"
+        rules: [mrPers, mrGate]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: dat
+    note: Bare root, ends in "t" -- in NEITHER ncConsEnding nor ncVowEnding. Control that the grammar loads and the root parses unaffixed.
+    parses:
+      - signature: "DAT|dat"
+        rules: []
+        exercises:
+          - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: dati
+    note: >-
+      Attempted mrNum via subNumCons: requires the stem to end in ncConsEnding ({s, m}); "dat" ends
+      in "t", which is in neither natural class. Non-vacuousness control for the disjunctive pair:
+      proves subNumCons does not fire as a default when its own environment genuinely is not met.
+      This is an ENVIRONMENT/morphotactic refusal, not a head-feature one -- named separately from
+      this fixture's feature-theoretic negative controls (damiao, simeao) for that reason.
+    expect_fail: true
+    blocked_by: [mrNum]
+    exercises:
+      - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: datu
+    note: >-
+      Attempted mrNum via subNumVow: requires the stem to end in ncVowEnding ({o}); "dat" ends in
+      "t", satisfying neither arm. Symmetric non-vacuousness control to dati: proves the disjunctive
+      pair does not default to its OTHER alternative either when neither environment holds.
+    expect_fail: true
+    blocked_by: [mrNum]
+    exercises:
+      - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: sime
+    note: >-
+      mrNumSg alone, via its own unconstrained "-e" suffix. Writes agr.num=sg -- the value that
+      CONFLICTS with mrNum's agr.num=pl. Control that mrNumSg works in isolation before simeao below
+      puts it in conflict with mrGate.
+    parses:
+      - signature: "SIM+NUMSG|sime"
+        rules: [mrNumSg]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: simea
+    note: mrNumSg then mrPers, no gate yet. Non-vacuousness control for simeao below, same role as damia/basia above (proves the chain up to mrGate builds fine).
+    parses:
+      - signature: "SIM+NUMSG+PERS|simea"
+        rules: [mrNumSg, mrPers]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: simeao
+    note: >-
+      THE merge NEGATIVE control. mrNumSg writes agr.num=sg, mrPers writes agr.pers=1 (both present,
+      as simea proves), and agr.cls=clsA survives from eSim untouched -- pers and cls are exactly
+      as mrGate wants. But mrGate also requires agr.num=pl, and agr.num already holds a genuinely
+      CONFLICTING value (sg, not merely absent). This proves the merge mrGate performs is a real
+      unification over every contributed path, not a check that stops looking once enough paths are
+      present: one bad path among three good ones is still a refusal.
+    expect_fail: true
+    blocked_by: [mrGate]
+    exercises:
+      - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
