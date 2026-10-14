@@ -588,10 +588,19 @@ public class AffixTemplateTests : HermitCrabTestBase
         verbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix));
         Morphophonemic.AffixTemplates.Add(verbTemplate);
 
-        var clitics = new Stratum(Table3) { Name = "Clitics", MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered };
+        var clitics = new Stratum(Table3)
+        {
+            Name = "Clitics",
+            MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered,
+        };
         Language.Strata.Add(clitics);
 
-        var clitic = new AffixProcessRule { Name = "clitic", Gloss = "PL", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value };
+        var clitic = new AffixProcessRule
+        {
+            Name = "clitic",
+            Gloss = "PL",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
         clitic.Allomorphs.Add(
             new AffixProcessAllomorph
             {
