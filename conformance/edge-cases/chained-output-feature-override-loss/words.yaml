@@ -1,42 +1,24 @@
 # oracle-provenance: forward-synthesis
 #
-# THIS FIXTURE FAILS AGAINST hc.dll TODAY, ON PURPOSE. Every word here records the founding
-# oracle's own output except `zudiua`, which records the answer forward synthesis proves is correct
-# and which the oracle currently loses. The fixture is written before the engine fix, so it goes red
-# now and green when the fix lands; a red result here is the expected state, not a broken fixture.
-# The correct answer was derived from the grammar rather than from any engine: apply the rules in
-# order, check each rule's RequiredHeadFeatures against the previous rule's OutputHeadFeatures, and
-# see that the chain builds the surface. An engine that cannot invert a derivation it can perform is
-# wrong regardless of which engine it is. Every OTHER word is oracle-recorded, so the fixture still
-# pins current behaviour everywhere the current behaviour is right.
-# Verified against the C# founding oracle (hc.dll, via hc-conformance.exe self-check mode --
-# `hc-conformance.exe --fixtures conformance --propose --include-pathological` built from this
-# worktree, branch conformance/exact-analysis-fs-divergence at d3b7643d). Every signature below EXCEPT
-# `zudiua`'s is transcribed verbatim from that run's --propose output; `zudiua`'s is hand-derived,
-# for the reason given above.
+# REGRESSION PIN FOR AN ANALYSIS PARSE LOSS FIXED BY sillsdev/machine#494. Every word here records
+# the founding oracle's own output except `zudiua`, whose expected parse was derived from the grammar
+# rather than from any engine: apply the rules in order, check each rule's RequiredHeadFeatures against
+# the previous rule's OutputHeadFeatures, and see that the chain builds the surface. An engine that
+# cannot invert a derivation it can perform is wrong regardless of which engine it is.
+# Signatures other than `zudiua`'s were transcribed from `hc-conformance --propose` output on branch
+# conformance/exact-analysis-fs-divergence at d3b7643d.
 #
-# PINS CURRENT C# BEHAVIOUR EVERYWHERE THAT BEHAVIOUR IS RIGHT. It also records one parse LOSS that
-# the owner's own research characterizes as a pre-existing bug (see below), present under both
-# master's Add semantics and PR #494's PriorityUnion, and NOT present in HC-Rust's "exact analysis
-# feature structure" mode (PanGloss branch fix/exact-analysis-fs). This fixture exists so that
-# loss shows up as a conformance failure against hc.dll itself, so the engine fix has a red test to
-# turn green.
+# History: the fixture was written red, before the fix. Under master's earlier Add semantics the
+# oracle returned no analysis of `zudiua`; it has parsed since #494 (7109531e, "Change Add to
+# PriorityUnion") merged, checked by running this fixture against master at 52d069f8 (red) and
+# 7109531e (green). Earlier notes said the loss survived PriorityUnion; that was measured on the
+# pre-merge research branch perf/pr494-priority-union, not on what merged.
 #
-# Mechanism: analysis (un-application) walks a derivation outside-in. mrOuter's own
-# OutputHeadFeatures (tense=past) is folded onto the stem as it is un-applied and never fully
-# retracted before mrInner is tried next; mrInner's own OutputHeadFeatures (tense=pres) is then
-# checked for unifiability against a stem that still carries the leftover tense=past, and the check
-# fails, refusing the whole derivation. This is exactly
-# `AnalysisSyntacticFeatureMerge.CanUnapply`/`MergeRequired`'s Add and PriorityUnion branches
-# (sillsdev/machine research branch perf/pr494-priority-union,
-# src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/AnalysisSyntacticFeatureMerge.cs); on
-# current master (no toggle exists there yet) `AnalysisAffixProcessRule.Apply`'s own IsUnifiable gate
-# has the same Add-only behaviour, so the loss reproduces without any research code at all. Documented
-# as `OverrideLoss_TenseFlipFlop_AddAndPriorityUnionLoseTheParse_ExactFindsIt` in
-# tests/SIL.Machine.Morphology.HermitCrab.Tests/MorphologicalRules/AnalysisSyntacticFeatureMergeTests.cs
-# on that same branch, and in docs/pr494-review.md section 4 ("it fixes a pre-existing master bug: a
-# rule whose Out overrides an inner rule's Out ... loses the parse under Add and PriorityUnion because
-# neither removes the stale Out feature").
+# Mechanism of the original loss: analysis (un-application) walks a derivation outside-in. mrOuter's
+# own OutputHeadFeatures (tense=past) was folded onto the stem as it was un-applied and never retracted
+# before mrInner was tried next; mrInner's own OutputHeadFeatures (tense=pres) was then checked for
+# unifiability against a stem still carrying tense=past, and the check refused the whole derivation.
+# Tracked by sillsdev/machine#504.
 #
 # Word list:
 #   zud      bare root control -- the grammar loads and the root parses unaffixed.
@@ -52,13 +34,10 @@
 #   zudia    root+mrInner+mrOutermost (mrOuter SKIPPED). mrOutermost requires tense=past, but only
 #            mrInner ran (tense=pres) -- negative control that mrOutermost's gate is a real feature
 #            check, not vacuously satisfied by any suffix chain of the right length.
-#   zudiua   root+mrInner+mrOuter+mrOutermost, the FULL chain. THE bug pin: this word has a genuine,
-#            structurally well-formed 4-morph analysis -- root, then mrInner's own tense=pres write,
-#            then mrOuter's own tense=past override, then mrOutermost's tense=past gate -- and the
-#            founding oracle returns NO analysis of it at all (signature "-"), because mrInner's
-#            re-unification against the leftover tense=past fails first. HC-Rust's exact-analysis-fs
-#            mode strips the rule's own output-feature paths before re-unifying and DOES find this
-#            parse, which is the divergence this fixture exists to catch.
+#   zudiua   root+mrInner+mrOuter+mrOutermost, the FULL chain, and the regression pin: root, then
+#            mrInner's tense=pres write, then mrOuter's tense=past override, then mrOutermost's
+#            tense=past gate. Before #494 the oracle returned no analysis, because mrInner's
+#            re-unification against the leftover tense=past failed first.
 
 language: ChainedOutputFeatureOverrideLoss
 inspired_by: ["synthetic chained-suffix tense-override probe (not modeling any real language)"]
@@ -125,15 +104,13 @@ words:
 
   - word: zudiua
     note: >-
-      THE bug pin, and the one word in this fixture that does NOT record current engine behaviour.
-      root+mrInner+mrOuter+mrOutermost is a well-formed four-morph chain: forward synthesis runs
-      zud (no tense) -> mrInner writes tense=pres -> mrOuter writes tense=past -> mrOutermost's
-      RequiredHeadFeatures tense=past is satisfied. Compare zudua above, the same gate pair one rule
-      shorter, which parses cleanly. The founding oracle nonetheless finds ZERO analyses here:
-      mrOuter's own tense=past write is folded onto the stem during analysis and never retracted, so
-      mrInner's own OutputHeadFeatures (tense=pres) fails unification when mrInner is tried next and
-      the whole derivation is refused. The signature below is what a correct engine must return, so
-      this entry FAILS against hc.dll today by design -- see the header for why that is deliberate.
+      The regression pin, and the one word whose expected parse is derived from the grammar rather
+      than recorded from the oracle. root+mrInner+mrOuter+mrOutermost is a well-formed four-morph
+      chain: zud (no tense) -> mrInner writes tense=pres -> mrOuter writes tense=past ->
+      mrOutermost's RequiredHeadFeatures tense=past is satisfied. Compare zudua above, the same gate
+      pair one rule shorter. Before #494 the oracle found no analysis here: mrOuter's tense=past was
+      folded onto the stem during analysis and never retracted, so mrInner's own OutputHeadFeatures
+      (tense=pres) failed unification. It parses on master since #494.
     parses:
       - signature: "ZUD+INNER+OUTER+OUTERMOST|zudiua"
         rules: [mrInner, mrOuter, mrOutermost]
