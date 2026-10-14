@@ -124,6 +124,34 @@ public sealed class CounterfactualGateTests
     }
 
     [Test]
+    public void ANonAsciiSurfaceFormSurvivesTheMutantChildProcess()
+    {
+        // The mutant's outcomes cross a pipe; the baseline does not. If the pipe re-encodes "ɯ", the
+        // unchanged parse misses its baseline and Gloss counts as Evidenced.
+        File.WriteAllText(
+            Path.Combine(_fixtureDirectory, "grammar.xml"),
+            ProbeGrammar
+                .Replace("<Representation>a</Representation>", "<Representation>ɯ</Representation>")
+                .Replace("<PhoneticShape>a</PhoneticShape>", "<PhoneticShape>ɯ</PhoneticShape>")
+        );
+        var words = new WordsYaml { Language = "CounterfactualProbe" };
+        words.Words.Add(new WordEntry { Word = "ɯ" });
+        var fixture = new Fixture("probe/fixture", _fixtureDirectory, words);
+        IReadOnlyList<string> baseline = CounterfactualGate.ComputeBaseline(fixture);
+
+        CounterfactualResult result = CounterfactualGate.Evaluate(
+            fixture,
+            "dtd:element/Gloss",
+            Inventory(),
+            baseline,
+            _scratchDirectory
+        );
+
+        Assert.That(baseline.Single(), Does.Contain("ɯ"));
+        Assert.That(result.Verdict, Is.EqualTo(CounterfactualVerdict.Unobservable), result.Delta);
+    }
+
+    [Test]
     public void DeletingTheRootLanguageElementIsRequiredByDtd()
     {
         Fixture fixture = ProbeFixture();
