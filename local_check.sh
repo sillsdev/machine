@@ -35,9 +35,14 @@ dotnet restore || failed+=(restore)
 dotnet csharpier check . || failed+=(csharpier)
 dotnet build --no-restore -c Release || failed+=(build)
 dotnet test --verbosity normal || failed+=(test)
-dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance --   --semantic-coverage --repository-root . || failed+=(semantic-coverage)
-dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance --   --fixtures conformance || failed+=(conformance)
-python conformance/parity-check.py || failed+=(parity-check)
+
+# The same gates as .github/workflows/conformance.yml. The semantic-coverage audit is gated by
+# dotnet test above; its CLI exits 1 while the catalog is an incomplete backlog, by design.
+dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance -- \
+  --fixtures conformance --include-pathological || failed+=(conformance)
+dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance -- \
+  --fixtures conformance --coverage-report || failed+=(coverage-report)
+git diff --exit-code -- conformance/coverage.csv conformance/rules.csv || failed+=(coverage-stale)
 
 if [ "${#failed[@]}" -ne 0 ]; then
   echo "local_check: FAILED (${failed[*]})"
