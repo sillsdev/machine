@@ -569,7 +569,25 @@ public class AffixTemplateTests : HermitCrabTestBase
     [TestCase(false)]
     public void CliticAppliedAfterFinalTemplate(bool alwaysEnforceFinalTemplates)
     {
-        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var clitics = new Stratum(Table3)
+        {
+            Name = "Clitics",
+            MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered,
+        };
+        Language.Strata.Add(clitics);
+        try
+        {
+            CliticAppliedAfterFinalTemplate(clitics, alwaysEnforceFinalTemplates);
+        }
+        finally
+        {
+            Language.Strata.Remove(clitics);
+        }
+    }
+
+    private void CliticAppliedAfterFinalTemplate(Stratum clitics, bool alwaysEnforceFinalTemplates)
+    {
+        FeatureStruct any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
 
         var edSuffix = new AffixProcessRule { Name = "ed_suffix", Gloss = "PAST" };
         edSuffix.Allomorphs.Add(
@@ -587,13 +605,6 @@ public class AffixTemplateTests : HermitCrabTestBase
         };
         verbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix));
         Morphophonemic.AffixTemplates.Add(verbTemplate);
-
-        var clitics = new Stratum(Table3)
-        {
-            Name = "Clitics",
-            MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered,
-        };
-        Language.Strata.Add(clitics);
 
         var clitic = new AffixProcessRule
         {
