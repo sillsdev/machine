@@ -7,10 +7,16 @@ on:
     paths:
       - "conformance/**"
       - "src/SIL.Machine.Morphology.HermitCrab*/**"
+      - "src/SIL.Machine/**"
+      - "tests/SIL.Machine.Morphology.HermitCrab.Tests/**"
+      - ".github/workflows/conformance.yml"
   pull_request:
     paths:
       - "conformance/**"
       - "src/SIL.Machine.Morphology.HermitCrab*/**"
+      - "src/SIL.Machine/**"
+      - "tests/SIL.Machine.Morphology.HermitCrab.Tests/**"
+      - ".github/workflows/conformance.yml"
 
 jobs:
   conformance:
@@ -38,14 +44,10 @@ jobs:
           dotnet run --no-restore --project src/SIL.Machine.Morphology.HermitCrab.Conformance --
           --fixtures conformance --include-pathological
 
-      # Gate (b): --coverage-report (re)writes coverage.csv/rules.csv, which the next step checks
-      # for staleness, and prints any dead rules (rules exercised by zero words) to stdout. NOTE:
-      # on this branch, RunCoverageReport's caller in Program.cs unconditionally returns 0 --
-      # it does not fail the build when dead rules are found, unlike the upstream branch this
-      # workflow was ported from. Making this step's own exit code the dead-rule gate would
-      # require changing Program.cs's dispatch, which is out of scope for this port; until that
-      # lands, dead rules are visible in this step's log but do not fail CI. `if: always()` so this
-      # still runs (and reports its own true status) even if the self-check step above failed.
+      # Gate (b): --coverage-report (re)writes coverage.csv/rules.csv, which the next step checks for
+      # staleness, and exits 1 on an uncovered construct, on a dead rule (exercised by zero words)
+      # missing from conformance/dead-rules-allowed.tsv, or on an allowed rule some word now exercises.
+      # `if: always()` so it reports its own status even when the self-check step above failed.
       - name: Run coverage report
         if: always()
         run: >-
