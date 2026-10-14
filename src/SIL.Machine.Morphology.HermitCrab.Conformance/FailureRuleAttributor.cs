@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 
 namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
@@ -12,21 +11,19 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 /// asserted to VERIFIED, the same standard a crash-attributed rule is held to elsewhere in the
 /// coverage report.
 ///
-/// <b>Two trace shapes are used, both inherently self-limiting rather than filtered by
-/// <see cref="FailureReason"/> value:</b>
-/// <list type="bullet">
-/// <item>A <see cref="TraceType.Blocked"/> node (<c>Word.CheckBlocking</c> substituted a suppletive
-/// family partner) can only ever appear AFTER the rule already applied successfully to build that
-/// specific candidate -- it cannot fire for a rule that was never in scope for this word, so it
-/// carries rule identity directly on <see cref="Trace.Source"/> with no risk of blanket noise.</item>
-/// <item>A <see cref="TraceType.Failed"/> node whose <see cref="Trace.FailureAllomorph"/> resolves to
-/// an <see cref="AffixProcessAllomorph"/> is likewise self-limiting: <c>Environments</c>/
-/// <c>AllomorphCoOccurrenceRules</c>/<c>MorphemeCoOccurrenceRules</c> are checked in
-/// <c>Morpher.IsWordValid</c> only against allomorphs that are ALREADY PART OF a fully-synthesized
-/// final candidate, so the rule that owns the allomorph (<see cref="Allomorph.Morpheme"/> -- an
-/// <see cref="AffixProcessRule"/>/<see cref="RealizationalAffixProcessRule"/> is itself a
-/// <see cref="Morpheme"/>) genuinely did apply to build that candidate, not merely get tried.</item>
-/// </list>
+/// <b>One trace shape is used, inherently self-limiting rather than filtered by
+/// <see cref="FailureReason"/> value:</b> a <see cref="TraceType.Blocked"/> node
+/// (<c>Word.CheckBlocking</c> substituted a suppletive family partner) can only ever appear AFTER
+/// the rule already applied successfully to build that specific candidate -- it cannot fire for a
+/// rule that was never in scope for this word, so it carries rule identity directly on
+/// <see cref="Trace.Source"/> with no risk of blanket noise.
+///
+/// <b>Not yet used: a <see cref="TraceType.Failed"/> node's allomorph.</b> An
+/// <c>Environments</c>/<c>AllomorphCoOccurrenceRules</c>/<c>MorphemeCoOccurrenceRules</c> failure
+/// is checked in <c>Morpher.IsWordValid</c> only against allomorphs already part of a
+/// fully-synthesized candidate, so the affix rule owning that allomorph genuinely applied and would
+/// be a safe attribution. The trace does not record which allomorph failed until
+/// sillsdev/machine#534 lands; such words stay label-only until then.
 ///
 /// <b>Deliberately NOT used: a <see cref="TraceType.MorphologicalRuleSynthesis"/>/
 /// <see cref="TraceType.CompoundingRuleSynthesis"/>/<see cref="TraceType.PhonologicalRuleSynthesis"/>
@@ -86,15 +83,6 @@ public static class FailureRuleAttributor
                 case TraceType.PhonologicalRuleSynthesis:
                     if (node.FailureReason == FailureReason.None && surfaceFormMismatch)
                         AddPhonological(node.Source);
-                    break;
-                case TraceType.Failed:
-                    if (
-                        node.FailureAllomorph is AffixProcessAllomorph affixAllo
-                        && affixAllo.Morpheme is IMorphologicalRule mrule
-                    )
-                    {
-                        AddMorphological(mrule);
-                    }
                     break;
             }
             foreach (Trace child in node.Children)
