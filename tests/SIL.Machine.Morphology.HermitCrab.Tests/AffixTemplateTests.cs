@@ -565,6 +565,67 @@ public class AffixTemplateTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("sagvs"), "32 NOM PL");
     }
 
+    [TestCase(true)]
+    [TestCase(false)]
+    public void CliticAppliedAfterFinalTemplate(bool alwaysEnforceFinalTemplates)
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+        var edSuffix = new AffixProcessRule { Name = "ed_suffix", Gloss = "PAST" };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") },
+            }
+        );
+
+        var verbTemplate = new AffixTemplate
+        {
+            Name = "verb",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        verbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix));
+        Morphophonemic.AffixTemplates.Add(verbTemplate);
+
+        var clitics = new Stratum(Table3) { Name = "Clitics", MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered };
+        Language.Strata.Add(clitics);
+
+        var clitic = new AffixProcessRule { Name = "clitic", Gloss = "PL", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value };
+        clitic.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "s") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(clitic);
+        var morpher = new Morpher(TraceManager, Language);
+        morpher.AlwaysEnforceFinalTemplates = alwaysEnforceFinalTemplates;
+        AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
+        AssertMorphsEqual(morpher.ParseWord("sagds"));
+
+        clitic.IsCliticRule = true;
+        morpher = new Morpher(TraceManager, Language);
+        morpher.AlwaysEnforceFinalTemplates = alwaysEnforceFinalTemplates;
+        AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
+        AssertMorphsEqual(morpher.ParseWord("sagds"), "32 PAST PL");
+
+        clitic.IsCliticRule = null;
+        Morphophonemic.MorphologicalRules.Remove(clitic);
+        clitics.MorphologicalRules.Add(clitic);
+        morpher = new Morpher(TraceManager, Language);
+        morpher.AlwaysEnforceFinalTemplates = alwaysEnforceFinalTemplates;
+        AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
+        AssertMorphsEqual(morpher.ParseWord("sagds"), "32 PAST PL");
+
+        clitic.IsCliticRule = false;
+        morpher = new Morpher(TraceManager, Language);
+        morpher.AlwaysEnforceFinalTemplates = alwaysEnforceFinalTemplates;
+        AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
+        AssertMorphsEqual(morpher.ParseWord("sagds"));
+    }
+
     [TestCase(true, TestName = "SameRuleUsedInMultipleTemplates_AffixHasRequiredFeatures")]
     [TestCase(false, TestName = "SameRuleUsedInMultipleTemplates_AffixHasNoRequiredFeatures")]
     public void SameRuleUsedInMultipleTemplates(bool affixHasRequiredFeatures)

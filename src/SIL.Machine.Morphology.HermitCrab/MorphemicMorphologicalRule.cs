@@ -7,12 +7,10 @@ namespace SIL.Machine.Morphology.HermitCrab
     {
         public string Name { get; set; }
         public bool IsTemplateRule { get; set; }
-        public bool? IsCliticRule { get; set; }
-
         /// <summary>
-        /// Returns IsCliticRule if set.
-        /// If IsCliticRule is not set, returns whether the rule is in the "Clitics" stratum.
+        /// If IsCliticRule is not set, GetIsCliticRule() will return whether the rule is in the "Clitics" stratum.
         /// </summary>
+        public bool? IsCliticRule { get; set; }
         internal bool GetIsCliticRule()
         {
             if (IsCliticRule == null)
