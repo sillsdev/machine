@@ -41,14 +41,16 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+# The same gates as .github/workflows/conformance.yml. The semantic-coverage audit is gated by
+# dotnet test above; its CLI exits 1 while the catalog is an incomplete backlog, by design.
 dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance -- \
-  --semantic-coverage --repository-root .
+  --fixtures conformance --include-pathological
 if [ $? -ne 0 ]; then
   exit 1
 fi
 dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance -- \
-  --fixtures conformance
+  --fixtures conformance --coverage-report
 if [ $? -ne 0 ]; then
   exit 1
 fi
-python conformance/parity-check.py
+git diff --exit-code -- conformance/coverage.csv conformance/rules.csv
