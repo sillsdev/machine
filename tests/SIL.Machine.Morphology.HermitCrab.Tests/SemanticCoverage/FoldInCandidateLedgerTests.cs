@@ -45,11 +45,11 @@ public sealed class FoldInCandidateLedgerTests
                 + $"surfacePresentElsewhere={surfacePresentElsewhere}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(79));
+        Assert.That(rows, Has.Count.EqualTo(81));
         Assert.That(interfaceEdgeCaseOnly, Is.EqualTo(1));
         Assert.That(interfaceNeverWitnessed, Is.EqualTo(25));
         Assert.That(surfaceEdgeCaseOnly, Is.EqualTo(47));
-        Assert.That(surfacePresentElsewhere, Is.EqualTo(6));
+        Assert.That(surfacePresentElsewhere, Is.EqualTo(8));
     }
 
     // Was CompoundingRule.outputPartOfSpeech and MorphologicalInput.excludedMPRFeatures; now just the

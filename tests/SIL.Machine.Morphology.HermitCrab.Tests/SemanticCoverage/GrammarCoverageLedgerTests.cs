@@ -35,9 +35,9 @@ public sealed class GrammarCoverageLedgerTests
             $"rows={rows.Count} fixtures={distinctFixtures} surface={surface} interface={@interface} construct={construct}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(886));
+        Assert.That(rows, Has.Count.EqualTo(885));
         Assert.That(distinctFixtures, Is.EqualTo(58));
-        Assert.That(surface, Is.EqualTo(179));
+        Assert.That(surface, Is.EqualTo(178));
         Assert.That(@interface, Is.EqualTo(583));
         Assert.That(construct, Is.EqualTo(124));
     }
