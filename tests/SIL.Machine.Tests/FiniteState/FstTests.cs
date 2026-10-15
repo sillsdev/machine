@@ -318,5 +318,20 @@ public class FstTests : PhoneticTestsBase
         Assert.That(fst.ResultCompare(greedy4, lazy3), Is.EqualTo(result));
         Assert.That(fst.ResultCompare(greedy4, lazy2), Is.EqualTo(result));
         Assert.That(fst.ResultCompare(lazy3, lazy2), Is.EqualTo(result));
+
+        // Test lazy and greedy that share a common annotation.
+        var greedy3 = new FstResult<AnnotatedStringData, int>(
+            fst.RegistersEqualityComparer,
+            null,
+            null,
+            new AnnotatedStringData(""),
+            null,
+            0,
+            false,
+            new Annotation<int>(Range<int>.Create(3, 4), null),
+            [],
+            0
+        );
+        Assert.That(fst.ResultCompare(greedy3, lazy3), Is.EqualTo(result));
     }
 }
