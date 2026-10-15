@@ -28,6 +28,14 @@ edge-cases/chained-output-feature-override-loss	zudia	-	Syntactic feature agreem
 edge-cases/chained-output-feature-override-loss	zudiua	ZUD+INNER+OUTER+OUTERMOST|zudiua	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/chained-output-feature-override-loss	zudu	ZUD+OUTER|zudu	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/chained-output-feature-override-loss	zudua	ZUD+OUTER+OUTERMOST|zudua	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
+edge-cases/clitic-rule-designation	kolpu	KOL+NF|kolpu	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/clitic-rule-designation	kolpuli	KOL+NF+PL|kolpuli	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/clitic-rule-designation	sagd	SAG+PAST|sagd	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/clitic-rule-designation	sagdk	-	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
+edge-cases/clitic-rule-designation	sagds	SAG+PAST+ENC|sagds	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
+edge-cases/clitic-rule-designation	sagdsz	SAG+PAST+ENC+DEFCL|sagdsz	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
+edge-cases/clitic-rule-designation	sagdt	-	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
+edge-cases/clitic-rule-designation	sagdz	SAG+PAST+DEFCL|sagdz	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
 edge-cases/compounding-breadth	ka	KA|ka	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
 edge-cases/compounding-breadth	kaki	-	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
 edge-cases/compounding-breadth	kamtu	-	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule

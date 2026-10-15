@@ -1,0 +1,80 @@
+# oracle-provenance: founding-oracle machine-commit=a2f80e28debaffda8a65b3b11875c80479768bc7 verified-date=2026-10-15
+# Signatures transcribed from the self-check run, not hand-derived.
+language: CliticRuleDesignation
+inspired_by: ["synthetic clitic-designation probe, not a model of a real language"]
+sources:
+  - "https://github.com/sillsdev/machine/pull/529"
+  - "tests/SIL.Machine.Morphology.HermitCrab.Tests/AffixTemplateTests.cs: CliticAppliedAfterFinalTemplate"
+requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  MorphologicalRule@isCliticRule: FieldWorks' HCLoader never sets IsCliticRule; it designates
+  clitics only by placing them in a stratum named "Clitics", which this fixture's default-path rule
+  (mrDefaultClitic) also covers.
+words:
+  - word: sag
+    note: The verb template's only slot is obligatory, so the bare root is not a word.
+    expect_fail: true
+  - word: sagd
+    note: The final verb template applied on its own.
+    parses:
+      - signature: "SAG+PAST|sagd"
+        rules: [mrPast]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
+  - word: sagds
+    note: >-
+      isCliticRule="true" lets mrEnc follow the final template although its stratum is Main, not
+      Clitics.
+    parses:
+      - signature: "SAG+PAST+ENC|sagds"
+        rules: [mrPast, mrEnc]
+        exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+  - word: sagdk
+    note: >-
+      Control: mrPlain has no isCliticRule and is not in Clitics, so it may not follow the final
+      template.
+    expect_fail: true
+    blocked_by: [mrPlain]
+    exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+  - word: sagdt
+    note: >-
+      isCliticRule="false" overrides the Clitics stratum's default: mrNotClitic may not follow the
+      final template.
+    expect_fail: true
+    blocked_by: [mrNotClitic]
+    neutralizes:
+      - mrNotClitic
+    exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+  - word: sagdz
+    note: With no isCliticRule, mrDefaultClitic is a clitic because its stratum is named Clitics.
+    parses:
+      - signature: "SAG+PAST+DEFCL|sagdz"
+        rules: [mrPast, mrDefaultClitic]
+        exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+  - word: sagdsz
+    note: Stacked clitics, one designated by the attribute and one by the stratum name.
+    parses:
+      - signature: "SAG+PAST+ENC+DEFCL|sagdsz"
+        rules: [mrPast, mrEnc, mrDefaultClitic]
+        exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+  - word: kol
+    note: The non-final noun template's only slot is obligatory, so the bare root is not a word.
+    expect_fail: true
+  - word: kolpu
+    note: >-
+      Clitics' all-optional final template nounClose adds nothing yet completes nounNonFinal from the
+      earlier stratum.
+    parses:
+      - signature: "KOL+NF|kolpu"
+        rules: [mrNf]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
+  - word: kolpuli
+    note: The same cross-stratum completion with nounClose's slot filled.
+    parses:
+      - signature: "KOL+NF+PL|kolpuli"
+        rules: [mrNf, mrPl]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
+  - word: kolli
+    note: nounClose cannot stand in for nounNonFinal's obligatory slot.
+    expect_fail: true
+    blocked_by: [mrPl]

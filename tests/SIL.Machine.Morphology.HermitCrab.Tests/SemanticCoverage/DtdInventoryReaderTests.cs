@@ -465,12 +465,12 @@ public sealed class DtdInventoryReaderTests
         var kindCounts = inventory
             .Surfaces.GroupBy(surface => surface.Kind)
             .ToDictionary(group => group.Key, group => group.Count());
-        Assert.That(inventory.Surfaces.Count, Is.EqualTo(1059));
+        Assert.That(inventory.Surfaces.Count, Is.EqualTo(1069));
         Assert.That(kindCounts["element"], Is.EqualTo(108));
-        Assert.That(kindCounts["attribute"], Is.EqualTo(149));
-        Assert.That(kindCounts["attribute-type"], Is.EqualTo(149));
-        Assert.That(kindCounts["attribute-default"], Is.EqualTo(149));
-        Assert.That(kindCounts["enum"], Is.EqualTo(156));
+        Assert.That(kindCounts["attribute"], Is.EqualTo(151));
+        Assert.That(kindCounts["attribute-type"], Is.EqualTo(151));
+        Assert.That(kindCounts["attribute-default"], Is.EqualTo(151));
+        Assert.That(kindCounts["enum"], Is.EqualTo(160));
         Assert.That(kindCounts["default"], Is.EqualTo(54));
         Assert.That(kindCounts["content-group"], Is.EqualTo(91));
         Assert.That(kindCounts["special-content"], Is.EqualTo(19));

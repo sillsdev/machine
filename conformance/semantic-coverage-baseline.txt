@@ -92,6 +92,8 @@ dtd:enum/RealizationalRule/blockable/false	todo
 dtd:enum/RealizationalRule/blockable/true	dtd-default
 dtd:enum/RealizationalRule/isActive/no	todo
 dtd:enum/RealizationalRule/isActive/yes	dtd-default
+dtd:enum/RealizationalRule/isCliticRule/false	todo
+dtd:enum/RealizationalRule/isCliticRule/true	todo
 dtd:enum/SegmentNaturalClass/isActive/yes	dtd-default
 dtd:enum/Slot/optional/false	dtd-default
 dtd:enum/Stratum/cyclicity/noncyclic	dtd-default
