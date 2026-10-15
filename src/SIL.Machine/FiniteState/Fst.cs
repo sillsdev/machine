@@ -413,30 +413,35 @@ namespace SIL.Machine.FiniteState
             return true;
         }
 
-        private int ResultCompare(FstResult<TData, TOffset> x, FstResult<TData, TOffset> y)
+        internal int ResultCompare(FstResult<TData, TOffset> x, FstResult<TData, TOffset> y)
         {
             int compare = x.Priority.CompareTo(y.Priority);
             if (compare != 0)
                 return compare;
 
             compare = -x.NextAnnotation.CompareTo(y.NextAnnotation);
-            if (_dir == Direction.RightToLeft)
-                compare = -compare;
             if (IsDeterministic)
             {
-                compare = x.IsLazy ? -compare : compare;
+                if (x.IsLazy && y.IsLazy)
+                    // prefer the shorter one
+                    compare = -compare;
+                else if (x.IsLazy || y.IsLazy)
+                    // prefer the lazy one
+                    compare = x.IsLazy ? -1 : 1;
             }
-            else if (compare == 0)
+            if (_dir == Direction.RightToLeft)
+                compare = -compare;
+            if (compare != 0)
+                return compare;
+            if (!IsDeterministic)
             {
                 foreach (Tuple<int, int> priorityPair in x.Priorities.Zip(y.Priorities))
                 {
                     compare = priorityPair.Item1.CompareTo(priorityPair.Item2);
                     if (compare != 0)
-                        break;
+                        return compare;
                 }
             }
-            if (compare != 0)
-                return compare;
             return x.Order.CompareTo(y.Order);
         }
 
