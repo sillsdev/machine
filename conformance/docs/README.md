@@ -15,6 +15,11 @@ Read in this order.
 | [decisions-and-lessons.md](decisions-and-lessons.md) | what was tried, what was wrong, and how we know |
 | [PROTOCOL.md](../PROTOCOL.md) | the adapter contract an engine must implement |
 
+`.fwdata` witnesses and XAMPLE comparison are produced and run by
+[PanGloss](https://github.com/sillsdev/PanGloss)'s
+[`xample-projector`](https://github.com/sillsdev/PanGloss/tree/main/tools/xample-projector); this repo
+stores them but never executes them.
+
 ## If you are implementing an engine
 
 You need **`PROTOCOL.md` and nothing else here.** Your entire obligation is to produce the same

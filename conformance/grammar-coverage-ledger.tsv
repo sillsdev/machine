@@ -141,6 +141,23 @@ edge-cases/chained-output-feature-override-loss	Interface	SimpleContext.naturalC
 edge-cases/chained-output-feature-override-loss	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/chained-output-feature-override-loss	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/chained-output-feature-override-loss	Construct	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	claimed-confirmed	6 claim(s)
+edge-cases/clitic-rule-designation	Surface	dtd:element/AffixTemplate	required-by-dtd	RequiredByDtd
+edge-cases/clitic-rule-designation	Surface	dtd:element/AffixTemplates	witnessed	Evidenced
+edge-cases/clitic-rule-designation	Surface	dtd:element/Slot	required-by-dtd	RequiredByDtd
+edge-cases/clitic-rule-designation	Surface	dtd:enum/MorphologicalRule/isCliticRule/false	witnessed	Evidenced
+edge-cases/clitic-rule-designation	Surface	dtd:enum/MorphologicalRule/isCliticRule/true	witnessed	Evidenced
+edge-cases/clitic-rule-designation	Surface	dtd:enum/Slot/optional/true	witnessed	Evidenced
+edge-cases/clitic-rule-designation	Surface	dtd:enum/Stratum/morphologicalRuleOrder/unordered	witnessed	Evidenced
+edge-cases/clitic-rule-designation	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/clitic-rule-designation	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/clitic-rule-designation	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/clitic-rule-designation	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/clitic-rule-designation	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/clitic-rule-designation	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
+edge-cases/clitic-rule-designation	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/clitic-rule-designation	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/clitic-rule-designation	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	3 claim(s)
+edge-cases/clitic-rule-designation	Construct	Clitic rules (isCliticRule / Clitics stratum) after a final template	claimed-confirmed	5 claim(s)
 edge-cases/compounding-breadth	Surface	dtd:element/AssignedFootFeatures	witnessed	Evidenced
 edge-cases/compounding-breadth	Surface	dtd:element/AssignedHeadFeatures	witnessed	Evidenced
 edge-cases/compounding-breadth	Surface	dtd:element/CompoundingRule	required-by-dtd	RequiredByDtd
@@ -208,10 +225,7 @@ edge-cases/deletion-reinserted-feature-unapply	Interface	SimpleContext.naturalCl
 edge-cases/deletion-reinserted-feature-unapply	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/deletion-reinserted-feature-unapply	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/deletion-reinserted-feature-unapply	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
-edge-cases/diacritic-segments	Surface	dtd:element/AffixTemplate	required-by-dtd	RequiredByDtd
 edge-cases/diacritic-segments	Surface	dtd:element/RequiredEnvironments	witnessed	Evidenced
-edge-cases/diacritic-segments	Surface	dtd:element/Slot	required-by-dtd	RequiredByDtd
-edge-cases/diacritic-segments	Surface	dtd:enum/Slot/optional/true	witnessed	Evidenced
 edge-cases/diacritic-segments	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/diacritic-segments	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/diacritic-segments	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
@@ -227,7 +241,6 @@ edge-cases/diacritic-segments	Construct	AffixProcessRule: prefix/suffix/circumfi
 edge-cases/diacritic-segments	Construct	Boundary markers (CharacterDefinitionTable)	claimed-confirmed	1 claim(s)
 edge-cases/diacritic-segments	Construct	MorphologicalOutputAction: CopyFromInput/InsertSegments	claimed-confirmed	6 claim(s)
 edge-cases/diacritic-segments	Construct	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	claimed-confirmed	4 claim(s)
-edge-cases/discontinuous-morph-environment	Surface	dtd:enum/Stratum/morphologicalRuleOrder/unordered	witnessed	Evidenced
 edge-cases/discontinuous-morph-environment	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/discontinuous-morph-environment	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/discontinuous-morph-environment	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
@@ -321,7 +334,6 @@ edge-cases/feature-system-breadth	Construct	Element deactivation (isActive) acro
 edge-cases/feature-system-breadth	Construct	MetathesisRule	claimed-confirmed	10 claim(s)
 edge-cases/feature-system-breadth	Construct	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	claimed-confirmed	3 claim(s)
 edge-cases/feature-system-breadth	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	2 claim(s)
-edge-cases/final-template-partial-discriminators	Surface	dtd:element/AffixTemplates	witnessed	Evidenced
 edge-cases/final-template-partial-discriminators	Surface	dtd:enum/AffixTemplate/final/false	witnessed	Evidenced
 edge-cases/final-template-partial-discriminators	Surface	dtd:enum/AffixTemplate/final/true	witnessed	Evidenced
 edge-cases/final-template-partial-discriminators	Surface	dtd:enum/MorphologicalRule/partial/true	witnessed	Evidenced
@@ -474,7 +486,7 @@ edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphemeCoOccurrenceR
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphemeCoOccurrenceRule/type/exclude	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphologicalRule/multipleApplication/0	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphologicalRule/multipleApplication/2	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/morphotactic-attribute-breadth	Interface	AffixTemplate.requiredPartsOfSpeech	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Interface	AllomorphCoOccurrenceRule.otherAllomorphs	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Interface	AllomorphCoOccurrenceRule.primaryAllomorph	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd

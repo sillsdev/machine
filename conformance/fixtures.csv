@@ -4,6 +4,7 @@ edge-cases/boundary-first-in-narrowing-lhs,edge-cases,BoundaryFirstInNarrowingLh
 edge-cases/boundary-first-in-narrowing-lhs-strrep,edge-cases,BoundaryFirstInNarrowingLhsStrrep,Boundary markers (CharacterDefinitionTable);RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 edge-cases/boundary-leftover-in-narrowing-lhs-strrep,edge-cases,BoundaryLeftoverInNarrowingLhsStrrep,Boundary markers (CharacterDefinitionTable);RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 edge-cases/boundary-mid-in-narrowing-lhs-strrep,edge-cases,BoundaryMidInNarrowingLhsStrrep,Boundary markers (CharacterDefinitionTable);RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+edge-cases/clitic-rule-designation,edge-cases,CliticRuleDesignation,Affix template slots (obligatory/disjunctive/ordering);Clitic rules (isCliticRule / Clitics stratum) after a final template
 edge-cases/deep-optional-affix-nesting,edge-cases,PathologicalDeepOptionalAffixNesting,Affix template slots (obligatory/disjunctive/ordering)
 edge-cases/default-symbol-after-merge,edge-cases,DefaultSymbolAfterMerge,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 edge-cases/deletion-reinserted-feature-unapply,edge-cases,DeletionReinsertedFeatureUnapply,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
