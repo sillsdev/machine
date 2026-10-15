@@ -974,24 +974,10 @@ public class ConvertUsfmVersificationHandlerTests
         Assert.That(target, Is.Not.Null);
         string[] targetLines = target.Split('\n');
         string[] truthLines = truth.Split('\n');
-        // Assert.That(targetLines.Length, Is.EqualTo(truthLines.Length));
+        Assert.That(targetLines, Has.Length.EqualTo(truthLines.Length));
         for (int i = 0; i < truthLines.Length; i++)
         {
-            Assert.That(
-                targetLines[i].Trim(),
-                Is.EqualTo(truthLines[i].Trim()),
-                message: string.Join(
-                    "\n",
-                    [
-                        "Expected vs. \n\tActual",
-                        .. truthLines
-                            .Zip(targetLines)
-                            .Select(pair =>
-                                $"\n{pair.First}\n\t{(pair.First.Trim() != pair.Second.Trim() ? "***" : "")}{pair.Second}"
-                            ),
-                    ]
-                )
-            );
+            Assert.That(targetLines[i].Trim(), Is.EqualTo(truthLines[i].Trim()), message: $"Line {i}");
         }
     }
 }

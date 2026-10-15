@@ -1,0 +1,77 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+# Parallel reviews of one PR cannot see each other's comments and post duplicates.
+# A cancelled run may leave a partial round; the next one picks up its threads.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  claude-review:
+    # Fork PRs get no secrets, so only same-repo branches are reviewed. That also keeps the
+    # restore from running a non-member's MSBuild targets, and keeps the PR's AGENTS.md trusted.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          # Full history so the reviewer can read git log and blame, and diff against
+          # the base branch locally rather than only seeing the PR's final state.
+          fetch-depth: 0
+
+      - uses: lukka/get-cmake@v4.2.3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            10.0.x
+
+      - name: Install libgoogle-perftools-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libunwind-dev
+          sudo apt-get install -y libgoogle-perftools-dev
+
+      # Lets the reviewer build and run tests to falsify its own findings. It is not here
+      # to gate the PR -- the CI build already does that.
+      - name: sentencepiece4c build
+        run: |
+          cmake -S ${{ github.workspace }}/src/sentencepiece4c -B ${{ github.workspace }}/src/sentencepiece4c/build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build ${{ github.workspace }}/src/sentencepiece4c/build --config Release --target sentencepiece4c
+
+      - name: Restore dependencies
+        run: |
+          dotnet tool restore
+          dotnet restore
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # A push by the @claude workflow makes claude[bot] the actor, which the action
+          # rejects unless allowed. The review never pushes, so it cannot retrigger itself.
+          allowed_bots: claude
+          # pr-review has the built-in code-review skill find and verify at "high"
+          # effort, then decides what gets posted.
+          prompt: '/pr-review ${{ github.event.pull_request.number }}'
+          # v1 has no `model` input; the alias follows the newest Opus the action's CLI
+          # knows, so review behavior and cost can change with no commit here.
+          claude_args: >-
+            --model opus
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh pr list:*),Bash(gh api:*),Bash(gh search:*),Bash(git log:*),Bash(git blame:*),Bash(git show:*),Bash(git diff:*),Bash(dotnet build:*),Bash(dotnet test:*)"
+          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
+          # or https://code.claude.com/docs/en/cli-reference for available options

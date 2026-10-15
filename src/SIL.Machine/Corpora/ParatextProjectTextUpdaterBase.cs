@@ -68,7 +68,7 @@ namespace SIL.Machine.Corpora
 
                 ScrVers rowsVersification = UpdateUsfmParserHandler.GetRowsVersification(rows);
                 ScrVers parseVersification = _settings.Versification;
-                if (rowsVersification != _settings.Versification)
+                if (!rowsVersification.IsEquivalentTo(_settings.Versification))
                 {
                     var converter = new ConvertUsfmVersificationHandler(rowsVersification);
                     UsfmParser.Parse(tokens, converter, _settings.Stylesheet, _settings.Versification);

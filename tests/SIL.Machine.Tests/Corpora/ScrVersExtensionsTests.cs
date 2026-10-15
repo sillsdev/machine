@@ -43,4 +43,68 @@ public class ScrVersExtensionsTests
             Assert.That(ScrVers.Vulgate.HasCrossBookMappings(ScrVers.English));
         }
     }
+
+    [Test]
+    public void IsEquivalentTo()
+    {
+        ScrVers customVrs1;
+        using (CorporaUtils.VersificationLock.Lock())
+        {
+            string src = "MAT 1:2 = MAT 1:1\nMAT 1:1 = MAT 1:2\n-EXO 25:6\n-EXO 28:23";
+            using var reader = new StringReader(src);
+            customVrs1 = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom1");
+            Versification.Table.Implementation.RemoveAllUnknownVersifications();
+        }
+
+        ScrVers customVrs2;
+        using (CorporaUtils.VersificationLock.Lock())
+        {
+            string src = "MAT 1:1 = MAT 1:2\nMAT 1:2 = MAT 1:1\n-EXO 28:23\n-EXO 25:6";
+            using var reader = new StringReader(src);
+            customVrs2 = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom2");
+            Versification.Table.Implementation.RemoveAllUnknownVersifications();
+        }
+
+        ScrVers customVrs3;
+        using (CorporaUtils.VersificationLock.Lock())
+        {
+            string src =
+                "MAT 1:1 = MAT 1:2\n# This is a comment\nMAT 1:2 = MAT 1:1\nMAT 1:2 = MAT 1:1\n-EXO 25:6\n-EXO 28:23";
+            using var reader = new StringReader(src);
+            customVrs3 = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom3");
+            Versification.Table.Implementation.RemoveAllUnknownVersifications();
+        }
+
+        ScrVers customVrs4;
+        using (CorporaUtils.VersificationLock.Lock())
+        {
+            string src = "&MAT 1:2-3 = MAT 1:2\nMAT 1:4 = MAT 1:3\n-EXO 25:6\n-EXO 28:23";
+            using var reader = new StringReader(src);
+            customVrs4 = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom4");
+            Versification.Table.Implementation.RemoveAllUnknownVersifications();
+        }
+
+        ScrVers customVrs5;
+        using (CorporaUtils.VersificationLock.Lock())
+        {
+            string src = "";
+            using var reader = new StringReader(src);
+            customVrs5 = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom5");
+            Versification.Table.Implementation.RemoveAllUnknownVersifications();
+        }
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(ScrVers.English.IsEquivalentTo(ScrVers.English));
+            Assert.That(!ScrVers.English.IsEquivalentTo(ScrVers.Original));
+            Assert.That(ScrVers.Original.IsEquivalentTo(ScrVers.Original));
+            Assert.That(!ScrVers.Original.IsEquivalentTo(ScrVers.English));
+            Assert.That(customVrs1.IsEquivalentTo(customVrs1));
+            Assert.That(customVrs1.IsEquivalentTo(customVrs2));
+            Assert.That(customVrs1.IsEquivalentTo(customVrs3));
+            Assert.That(!customVrs1.IsEquivalentTo(customVrs4));
+            Assert.That(!customVrs1.IsEquivalentTo(customVrs5));
+            Assert.That(customVrs5.IsEquivalentTo(ScrVers.English));
+        }
+    }
 }
