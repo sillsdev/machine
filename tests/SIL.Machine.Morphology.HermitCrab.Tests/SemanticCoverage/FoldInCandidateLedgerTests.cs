@@ -45,10 +45,10 @@ public sealed class FoldInCandidateLedgerTests
                 + $"surfacePresentElsewhere={surfacePresentElsewhere}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(81));
+        Assert.That(rows, Has.Count.EqualTo(83));
         Assert.That(interfaceEdgeCaseOnly, Is.EqualTo(1));
         Assert.That(interfaceNeverWitnessed, Is.EqualTo(25));
-        Assert.That(surfaceEdgeCaseOnly, Is.EqualTo(47));
+        Assert.That(surfaceEdgeCaseOnly, Is.EqualTo(49));
         Assert.That(surfacePresentElsewhere, Is.EqualTo(8));
     }
 

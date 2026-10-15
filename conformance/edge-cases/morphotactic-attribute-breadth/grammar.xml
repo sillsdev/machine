@@ -47,6 +47,8 @@
     <Name>MorphotacticAttributeBreadth</Name>
     <PartsOfSpeech>
       <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+      <!-- posP keeps Second's material off kul: a later final template must not complete nonFinalTemplate. -->
+      <PartOfSpeech id="posP"><Name>p</Name></PartOfSpeech>
     </PartsOfSpeech>
     <MorphologicalPhonologicalRuleFeatures>
       <MorphologicalPhonologicalRuleFeature id="mprA">A</MorphologicalPhonologicalRuleFeature>
@@ -435,7 +437,7 @@
       <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" morphologicalRules="mrPO">
         <Name>Second</Name>
         <MorphologicalRuleDefinitions>
-          <MorphologicalRule id="mrPogAffix" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+          <MorphologicalRule id="mrPogAffix" requiredPartsOfSpeech="posP" outputPartOfSpeech="posP">
             <Name>pogAffix</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subPogAffix">
@@ -448,7 +450,7 @@
           </MorphologicalRule>
           <!-- partial="true": never a member of any Slot, so it stays IsTemplateRule=false and this
                is the rule the mutation actually exercises. -->
-          <MorphologicalRule id="mrPO" partial="true" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+          <MorphologicalRule id="mrPO" partial="true" requiredPartsOfSpeech="posP" outputPartOfSpeech="posP">
             <Name>afterFinal</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subPO">
@@ -461,13 +463,13 @@
           </MorphologicalRule>
         </MorphologicalRuleDefinitions>
         <AffixTemplates>
-          <AffixTemplate requiredPartsOfSpeech="posN">
+          <AffixTemplate requiredPartsOfSpeech="posP">
             <Name>pogTemplate</Name>
             <Slot optional="true" morphologicalRules="mrPogAffix"><Name>pogSlot</Name></Slot>
           </AffixTemplate>
         </AffixTemplates>
         <LexicalEntries>
-          <LexicalEntry id="ePog" partOfSpeech="posN">
+          <LexicalEntry id="ePog" partOfSpeech="posP">
             <Allomorphs>
               <Allomorph id="aPog"><PhoneticShape>pog</PhoneticShape></Allomorph>
             </Allomorphs>
