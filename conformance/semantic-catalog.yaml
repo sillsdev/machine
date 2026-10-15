@@ -646,6 +646,8 @@ surfaceMappings:
     feature: schema/attribute-default
   - surface: "dtd:attribute-default/MorphologicalRule/isActive/default/yes"
     feature: schema/attribute-default
+  - surface: "dtd:attribute-default/MorphologicalRule/isCliticRule/implied"
+    feature: schema/attribute-default
   - surface: "dtd:attribute-default/MorphologicalRule/multipleApplication/default/1"
     feature: schema/attribute-default
   - surface: "dtd:attribute-default/MorphologicalRule/outputObligatoryFeatures/implied"
@@ -715,6 +717,8 @@ surfaceMappings:
   - surface: "dtd:attribute-default/RealizationalRule/id/required"
     feature: schema/attribute-default
   - surface: "dtd:attribute-default/RealizationalRule/isActive/default/yes"
+    feature: schema/attribute-default
+  - surface: "dtd:attribute-default/RealizationalRule/isCliticRule/implied"
     feature: schema/attribute-default
   - surface: "dtd:attribute-default/Segment/id/implied"
     feature: schema/attribute-default
@@ -944,6 +948,8 @@ surfaceMappings:
     feature: schema/attribute-type
   - surface: "dtd:attribute-type/MorphologicalRule/isActive/enumeration"
     feature: schema/attribute-type
+  - surface: "dtd:attribute-type/MorphologicalRule/isCliticRule/enumeration"
+    feature: schema/attribute-type
   - surface: "dtd:attribute-type/MorphologicalRule/multipleApplication/enumeration"
     feature: schema/attribute-type
   - surface: "dtd:attribute-type/MorphologicalRule/outputObligatoryFeatures/IDREFS"
@@ -1013,6 +1019,8 @@ surfaceMappings:
   - surface: "dtd:attribute-type/RealizationalRule/id/ID"
     feature: schema/attribute-type
   - surface: "dtd:attribute-type/RealizationalRule/isActive/enumeration"
+    feature: schema/attribute-type
+  - surface: "dtd:attribute-type/RealizationalRule/isCliticRule/enumeration"
     feature: schema/attribute-type
   - surface: "dtd:attribute-type/Segment/id/ID"
     feature: schema/attribute-type
@@ -1242,6 +1250,8 @@ surfaceMappings:
     feature: schema/attribute
   - surface: "dtd:attribute/MorphologicalRule/isActive"
     feature: schema/attribute
+  - surface: "dtd:attribute/MorphologicalRule/isCliticRule"
+    feature: schema/attribute
   - surface: "dtd:attribute/MorphologicalRule/multipleApplication"
     feature: schema/attribute
   - surface: "dtd:attribute/MorphologicalRule/outputObligatoryFeatures"
@@ -1311,6 +1321,8 @@ surfaceMappings:
   - surface: "dtd:attribute/RealizationalRule/id"
     feature: schema/attribute
   - surface: "dtd:attribute/RealizationalRule/isActive"
+    feature: schema/attribute
+  - surface: "dtd:attribute/RealizationalRule/isCliticRule"
     feature: schema/attribute
   - surface: "dtd:attribute/Segment/id"
     feature: schema/attribute
@@ -2078,6 +2090,10 @@ surfaceMappings:
     feature: grammar/MorphologicalRule
   - surface: "dtd:enum/MorphologicalRule/isActive/yes"
     feature: grammar/MorphologicalRule
+  - surface: "dtd:enum/MorphologicalRule/isCliticRule/false"
+    feature: grammar/MorphologicalRule
+  - surface: "dtd:enum/MorphologicalRule/isCliticRule/true"
+    feature: grammar/MorphologicalRule
   - surface: "dtd:enum/MorphologicalRule/multipleApplication/0"
     feature: grammar/MorphologicalRule
   - surface: "dtd:enum/MorphologicalRule/multipleApplication/1"
@@ -2143,6 +2159,10 @@ surfaceMappings:
   - surface: "dtd:enum/RealizationalRule/isActive/no"
     feature: grammar/RealizationalRule
   - surface: "dtd:enum/RealizationalRule/isActive/yes"
+    feature: grammar/RealizationalRule
+  - surface: "dtd:enum/RealizationalRule/isCliticRule/false"
+    feature: grammar/RealizationalRule
+  - surface: "dtd:enum/RealizationalRule/isCliticRule/true"
     feature: grammar/RealizationalRule
   - surface: "dtd:enum/SegmentDefinition/isActive/no"
     feature: grammar/SegmentDefinition

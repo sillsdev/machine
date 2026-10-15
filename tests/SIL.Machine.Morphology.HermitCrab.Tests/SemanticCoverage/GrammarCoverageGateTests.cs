@@ -151,8 +151,8 @@ public sealed class GrammarCoverageGateTests
     }
 
     /// <summary>Ratchet floors. Raise them when coverage improves; never lower them silently.</summary>
-    private const int ObservableSurfaces = 264;
-    private const int GeneratedSurfaces = 1059;
+    private const int ObservableSurfaces = 268;
+    private const int GeneratedSurfaces = 1069;
 
     private const int TraceFloor = 68;
 

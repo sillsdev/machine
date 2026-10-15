@@ -188,6 +188,7 @@ words:
     note: >-
       Negative control for AffixTemplate@final="false". mrNF is reachable only through
       nonFinalTemplate's own slot, and that template's output cannot be a complete word on its own.
+      No later stratum's final template applies to kul (pog's material is posP), so nothing completes it.
     expect_fail: true
     blocked_by: [mrNF]
     neutralizes:
