@@ -128,6 +128,7 @@ edge-cases/boundary-mid-in-narrowing-lhs-strrep	Interface	Stratum.morphologicalR
 edge-cases/boundary-mid-in-narrowing-lhs-strrep	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/boundary-mid-in-narrowing-lhs-strrep	Construct	Boundary markers (CharacterDefinitionTable)	claimed-confirmed	1 claim(s)
 edge-cases/boundary-mid-in-narrowing-lhs-strrep	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
+edge-cases/chained-output-feature-override-loss	Surface	dtd:element/HeadFeatures	required-by-dtd	RequiredByDtd
 edge-cases/chained-output-feature-override-loss	Surface	dtd:element/OutputHeadFeatures	witnessed	Evidenced
 edge-cases/chained-output-feature-override-loss	Surface	dtd:element/RequiredHeadFeatures	witnessed	Evidenced
 edge-cases/chained-output-feature-override-loss	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
@@ -623,7 +624,6 @@ edge-cases/stem-name-restricted-root-allomorph	Interface	StemName.partsOfSpeech	
 edge-cases/stem-name-restricted-root-allomorph	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/stem-name-restricted-root-allomorph	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/stem-name-restricted-root-allomorph	Construct	Stem names	claimed-unmapped	6 claim(s)
-edge-cases/strrep-identity	Surface	dtd:element/Gloss	witnessed	Evidenced
 edge-cases/strrep-identity	Surface	dtd:element/Segments	witnessed	Evidenced
 edge-cases/strrep-identity	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/strrep-identity	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
@@ -729,7 +729,6 @@ languages/fusional-realizational-morphology	Construct	MPR features/groups	claime
 languages/fusional-realizational-morphology	Construct	MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext	claimed-confirmed	1 claim(s)
 languages/fusional-realizational-morphology	Construct	RealizationalAffixProcessRule	claimed-unmapped	7 claim(s)
 languages/fusional-realizational-morphology	Construct	Stem names	claimed-unmapped	12 claim(s)
-languages/metathesis-phase-isolation	Surface	dtd:element/HeadFeatures	witnessed	Evidenced
 languages/metathesis-phase-isolation	Surface	dtd:enum/MorphologicalOutput/redupMorphType/prefix	witnessed	Evidenced
 languages/metathesis-phase-isolation	Interface	BoundaryMarker.boundary	required-by-dtd	RequiredByDtd
 languages/metathesis-phase-isolation	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
