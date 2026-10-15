@@ -80,6 +80,11 @@ namespace SIL.Machine.FeatureModel
             return Not ? !_values.Overlaps(strings) : _values.Overlaps(strings);
         }
 
+        public bool IsSupersetOf(StringFeatureValue other, bool notOther = false)
+        {
+            return IsSupersetOf(false, other, notOther);
+        }
+
         protected override bool IsSupersetOf(bool not, SimpleFeatureValue other, bool notOther)
         {
             if (!(other is StringFeatureValue otherSfv))
