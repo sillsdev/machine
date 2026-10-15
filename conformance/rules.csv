@@ -15,6 +15,13 @@ BoundaryMidInNarrowingLhsStrrep,prPostNasal,kanmo
 ChainedOutputFeatureOverrideLoss,mrInner,zudi;zudiua
 ChainedOutputFeatureOverrideLoss,mrOuter,zudu;zudua;zudiua
 ChainedOutputFeatureOverrideLoss,mrOutermost,zudua;!zudia;zudiua
+CliticRuleDesignation,mrDefaultClitic,sagdz;sagdsz
+CliticRuleDesignation,mrEnc,sagds;sagdsz
+CliticRuleDesignation,mrNf,kolpu;kolpuli
+CliticRuleDesignation,mrNotClitic,!sagdt
+CliticRuleDesignation,mrPast,sagd;sagds;sagdz;sagdsz
+CliticRuleDesignation,mrPl,kolpuli;!kolli
+CliticRuleDesignation,mrPlain,!sagdk
 CompoundingBreadth,crDecoy,!kaptu
 CompoundingBreadth,crJoin,katu;!katumi
 CompoundingBreadth,crNever,!kamtu

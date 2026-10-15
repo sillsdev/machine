@@ -20,6 +20,14 @@ ChainedOutputFeatureOverrideLoss,zudu,ZUD+OUTER|zudu,Syntactic feature agreement
 ChainedOutputFeatureOverrideLoss,zudua,ZUD+OUTER+OUTERMOST|zudua,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 ChainedOutputFeatureOverrideLoss,zudia,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 ChainedOutputFeatureOverrideLoss,zudiua,ZUD+INNER+OUTER+OUTERMOST|zudiua,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+CliticRuleDesignation,sagd,SAG+PAST|sagd,Affix template slots (obligatory/disjunctive/ordering)
+CliticRuleDesignation,sagds,SAG+PAST+ENC|sagds,Clitic rules (isCliticRule / Clitics stratum) after a final template
+CliticRuleDesignation,sagdk,,Clitic rules (isCliticRule / Clitics stratum) after a final template
+CliticRuleDesignation,sagdt,,Clitic rules (isCliticRule / Clitics stratum) after a final template
+CliticRuleDesignation,sagdz,SAG+PAST+DEFCL|sagdz,Clitic rules (isCliticRule / Clitics stratum) after a final template
+CliticRuleDesignation,sagdsz,SAG+PAST+ENC+DEFCL|sagdsz,Clitic rules (isCliticRule / Clitics stratum) after a final template
+CliticRuleDesignation,kolpu,KOL+NF|kolpu,Affix template slots (obligatory/disjunctive/ordering)
+CliticRuleDesignation,kolpuli,KOL+NF+PL|kolpuli,Affix template slots (obligatory/disjunctive/ordering)
 CompoundingBreadth,ka,KA|ka,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,tu,TU|tu,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,katu,KA+TU|katu,CompoundingRule

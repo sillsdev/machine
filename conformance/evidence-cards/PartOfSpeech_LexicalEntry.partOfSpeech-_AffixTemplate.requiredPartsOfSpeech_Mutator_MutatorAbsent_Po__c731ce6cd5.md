@@ -30,19 +30,19 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 ### Machine witness (`conformance/interface-witness.tsv`)
 
 - Writer (`LexicalEntry.partOfSpeech` in `edge-cases/morphotactic-attribute-breadth`): verdict=Unobservable, mutation="removed partOfSpeech from 4 <LexicalEntry> element(s)"
-- Reader (`AffixTemplate.requiredPartsOfSpeech` in `edge-cases/morphotactic-attribute-breadth`): verdict=Unobservable, mutation="removed requiredPartsOfSpeech from 3 <AffixTemplate> element(s)"
+- Reader (`AffixTemplate.requiredPartsOfSpeech` in `edge-cases/morphotactic-attribute-breadth`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 3 <AffixTemplate> element(s)", example: 'kulpu': ok::- -> ok::KUL+NF|kulpu
 
 ## Grammar citations
 
 ### `edge-cases/morphotactic-attribute-breadth/grammar.xml`
 
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:405` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:415` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:422` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:470` = "posN"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:384` = "posN"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:399` = "posN"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:464` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:407` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:417` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:424` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:472` = "posP"
+- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:386` = "posN"
+- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:401` = "posN"
+- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:466` = "posP"
 
 ## Author's prose
 
