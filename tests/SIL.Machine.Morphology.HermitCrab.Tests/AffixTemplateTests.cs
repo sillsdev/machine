@@ -644,6 +644,31 @@ public class AffixTemplateTests : HermitCrabTestBase
         morpher.AlwaysEnforceFinalTemplates = alwaysEnforceFinalTemplates;
         AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
         AssertMorphsEqual(morpher.ParseWord("sagds"));
+
+        // Test stacked clitics.
+        var clitic2 = new AffixProcessRule
+        {
+            Name = "clitic2",
+            Gloss = "T",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        clitic2.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "t") },
+            }
+        );
+        clitics.MorphologicalRules.Add(clitic2);
+        clitic.IsCliticRule = true;
+        morpher = new Morpher(TraceManager, Language);
+        morpher.AlwaysEnforceFinalTemplates = alwaysEnforceFinalTemplates;
+        AssertMorphsEqual(morpher.ParseWord("sagdst"), "32 PAST PL T");
+
+        clitic.IsCliticRule = false;
+        morpher = new Morpher(TraceManager, Language);
+        morpher.AlwaysEnforceFinalTemplates = alwaysEnforceFinalTemplates;
+        AssertMorphsEqual(morpher.ParseWord("sagdst"));
     }
 
     [TestCase(true, TestName = "SameRuleUsedInMultipleTemplates_AffixHasRequiredFeatures")]
