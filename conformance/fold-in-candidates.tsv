@@ -10,6 +10,7 @@
 #                                    nowhere -- not a fold-in target, a named gap
 layer	obligation	category	detail
 Surface	dtd:element/AssignedFootFeatures	PresentInLanguageGrammarAlready	recorded best evidence: edge-cases/compounding-breadth; also structurally present in a languages/* grammar
+Surface	dtd:element/BoundaryMarker	PresentInLanguageGrammarAlready	recorded best evidence: edge-cases/boundary-first-in-narrowing-lhs; also structurally present in a languages/* grammar
 Surface	dtd:element/ExcludedEnvironments	EdgeCaseOnly	recorded best evidence: edge-cases/feature-system-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:element/HeadRequiredFootFeatures	EdgeCaseOnly	recorded best evidence: edge-cases/compounding-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:element/HeadRequiredHeadFeatures	EdgeCaseOnly	recorded best evidence: edge-cases/compounding-breadth; no languages/* grammar contains this surface at all
@@ -52,6 +53,7 @@ Surface	dtd:enum/MorphologicalRule/multipleApplication/0	EdgeCaseOnly	recorded b
 Surface	dtd:enum/MorphologicalRule/multipleApplication/2	EdgeCaseOnly	recorded best evidence: edge-cases/morphotactic-attribute-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/MorphologicalRule/partial/true	EdgeCaseOnly	recorded best evidence: edge-cases/final-template-partial-discriminators; no languages/* grammar contains this surface at all
 Surface	dtd:enum/MorphologicalSubrule/isActive/yes	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
+Surface	dtd:enum/PhoneticTemplate/finalBoundaryCondition/true	PresentInLanguageGrammarAlready	recorded best evidence: edge-cases/deletion-reinserted-feature-unapply; also structurally present in a languages/* grammar
 Surface	dtd:enum/PhonologicalRule/multipleApplicationOrder/rightToLeftIterative	EdgeCaseOnly	recorded best evidence: edge-cases/right-to-left-anchor-environment; no languages/* grammar contains this surface at all
 Surface	dtd:enum/PhonologicalSubrule/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/feature-system-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/SegmentDefinition/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
