@@ -29,7 +29,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             {
                 _rules.Add(
                     new MultiplePatternRule<Word, ShapeNode>(
-                        new AnalysisCompoundingSubruleRuleSpec(sr),
+                        new AnalysisCompoundingSubruleRuleSpec(sr, morpher),
                         new MatcherSettings<ShapeNode>
                         {
                             Filter = ann => ann.Type() == HCFeatureSystem.Segment,
