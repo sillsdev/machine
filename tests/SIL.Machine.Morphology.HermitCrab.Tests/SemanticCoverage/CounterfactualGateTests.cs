@@ -152,6 +152,47 @@ public sealed class CounterfactualGateTests
     }
 
     [Test]
+    [NonParallelizable]
+    public void AMutantThatRunsOutOfMemoryIsATimeoutNotEvidence()
+    {
+        // xxxxxxk has 924 analyses, enough to exhaust a 64 MB heap; the probe grammar fits in less than
+        // the runtime needs to start at all.
+        string grammar = File.ReadAllText(
+            Path.Combine(RepositoryRoot(), "conformance", "edge-cases", "deep-optional-affix-nesting", "grammar.xml")
+        );
+        File.WriteAllText(
+            Path.Combine(_fixtureDirectory, "grammar.xml"),
+            grammar.Replace("<MorphemeId>K</MorphemeId>", "<MorphemeId>K</MorphemeId><Gloss>k</Gloss>")
+        );
+        var words = new WordsYaml { Language = "DeepOptionalAffixNesting" };
+        words.Words.Add(new WordEntry { Word = "xxxxxxk" });
+        var fixture = new Fixture("probe/fixture", _fixtureDirectory, words);
+        IReadOnlyList<string> baseline = CounterfactualGate.ComputeBaseline(fixture);
+
+        // The child inherits this; the test host, already running, does not.
+        string? previous = Environment.GetEnvironmentVariable("DOTNET_GCHeapHardLimit");
+        Environment.SetEnvironmentVariable("DOTNET_GCHeapHardLimit", "0x4000000");
+        CounterfactualResult result;
+        try
+        {
+            result = CounterfactualGate.Evaluate(
+                fixture,
+                "dtd:element/Gloss",
+                Inventory(),
+                baseline,
+                _scratchDirectory
+            );
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("DOTNET_GCHeapHardLimit", previous);
+        }
+
+        Assert.That(result.Verdict, Is.EqualTo(CounterfactualVerdict.Timeout), result.Delta);
+        Assert.That(result.Delta, Does.Contain("GC heap limit"));
+    }
+
+    [Test]
     public void DeletingTheRootLanguageElementIsRequiredByDtd()
     {
         Fixture fixture = ProbeFixture();
