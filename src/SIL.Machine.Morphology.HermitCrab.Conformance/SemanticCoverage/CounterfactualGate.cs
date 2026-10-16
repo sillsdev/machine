@@ -46,7 +46,9 @@ public enum CounterfactualVerdict
     /// </summary>
     RequiredByDtd,
 
-    /// <summary>The mutant did not finish in time. A timing race is not a semantic delta.</summary>
+    /// <summary>
+    /// The mutant did not finish within its time or memory bound. A resource limit is not a semantic delta.
+    /// </summary>
     Timeout,
 
     /// <summary>Neutralizing the surface changed nothing. Not evidence; fails unless a proof applies.</summary>
@@ -96,10 +98,10 @@ public static class CounterfactualGate
             onTimed?.Invoke(word, elapsedMs);
             return $"{status}::{signature}";
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OutOfMemoryException)
         {
-            // A mutated grammar may drive the engine into a state the original never reaches. That is a
-            // difference in outcome, so it counts as a delta rather than aborting the run.
+            // A mutated grammar may reach a state the original never does: a delta, not an abort.
+            // Running out of memory depends on the heap limit, not the grammar, so it is neither.
             return $"threw::{ex.GetType().Name}";
         }
     }
@@ -116,6 +118,12 @@ public static class CounterfactualGate
     }
 
     internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(180);
+
+    /// <summary>The exit code of a mutant child that ran out of memory under the GC heap limit.</summary>
+    internal const int MemoryLimitExitCode = 3;
+
+    /// <summary>A mutant child's GC heap limit, 2 GB, unless DOTNET_GCHeapHardLimit is already set.</summary>
+    internal const string MutantHeapHardLimit = "0x80000000";
 
     private const int TimeoutConfirmationAttempts = 1;
 
@@ -206,6 +214,9 @@ public static class CounterfactualGate
             // Keep the whole child pinned alongside ConformanceMorpherFactory's sequential engine so
             // any parallel work outside Morpher cannot make a mutant outcome race-dependent.
             start.EnvironmentVariables["DOTNET_PROCESSOR_COUNT"] = "1";
+            // A mutant's heap otherwise grows to several GB before collecting. An inherited limit wins.
+            if (!start.EnvironmentVariables.ContainsKey("DOTNET_GCHeapHardLimit"))
+                start.EnvironmentVariables["DOTNET_GCHeapHardLimit"] = MutantHeapHardLimit;
 
             using System.Diagnostics.Process child =
                 System.Diagnostics.Process.Start(start) ?? throw new InvalidOperationException("could not start child");
@@ -226,6 +237,8 @@ public static class CounterfactualGate
 
             string output = outputTask.GetAwaiter().GetResult();
             string error = ExtractWordTimings(errorTask.GetAwaiter().GetResult(), onTimed);
+            if (child.ExitCode == MemoryLimitExitCode)
+                throw new MemoryLimitExceededException(error.Trim());
             if (child.ExitCode != 0)
                 throw new InvalidOperationException(error.Trim());
             return output
@@ -692,15 +705,17 @@ public static class CounterfactualGate
                 mutation.Mutated.Save(mutatedPath);
                 mutated = OutcomesWithTimeout(mutatedPath, words, timeout, onWordTimed);
             }
-            catch (TimeoutException)
+            catch (TimeoutException ex)
             {
-                // Not finishing in a wall-clock bound is timing-dependent, not a semantic delta.
+                // Not finishing in a wall-clock or memory bound is resource-dependent, not a semantic delta.
                 return new CounterfactualResult(
                     surfaceId,
                     fixture.Id,
                     CounterfactualVerdict.Timeout,
                     mutation.Detail,
-                    $"the mutant did not terminate within {timeout.TotalSeconds:0}s"
+                    ex is MemoryLimitExceededException
+                        ? $"the mutant exceeded the GC heap limit: {Summarize(ex.Message)}"
+                        : $"the mutant did not terminate within {timeout.TotalSeconds:0}s"
                 );
             }
             catch (Exception ex)
