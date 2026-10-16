@@ -140,7 +140,9 @@ internal class ParseCommand : ConsoleCommand
             case TraceType.StratumAnalysisOutput:
             case TraceType.TemplateAnalysisInput:
             case TraceType.TemplateAnalysisOutput:
+            case TraceType.TemplateSlotAnalysis:
             case TraceType.MorphologicalRuleAnalysis:
+            case TraceType.CompoundingRuleAnalysis:
             case TraceType.PhonologicalRuleAnalysis:
                 return true;
 
@@ -152,7 +154,9 @@ internal class ParseCommand : ConsoleCommand
             case TraceType.StratumSynthesisOutput:
             case TraceType.TemplateSynthesisInput:
             case TraceType.TemplateSynthesisOutput:
+            case TraceType.TemplateSlotSynthesis:
             case TraceType.MorphologicalRuleSynthesis:
+            case TraceType.CompoundingRuleSynthesis:
             case TraceType.PhonologicalRuleSynthesis:
                 return false;
         }
@@ -203,6 +207,14 @@ internal class ParseCommand : ConsoleCommand
                 return "Template Synthesis In";
             case TraceType.TemplateSynthesisOutput:
                 return "Template Synthesis Out";
+            case TraceType.TemplateSlotAnalysis:
+                return "Template Slot Analysis";
+            case TraceType.TemplateSlotSynthesis:
+                return "Template Slot Synthesis";
+            case TraceType.CompoundingRuleAnalysis:
+                return "Compounding Rule Analysis";
+            case TraceType.CompoundingRuleSynthesis:
+                return "Compounding Rule Synthesis";
             case TraceType.MorphologicalRuleAnalysis:
                 return "Morphological Rule Analysis";
             case TraceType.MorphologicalRuleSynthesis:

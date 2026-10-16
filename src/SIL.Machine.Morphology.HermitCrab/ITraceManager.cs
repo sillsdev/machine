@@ -26,6 +26,10 @@
         NonPartialRuleProhibitedAfterFinalTemplate,
         NonPartialRuleRequiredAfterNonFinalTemplate,
         MaxApplicationCount,
+        OutputSyntacticFeatureStruct,
+        RealizationalFeatureStruct,
+        MaxStemCount,
+        NonHeadLexicalLookup,
     }
 
     public interface ITraceManager

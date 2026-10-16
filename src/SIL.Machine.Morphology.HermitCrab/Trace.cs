@@ -113,6 +113,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// Parse failed trace
         /// </summary>
         Failed,
+        TemplateSlotAnalysis,
+        TemplateSlotSynthesis,
     }
 
     /// <summary>
@@ -152,5 +154,26 @@ namespace SIL.Machine.Morphology.HermitCrab
         public Word Output { get; internal set; }
 
         public FailureReason FailureReason { get; internal set; }
+
+        public object FailureObject { get; internal set; }
+
+        public Allomorph Allomorph { get; internal set; }
+
+        public LexEntry BlockingEntry { get; internal set; }
+
+        public PartialParseCause? PartialParseCause { get; internal set; }
+
+        public int? SlotIndex { get; internal set; }
+
+        public TemplateSlotOutcome? SlotOutcome { get; internal set; }
+
+        public IMorphologicalRule SlotRule { get; internal set; }
+
+        /// <summary>
+        /// Null until the lookup is fully enumerated; counts yielded Word candidates, before surface validation.
+        /// </summary>
+        public int? LexicalCandidateCount { get; internal set; }
+
+        public bool? IsLexicalGuess { get; internal set; }
     }
 }
