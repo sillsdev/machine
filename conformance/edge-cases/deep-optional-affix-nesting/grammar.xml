@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>PathologicalDeepOptionalAffixNesting</Name>
+    <!--
+      Pathological fixture (docs/conformance-framework-plan.md section 4.5): not a feature-
+      correctness pin, but a complexity-driver probe. 12 independent, all-optional affix-template
+      prefix slots, each inserting the SAME literal character "x". A surface word with k x's before
+      the root therefore has C(12,k) DISTINCT valid analyses (one per subset of slots that could
+      have fired: SynthesisAffixTemplateRule.ApplySlots explores the full 2^12 slot-subset space
+      since every slot is optional and each individual rule always matches), even though every
+      analysis produces byte-identical surface text. This is deep-optional-affix-nesting
+      combinatorics, the complexity driver docs/conformance-framework-plan.md section 7 names
+      alongside Simultaneous rewrite overlap / compounding combinatorics / disjunctive-slot
+      explosion / template-slot backtracking. manifest.json carries a wall-clock budget (no
+      step-count mechanism exists on this branch: BatchCommand's rule-stats option was stripped, see
+      docs/conformance-framework-implementation-notes.md) rather than treating this as a
+      correctness-only fixture; expected.tsv is still oracle-generated and exact; the assertion is
+      "produces the mathematically correct (large) analysis set AND stays within budget", not just
+      "doesn't crash".
+    -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="t1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cX"><Representations><Representation>x</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrP1" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>p1</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subP1">
+                <MorphologicalInput><PhoneticSequence id="stemP1"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>x</PhoneticShape></InsertSegments><CopyFromInput index="stemP1" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>P1</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrP2" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>p2</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subP2">
+                <MorphologicalInput><PhoneticSequence id="stemP2"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>x</PhoneticShape></InsertSegments><CopyFromInput index="stemP2" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>P2</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrP3" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>p3</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subP3">
+                <MorphologicalInput><PhoneticSequence id="stemP3"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>x</PhoneticShape></InsertSegments><CopyFromInput index="stemP3" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>P3</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrP4" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>p4</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subP4">
+                <MorphologicalInput><PhoneticSequence id="stemP4"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>x</PhoneticShape></InsertSegments><CopyFromInput index="stemP4" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>P4</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrP5" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>p5</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subP5">
+                <MorphologicalInput><PhoneticSequence id="stemP5"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>x</PhoneticShape></InsertSegments><CopyFromInput index="stemP5" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>P5</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrP6" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>p6</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subP6">
+                <MorphologicalInput><PhoneticSequence id="stemP6"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>x</PhoneticShape></InsertSegments><CopyFromInput index="stemP6" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>P6</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrP7" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>p7</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subP7">
+                <MorphologicalInput><PhoneticSequence id="stemP7"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>x</PhoneticShape></InsertSegments><CopyFromInput index="stemP7" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>P7</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrP8" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>p8</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subP8">
+                <MorphologicalInput><PhoneticSequence id="stemP8"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>x</PhoneticShape></InsertSegments><CopyFromInput index="stemP8" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>P8</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrP9" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>p9</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subP9">
+                <MorphologicalInput><PhoneticSequence id="stemP9"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>x</PhoneticShape></InsertSegments><CopyFromInput index="stemP9" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>P9</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrP10" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>p10</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subP10">
+                <MorphologicalInput><PhoneticSequence id="stemP10"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>x</PhoneticShape></InsertSegments><CopyFromInput index="stemP10" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>P10</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrP11" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>p11</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subP11">
+                <MorphologicalInput><PhoneticSequence id="stemP11"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>x</PhoneticShape></InsertSegments><CopyFromInput index="stemP11" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>P11</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrP12" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>p12</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subP12">
+                <MorphologicalInput><PhoneticSequence id="stemP12"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>x</PhoneticShape></InsertSegments><CopyFromInput index="stemP12" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>P12</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posV">
+            <Name>deepOptionalTemplate</Name>
+            <Slot optional="true" morphologicalRules="mrP1">
+              <Name>slot1</Name>
+            </Slot>
+            <Slot optional="true" morphologicalRules="mrP2">
+              <Name>slot2</Name>
+            </Slot>
+            <Slot optional="true" morphologicalRules="mrP3">
+              <Name>slot3</Name>
+            </Slot>
+            <Slot optional="true" morphologicalRules="mrP4">
+              <Name>slot4</Name>
+            </Slot>
+            <Slot optional="true" morphologicalRules="mrP5">
+              <Name>slot5</Name>
+            </Slot>
+            <Slot optional="true" morphologicalRules="mrP6">
+              <Name>slot6</Name>
+            </Slot>
+            <Slot optional="true" morphologicalRules="mrP7">
+              <Name>slot7</Name>
+            </Slot>
+            <Slot optional="true" morphologicalRules="mrP8">
+              <Name>slot8</Name>
+            </Slot>
+            <Slot optional="true" morphologicalRules="mrP9">
+              <Name>slot9</Name>
+            </Slot>
+            <Slot optional="true" morphologicalRules="mrP10">
+              <Name>slot10</Name>
+            </Slot>
+            <Slot optional="true" morphologicalRules="mrP11">
+              <Name>slot11</Name>
+            </Slot>
+            <Slot optional="true" morphologicalRules="mrP12">
+              <Name>slot12</Name>
+            </Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eK" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aK"><PhoneticShape>k</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>K</MorphemeId>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

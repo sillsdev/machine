@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>FinalTemplatePartialDiscriminators</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posX"><Name>x</Name></PartOfSpeech>
+      <PartOfSpeech id="posY"><Name>y</Name></PartOfSpeech>
+      <PartOfSpeech id="posZ"><Name>z</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="sA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sF"><Representations><Representation>f</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sG"><Representations><Representation>g</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sL"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sV"><Representations><Representation>v</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <SegmentNaturalClass id="ncOnlyK"><Name>OnlyK</Name><Segment segment="sK" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered"
+               morphologicalRules="mrGate1 mrGate2Partial mrGate2Complete mrGate3Partial"
+               isActive="yes">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrFinTagA" requiredPartsOfSpeech="posX" outputPartOfSpeech="posX">
+            <Name>finTagA</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subFinTagA">
+                <MorphologicalInput><PhoneticSequence id="stemFinTagA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemFinTagA" /><InsertSegments><PhoneticShape>fa</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>FINTAGA</MorphemeId>
+            <Gloss>fintaga</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrNonFinTagA" requiredPartsOfSpeech="posX" outputPartOfSpeech="posX">
+            <Name>nonFinTagA</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subNonFinTagA">
+                <MorphologicalInput><PhoneticSequence id="stemNonFinTagA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemNonFinTagA" /><InsertSegments><PhoneticShape>na</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>NONFINTAGA</MorphemeId>
+            <Gloss>nonfintaga</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrGate1" requiredPartsOfSpeech="posX" outputPartOfSpeech="posX">
+            <Name>gate1</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subGate1">
+                <MorphologicalInput><PhoneticSequence id="stemGate1"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemGate1" /><InsertSegments><PhoneticShape>ga</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>GATE1</MorphemeId>
+            <Gloss>gate1</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrFinTagB" requiredPartsOfSpeech="posY" outputPartOfSpeech="posY">
+            <Name>finTagB</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subFinTagB">
+                <MorphologicalInput><PhoneticSequence id="stemFinTagB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemFinTagB" /><InsertSegments><PhoneticShape>fb</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>FINTAGB</MorphemeId>
+            <Gloss>fintagb</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrNonFinTagB" requiredPartsOfSpeech="posY" outputPartOfSpeech="posY">
+            <Name>nonFinTagB</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subNonFinTagB">
+                <MorphologicalInput><PhoneticSequence id="stemNonFinTagB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemNonFinTagB" /><InsertSegments><PhoneticShape>nb</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>NONFINTAGB</MorphemeId>
+            <Gloss>nonfintagb</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrGate2Partial" partial="true" requiredPartsOfSpeech="posY" outputPartOfSpeech="posY">
+            <Name>gate2Partial</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subGate2Partial">
+                <MorphologicalInput><PhoneticSequence id="stemGate2Partial"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemGate2Partial" /><InsertSegments><PhoneticShape>vb</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>GATE2PARTIAL</MorphemeId>
+            <Gloss>gate2partial</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrGate2Complete" requiredPartsOfSpeech="posY" outputPartOfSpeech="posY">
+            <Name>gate2Complete</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subGate2Complete">
+                <MorphologicalInput><PhoneticSequence id="stemGate2Complete"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemGate2Complete" /><InsertSegments><PhoneticShape>tb</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>GATE2COMPLETE</MorphemeId>
+            <Gloss>gate2complete</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrGate3Partial" partial="true" requiredPartsOfSpeech="posZ" outputPartOfSpeech="posZ">
+            <Name>gate3Partial</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subGate3Partial">
+                <MorphologicalInput><PhoneticSequence id="stemGate3Partial"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemGate3Partial" /><InsertSegments><PhoneticShape>gi</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>GATE3PARTIAL</MorphemeId>
+            <Gloss>gate3partial</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrZTagSlot" requiredPartsOfSpeech="posZ" outputPartOfSpeech="posZ">
+            <Name>zTagSlot</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subZTagSlot">
+                <MorphologicalInput><PhoneticSequence id="stemZTagSlot"><OptionalSegmentSequence min="0" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence><SimpleContext naturalClass="ncOnlyK" /></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemZTagSlot" /><InsertSegments><PhoneticShape>kv</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>ZTAGSLOT</MorphemeId>
+            <Gloss>ztagslot</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posX" final="true">
+            <Name>finalTemplateA</Name>
+            <Slot morphologicalRules="mrFinTagA"><Name>finTagSlotA</Name></Slot>
+          </AffixTemplate>
+          <AffixTemplate requiredPartsOfSpeech="posX" final="false">
+            <Name>nonFinalTemplateA</Name>
+            <Slot morphologicalRules="mrNonFinTagA"><Name>nonFinTagSlotA</Name></Slot>
+          </AffixTemplate>
+          <AffixTemplate requiredPartsOfSpeech="posY" final="true">
+            <Name>finalTemplateB</Name>
+            <Slot morphologicalRules="mrFinTagB"><Name>finTagSlotB</Name></Slot>
+          </AffixTemplate>
+          <AffixTemplate requiredPartsOfSpeech="posY" final="false">
+            <Name>nonFinalTemplateB</Name>
+            <Slot morphologicalRules="mrNonFinTagB"><Name>nonFinTagSlotB</Name></Slot>
+          </AffixTemplate>
+          <AffixTemplate requiredPartsOfSpeech="posZ" final="true">
+            <Name>templateZ</Name>
+            <Slot morphologicalRules="mrZTagSlot"><Name>zTagSlot</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eDak" partOfSpeech="posX">
+            <Allomorphs>
+              <Allomorph id="aDak"><PhoneticShape>dak</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>DAK</MorphemeId>
+            <Gloss>dak</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="ePil" partOfSpeech="posY">
+            <Allomorphs>
+              <Allomorph id="aPil"><PhoneticShape>pil</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>PIL</MorphemeId>
+            <Gloss>pil</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eNib" partOfSpeech="posZ">
+            <Allomorphs>
+              <Allomorph id="aNib"><PhoneticShape>nib</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>NIB</MorphemeId>
+            <Gloss>nib</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

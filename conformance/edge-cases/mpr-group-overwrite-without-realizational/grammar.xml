@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>MprGroupOverwriteWithoutRealizational</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- requires: [] - pure morphotactics, zero PhonologicalRule/MetathesisRule elements, so no
+         PhonologicalFeatureSystem is needed either. Deliberately ZERO RealizationalRule anywhere in
+         this grammar (unlike languages/fusional-realizational-morphology and
+         languages/suffixing-extension-slot-ordering, the only two existing grammars with an Overwrite
+         MPR group, both of which ALSO carry a RealizationalRule elsewhere): CharacteristicKind::
+         RealizationalMorphology is CannotRepresent for EmissionStrategy::PlanComposed
+         (strategy_coverage.rs), so plan-composed is refused outright on either of those two grammars
+         before it ever reaches the MPR-group material at all. Keeping this grammar
+         RealizationalMorphology-free is the entire point: it is what lets plan-composed actually
+         compile and witness MprGroupOverwrite for the first time. -->
+    <MorphologicalPhonologicalRuleFeatures>
+      <MorphologicalPhonologicalRuleFeature id="mprA">A</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprB">B</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeatureGroup outputType="overwrite" features="mprA mprB"><Name>ThemeGroup</Name></MorphologicalPhonologicalRuleFeatureGroup>
+    </MorphologicalPhonologicalRuleFeatures>
+    <CharacterDefinitionTable id="t1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cd"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="co"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cf"><Representations><Representation>f</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cu"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cw"><Representations><Representation>w</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cq"><Representations><Representation>q</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <!-- morphologicalRuleOrder="linear" is required for the Overwrite drop to be observable at
+         all - see languages/fusional-realizational-morphology's own Strata comment for why: under
+         "unordered" every rule combination is tried independently, so a chain where mrThemeB
+         genuinely follows mrThemeA (and therefore overwrites mprA) is not distinguished from one
+         where it doesn't. -->
+    <Strata>
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="linear" morphologicalRules="mrThemeA mrThemeB mrEndC">
+        <Name>S</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrThemeA" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>themeA</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subThemeA">
+                <MorphologicalInput><PhoneticSequence id="stemA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprA"><InsertSegments><PhoneticShape>u</PhoneticShape></InsertSegments><CopyFromInput index="stemA" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>THEMEA</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrThemeB" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>themeB</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subThemeB">
+                <MorphologicalInput><PhoneticSequence id="stemB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprB"><InsertSegments><PhoneticShape>w</PhoneticShape></InsertSegments><CopyFromInput index="stemB" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>THEMEB</MorphemeId>
+          </MorphologicalRule>
+          <!-- Gated on mprA - succeeds only while mprA is still present in the word's accumulated
+               MPR output, i.e. before ThemeGroup's Overwrite semantics have dropped it. -->
+          <MorphologicalRule id="mrEndC" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>endC</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subEndC">
+                <MorphologicalInput requiredMPRFeatures="mprA"><PhoneticSequence id="stemC"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemC" /><InsertSegments><PhoneticShape>q</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>ENDC</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eDof" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aDof"><PhoneticShape>dof</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DOF</MorphemeId>
+            <Gloss>dof</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

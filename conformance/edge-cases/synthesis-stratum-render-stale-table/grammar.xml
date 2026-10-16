@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>SynthesisStratumRenderStaleTable</Name>
+    <!-- Synthetic construct-shaped mimic. Pins a founding-oracle (hc.dll) mechanism:
+         SynthesisStratumRule.Apply never reassigns a Word's own `.Stratum` property as it is carried
+         forward through later strata during synthesis (unlike AnalysisStratumRule.Apply, which DOES
+         assign `input.Stratum = _stratum` on every stratum entry - AnalysisStratumRule.cs, around
+         line 126). SignatureFormat.BuildSignature renders a parse's surface half against
+         `w.Stratum.CharacterDefinitionTable` (src/SIL.Machine.Morphology.HermitCrab.Tool/
+         SignatureFormat.cs, around line 56), and CharacterDefinitionTable.GetMatchingStrReps (via
+         Shape.ToRegexString, src/SIL.Machine.Morphology.HermitCrab/HermitCrabExtensions.cs, around
+         line 219) silently contributes NOTHING for any shape node whose feature values do not unify
+         with any character definition IN THAT TABLE. So a root entered on a non-final stratum, whose
+         material is later changed by an obligatory phonological rule belonging to a LATER stratum,
+         keeps rendering against its OWN (stale, entry) stratum's table all the way to the top - if
+         that table has no character definition for the changed value, the whole surface half renders
+         empty, even though the underlying analysis (which morpheme, which rule) is exactly right.
+
+         Structural shape: two CharacterDefinitionTables, one per Stratum (tRoot, first/non-final;
+         tFace, second/final). ROOTCROSS is entered on tRoot ("w", `z`=zA, `m`=mA) and is changed by
+         tFace's own obligatory "`z`: zA -> zB" rule to `z`=zB, `m`=mA - a feature combination tRoot
+         (whose only segment is "w", `z`=zA) has no character definition for at all, so rendering
+         against tRoot's table finds nothing. ROOTSAME is entered directly on tFace ("k", `z`=zB,
+         `m`=mB) and, since its `m` value differs from the rule's own natural classes, is never
+         touched by the rule at all - its entry stratum IS the surface stratum, so it renders
+         normally regardless. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>V</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featZ">
+        <Name>z</Name>
+        <Symbols>
+          <Symbol id="symZA">zA</Symbol>
+          <Symbol id="symZB">zB</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featM">
+        <Name>m</Name>
+        <Symbols>
+          <Symbol id="symMA">mA</Symbol>
+          <Symbol id="symMB">mB</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="tRoot">
+      <Name>Root</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cW">
+          <Representations><Representation>w</Representation></Representations>
+          <FeatureValue feature="featZ" symbolValues="symZA" />
+          <FeatureValue feature="featM" symbolValues="symMA" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <CharacterDefinitionTable id="tFace">
+      <Name>Face</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cI">
+          <Representations><Representation>i</Representation></Representations>
+          <FeatureValue feature="featZ" symbolValues="symZA" />
+          <FeatureValue feature="featM" symbolValues="symMA" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cJ">
+          <Representations><Representation>j</Representation></Representations>
+          <FeatureValue feature="featZ" symbolValues="symZB" />
+          <FeatureValue feature="featM" symbolValues="symMA" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cK">
+          <Representations><Representation>k</Representation></Representations>
+          <FeatureValue feature="featZ" symbolValues="symZB" />
+          <FeatureValue feature="featM" symbolValues="symMB" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <SegmentNaturalClass id="ncI"><Name>I</Name><Segment segment="cI" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncJ"><Name>J</Name><Segment segment="cJ" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prItoJ">
+        <Name>ItoJ</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncI" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncJ" /></PhoneticSequence></PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tRoot" morphologicalRuleOrder="unordered">
+        <Name>Root</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eRootCross" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aRootCross"><PhoneticShape>w</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOTCROSS</MorphemeId>
+            <Gloss>rootcross</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <Stratum characterDefinitionTable="tFace" morphologicalRuleOrder="unordered" phonologicalRules="prItoJ">
+        <Name>Face</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eRootSame" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aRootSame"><PhoneticShape>k</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOTSAME</MorphemeId>
+            <Gloss>rootsame</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
