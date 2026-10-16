@@ -198,11 +198,20 @@ internal class Program
             Console.OutputEncoding = new UTF8Encoding(false);
             // Per-word timing goes to stderr, prefixed and distinct from the outcome lines on stdout,
             // so a parent process can recover it without it ever contaminating a baseline diff.
-            IReadOnlyList<string> outcomes = SemanticCoverage.CounterfactualGate.EvaluateOneGrammar(
-                mutantGrammar,
-                mutantWords,
-                onTimed: (word, elapsedMs) => Console.Error.WriteLine($"TIME\t{word}\t{elapsedMs}")
-            );
+            IReadOnlyList<string> outcomes;
+            try
+            {
+                outcomes = SemanticCoverage.CounterfactualGate.EvaluateOneGrammar(
+                    mutantGrammar,
+                    mutantWords,
+                    onTimed: (word, elapsedMs) => Console.Error.WriteLine($"TIME\t{word}\t{elapsedMs}")
+                );
+            }
+            catch (OutOfMemoryException ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                return SemanticCoverage.CounterfactualGate.MemoryLimitExitCode;
+            }
             foreach (string outcome in outcomes)
                 Console.Out.WriteLine(outcome);
 
