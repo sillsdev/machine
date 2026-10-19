@@ -595,9 +595,15 @@ public class RewriteRuleTests : HermitCrabTestBase
         var merge = new RewriteRule
         {
             Name = "alphaMerge",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(alphaVoicedConsonant).Annotation(alphaVoicedConsonant).Value,
+            Lhs = Pattern<Word, ShapeNode>
+                .New()
+                .Annotation(alphaVoicedConsonant)
+                .Annotation(alphaVoicedConsonant)
+                .Value,
         };
-        merge.Subrules.Add(new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "p")).Value });
+        merge.Subrules.Add(
+            new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "p")).Value }
+        );
         Morphophonemic.PhonologicalRules.Add(merge);
 
         var morpher = new Morpher(TraceManager, Language);
