@@ -57,6 +57,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                     && targetPos < _targetCount
                     && constraint.Type() == HCFeatureSystem.Segment
                     && targetNode.Type() == HCFeatureSystem.Segment
+                    && !fs.HasVariables // This can be removed when Union is fixed.
+                    && !targetNode.Annotation.FeatureStruct.HasVariables
                 )
                 {
                     // Union fs into the existing node's feature structure.
