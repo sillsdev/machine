@@ -34,7 +34,7 @@ namespace SIL.Machine.FiniteState
             );
 
             var curResults = new List<FstResult<TData, TOffset>>();
-            var lattice = CreateFstLattice();
+            var lattice = !HasAcceptable(Fst) ? CreateFstLattice() : null;
 
             while (instStack.Count != 0)
             {
@@ -46,7 +46,7 @@ namespace SIL.Machine.FiniteState
                 {
                     if (CheckInputMatch(arc, inst.AnnotationIndex, inst.VariableBindings))
                     {
-                        int resultCount = curResults.Count;
+                        int resultCount = lattice != null ? curResults.Count : 0;
                         foreach (
                             DeterministicFsaTraversalInstance<TData, TOffset> ni in Advance(
                                 inst,
@@ -56,12 +56,12 @@ namespace SIL.Machine.FiniteState
                             )
                         )
                         {
-                            if (RecordedInstance(lattice, ni, origInst, arc))
+                            if (lattice != null && RecordedInstance(lattice, ni, origInst, arc))
                                 continue;
                             instStack.Push(ni);
                         }
 
-                        if (curResults.Count > resultCount)
+                        if (lattice != null && curResults.Count > resultCount)
                             RecordFinalArc(lattice, origInst, arc);
 
                         releaseInstance = false;
@@ -73,7 +73,10 @@ namespace SIL.Machine.FiniteState
                     ReleaseInstance(inst);
             }
 
-            curResults = ExtractResults(lattice, allMatches);
+            if (lattice != null)
+            {
+                curResults = ExtractResults(lattice, allMatches);
+            }
 
             CheckAcceptingStartState(initAnns, initRegisters, curResults);
 

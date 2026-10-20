@@ -471,6 +471,19 @@ namespace SIL.Machine.FiniteState
             _cachedInstances.Enqueue(inst);
         }
 
+        protected bool HasAcceptable(Fst<TData, TOffset> fst)
+        {
+            foreach (State<TData, TOffset> state in fst.States)
+            {
+                foreach (AcceptInfo<TData, TOffset> acceptInfo in state.AcceptInfos)
+                {
+                    if (acceptInfo.Acceptable != null)
+                        return true;
+                }
+            }
+            return false;
+        }
+
         protected class LatticeNode
         {
             public State<TData, TOffset> State { get; set; }
