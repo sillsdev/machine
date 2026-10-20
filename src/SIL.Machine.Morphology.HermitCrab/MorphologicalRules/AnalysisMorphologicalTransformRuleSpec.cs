@@ -17,16 +17,22 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             : base(lhs, rhs) { }
 
         /// <summary>
-        /// The morpher whose <see cref="Morpher.PruneDisagreeingCopies"/> setting governs pruning; unset means no pruning.
+        /// The morpher whose <see cref="Morpher.PruneDisagreeingCopies"/> setting governs pruning; unset means none.
         /// </summary>
         internal Morpher PruningMorpher { get; set; }
 
-        internal bool CopiesMayAgree(Match<Word, ShapeNode> match)
+        /// <summary>
+        /// The acceptance predicate that prunes matches whose copies cannot agree, or null when no part repeats and
+        /// there is nothing to check (the matcher builds a Match for every candidate it tests).
+        /// </summary>
+        internal Func<Match<Word, ShapeNode>, bool> CopyAgreementCheck
         {
-            return PruningMorpher == null
-                || !PruningMorpher.PruneDisagreeingCopies
-                || !HasRepeatedParts
-                || !HasDisagreeingCopies(match);
+            get { return HasRepeatedParts ? CopiesMayAgree : (Func<Match<Word, ShapeNode>, bool>)null; }
+        }
+
+        private bool CopiesMayAgree(Match<Word, ShapeNode> match)
+        {
+            return PruningMorpher == null || !PruningMorpher.PruneDisagreeingCopies || !HasDisagreeingCopies(match);
         }
 
         public bool IsApplicable(Word input)

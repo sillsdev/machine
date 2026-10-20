@@ -12,9 +12,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             : base(allomorph.Lhs, allomorph.Rhs)
         {
             _allomorph = allomorph;
-            // the matcher builds a Match for every candidate it tests, so rules that copy nothing get no check
-            if (HasRepeatedParts)
-                Pattern.Acceptable = CopiesMayAgree;
+            Pattern.Acceptable = CopyAgreementCheck;
             Pattern.Freeze();
         }
 
