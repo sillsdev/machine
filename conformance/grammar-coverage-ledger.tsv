@@ -334,6 +334,7 @@ edge-cases/feature-system-breadth	Construct	Element deactivation (isActive) acro
 edge-cases/feature-system-breadth	Construct	MetathesisRule	claimed-confirmed	10 claim(s)
 edge-cases/feature-system-breadth	Construct	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	claimed-confirmed	3 claim(s)
 edge-cases/feature-system-breadth	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	2 claim(s)
+edge-cases/final-template-merge-key	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	1 claim(s)
 edge-cases/final-template-partial-discriminators	Surface	dtd:enum/AffixTemplate/final/false	witnessed	Evidenced
 edge-cases/final-template-partial-discriminators	Surface	dtd:enum/AffixTemplate/final/true	witnessed	Evidenced
 edge-cases/final-template-partial-discriminators	Surface	dtd:enum/MorphologicalRule/partial/true	witnessed	Evidenced
