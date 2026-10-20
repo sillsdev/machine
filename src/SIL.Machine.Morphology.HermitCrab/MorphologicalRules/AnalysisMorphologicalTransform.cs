@@ -34,12 +34,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     );
                 }
             }
+            HasRepeatedParts = _capturedParts.Values.Any(count => count >= 2);
         }
 
-        internal bool HasRepeatedParts
-        {
-            get { return _capturedParts.Values.Any(count => count >= 2); }
-        }
+        internal bool HasRepeatedParts { get; }
 
         internal static string GetGroupName(string partName, int index)
         {
