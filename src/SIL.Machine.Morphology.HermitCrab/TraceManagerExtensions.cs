@@ -22,8 +22,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>
-        /// ITraceManager implementations previously received only the productivity-restriction rejection,
-        /// with no subrule index, so they keep exactly that and nothing more.
+        /// IDetailedTraceManager receives every compounding rejection. ITraceManager implementations receive only
+        /// the productivity-restriction rejection, with subrule index -1.
         /// </summary>
         public static void CompoundingRuleRejected(
             this ITraceManager traceManager,
