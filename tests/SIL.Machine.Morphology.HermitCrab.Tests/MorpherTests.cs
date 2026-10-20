@@ -595,6 +595,129 @@ public class MorpherTests : HermitCrabTestBase
     }
 
     [Test]
+    public void ParseWord_SingleThreaded_MatchesParallel_ForSelfOpaquingSimultaneousEpenthesis()
+    {
+        // AnalysisRewriteRule compiles a Simultaneous-mode epenthesis rule as ReapplyType.SelfOpaquing, a
+        // repeat-until-fixpoint loop. No fixture here drives the loop past one iteration.
+        var highVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Value;
+        var highFrontUnrndVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Symbol("back-")
+            .Symbol("round-")
+            .Value;
+
+        var rule4 = new RewriteRule { Name = "rule4", ApplicationMode = RewriteApplicationMode.Simultaneous };
+        Allophonic.PhonologicalRules.Add(rule4);
+        rule4.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value,
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value,
+            }
+        );
+
+        AssertSingleThreadedMatchesParallel("buibui", "bubu", "bibu");
+        // Absolute, so a bug that empties both sides identically is still caught.
+        Assert.That(new Morpher(TraceManager, Language).ParseWord("buibui").Count(), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void ParseWord_SingleThreaded_MatchesParallel_WithAffixTemplate()
+    {
+        AddAffixTemplateAndCommutingPrefixes();
+
+        AssertSingleThreadedMatchesParallel("digusagd", "disagd", "gusagd", "sagd", "sag");
+        Assert.That(new Morpher(TraceManager, Language).ParseWord("digusagd"), Is.Not.Empty);
+    }
+
+    [Test]
+    public void ParseWord_SingleThreaded_MatchesParallel_OnLinearStratumWithAffixTemplate()
+    {
+        AddAffixTemplateAndCommutingPrefixes();
+        SetRuleOrder(MorphologicalRuleOrder.Linear);
+
+        AssertSingleThreadedMatchesParallel("digusagd", "disagd", "gusagd", "sagd", "sag");
+        Assert.That(new Morpher(TraceManager, Language).ParseWord("sagd"), Is.Not.Empty);
+    }
+
+    private void AssertSingleThreadedMatchesParallel(params string[] words)
+    {
+        var parallel = new Morpher(TraceManager, Language);
+        var singleThreaded = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+
+        foreach (string word in words)
+        {
+            List<Word> singleResult = singleThreaded.ParseWord(word).ToList();
+            List<Word> parallelResult = parallel.ParseWord(word).ToList();
+            Assert.That(
+                singleResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal),
+                Is.EqualTo(parallelResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal)),
+                $"single-threaded parse of '{word}' must match the parallel parse"
+            );
+        }
+    }
+
+    // Two commuting prefixes, so one word is reached by more than one unapplication order.
+    private void AddAffixTemplateAndCommutingPrefixes()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var verb = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value;
+
+        var edSuffix = new AffixProcessRule
+        {
+            Id = "TPAST",
+            Name = "template_ed_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = verb,
+        };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
+            }
+        );
+        var verbTemplate = new AffixTemplate { Name = "verb_template", RequiredSyntacticFeatureStruct = verb };
+        verbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix) { Optional = true });
+        Morphophonemic.AffixTemplates.Add(verbTemplate);
+
+        foreach (
+            (string id, string name, string gloss, string prefix) in new[]
+            {
+                ("TDI", "template_di_prefix", "DI", "di+"),
+                ("TGU", "template_gu_prefix", "GU", "gu+"),
+            }
+        )
+        {
+            var prefixRule = new AffixProcessRule
+            {
+                Id = id,
+                Name = name,
+                Gloss = gloss,
+                RequiredSyntacticFeatureStruct = verb,
+            };
+            prefixRule.Allomorphs.Add(
+                new AffixProcessAllomorph
+                {
+                    Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                    Rhs = { new InsertSegments(Table3, prefix), new CopyFromInput("1") },
+                }
+            );
+            Morphophonemic.MorphologicalRules.Add(prefixRule);
+        }
+    }
+
+    [Test]
     public void ParseWord_HonorsMaxDegreeOfParallelismAsACap_WithoutChangingResults()
     {
         // The value is a resource knob, never a semantic one, so an intermediate cap must not shift results.
