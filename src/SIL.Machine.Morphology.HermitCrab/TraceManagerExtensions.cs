@@ -40,6 +40,26 @@ namespace SIL.Machine.Morphology.HermitCrab
                 traceManager.CompoundingRuleNotUnapplied(rule, -1, input, reason, failureObj);
         }
 
+        /// <summary>
+        /// The failure object is the PartialParseFailure for IDetailedTraceManager and null for ITraceManager
+        /// implementations.
+        /// </summary>
+        public static void PartialParseFailed(
+            this ITraceManager traceManager,
+            Language lang,
+            Word word,
+            PartialParseFailure failure
+        )
+        {
+            traceManager.Failed(
+                lang,
+                word,
+                FailureReason.PartialParse,
+                null,
+                traceManager is IDetailedTraceManager ? failure : null
+            );
+        }
+
         public static void LexicalLookupCompleted(
             this ITraceManager traceManager,
             Stratum stratum,
