@@ -30,17 +30,32 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             }
             else
             {
-                Pattern.Children.AddRange(subrule.Rhs.Children.CloneItems());
+                // The matcher skips optional nodes and boundaries, so the matched RHS nodes need not be
+                // adjacent; each is recovered from its own group capture, which a quantifier may leave empty.
+                int i = 0;
+                foreach (PatternNode<Word, ShapeNode> node in subrule.Rhs.Children)
+                {
+                    Pattern.Children.Add(new Group<Word, ShapeNode>("target" + i) { Children = { node.Clone() } });
+                    i++;
+                }
             }
             Pattern.Freeze();
 
             SubruleSpecs.Add(new AnalysisRewriteSubruleSpec(matcherSettings, subrule, Unapply));
         }
 
+        private ShapeNode GetTargetNode(Match<Word, ShapeNode> targetMatch, int i)
+        {
+            if (i >= _targetCount)
+                return null;
+            GroupCapture<ShapeNode> capture = targetMatch.GroupCaptures["target" + i];
+            return capture.Success ? capture.Range.GetStart(targetMatch.Matcher.Direction) : null;
+        }
+
         private void Unapply(Match<Word, ShapeNode> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
         {
             ShapeNode curNode = IsTargetEmpty ? range.Start : range.End;
-            ShapeNode targetNode = range.Start;
+            ShapeNode targetNode = GetTargetNode(targetMatch, 0);
             int targetPos = 0;
             bool zipper = true;
             foreach (
@@ -54,7 +69,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                     fs.ReplaceVariables(varBindings);
                 if (
                     zipper
-                    && targetPos < _targetCount
+                    && targetNode != null
                     && constraint.Type() == HCFeatureSystem.Segment
                     && targetNode.Type() == HCFeatureSystem.Segment
                     && !fs.HasVariables // This can be removed when Union is fixed.
@@ -63,8 +78,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 {
                     // Union fs into the existing node's feature structure.
                     targetNode.Annotation.FeatureStruct.Union(fs);
-                    targetNode = targetNode.Next;
                     targetPos++;
+                    targetNode = GetTargetNode(targetMatch, targetPos);
                 }
                 else
                 {
@@ -77,8 +92,9 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             // Make the rest of the existing nodes optional.
             for (int i = targetPos; i < _targetCount; i++)
             {
-                targetNode.Annotation.Optional = true;
-                targetNode = targetNode.Next;
+                ShapeNode node = GetTargetNode(targetMatch, i);
+                if (node != null)
+                    node.Annotation.Optional = true;
             }
         }
     }
