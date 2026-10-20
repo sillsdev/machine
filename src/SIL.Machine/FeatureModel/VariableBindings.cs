@@ -4,7 +4,10 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.FeatureModel
 {
-    public class VariableBindings : IDictionary<string, SimpleFeatureValue>, ICloneable<VariableBindings>
+    public class VariableBindings
+        : IDictionary<string, SimpleFeatureValue>,
+            ICloneable<VariableBindings>,
+            IValueEquatable<VariableBindings>
     {
         private readonly Dictionary<string, SimpleFeatureValue> _varBindings;
 
@@ -141,6 +144,29 @@ namespace SIL.Machine.FeatureModel
         public VariableBindings Clone()
         {
             return new VariableBindings(this);
+        }
+
+        public bool ValueEquals(VariableBindings other)
+        {
+            if (other == null)
+                return false;
+
+            if (ReferenceEquals(this, other))
+                return true;
+
+            if (_varBindings.Count != other._varBindings.Count)
+                return false;
+
+            foreach (KeyValuePair<string, SimpleFeatureValue> kvp in _varBindings)
+            {
+                SimpleFeatureValue otherVal;
+                if (!other._varBindings.TryGetValue(kvp.Key, out otherVal))
+                    return false;
+                if (!kvp.Value.ValueEquals(otherVal))
+                    return false;
+            }
+
+            return true;
         }
     }
 }

@@ -36,7 +36,6 @@ namespace SIL.Machine.FiniteState
             );
 
             var curResults = new List<FstResult<TData, TOffset>>();
-            var lattice = !allMatches ? CreateFstLattice() : null;
             var traversed = new HashSet<Tuple<State<TData, TOffset>, int, Register<TOffset>[,]>>(
                 AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int, Register<TOffset>[,]>>(
                     KeyEquals,
@@ -46,9 +45,6 @@ namespace SIL.Machine.FiniteState
             while (instStack.Count != 0)
             {
                 NondeterministicFsaTraversalInstance<TData, TOffset> inst = instStack.Pop();
-                NondeterministicFsaTraversalInstance<TData, TOffset> origInst = !allMatches
-                    ? CopyInstanceAndBindings(inst)
-                    : null;
 
                 bool releaseInstance = true;
                 VariableBindings varBindings = null;
@@ -74,20 +70,12 @@ namespace SIL.Machine.FiniteState
                             }
 
                             ti.Visited.Add(arc.Target);
-                            int resultCount = !allMatches ? curResults.Count : 0;
                             NondeterministicFsaTraversalInstance<TData, TOffset> newInst = EpsilonAdvance(
                                 ti,
                                 arc,
                                 curResults
                             );
                             bool skip = false;
-                            if (!allMatches)
-                            {
-                                if (curResults.Count > resultCount)
-                                    RecordFinalArc(lattice, origInst, arc);
-                                if (RecordedInstance(lattice, newInst, origInst, arc))
-                                    skip = true;
-                            }
                             if (!skip)
                             {
                                 Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(
@@ -116,7 +104,6 @@ namespace SIL.Machine.FiniteState
                                 ? inst
                                 : CopyInstance(inst);
 
-                            int resultCount = !allMatches ? curResults.Count : 0;
                             foreach (
                                 NondeterministicFsaTraversalInstance<TData, TOffset> newInst in Advance(
                                     ti,
@@ -127,13 +114,6 @@ namespace SIL.Machine.FiniteState
                             )
                             {
                                 newInst.Visited.Clear();
-                                if (!allMatches)
-                                {
-                                    if (curResults.Count > resultCount)
-                                        RecordFinalArc(lattice, origInst, arc);
-                                    if (RecordedInstance(lattice, newInst, origInst, arc))
-                                        continue;
-                                }
                                 Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(
                                     newInst.State,
                                     newInst.AnnotationIndex,
@@ -155,12 +135,6 @@ namespace SIL.Machine.FiniteState
 
                 if (releaseInstance)
                     ReleaseInstance(inst);
-            }
-
-            if (!allMatches)
-            {
-                var newResults = ExtractResults(lattice, allMatches);
-                curResults = newResults;
             }
 
             CheckAcceptingStartState(initAnns, initRegisters, curResults);
