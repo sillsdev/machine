@@ -97,6 +97,13 @@ internal class ParseCommand : ConsoleCommand
                 analysis ? trace.Output.Shape.ToRegexString(table, true) : trace.Output.Shape.ToString(table, true)
             );
         }
+        if (trace.SlotIndex != null)
+        {
+            if (!first)
+                _context.Out.Write(", ");
+            first = false;
+            _context.Out.Write("Slot: {0}, Outcome: {1}", trace.SlotIndex, trace.SlotOutcome);
+        }
         if (trace.FailureReason != FailureReason.None)
         {
             if (!first)
