@@ -211,6 +211,17 @@ public class LegacyTraceManagerTests
     }
 
     [Test]
+    public void PartialParse_StratumPendingRuleHasNoFailureObject()
+    {
+        Entry("a");
+        AffixProcessRule suffix = Suffix();
+        suffix.RequiredStemName = new StemName(Pos("N")) { Name = "stem" };
+        _stratum.MorphologicalRules.Add(suffix);
+        Assert.That(Morpher().ParseWord("as", out _), Is.Empty);
+        Assert.That(_recorder.Calls.Where(c => c.StartsWith("Failed")), Is.EqualTo(new[] { PartialParseFailed }));
+    }
+
+    [Test]
     public void FullParse_UnparsableWord()
     {
         Assert.That(Morpher().ParseWord("b", out _), Is.Empty);

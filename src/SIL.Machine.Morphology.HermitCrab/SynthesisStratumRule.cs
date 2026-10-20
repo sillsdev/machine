@@ -76,11 +76,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                 {
                     if (_morpher.TraceManager.IsTracing)
                     {
-                        _morpher.TraceManager.Failed(
+                        _morpher.TraceManager.PartialParseFailed(
                             _morpher.Language,
                             mruleOutWord,
-                            FailureReason.PartialParse,
-                            null,
                             new PartialParseFailure(
                                 PartialParseCause.UnappliedMorphologicalRules,
                                 mruleOutWord.NextMorphologicalRule

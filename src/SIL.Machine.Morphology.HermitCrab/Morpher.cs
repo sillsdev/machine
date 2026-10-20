@@ -640,11 +640,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (!word.RealizationalFeatureStruct.IsUnifiable(word.SyntacticFeatureStruct))
             {
                 if (_traceManager.IsTracing)
-                    _traceManager.Failed(
+                    _traceManager.PartialParseFailed(
                         _lang,
                         word,
-                        FailureReason.PartialParse,
-                        null,
                         new PartialParseFailure(PartialParseCause.RealizationalFeatureMismatch)
                     );
                 return false;
@@ -652,11 +650,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (!word.IsAllMorphologicalRulesApplied)
             {
                 if (_traceManager.IsTracing)
-                    _traceManager.Failed(
+                    _traceManager.PartialParseFailed(
                         _lang,
                         word,
-                        FailureReason.PartialParse,
-                        null,
                         new PartialParseFailure(
                             PartialParseCause.UnappliedMorphologicalRules,
                             word.NextMorphologicalRule
