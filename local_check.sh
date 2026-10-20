@@ -26,14 +26,18 @@ if [ "$agent_strict" = true ]; then
   fi
 fi
 
-dotnet tool restore
-dotnet restore
-dotnet csharpier check .
-if [ $? -ne 0 ]; then
+# Every step runs even after one fails, and the last line names the failures, so
+# output read through tail cannot pass off a build failure as a test pass.
+failed=()
+
+dotnet tool restore || failed+=(tool-restore)
+dotnet restore || failed+=(restore)
+dotnet csharpier check . || failed+=(csharpier)
+dotnet build --no-restore -c Release || failed+=(build)
+dotnet test --verbosity normal || failed+=(test)
+
+if [ "${#failed[@]}" -ne 0 ]; then
+  echo "local_check: FAILED (${failed[*]})"
   exit 1
 fi
-dotnet build --no-restore -c Release
-if [ $? -ne 0 ]; then
-  exit 1
-fi
-dotnet test --verbosity normal
+echo "local_check: PASSED"
