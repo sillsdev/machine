@@ -78,6 +78,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             for (int i = 0; i < _rules.Count; i++)
             {
                 bool matched = false;
+                bool unapplied = false;
                 foreach (Word outWord in _rules[i].Apply(input).RemoveDuplicates())
                 {
                     matched = true;
@@ -120,10 +121,28 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     if (_morpher.TraceManager.IsTracing)
                         _morpher.TraceManager.MorphologicalRuleUnapplied(_rule, i, input, outWord);
                     output.Add(outWord);
+                    unapplied = true;
                 }
 
-                if (_morpher.TraceManager.IsTracing && !matched)
-                    _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input, FailureReason.Pattern, null);
+                if (_morpher.TraceManager.IsTracing)
+                {
+                    // ITraceManager implementations are told only that no word came out of the subrule
+                    if (_morpher.TraceManager is IDetailedTraceManager)
+                    {
+                        if (!matched)
+                            _morpher.TraceManager.MorphologicalRuleNotUnapplied(
+                                _rule,
+                                i,
+                                input,
+                                FailureReason.Pattern,
+                                null
+                            );
+                    }
+                    else if (!unapplied)
+                    {
+                        _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
+                    }
+                }
             }
             return output;
         }

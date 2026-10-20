@@ -2,6 +2,10 @@ namespace SIL.Machine.Morphology.HermitCrab
 {
     internal static class TraceManagerExtensions
     {
+        /// <summary>
+        /// IDetailedTraceManager receives every rejection. ITraceManager implementations receive only the Pattern
+        /// rejection of a subrule, the one place a subrule ends without output.
+        /// </summary>
         public static void MorphologicalRuleNotUnapplied(
             this ITraceManager traceManager,
             IMorphologicalRule rule,
@@ -13,7 +17,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             if (traceManager is IDetailedTraceManager detailed)
                 detailed.MorphologicalRuleNotUnapplied(rule, subruleIndex, input, reason, failureObj);
-            else
+            else if (reason == FailureReason.Pattern)
                 traceManager.MorphologicalRuleNotUnapplied(rule, subruleIndex, input);
         }
 
