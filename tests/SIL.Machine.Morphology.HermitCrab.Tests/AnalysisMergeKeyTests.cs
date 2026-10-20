@@ -41,6 +41,20 @@ public class AnalysisMergeKeyTests : HermitCrabTestBase
         Assert.That(KeysEqual(wordX, wordY), Is.False);
     }
 
+    [Test]
+    public void Equals_False_WhenFinalTemplateStateDiffers()
+    {
+        Word wordX = NewTestWord();
+        wordX.FinalTemplateState = FinalTemplateState.None;
+        wordX.Freeze();
+
+        Word wordY = NewTestWord();
+        wordY.FinalTemplateState = FinalTemplateState.NonTemplate;
+        wordY.Freeze();
+
+        Assert.That(KeysEqual(wordX, wordY), Is.False);
+    }
+
     private static bool KeysEqual(Word x, Word y) =>
         new AnalysisStratumRule.AnalysisMergeKey(x).Equals(new AnalysisStratumRule.AnalysisMergeKey(y));
 
