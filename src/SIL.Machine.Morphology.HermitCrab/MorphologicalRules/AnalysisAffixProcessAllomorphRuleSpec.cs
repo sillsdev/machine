@@ -8,8 +8,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
     {
         private readonly AffixProcessAllomorph _allomorph;
 
-        public AnalysisAffixProcessAllomorphRuleSpec(AffixProcessAllomorph allomorph, Morpher morpher = null)
-            : base(allomorph.Lhs, allomorph.Rhs, morpher)
+        public AnalysisAffixProcessAllomorphRuleSpec(AffixProcessAllomorph allomorph)
+            : base(allomorph.Lhs, allomorph.Rhs)
         {
             _allomorph = allomorph;
             // the matcher builds a Match for every candidate it tests, so rules that copy nothing get no check

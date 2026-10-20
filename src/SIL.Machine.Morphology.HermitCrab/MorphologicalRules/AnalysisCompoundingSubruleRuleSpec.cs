@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
@@ -9,8 +9,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
     {
         private readonly CompoundingSubrule _subrule;
 
-        public AnalysisCompoundingSubruleRuleSpec(CompoundingSubrule subrule, Morpher morpher = null)
-            : base(subrule.HeadLhs.Concat(subrule.NonHeadLhs), subrule.Rhs, morpher)
+        public AnalysisCompoundingSubruleRuleSpec(CompoundingSubrule subrule)
+            : base(subrule.HeadLhs.Concat(subrule.NonHeadLhs), subrule.Rhs)
         {
             _subrule = subrule;
             Pattern.Acceptable = match =>

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
@@ -9,25 +10,22 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         : AnalysisMorphologicalTransform,
             IPatternRuleSpec<Word, ShapeNode>
     {
-        private readonly Morpher _morpher;
-        private readonly bool _hasRepeatedParts;
-
         protected AnalysisMorphologicalTransformRuleSpec(
             IEnumerable<Pattern<Word, ShapeNode>> lhs,
-            IList<MorphologicalOutputAction> rhs,
-            Morpher morpher
+            IList<MorphologicalOutputAction> rhs
         )
-            : base(lhs, rhs)
-        {
-            _morpher = morpher;
-            _hasRepeatedParts = HasRepeatedParts;
-        }
+            : base(lhs, rhs) { }
 
-        protected bool CopiesMayAgree(Match<Word, ShapeNode> match)
+        /// <summary>
+        /// The morpher whose <see cref="Morpher.PruneDisagreeingCopies"/> setting governs pruning; unset means no pruning.
+        /// </summary>
+        internal Morpher PruningMorpher { get; set; }
+
+        internal bool CopiesMayAgree(Match<Word, ShapeNode> match)
         {
-            return _morpher == null
-                || !_morpher.PruneDisagreeingCopies
-                || !_hasRepeatedParts
+            return PruningMorpher == null
+                || !PruningMorpher.PruneDisagreeingCopies
+                || !HasRepeatedParts
                 || !HasDisagreeingCopies(match);
         }
 
