@@ -69,6 +69,11 @@ Every earlier finding has a status when this is done.
 Anchor it on the line. Two problems on one line are two comments. A reviewer
 scrolling the diff should meet each point where it applies.
 
+A defect the PR shares with the `sillsdev/machine.py` code it ports or matches
+is an **upstream** defect, not a finding: it gets its own fix, ported between
+the repos, apart from this PR. Confirm it in the Python source, post no comment
+on the diff, and name it in the summary's upstream line.
+
 Number findings `F1`, `F2`, ... in the order you post them, and put the number
 right after the keyword, so a reply or a later review can refer to one without
 quoting it. Not `#1`: GitHub links that to issue 1. Numbers are stable - a
@@ -146,6 +151,9 @@ Each line is a sentence or two. The candidates you dropped stay out of it.
 
 Say which public API, target framework, package, or parity contract with
 `sillsdev/machine.py` changed, or `None verified`.
+
+When there are upstream defects, add one line, `Upstream in sillsdev/machine.py,
+not this PR:`, naming each with its Python file and the visible effect.
 
 Then mark every finding in the thread, earlier rounds included, by number:
 **new**, **open**, **addressed**, **accepted** (the author keeps it knowingly),
