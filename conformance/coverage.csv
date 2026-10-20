@@ -122,6 +122,7 @@ FeatureSystemBreadth,ktl,,MetathesisRule
 FeatureSystemBreadth,ts,TS|ts,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 FeatureSystemBreadth,salk,,AffixProcessRule: prefix/suffix/circumfix/infix
 FeatureSystemBreadth,tal,,Element deactivation (isActive) across loader collections
+FinalTemplateMergeKey,sagdss,SAG+FINAL+TEMPLATE+NOM|sagdss,Affix template slots (obligatory/disjunctive/ordering)
 FinalTemplatePartialDiscriminators,dakfa,DAK+FINTAGA|dakfa,Affix template slots (obligatory/disjunctive/ordering)
 FreeFluctuatingAllomorphPair,pol,ALT|pol,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,pel,ALT|pel,Disjunctive allomorphs / free-fluctuation

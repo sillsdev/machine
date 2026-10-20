@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>FinalTemplateMergeKey</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>V</Name></PartOfSpeech>
+      <PartOfSpeech id="posN"><Name>N</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cG"><Representations><Representation>g</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <!-- Lower stratum: it has no phonological rules and is not the last stratum, so it does not block final templates. -->
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered">
+        <Name>Morphophonemic</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrFinal" requiredPartsOfSpeech="posV">
+            <Name>Final suffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subFinal">
+                <MorphologicalInput><PhoneticSequence id="stemFinal"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemFinal" /><InsertSegments><PhoneticShape>d</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>FINAL</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posV">
+            <Name>finalTemplate</Name>
+            <Slot morphologicalRules="mrFinal"><Name>finalSlot</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eSag" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aSag"><PhoneticShape>sag</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SAG</MorphemeId>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <!-- Last stratum: it blocks final templates, so analysis resets FinalTemplateState to None on entry. -->
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrNom">
+        <Name>Surface</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrTemplateS">
+            <Name>Template suffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subTemplateS">
+                <MorphologicalInput><PhoneticSequence id="stemTemplateS"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemTemplateS" /><InsertSegments><PhoneticShape>s</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>TEMPLATE</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrNom" requiredPartsOfSpeech="posV" outputPartOfSpeech="posN">
+            <Name>Nominalizer</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subNom">
+                <MorphologicalInput><PhoneticSequence id="stemNom"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemNom" /><InsertSegments><PhoneticShape>s</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>NOM</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <!-- Non-final: its rule leaves FinalTemplateState = None, whereas mrNom (a plain rule) leaves NonTemplate. -->
+          <AffixTemplate requiredPartsOfSpeech="posV" final="false">
+            <Name>nonFinalTemplate</Name>
+            <Slot morphologicalRules="mrTemplateS"><Name>templateSlot</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
