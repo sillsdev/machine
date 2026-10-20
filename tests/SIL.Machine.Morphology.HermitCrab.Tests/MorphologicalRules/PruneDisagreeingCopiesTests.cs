@@ -386,6 +386,105 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
         }
     }
 
+    /// <summary>
+    /// Feature-bearing rewrite (s -> z between vowels, voicing): analysis unapplies it, so pruning keeps the parse.
+    /// </summary>
+    [TestCase(false)]
+    [TestCase(true)]
+    public void FeatureRewriteOfOneCopyParsesTheSameWithAndWithoutPruning(bool pruneCopies)
+    {
+        AffixProcessRule redup = CreateCopyRule(FullPart());
+        redup.RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value;
+        Morphophonemic.MorphologicalRules.Add(redup);
+        Allophonic.PhonologicalRules.Add(CreateBetweenVowelsRewrite(Table1, "s", Character(Table1, "z")));
+        LexEntry root = AddEntry(
+            "ROOT",
+            FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            Morphophonemic,
+            "sa"
+        );
+        try
+        {
+            Assert.That(
+                new Morpher(TraceManager, Language).GenerateWords(
+                    root,
+                    new Morpheme[] { redup },
+                    FeatureStruct.New().Value
+                ),
+                Is.EquivalentTo(new[] { "saza" })
+            );
+            Assert.That(ParseGlosses(CreateMorpher(pruneCopies), "saza"), Does.Contain("ROOT RED"));
+        }
+        finally
+        {
+            Morphophonemic.Entries.Remove(root);
+        }
+    }
+
+    /// <summary>
+    /// A rewrite between segments that differ only by their string representation (no symbolic features) is
+    /// never unapplied, so analysis cannot make the changed copy agree with the other; pruning must not drop it.
+    /// </summary>
+    [TestCase(false)]
+    [TestCase(true)]
+    public void StrRepOnlyRewriteOfOneCopyParsesTheSameWithAndWithoutPruning(bool pruneCopies)
+    {
+        var table = new CharacterDefinitionTable { Name = "strrep" };
+        table.AddSegment("a");
+        table.AddSegment("s");
+        table.AddSegment("z");
+        var syntactic = new SyntacticFeatureSystem();
+        syntactic.AddPartsOfSpeech(new FeatureSymbol("V", "Verb"));
+        syntactic.Freeze();
+        var phonological = new FeatureSystem();
+        phonological.Freeze();
+        var stratum = new Stratum(table) { Name = "S", MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered };
+        var language = new Language
+        {
+            Name = "StrRepOnly",
+            PhonologicalFeatureSystem = phonological,
+            SyntacticFeatureSystem = syntactic,
+            Strata = { stratum },
+        };
+        AffixProcessRule redup = CreateCopyRule(FullPart());
+        redup.RequiredSyntacticFeatureStruct = FeatureStruct.New(syntactic).Symbol("V").Value;
+        stratum.MorphologicalRules.Add(redup);
+        stratum.PhonologicalRules.Add(CreateBetweenVowelsRewrite(table, "s", table["z"].FeatureStruct));
+        var root = new LexEntry
+        {
+            Id = "ROOT",
+            Gloss = "ROOT",
+            SyntacticFeatureStruct = FeatureStruct.New(syntactic).Symbol("V").Value,
+        };
+        root.Allomorphs.Add(new RootAllomorph(new Segments(table, "sa", true)));
+        stratum.Entries.Add(root);
+
+        var morpher = new Morpher(TraceManager, language) { PruneDisagreeingCopies = pruneCopies };
+        Assert.That(
+            morpher.GenerateWords(root, new Morpheme[] { redup }, FeatureStruct.New().Value),
+            Is.EquivalentTo(new[] { "saza" })
+        );
+        Assert.That(ParseGlosses(morpher, "saza"), Does.Contain("ROOT RED"));
+    }
+
+    private RewriteRule CreateBetweenVowelsRewrite(CharacterDefinitionTable table, string from, FeatureStruct rhs)
+    {
+        var rule = new RewriteRule
+        {
+            Name = "rewrite",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(table, from)).Value,
+        };
+        rule.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(rhs).Value,
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(table, "a")).Value,
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(table, "a")).Value,
+            }
+        );
+        return rule;
+    }
+
     private Morpher CreateMorpher(bool pruneCopies, int maxDegreeOfParallelism = 0)
     {
         return new Morpher(TraceManager, Language, maxDegreeOfParallelism) { PruneDisagreeingCopies = pruneCopies };
