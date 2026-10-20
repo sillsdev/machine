@@ -59,8 +59,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                     if (lhsConstraint.FeatureStruct.TryGetValue(HCFeatureSystem.StrRep, out lhsStrRep))
                     {
                         // StrRep is a built-in feature: inversion adds the input spelling, not its complement.
-                        fs.AddValue(HCFeatureSystem.StrRep, lhsStrRep);
-                        rhsAntiFSs[i].AddValue(HCFeatureSystem.StrRep, lhsStrRep);
+                        fs.AddValue(HCFeatureSystem.StrRep, lhsStrRep.Clone());
+                        rhsAntiFSs[i].AddValue(HCFeatureSystem.StrRep, lhsStrRep.Clone());
                     }
                     fs.AddValue(HCFeatureSystem.Type, HCFeatureSystem.Segment);
                     _analysisRhs.Children.Add(new Constraint<Word, ShapeNode>(fs));
