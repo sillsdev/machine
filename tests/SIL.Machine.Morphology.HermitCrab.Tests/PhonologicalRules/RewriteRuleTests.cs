@@ -554,6 +554,63 @@ public class RewriteRuleTests : HermitCrabTestBase
     }
 
     [Test]
+    public void MergeWithBoundary()
+    {
+        var merge = new RewriteRule
+        {
+            Name = "merge",
+            Lhs = Pattern<Word, ShapeNode>
+                .New()
+                .Annotation(Character(Table3, "b"))
+                .Annotation(Character(Table3, "+"))
+                .Annotation(Character(Table3, "b"))
+                .Value,
+        };
+        merge.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>
+                    .New()
+                    .Annotation(Character(Table3, "p"))
+                    .Annotation(Character(Table3, "i"))
+                    .Value,
+            }
+        );
+        Morphophonemic.PhonologicalRules.Add(merge);
+
+        var morpher = new Morpher(TraceManager, Language, 1);
+        AssertMorphsEqual(morpher.ParseWord("apia"), "39");
+    }
+
+    [Test]
+    public void AlphaAgreementMergeFindsAbbaFromApa()
+    {
+        FeatureStruct alphaVoicedConsonant = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons+")
+            .Feature("vd")
+            .EqualToVariable("a")
+            .Value;
+        var merge = new RewriteRule
+        {
+            Name = "alphaMerge",
+            Lhs = Pattern<Word, ShapeNode>
+                .New()
+                .Annotation(alphaVoicedConsonant)
+                .Annotation(alphaVoicedConsonant)
+                .Value,
+        };
+        merge.Subrules.Add(
+            new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "p")).Value }
+        );
+        Morphophonemic.PhonologicalRules.Add(merge);
+
+        var morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("apa"), "40");
+    }
+
+    [Test]
     public void ExpandRules()
     {
         var highVowel = FeatureStruct
