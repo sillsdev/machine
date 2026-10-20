@@ -153,6 +153,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         TraceFailure(i, outWord, FailureReason.NonHeadLexicalLookup, null);
                 }
 
+                bool unapplied = false;
                 foreach (Word outWord in srOutput)
                 {
                     // the paths Out writes describe this rule's output, not the stem; see AnalysisAffixProcessRule
@@ -183,10 +184,22 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     if (_morpher.TraceManager.IsTracing)
                         _morpher.TraceManager.MorphologicalRuleUnapplied(_rule, i, input, outWord);
                     output.Add(outWord);
+                    unapplied = true;
                 }
 
-                if (!matched)
-                    TraceFailure(i, input, FailureReason.Pattern, null);
+                if (_morpher.TraceManager.IsTracing)
+                {
+                    // ITraceManager implementations are told only that no word came out of the subrule
+                    if (_morpher.TraceManager is IDetailedTraceManager)
+                    {
+                        if (!matched)
+                            TraceFailure(i, input, FailureReason.Pattern, null);
+                    }
+                    else if (!unapplied)
+                    {
+                        _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
+                    }
+                }
             }
 
             return output;
