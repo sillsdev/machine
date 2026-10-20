@@ -234,6 +234,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             private readonly FeatureStruct _realizationalFS;
             private readonly int _nonHeadCount;
             private readonly IReadOnlyDictionary<IMorphologicalRule, int> _ruleCounts;
+            private readonly FinalTemplateState _finalTemplateState;
             private readonly int _hashCode;
 
             public AnalysisMergeKey(Word word)
@@ -250,6 +251,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _realizationalFS = word.RealizationalFeatureStruct;
                 _nonHeadCount = word.NonHeadCount;
                 _ruleCounts = word.UnappliedRuleCounts;
+                _finalTemplateState = word.FinalTemplateState;
 
                 _shape.Freeze();
                 _syntacticFS.Freeze();
@@ -261,6 +263,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 hash = hash * 31 + _syntacticFS.GetFrozenHashCode();
                 hash = hash * 31 + _realizationalFS.GetFrozenHashCode();
                 hash = hash * 31 + _nonHeadCount;
+                hash = hash * 31 + _finalTemplateState.GetHashCode();
                 if (_ruleCounts != null)
                 {
                     int multisetHash = 0;
@@ -287,6 +290,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                     !_syntacticFS.ValueEquals(other._syntacticFS)
                     || !_realizationalFS.ValueEquals(other._realizationalFS)
                 )
+                    return false;
+                if (_finalTemplateState != other._finalTemplateState)
                     return false;
                 return RuleCountsEqual(_ruleCounts, other._ruleCounts);
             }
