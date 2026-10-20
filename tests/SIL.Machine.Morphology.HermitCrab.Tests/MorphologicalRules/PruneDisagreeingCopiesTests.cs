@@ -108,6 +108,67 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
         );
     }
 
+    [Test]
+    public void WordInitialOptionalSegmentThatLinesUpWhenRestoredIsKept()
+    {
+        // "(a)bab" for stem "ab": the optional first segment can be restored into the first copy so [a,b] meets [a,b]
+        (string first, string second) = FindIncompatibleSegments();
+        AffixProcessRule rule = CreateCopyRule(FullPart());
+        Word input = CreateInputWithOptionalFirstSegment(first + second + first + second);
+
+        string[] unpruned = AnalysisForms(false, rule, input);
+        Assert.That(unpruned, Is.EquivalentTo(new[] { first, first + second, first + second + first }));
+        // only the split that pairs "(a)b" with "ab" lines up; the other splits pair incompatible segments
+        Assert.That(AnalysisForms(true, rule, input), Is.EqualTo(new[] { first + second }));
+    }
+
+    [Test]
+    public void OptionalNonSegmentInACopyIsNeverPruned()
+    {
+        (string first, string second) = FindIncompatibleSegments();
+        AffixProcessRule rule = CreateCopyRule(FullPart());
+        var input = new Word(Surface, Table3.Segment(first + second + second)) { AnalysisScope = new AnalysisScope() };
+        input.Shape.AddAfter(input.Shape.First.Next, FeatureStruct.New().Symbol(HCFeatureSystem.Boundary).Value, true);
+        input.Freeze();
+
+        // a copy holding an optional boundary is never reported as disagreeing, so its split survives pruning;
+        // the split of two plain, incompatible copies is the only one removed
+        Assert.That(AnalysisForms(false, rule, input), Is.EquivalentTo(new[] { first, first + second }));
+        Assert.That(AnalysisForms(true, rule, input), Is.EqualTo(new[] { first }));
+    }
+
+    [Test]
+    public void WordInitialOptionalNonSegmentIsNeverPruned()
+    {
+        // the matcher skips the leading boundary, so it sits before the first copy rather than inside it
+        (string first, string second) = FindIncompatibleSegments();
+        AffixProcessRule rule = CreateCopyRule(FullPart());
+        var input = new Word(Surface, Table3.Segment(first + second + first + second))
+        {
+            AnalysisScope = new AnalysisScope(),
+        };
+        input.Shape.AddAfter(input.Shape.Begin, FeatureStruct.New().Symbol(HCFeatureSystem.Boundary).Value, true);
+        input.Freeze();
+
+        // nothing is pruned: with the boundary ignored, pruning keeps exactly what the unpruned rule produces
+        string[] expected = { first, first + second, first + second + first };
+        Assert.That(AnalysisForms(false, rule, input), Is.EquivalentTo(expected));
+        Assert.That(AnalysisForms(true, rule, input), Is.EquivalentTo(expected));
+    }
+
+    [Test]
+    public void EmptyCopyIsNeverPruned()
+    {
+        (string first, string second) = FindIncompatibleSegments();
+        Pattern<Word, ShapeNode> part = Pattern<Word, ShapeNode>.New("copy").Annotation(AnySegment).ZeroOrMore.Value;
+        AffixProcessRule rule = CreateCopyRule(part);
+        Word input = CreateInput(first + second);
+
+        // the split with an empty copy has nothing to compare, so only the split of two incompatible copies is removed
+        Assert.That(AnalysisForms(false, rule, input), Is.EquivalentTo(new[] { first, first + second }));
+        Assert.That(AnalysisForms(true, rule, input), Is.EqualTo(new[] { first + second }));
+    }
+
     [TestCase(false, 3)]
     [TestCase(true, 1)]
     public void RealizationalFullCopyKeepsOnlyTheSplitWhoseCopiesAgree(bool pruneCopies, int expectedOutputs)
@@ -383,10 +444,27 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
         return (pair.First.Representations.First(), pair.Second.Representations.First());
     }
 
+    private string[] AnalysisForms(bool pruneCopies, AffixProcessRule rule, Word input)
+    {
+        return new AnalysisAffixProcessRule(CreateMorpher(pruneCopies), rule)
+            .Apply(input)
+            .Select(output => output.Shape.ToString(Table3, false))
+            .OrderBy(form => form, StringComparer.Ordinal)
+            .ToArray();
+    }
+
     private Word CreateInputWithOptionalSecondSegment(string representation)
     {
         var input = new Word(Surface, Table3.Segment(representation)) { AnalysisScope = new AnalysisScope() };
         input.Shape.First.Next.Annotation.Optional = true;
+        input.Freeze();
+        return input;
+    }
+
+    private Word CreateInputWithOptionalFirstSegment(string representation)
+    {
+        var input = new Word(Surface, Table3.Segment(representation)) { AnalysisScope = new AnalysisScope() };
+        input.Shape.First.Annotation.Optional = true;
         input.Freeze();
         return input;
     }
