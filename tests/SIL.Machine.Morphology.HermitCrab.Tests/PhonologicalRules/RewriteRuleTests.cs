@@ -647,6 +647,57 @@ public class RewriteRuleTests : HermitCrabTestBase
     }
 
     [Test]
+    public void ExpandRuleUnappliesAcrossInterposedOptionalSegment()
+    {
+        var highVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Value;
+        var backRndVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("back+")
+            .Symbol("round+")
+            .Value;
+
+        var expand = new RewriteRule
+        {
+            Name = "expand",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value,
+        };
+        Allophonic.PhonologicalRules.Add(expand);
+        expand.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value,
+            }
+        );
+
+        // Ordered after the expansion, so it unapplies first and leaves an optional z between the two i's.
+        var deletion = new RewriteRule
+        {
+            Name = "deletion",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "z")).Value,
+        };
+        Allophonic.PhonologicalRules.Add(deletion);
+        deletion.Subrules.Add(
+            new RewriteSubrule
+            {
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "i")).Value,
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "i")).Value,
+            }
+        );
+
+        var morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("biiiibiiii"), "27");
+    }
+
+    [Test]
     public void MergeRuleUnappliesAcrossInterposedOptionalSegment()
     {
         var merge = new RewriteRule
