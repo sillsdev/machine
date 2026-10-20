@@ -36,6 +36,11 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             }
         }
 
+        internal bool HasRepeatedParts
+        {
+            get { return _capturedParts.Values.Any(count => count >= 2); }
+        }
+
         internal static string GetGroupName(string partName, int index)
         {
             return string.Format("{0}_{1}", partName, index);
@@ -44,11 +49,6 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         protected IDictionary<string, int> CapturedParts
         {
             get { return _capturedParts; }
-        }
-
-        internal bool HasRepeatedParts
-        {
-            get { return _capturedParts.Values.Any(count => count >= 2); }
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
                 // an unapplied word-initial deletion sits before the capture, not inside it
                 List<ShapeNode> nodes = MorphologicalOutputAction
-                    .GetSkippedOptionalNodes(match.Input.Shape, capture.Range)
+                    .CollectSkippedOptionalNodes(match.Input.Shape, capture.Range)
                     .Concat(match.Input.Shape.GetNodes(capture.Range))
                     .ToList();
                 if (nodes.Any(node => node.Annotation.Optional && node.Annotation.Type() != HCFeatureSystem.Segment))

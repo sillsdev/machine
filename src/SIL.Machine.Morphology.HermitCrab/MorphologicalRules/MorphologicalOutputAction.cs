@@ -37,7 +37,12 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         /// <param name="output">The output word synthesis.</param>
         public abstract IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, ShapeNode> match, Word output);
 
-        protected internal static IEnumerable<ShapeNode> GetSkippedOptionalNodes(Shape shape, Range<ShapeNode> range)
+        protected IEnumerable<ShapeNode> GetSkippedOptionalNodes(Shape shape, Range<ShapeNode> range)
+        {
+            return CollectSkippedOptionalNodes(shape, range);
+        }
+
+        internal static IEnumerable<ShapeNode> CollectSkippedOptionalNodes(Shape shape, Range<ShapeNode> range)
         {
             ShapeNode node = range.Start.Prev;
             var skippedNodes = new List<ShapeNode>();

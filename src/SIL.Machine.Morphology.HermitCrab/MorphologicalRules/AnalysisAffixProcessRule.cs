@@ -30,7 +30,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             {
                 _rules.Add(
                     new MultiplePatternRule<Word, ShapeNode>(
-                        new AnalysisAffixProcessAllomorphRuleSpec(allo, morpher),
+                        new AnalysisAffixProcessAllomorphRuleSpec(allo) { PruningMorpher = morpher },
                         new MatcherSettings<ShapeNode>
                         {
                             Filter = ann => ann.Type() == HCFeatureSystem.Segment,
