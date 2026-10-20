@@ -42,6 +42,33 @@ public class AnalysisMergeKeyTests : HermitCrabTestBase
     }
 
     [Test]
+    public void Equals_IsInvariantOverUnapplicationOrder_ForEqualMultisets()
+    {
+        var ruleA = new AffixProcessRule { Name = "ruleA" };
+        var ruleB = new AffixProcessRule { Name = "ruleB" };
+
+        // Same multiset {ruleA: 2, ruleB: 1}; wordY touches ruleB first, so the backing dictionaries also
+        // differ in insertion order, not just in a repeated rule's position.
+        Word wordX = NewTestWord();
+        wordX.MorphologicalRuleUnapplied(ruleA);
+        wordX.MorphologicalRuleUnapplied(ruleB);
+        wordX.MorphologicalRuleUnapplied(ruleA);
+        wordX.Freeze();
+
+        Word wordY = NewTestWord();
+        wordY.MorphologicalRuleUnapplied(ruleB);
+        wordY.MorphologicalRuleUnapplied(ruleA);
+        wordY.MorphologicalRuleUnapplied(ruleA);
+        wordY.Freeze();
+
+        var keyX = new AnalysisStratumRule.AnalysisMergeKey(wordX);
+        var keyY = new AnalysisStratumRule.AnalysisMergeKey(wordY);
+
+        Assert.That(keyX.GetHashCode(), Is.EqualTo(keyY.GetHashCode()));
+        Assert.That(keyX.Equals(keyY), Is.True);
+    }
+
+    [Test]
     public void Equals_False_WhenFinalTemplateStateDiffers()
     {
         Word wordX = NewTestWord();
