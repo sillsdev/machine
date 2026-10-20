@@ -237,6 +237,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             private readonly FinalTemplateState _finalTemplateState;
             private readonly int _hashCode;
 
+            // Freezes word.SyntacticFeatureStruct, which Word.Freeze leaves unfrozen.
             public AnalysisMergeKey(Word word)
             {
                 if (!word.IsFrozen)
