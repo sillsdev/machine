@@ -45,8 +45,11 @@ public class StrRepRewriteRuleTests
             Assert.That(morpher.ParseWord(neighbor), Is.Empty, neighbor);
     }
 
-    [Test]
-    public void LiteralRewriteWithoutFeaturesAnalyzesItsSynthesisAndRejectsVacuousUnapplication()
+    [TestCase(RewriteApplicationMode.Iterative)]
+    [TestCase(RewriteApplicationMode.Simultaneous)]
+    public void LiteralRewriteWithoutFeaturesAnalyzesItsSynthesisAndRejectsVacuousUnapplication(
+        RewriteApplicationMode applicationMode
+    )
     {
         var table = new CharacterDefinitionTable();
         foreach (string segment in new[] { "m", "p", "x", "u", "a" })
@@ -67,7 +70,11 @@ public class StrRepRewriteRuleTests
             stratum.Entries.Add(entry);
             entries.Add(form, entry);
         }
-        var rule = new RewriteRule { Lhs = Pattern<Word, ShapeNode>.New().Annotation(table["m"].FeatureStruct).Value };
+        var rule = new RewriteRule
+        {
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(table["m"].FeatureStruct).Value,
+            ApplicationMode = applicationMode,
+        };
         rule.Subrules.Add(
             new RewriteSubrule
             {
