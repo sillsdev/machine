@@ -71,6 +71,9 @@ FeatureSystemBreadth,prDecNc,
 FeatureSystemBreadth,prDecoy,
 FeatureSystemBreadth,prHighTrigger,
 FeatureSystemBreadth,prRaise,ik;ikt
+FinalTemplateMergeKey,mrFinal,sagdss
+FinalTemplateMergeKey,mrNom,sagdss
+FinalTemplateMergeKey,mrTemplateS,sagdss
 FinalTemplatePartialDiscriminators,mrFinTagA,dakfa;daknagafa
 FinalTemplatePartialDiscriminators,mrFinTagB,pilnbtbfb;pilfb;pilfbvb
 FinalTemplatePartialDiscriminators,mrGate1,!dakfaga;daknagafa
