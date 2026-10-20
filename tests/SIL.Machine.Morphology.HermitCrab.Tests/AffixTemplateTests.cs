@@ -733,4 +733,62 @@ public class AffixTemplateTests : HermitCrabTestBase
         var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("mivd"), "53 IVERB PAST");
     }
+
+    [TestCase(0)]
+    [TestCase(1)]
+    public void FinalTemplateInLowerStratum_ParsesWhenUpperAnalysesDifferOnlyInFinalTemplateState(int maxParallelism)
+    {
+        FeatureStruct any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        FeatureStruct verb = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value;
+        FeatureStruct noun = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value;
+
+        AffixProcessRule Suffix(string gloss, string segments)
+        {
+            var rule = new AffixProcessRule { Name = gloss, Gloss = gloss };
+            rule.Allomorphs.Add(
+                new AffixProcessAllomorph
+                {
+                    Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                    Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, segments) },
+                }
+            );
+            return rule;
+        }
+
+        // The Morphophonemic stratum does not block final templates, so it inherits the FinalTemplateState the
+        // Surface stratum leaves on each analysis.
+        AffixProcessRule finalSuffix = Suffix("FINAL", "d");
+        finalSuffix.RequiredSyntacticFeatureStruct = verb;
+        var finalTemplate = new AffixTemplate { Name = "final", RequiredSyntacticFeatureStruct = verb };
+        finalTemplate.Slots.Add(new AffixTemplateSlot(finalSuffix));
+        Morphophonemic.AffixTemplates.Add(finalTemplate);
+
+        // Both suffixes add "s", so Surface unapplies them in either order to one shape. NOM last leaves
+        // NonTemplate, which blocks the final template; TEMPLATE last leaves None, which allows it.
+        AffixProcessRule templateSuffix = Suffix("TEMPLATE", "s");
+        var nonFinalTemplate = new AffixTemplate
+        {
+            Name = "non-final",
+            IsFinal = false,
+            RequiredSyntacticFeatureStruct = verb,
+        };
+        nonFinalTemplate.Slots.Add(new AffixTemplateSlot(templateSuffix));
+        Surface.AffixTemplates.Add(nonFinalTemplate);
+
+        AffixProcessRule nominalizer = Suffix("NOM", "s");
+        nominalizer.RequiredSyntacticFeatureStruct = verb;
+        nominalizer.OutSyntacticFeatureStruct = noun;
+        Surface.MorphologicalRules.Add(nominalizer);
+
+        var morpher =
+            maxParallelism == 0
+                ? new Morpher(TraceManager, Language)
+                : new Morpher(TraceManager, Language, maxParallelism);
+        morpher.AlwaysEnforceFinalTemplates = true;
+        Assert.That(morpher.MergeEquivalentAnalyses, Is.True);
+        AssertMorphsEqual(morpher.ParseWord("sagdss"), "32 FINAL TEMPLATE NOM");
+
+        morpher.MergeEquivalentAnalyses = false;
+        AssertMorphsEqual(morpher.ParseWord("sagdss"), "32 FINAL TEMPLATE NOM");
+    }
 }
