@@ -25,6 +25,10 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public PartialParseCause Cause { get; }
 
+        /// <summary>
+        /// The next rule that was not applied, or null when it is unknown. It is also null when the next
+        /// step is a compounding non-head, whose rule is not recorded.
+        /// </summary>
         public IMorphologicalRule Rule { get; }
     }
 
