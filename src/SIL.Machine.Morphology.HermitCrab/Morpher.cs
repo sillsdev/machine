@@ -812,5 +812,20 @@ namespace SIL.Machine.Morphology.HermitCrab
                 }
             }
         }
+
+        /// <summary>
+        /// Does this stratum block final templates?
+        /// </summary>
+        internal bool IsBlockingStratum(Stratum stratum)
+        {
+            if (stratum.PhonologicalRules.Count > 0)
+                return true;
+            for (int i = _lang.Strata.Count - 1; i >= 0; i--)
+            {
+                if (RuleSelector(_lang.Strata[i]))
+                    return stratum == _lang.Strata[i];
+            }
+            return false;
+        }
     }
 }
