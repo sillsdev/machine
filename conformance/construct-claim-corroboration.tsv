@@ -130,6 +130,7 @@ edge-cases/feature-system-breadth	tik	-	MetathesisRule	Confirmed	MetathesisRule
 edge-cases/feature-system-breadth	tkl	-	MetathesisRule	Confirmed	MetathesisRule
 edge-cases/feature-system-breadth	tlk	TKL|tlk	MetathesisRule	Confirmed	MetathesisRule
 edge-cases/feature-system-breadth	ts	TS|ts	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	Confirmed	FeatureNaturalClass,SegmentNaturalClass,Segments,naturalClass
+edge-cases/final-template-merge-key	sagdss	SAG+FINAL+TEMPLATE+NOM|sagdss	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/final-template-partial-discriminators	dakfa	DAK+FINTAGA|dakfa	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/free-fluctuating-allomorph-pair	kit	-	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/free-fluctuating-allomorph-pair	kits	ORD+SSFX|kits	Disjunctive allomorphs / free-fluctuation	Unmapped	-

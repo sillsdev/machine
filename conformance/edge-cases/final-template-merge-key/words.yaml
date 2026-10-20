@@ -1,0 +1,24 @@
+# oracle-provenance: founding-oracle machine-commit=a2f80e28debaffda8a65b3b11875c80479768bc7 verified-date=2026-10-20
+# Signatures transcribed from the self-check run, not hand-derived.
+language: FinalTemplateMergeKey
+inspired_by: ["synthetic probe for equivalent-analysis merging across strata, not a model of a real language"]
+sources:
+  - "https://github.com/sillsdev/machine/pull/522"
+  - "tests/SIL.Machine.Morphology.HermitCrab.Tests/AffixTemplateTests.cs: FinalTemplateInLowerStratum_ParsesWhenUpperAnalysesDifferOnlyInFinalTemplateState"
+requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  A non-final template in a stratum that also holds an ordinary rule, feeding a final template in a
+  lower non-blocking stratum, is a shape FieldWorks can emit; the fixture is kept engine-only until
+  an xample-projector witness is built.
+words:
+  - word: sagdss
+    note: >-
+      Surface analysis can strip the two trailing s as TEMPLATE then NOM or as NOM then TEMPLATE; both
+      orders reach one shape, so an engine that merges equivalent analyses must keep the order whose last
+      step was the template (FinalTemplateState None). Keeping the NOM-last one (NonTemplate) carries
+      NonTemplate into the non-blocking lower stratum, which then refuses finalTemplate and loses the parse.
+    parses:
+      - signature: "SAG+FINAL+TEMPLATE+NOM|sagdss"
+        rules: [mrFinal, mrTemplateS, mrNom]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
