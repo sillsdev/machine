@@ -29,6 +29,15 @@ expensive part was never the code; it was learning what to measure and which mea
 cost for a measurement run and not one to carry in product code indefinitely. Rebuilding a probe
 from a branch is cheap; maintaining research scaffolding in two product assemblies is not.
 
+## Unmeasured search-asymptotics research
+
+[Analysis-search research](hermitcrab-search-asymptotics-research.md) integrates six independent reports,
+checks their code claims, and separates new experiments from this ledger's closed families. It ranks
+residual lexical viability, a grammar-compiled template battery, recoverable trace-class reduction, and
+exact finite-state compilation for a verified subgrammar. It maps them to lexicon-driven pruning during
+unapplication and making the affix-template battery cheaper without memoization. **No new measurement,
+speedup, or numbered optimization row is claimed.**
+
 ## Final disposition of the September follow-up
 
 The follow-up branch does deliver product improvements. Its authoritative summary is
