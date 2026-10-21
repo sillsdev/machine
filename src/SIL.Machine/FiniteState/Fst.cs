@@ -67,7 +67,6 @@ namespace SIL.Machine.FiniteState
                     }
                 }
             }
-
         }
 
         public bool IsDeterministic { get; private set; }
