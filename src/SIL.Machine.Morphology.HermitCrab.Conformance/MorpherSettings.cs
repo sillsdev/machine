@@ -31,8 +31,7 @@ public class MorpherSettings
     /// <summary><c>MakePartialsFinal</c>: <see cref="Morpher.AlwaysEnforceFinalTemplates"/>.</summary>
     public bool? MakePartialsFinal { get; set; }
 
-    public bool IsEmpty =>
-        DelReapps == null && MaxRoots == null && MergeAnalyses == null && MakePartialsFinal == null;
+    public bool IsEmpty => DelReapps == null && MaxRoots == null && MergeAnalyses == null && MakePartialsFinal == null;
 
     /// <summary>Sets every declared value on <paramref name="morpher"/>, leaving the rest at their defaults.</summary>
     public void ApplyTo(Morpher morpher)
