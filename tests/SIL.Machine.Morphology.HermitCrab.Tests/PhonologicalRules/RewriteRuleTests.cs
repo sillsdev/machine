@@ -647,6 +647,226 @@ public class RewriteRuleTests : HermitCrabTestBase
     }
 
     [Test]
+    public void ExpandRuleUnappliesAcrossInterposedOptionalSegment()
+    {
+        var highVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Value;
+        var backRndVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("back+")
+            .Symbol("round+")
+            .Value;
+
+        var expand = new RewriteRule
+        {
+            Name = "expand",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value,
+        };
+        Allophonic.PhonologicalRules.Add(expand);
+        expand.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value,
+            }
+        );
+
+        // Ordered after the expansion, so it unapplies first and leaves an optional z between the two i's.
+        var deletion = new RewriteRule
+        {
+            Name = "deletion",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "z")).Value,
+        };
+        Allophonic.PhonologicalRules.Add(deletion);
+        deletion.Subrules.Add(
+            new RewriteSubrule
+            {
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "i")).Value,
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "i")).Value,
+            }
+        );
+
+        var morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("biiiibiiii"), "27");
+    }
+
+    [Test]
+    public void MergeRuleUnappliesAcrossInterposedOptionalSegment()
+    {
+        var merge = new RewriteRule
+        {
+            Name = "merge",
+            Lhs = Pattern<Word, ShapeNode>
+                .New()
+                .Annotation(Character(Table3, "s"))
+                .Annotation(Character(Table3, "a"))
+                .Annotation(Character(Table3, "g"))
+                .Value,
+        };
+        Morphophonemic.PhonologicalRules.Add(merge);
+        merge.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>
+                    .New()
+                    .Annotation(Character(Table3, "n"))
+                    .Annotation(Character(Table3, "i"))
+                    .Value,
+            }
+        );
+
+        var morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("ni"), "32");
+
+        // Ordered after the merge, so it unapplies first and leaves an optional z inside the span n..i.
+        var deletion = new RewriteRule
+        {
+            Name = "deletion",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "z")).Value,
+        };
+        Morphophonemic.PhonologicalRules.Add(deletion);
+        deletion.Subrules.Add(
+            new RewriteSubrule
+            {
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "n")).Value,
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "i")).Value,
+            }
+        );
+
+        morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("ni"), "32");
+    }
+
+    [Test]
+    public void RightToLeftMergeRuleUnappliesAcrossInterposedOptionalSegment()
+    {
+        var merge = new RewriteRule
+        {
+            Name = "merge",
+            Direction = Direction.RightToLeft,
+            Lhs = Pattern<Word, ShapeNode>
+                .New()
+                .Annotation(Character(Table3, "s"))
+                .Annotation(Character(Table3, "a"))
+                .Annotation(Character(Table3, "g"))
+                .Value,
+        };
+        Morphophonemic.PhonologicalRules.Add(merge);
+        merge.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>
+                    .New()
+                    .Annotation(Character(Table3, "n"))
+                    .Annotation(Character(Table3, "i"))
+                    .Value,
+            }
+        );
+
+        var morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("ni"), "32");
+
+        // Ordered after the merge, so it unapplies first and leaves an optional z inside the span n..i.
+        var deletion = new RewriteRule
+        {
+            Name = "deletion",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "z")).Value,
+        };
+        Morphophonemic.PhonologicalRules.Add(deletion);
+        deletion.Subrules.Add(
+            new RewriteSubrule
+            {
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "n")).Value,
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "i")).Value,
+            }
+        );
+
+        morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("ni"), "32");
+    }
+
+    [Test]
+    public void MergeRuleUnappliesAcrossInterposedOptionalBoundary()
+    {
+        var merge = new RewriteRule
+        {
+            Name = "merge",
+            Lhs = Pattern<Word, ShapeNode>
+                .New()
+                .Annotation(Character(Table3, "s"))
+                .Annotation(Character(Table3, "a"))
+                .Annotation(Character(Table3, "g"))
+                .Value,
+        };
+        Morphophonemic.PhonologicalRules.Add(merge);
+        merge.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>
+                    .New()
+                    .Annotation(Character(Table3, "n"))
+                    .Annotation(Character(Table3, "i"))
+                    .Value,
+            }
+        );
+
+        // Ordered after the merge, so it unapplies first and leaves an optional boundary inside the span n..i.
+        var deletion = new RewriteRule
+        {
+            Name = "deletion",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "+")).Value,
+        };
+        Morphophonemic.PhonologicalRules.Add(deletion);
+        deletion.Subrules.Add(
+            new RewriteSubrule
+            {
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "n")).Value,
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "i")).Value,
+            }
+        );
+
+        var morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("ni"), "32");
+    }
+
+    [Test]
+    public void MergeRuleWithOptionalReplacementSegmentSkipsEmptyCapture()
+    {
+        var merge = new RewriteRule
+        {
+            Name = "merge",
+            Lhs = Pattern<Word, ShapeNode>
+                .New()
+                .Annotation(Character(Table3, "s"))
+                .Annotation(Character(Table3, "a"))
+                .Annotation(Character(Table3, "g"))
+                .Value,
+        };
+        Morphophonemic.PhonologicalRules.Add(merge);
+        merge.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>
+                    .New()
+                    .Annotation(Character(Table3, "p"))
+                    .Annotation(Character(Table3, "i"))
+                    .Optional.Value,
+            }
+        );
+
+        // The optional i captures nothing in "pu"; this checks that the empty capture is skipped rather than throwing.
+        var morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("pu"), "52");
+    }
+
+    [Test]
     public void BoundaryRules()
     {
         var highVowel = FeatureStruct
