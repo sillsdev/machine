@@ -34,7 +34,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     );
                 }
             }
-            HasRepeatedParts = _capturedParts.Values.Any(count => count >= 2);
+            // a modified part is never checked by HasDisagreeingCopies, so repeating it needs no predicate
+            HasRepeatedParts = _capturedParts.Any(part => part.Value >= 2 && !_modifyFromInfos.ContainsKey(part.Key));
         }
 
         internal bool HasRepeatedParts { get; }

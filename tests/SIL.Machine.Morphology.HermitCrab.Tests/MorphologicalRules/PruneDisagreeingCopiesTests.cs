@@ -467,6 +467,70 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
         Assert.That(ParseGlosses(morpher, "saza"), Does.Contain("ROOT RED"));
     }
 
+    [Test]
+    public void CopyAndModifyOfTheSamePartDoesNotInstallTheCopyAgreementPredicate()
+    {
+        AffixProcessAllomorph allomorph = CreateCopyAndModifyAllomorph();
+
+        Assert.That(new AnalysisAffixProcessAllomorphRuleSpec(allomorph).CopyAgreementCheck, Is.Null);
+    }
+
+    [Test]
+    public void TwoCopiesOfAPartStillInstallTheCopyAgreementPredicate()
+    {
+        AffixProcessAllomorph allomorph = CreateCopyAllomorph(FullPart(), 2);
+
+        Assert.That(new AnalysisAffixProcessAllomorphRuleSpec(allomorph).CopyAgreementCheck, Is.Not.Null);
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public void CopyAndModifyOfTheSamePartParsesTheSameWithAndWithoutPruning(bool pruneCopies)
+    {
+        var rule = new AffixProcessRule
+        {
+            Name = "copy_modify",
+            Gloss = "RED",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New().Value,
+            OutSyntacticFeatureStruct = FeatureStruct.New().Value,
+        };
+        rule.Allomorphs.Add(CreateCopyAndModifyAllomorph());
+        Morphophonemic.MorphologicalRules.Add(rule);
+        LexEntry root = AddEntry(
+            "ROOT",
+            FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            Morphophonemic,
+            "pi"
+        );
+        try
+        {
+            string[] generated = new Morpher(TraceManager, Language)
+                .GenerateWords(root, new Morpheme[] { rule }, FeatureStruct.New().Value)
+                .ToArray();
+            Assert.That(generated, Is.Not.Empty);
+            Assert.That(ParseGlosses(CreateMorpher(pruneCopies), generated[0]), Does.Contain("ROOT RED"));
+        }
+        finally
+        {
+            Morphophonemic.Entries.Remove(root);
+            Morphophonemic.MorphologicalRules.Remove(rule);
+        }
+    }
+
+    private AffixProcessAllomorph CreateCopyAndModifyAllomorph()
+    {
+        FeatureStruct voiced = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("vd+")
+            .Value;
+        return new AffixProcessAllomorph
+        {
+            Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(AnySegment).OneOrMore.Value },
+            Rhs = { new CopyFromInput("1"), new ModifyFromInput("1", voiced) },
+        };
+    }
+
     private RewriteRule CreateBetweenVowelsRewrite(CharacterDefinitionTable table, string from, FeatureStruct rhs)
     {
         var rule = new RewriteRule
