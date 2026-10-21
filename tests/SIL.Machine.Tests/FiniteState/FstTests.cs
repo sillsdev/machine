@@ -310,13 +310,14 @@ public class FstTests : PhoneticTestsBase
         Assert.That(fst.ResultCompare(greedy4, lazy2), Is.EqualTo(-fst.ResultCompare(lazy2, greedy4)));
         Assert.That(fst.ResultCompare(lazy3, lazy2), Is.EqualTo(-fst.ResultCompare(lazy2, lazy3)));
 
+        Assert.That(fst.ResultCompare(greedy1, lazy3), Is.EqualTo(1));
+        Assert.That(fst.ResultCompare(greedy1, lazy2), Is.EqualTo(1));
+        Assert.That(fst.ResultCompare(greedy4, lazy3), Is.EqualTo(1));
+        Assert.That(fst.ResultCompare(greedy4, lazy2), Is.EqualTo(1));
+
         // Changing the direction should reverse the result of the comparisons.
         int result = leftToRight ? 1 : -1;
         Assert.That(fst.ResultCompare(greedy1, greedy4), Is.EqualTo(result));
-        Assert.That(fst.ResultCompare(greedy1, lazy3), Is.EqualTo(result));
-        Assert.That(fst.ResultCompare(greedy1, lazy2), Is.EqualTo(result));
-        Assert.That(fst.ResultCompare(greedy4, lazy3), Is.EqualTo(result));
-        Assert.That(fst.ResultCompare(greedy4, lazy2), Is.EqualTo(result));
         Assert.That(fst.ResultCompare(lazy3, lazy2), Is.EqualTo(result));
 
         // Test lazy and greedy that share a common annotation.
@@ -332,6 +333,6 @@ public class FstTests : PhoneticTestsBase
             [],
             0
         );
-        Assert.That(fst.ResultCompare(greedy3, lazy3), Is.EqualTo(result));
+        Assert.That(fst.ResultCompare(greedy3, lazy3), Is.EqualTo(1));
     }
 }

@@ -420,28 +420,28 @@ namespace SIL.Machine.FiniteState
                 return compare;
 
             compare = -x.NextAnnotation.CompareTo(y.NextAnnotation);
+            if (_dir == Direction.RightToLeft)
+                compare = -compare;
             if (IsDeterministic)
             {
                 if (x.IsLazy && y.IsLazy)
                     // prefer the shorter one
                     compare = -compare;
                 else if (x.IsLazy || y.IsLazy)
-                    // prefer the lazy one
+                    // prefer the lazy one, regardless of direction
                     compare = x.IsLazy ? -1 : 1;
             }
-            if (_dir == Direction.RightToLeft)
-                compare = -compare;
-            if (compare != 0)
-                return compare;
-            if (!IsDeterministic)
+            else if (compare == 0)
             {
                 foreach (Tuple<int, int> priorityPair in x.Priorities.Zip(y.Priorities))
                 {
                     compare = priorityPair.Item1.CompareTo(priorityPair.Item2);
                     if (compare != 0)
-                        return compare;
+                        break;
                 }
             }
+            if (compare != 0)
+                return compare;
             return x.Order.CompareTo(y.Order);
         }
 
