@@ -51,7 +51,7 @@ public static class EngineGateWitnessSweep
                 continue;
             }
 
-            Morpher morpher = ConformanceMorpherFactory.CreateTracing(language);
+            Morpher morpher = ConformanceMorpherFactory.CreateTracing(language, fixture.Words.Morpher);
 
             foreach (WordEntry word in fixture.Words.Words)
             {

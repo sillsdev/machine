@@ -1,0 +1,46 @@
+# oracle-provenance: founding-oracle
+# Every signature and traced rule list below is OBSERVED from the C# founding oracle: the hc-conformance
+# self-check (in-process hc.dll Morpher, MaxDegreeOfParallelism 1, DeletionReapplications = 1 from the
+# morpher: block below) built from sillsdev/machine 72dbd4f9 (integrate-conformance-framework, PR #480)
+# plus the morpher: settings channel this fixture introduces. Observed at three settings, same grammar:
+#   DelReapps 0 (the section 8 default): tuki -> TUKI only
+#   DelReapps 1 (this fixture):          tuki -> TUKI, TUIIKI, TUIIIKI
+#   DelReapps 2:                         tuki -> TUKI, TUIIKI, TUIIIKI, TUIIIIKI
+# so an engine that ignores the morpher: block, or applies it as anything but 1 + DelReapps analysis
+# passes of the deletion rule, fails "tuki" in a direction that names the mistake.
+#
+# Pins Morpher.DeletionReapplications (AnalysisRewriteRule.Apply, ReapplyType.Deletion), which FieldWorks
+# sets from <ParserParameters><HC><DelReapps>. prHiatusI deletes "i" after a high vowel, left to right,
+# so any run of i's after "u" deletes completely; analysis restores a bounded number of them, and the
+# bound is the setting.
+
+language: DeletionReapplications
+inspired_by: ["synthetic hiatus-resolution-by-deletion probe (not modeling any real language)"]
+sources:
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/AnalysisRewriteRule.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/Morpher.cs"
+requires: [phonology, morpher-settings]
+fieldworks_producible: true
+morpher:
+  DelReapps: 1
+words:
+  - word: tuki
+    note: >-
+      TUKI is itself; TUIIKI and TUIIIKI lose their i-runs to prHiatusI and also surface as "tuki". With
+      DelReapps 1 analysis restores up to three consecutive i's, so both are found; TUIIIIKI (four i's)
+      needs DelReapps 2 and is correctly absent.
+    parses:
+      - signature: "TUKI|tuki"
+        rules: [prHiatusI]
+      - signature: "TUIIKI|tuki"
+        rules: [prHiatusI]
+      - signature: "TUIIIKI|tuki"
+        rules: [prHiatusI]
+  - word: tuiiki
+    note: Underlying shape of TUIIKI; the i's after u always delete, so this never surfaces.
+    expect_fail: true
+  - word: taiki
+    note: Control. After the low vowel "a" nothing deletes, so TAIKI is itself at every setting.
+    parses:
+      - signature: "TAIKI|taiki"
+        rules: []

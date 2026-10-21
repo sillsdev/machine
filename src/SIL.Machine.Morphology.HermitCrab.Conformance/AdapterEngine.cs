@@ -29,6 +29,15 @@ public class AdapterEngine : IEngine
         string outputPath = Path.Combine(Path.GetTempPath(), "hc-conformance-" + Guid.NewGuid().ToString("N") + ".tsv");
         try
         {
+            // A fixture with a morpher: block reaches an adapter only through {morpher}; without it the
+            // adapter would run at the defaults the fixture overrides.
+            if (!fixture.Manifest.Morpher.IsEmpty && !_templateTokens.Exists(t => t.Contains("{morpher}")))
+            {
+                throw new InvalidOperationException(
+                    $"fixture '{fixture.Id}' sets morpher: settings but the --adapter command template has no "
+                        + "{morpher} placeholder to pass them through; add it or drop the morpher-settings capability"
+                );
+            }
             var tokens = new List<string>(_templateTokens.Count);
             foreach (string token in _templateTokens)
             {
@@ -37,6 +46,7 @@ public class AdapterEngine : IEngine
                         .Replace("{grammar}", Path.GetFullPath(fixture.GrammarPath))
                         .Replace("{words}", Path.GetFullPath(fixture.WordsPath))
                         .Replace("{output}", outputPath)
+                        .Replace("{morpher}", Path.GetFullPath(fixture.MorpherPath))
                 );
             }
 

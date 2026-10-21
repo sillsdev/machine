@@ -27,7 +27,18 @@ public static class WordsYamlLoader
         "expect_crash",
         "fieldworks_producible",
         "fieldworks_producible_notes",
+        "morpher",
         "words",
+    };
+
+    // The morpher: block's keys are FieldWorks <ParserParameters><HC> element names (HCParser.LoadParser),
+    // limited to the settings whose only effect is which analyses a parse returns.
+    private static readonly HashSet<string> MorpherKeys = new(StringComparer.Ordinal)
+    {
+        "DelReapps",
+        "MaxRoots",
+        "MergeAnalyses",
+        "MakePartialsFinal",
     };
     private static readonly HashSet<string> WordKeys = new(StringComparer.Ordinal)
     {
@@ -158,6 +169,9 @@ public static class WordsYamlLoader
             );
         }
 
+        if (map.TryGetValue("morpher", out YamlNode morpherNode))
+            ParseMorpher(morpherNode, doc.Morpher, path);
+
         if (!map.TryGetValue("words", out YamlNode wordsNode) || wordsNode is not YamlSequenceNode wordsSeq)
             throw new WordsYamlException(path, "front matter must have a 'words' sequence");
         if (wordsSeq.Children.Count == 0)
@@ -167,6 +181,61 @@ public static class WordsYamlLoader
             doc.Words.Add(ParseWord(wordNode, path));
 
         return doc;
+    }
+
+    /// <summary>
+    /// Reads the <c>morpher:</c> mapping into <paramref name="settings"/>. An empty block, an unknown key,
+    /// a non-integer or out-of-range count, or a non-boolean flag is an error: a setting the harness
+    /// cannot apply must not silently fall back to the default it was meant to override.
+    /// </summary>
+    private static void ParseMorpher(YamlNode node, MorpherSettings settings, string path)
+    {
+        if (node is not YamlMappingNode mapNode)
+            throw new WordsYamlException(path, "front matter.morpher: expected a mapping");
+        Dictionary<string, YamlNode> map = RequireMapping(mapNode, MorpherKeys, path, "front matter.morpher");
+        if (map.Count == 0)
+        {
+            throw new WordsYamlException(
+                path,
+                "front matter.morpher: an empty block means the defaults; omit it instead"
+            );
+        }
+        if (map.TryGetValue("DelReapps", out YamlNode delReappsNode))
+            settings.DelReapps = ParseCount(delReappsNode, 0, path, "front matter.morpher.DelReapps");
+        if (map.TryGetValue("MaxRoots", out YamlNode maxRootsNode))
+            settings.MaxRoots = ParseCount(maxRootsNode, 1, path, "front matter.morpher.MaxRoots");
+        if (map.TryGetValue("MergeAnalyses", out YamlNode mergeNode))
+        {
+            settings.MergeAnalyses = ParseBool(
+                RequireScalarNode(mergeNode, path, "front matter.morpher.MergeAnalyses"),
+                path
+            );
+        }
+        if (map.TryGetValue("MakePartialsFinal", out YamlNode partialsNode))
+        {
+            settings.MakePartialsFinal = ParseBool(
+                RequireScalarNode(partialsNode, path, "front matter.morpher.MakePartialsFinal"),
+                path
+            );
+        }
+    }
+
+    private static int ParseCount(YamlNode node, int minimum, string path, string context)
+    {
+        string text = RequireScalarNode(node, path, context);
+        if (
+            !int.TryParse(
+                text,
+                System.Globalization.NumberStyles.None,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out int value
+            )
+            || value < minimum
+        )
+        {
+            throw new WordsYamlException(path, $"{context}: expected a whole number of at least {minimum}, got '{text}'");
+        }
+        return value;
     }
 
     private static WordEntry ParseWord(YamlNode node, string path)
