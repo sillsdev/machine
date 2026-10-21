@@ -233,7 +233,10 @@ public static class WordsYamlLoader
             || value < minimum
         )
         {
-            throw new WordsYamlException(path, $"{context}: expected a whole number of at least {minimum}, got '{text}'");
+            throw new WordsYamlException(
+                path,
+                $"{context}: expected a whole number of at least {minimum}, got '{text}'"
+            );
         }
         return value;
     }
