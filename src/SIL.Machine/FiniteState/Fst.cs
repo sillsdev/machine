@@ -56,9 +56,22 @@ namespace SIL.Machine.FiniteState
             _filter = ann => true;
             _registersEqualityComparer = new RegistersEqualityComparer<TOffset>(offsetEqualityComparer);
             _offsetEqualityComparer = offsetEqualityComparer;
+            foreach (State<TData, TOffset> state in States)
+            {
+                foreach (AcceptInfo<TData, TOffset> acceptInfo in state.AcceptInfos)
+                {
+                    if (acceptInfo.Acceptable != null)
+                    {
+                        HasAcceptable = true;
+                        break;
+                    }
+                }
+            }
         }
 
         public bool IsDeterministic { get; private set; }
+
+        public bool HasAcceptable { get; private set; }
 
         public State<TData, TOffset> CreateAcceptingState()
         {
@@ -387,7 +400,7 @@ namespace SIL.Machine.FiniteState
                 }
 
                 List<FstResult<TData, TOffset>> curResults = traversalMethod
-                    .Traverse(ref annIndex, initRegisters, cmds, initAnns)
+                    .Traverse(ref annIndex, initRegisters, cmds, initAnns, allMatches)
                     .ToList();
                 if (curResults.Count > 0)
                 {

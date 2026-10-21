@@ -22,7 +22,8 @@ namespace SIL.Machine.FiniteState
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
             IList<TagMapCommand> initCmds,
-            ISet<int> initAnns
+            ISet<int> initAnns,
+            bool allMatches
         )
         {
             Stack<DeterministicFsaTraversalInstance<TData, TOffset>> instStack = InitializeStack(
@@ -33,15 +34,20 @@ namespace SIL.Machine.FiniteState
             );
 
             var curResults = new List<FstResult<TData, TOffset>>();
+            var lattice = !Fst.HasAcceptable ? CreateFstLattice() : null;
+
             while (instStack.Count != 0)
             {
                 DeterministicFsaTraversalInstance<TData, TOffset> inst = instStack.Pop();
+                DeterministicFsaTraversalInstance<TData, TOffset> origInst =
+                    lattice != null ? CopyInstanceAndBindings(inst) : null;
 
                 bool releaseInstance = true;
                 foreach (Arc<TData, TOffset> arc in inst.State.Arcs)
                 {
                     if (CheckInputMatch(arc, inst.AnnotationIndex, inst.VariableBindings))
                     {
+                        int resultCount = lattice != null ? curResults.Count : 0;
                         foreach (
                             DeterministicFsaTraversalInstance<TData, TOffset> ni in Advance(
                                 inst,
@@ -51,8 +57,13 @@ namespace SIL.Machine.FiniteState
                             )
                         )
                         {
+                            if (lattice != null && RecordedInstance(lattice, ni, origInst, arc))
+                                continue;
                             instStack.Push(ni);
                         }
+
+                        if (lattice != null && curResults.Count > resultCount)
+                            RecordFinalArc(lattice, origInst, arc);
 
                         releaseInstance = false;
                         break;
@@ -61,6 +72,11 @@ namespace SIL.Machine.FiniteState
 
                 if (releaseInstance)
                     ReleaseInstance(inst);
+            }
+
+            if (lattice != null)
+            {
+                curResults = ExtractResults(lattice, allMatches);
             }
 
             CheckAcceptingStartState(initAnns, initRegisters, curResults);

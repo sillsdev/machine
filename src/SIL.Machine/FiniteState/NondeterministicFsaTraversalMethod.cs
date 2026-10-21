@@ -24,7 +24,8 @@ namespace SIL.Machine.FiniteState
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
             IList<TagMapCommand> initCmds,
-            ISet<int> initAnns
+            ISet<int> initAnns,
+            bool allMatches
         )
         {
             Stack<NondeterministicFsaTraversalInstance<TData, TOffset>> instStack = InitializeStack(
