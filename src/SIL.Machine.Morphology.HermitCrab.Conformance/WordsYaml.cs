@@ -28,6 +28,9 @@ public class WordsYaml
     /// offending construct(s) and cites the HCLoader evidence grounding the verdict.</summary>
     public string FieldworksProducibleNotes = "";
 
+    /// <summary>The <c>morpher:</c> block; empty when absent, meaning the PROTOCOL.md section 8 defaults.</summary>
+    public MorpherSettings Morpher { get; } = new();
+
     public List<WordEntry> Words { get; } = new();
 }
 

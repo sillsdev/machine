@@ -53,11 +53,17 @@ public static class FixtureMaterializer
             }
         }
 
+        File.WriteAllText(
+            Path.Combine(tempDir, MaterializedFixture.MorpherFileName),
+            System.Text.Json.JsonSerializer.Serialize(fixture.Words.Morpher.ToDictionary())
+        );
+
         var manifest = new FixtureManifest
         {
             Id = fixture.Id,
             Category = fixture.Words.BudgetMs.HasValue ? "pathological" : "single-feature",
             Requires = fixture.Words.Requires,
+            Morpher = fixture.Words.Morpher,
             ExpectCrash = fixture.Words.ExpectCrash,
             Budget = fixture.Words.BudgetMs.HasValue
                 ? new FixtureBudget { WallClockMs = fixture.Words.BudgetMs.Value }

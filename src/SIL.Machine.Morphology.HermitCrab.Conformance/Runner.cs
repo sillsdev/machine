@@ -65,7 +65,7 @@ public static class Runner
     {
         var result = new FixtureResult { FixtureId = fixture.Id };
 
-        List<string> derivedRequires = RequiresDerivation.Derive(fixture.GrammarPath);
+        List<string> derivedRequires = RequiresDerivation.Derive(fixture.GrammarPath, fixture.Words.Morpher);
         if (
             !new HashSet<string>(derivedRequires, StringComparer.Ordinal).SetEquals(
                 new HashSet<string>(fixture.Words.Requires, StringComparer.Ordinal)
@@ -199,8 +199,8 @@ result.WordResults
     )
     {
         Language language = XmlLanguageLoader.Load(fixture.GrammarPath);
-        Morpher resultMorpher = ConformanceMorpherFactory.Create(language, useMemoization);
-        Morpher tracingMorpher = ConformanceMorpherFactory.CreateTracing(language);
+        Morpher resultMorpher = ConformanceMorpherFactory.Create(language, fixture.Words.Morpher, useMemoization);
+        Morpher tracingMorpher = ConformanceMorpherFactory.CreateTracing(language, fixture.Words.Morpher);
         GrammarRuleIndex ruleIndex = GrammarRuleIndex.Load(fixture.GrammarPath);
 
         foreach (WordEntry word in fixture.Words.Words)

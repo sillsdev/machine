@@ -113,7 +113,9 @@ public static class CounterfactualGate
     )
     {
         Language language = XmlLanguageLoader.Load(grammarPath);
-        Morpher morpher = ConformanceMorpherFactory.Create(language);
+        // Baseline and mutant both run here, at the section 8 defaults: a fixture's morpher: block is not
+        // passed to the mutant child, so a surface delta is measured under the defaults for every fixture.
+        Morpher morpher = ConformanceMorpherFactory.Create(language, MorpherSettings.Defaults);
         return words.Select(word => Outcome(morpher, word, onTimed)).ToArray();
     }
 

@@ -220,7 +220,7 @@ public static class GateObligationLedger
         }
 
         GrammarRuleIndex ruleIndex = GrammarRuleIndex.Load(fixture.GrammarPath);
-        Morpher morpher = ConformanceMorpherFactory.CreateTracing(language);
+        Morpher morpher = ConformanceMorpherFactory.CreateTracing(language, fixture.Words.Morpher);
 
         foreach (WordEntry entry in fixture.Words.Words)
         {
