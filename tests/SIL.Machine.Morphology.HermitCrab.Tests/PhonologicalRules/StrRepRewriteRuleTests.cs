@@ -101,4 +101,66 @@ public class StrRepRewriteRuleTests
         word.ResetDirty();
         Assert.That(analysisRule.Apply(word), Is.Empty);
     }
+
+    [TestCase(RewriteApplicationMode.Iterative)]
+    [TestCase(RewriteApplicationMode.Simultaneous)]
+    public void MultiSpellingLiteralRewriteAnalyzesEachSourceSpellingAndRejectsUnrewrittenForms(
+        RewriteApplicationMode applicationMode
+    )
+    {
+        var table = new CharacterDefinitionTable();
+        foreach (string segment in new[] { "a", "t", "k", "d", "p" })
+            table.AddSegment(segment);
+        var language = new Language();
+        language.SyntacticFeatureSystem.AddPartsOfSpeech(new FeatureSymbol("N"));
+        var stratum = new Stratum(table);
+        language.Strata.Add(stratum);
+        var entries = new Dictionary<string, LexEntry>();
+        foreach (string form in new[] { "ata", "aka", "apa" })
+        {
+            var entry = new LexEntry
+            {
+                Id = form,
+                SyntacticFeatureStruct = FeatureStruct.New(language.SyntacticFeatureSystem).Symbol("N").Value,
+            };
+            entry.Allomorphs.Add(new RootAllomorph(new Segments(table, form)));
+            stratum.Entries.Add(entry);
+            entries.Add(form, entry);
+        }
+        var stops = new SegmentNaturalClass(new[] { table["t"], table["k"] });
+        var rule = new RewriteRule
+        {
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(stops.FeatureStruct).Value,
+            ApplicationMode = applicationMode,
+        };
+        rule.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(table["d"].FeatureStruct).Value,
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(table["a"].FeatureStruct).Value,
+            }
+        );
+        stratum.PhonologicalRules.Add(rule);
+        var morpher = new Morpher(new TraceManager(), language);
+
+        foreach (string form in new[] { "ata", "aka" })
+        {
+            Assert.That(
+                morpher.GenerateWords(entries[form], Array.Empty<Morpheme>(), new FeatureStruct()),
+                Is.EquivalentTo(new[] { "ada" }),
+                form
+            );
+        }
+        Assert.That(
+            morpher.ParseWord("ada").Select(w => w.RootAllomorph.Morpheme.Id),
+            Is.EquivalentTo(new[] { "ata", "aka" })
+        );
+        Assert.That(
+            morpher.GenerateWords(entries["apa"], Array.Empty<Morpheme>(), new FeatureStruct()),
+            Is.EquivalentTo(new[] { "apa" })
+        );
+        Assert.That(morpher.ParseWord("apa").Select(w => w.RootAllomorph.Morpheme.Id), Is.EqualTo(new[] { "apa" }));
+        foreach (string unrewritten in new[] { "ata", "aka", "adp" })
+            Assert.That(morpher.ParseWord(unrewritten), Is.Empty, unrewritten);
+    }
 }
