@@ -734,6 +734,10 @@ public class MorpherTests : HermitCrabTestBase
                 $"a parallelism cap must not change the analysis set for '{word}'"
             );
         }
+
+        // Absolute, so a bug that empties both capped and unbounded results identically is still caught.
+        // pʰutdidat has no parse here, so only pʰutdat (two analyses) is compared non-trivially.
+        Assert.That(unbounded.ParseWord("pʰutdat"), Is.Not.Empty);
     }
 
     [Test]
