@@ -12,6 +12,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         private readonly Pattern<Word, ShapeNode> _pattern;
         private readonly Dictionary<string, Tuple<int, FeatureStruct>> _modifyFromInfos;
         private readonly Dictionary<string, int> _capturedParts;
+        private readonly List<KeyValuePair<string, int>> _copyCheckedParts;
 
         public AnalysisMorphologicalTransform(
             IEnumerable<Pattern<Word, ShapeNode>> lhs,
@@ -34,8 +35,11 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     );
                 }
             }
-            // a modified part is never checked by HasDisagreeingCopies, so repeating it needs no predicate
-            HasRepeatedParts = _capturedParts.Any(part => part.Value >= 2 && !_modifyFromInfos.ContainsKey(part.Key));
+            // a modified part is never checked for disagreeing copies, so repeating it needs no predicate
+            _copyCheckedParts = _capturedParts
+                .Where(part => part.Value >= 2 && !_modifyFromInfos.ContainsKey(part.Key))
+                .ToList();
+            HasRepeatedParts = _copyCheckedParts.Count > 0;
         }
 
         internal bool HasRepeatedParts { get; }
@@ -60,11 +64,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         /// </summary>
         internal bool HasDisagreeingCopies(Match<Word, ShapeNode> match)
         {
-            foreach (KeyValuePair<string, int> capturedPart in _capturedParts)
+            foreach (KeyValuePair<string, int> capturedPart in _copyCheckedParts)
             {
-                if (capturedPart.Value < 2 || _modifyFromInfos.ContainsKey(capturedPart.Key))
-                    continue;
-
                 if (
                     TryGetSegmentCopies(match, capturedPart.Key, capturedPart.Value, out List<List<ShapeNode>> copies)
                     && AnyCopiesDisagree(copies)
