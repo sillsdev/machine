@@ -4,10 +4,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.FeatureModel
 {
-    public class VariableBindings
-        : IDictionary<string, SimpleFeatureValue>,
-            ICloneable<VariableBindings>,
-            IValueEquatable<VariableBindings>
+    public class VariableBindings : IDictionary<string, SimpleFeatureValue>, ICloneable<VariableBindings>
     {
         private readonly Dictionary<string, SimpleFeatureValue> _varBindings;
 
@@ -146,27 +143,39 @@ namespace SIL.Machine.FeatureModel
             return new VariableBindings(this);
         }
 
-        public bool ValueEquals(VariableBindings other)
+        public override bool Equals(object obj)
         {
-            if (other == null)
-                return false;
-
-            if (ReferenceEquals(this, other))
+            if (ReferenceEquals(this, obj))
                 return true;
 
-            if (_varBindings.Count != other._varBindings.Count)
+            if (!(obj is VariableBindings other) || _varBindings.Count != other._varBindings.Count)
                 return false;
 
-            foreach (KeyValuePair<string, SimpleFeatureValue> kvp in _varBindings)
+            foreach (KeyValuePair<string, SimpleFeatureValue> binding in _varBindings)
             {
-                SimpleFeatureValue otherVal;
-                if (!other._varBindings.TryGetValue(kvp.Key, out otherVal))
+                SimpleFeatureValue otherValue;
+                if (!other._varBindings.TryGetValue(binding.Key, out otherValue))
                     return false;
-                if (!kvp.Value.ValueEquals(otherVal))
+
+                if (binding.Value == null ? otherValue != null : !binding.Value.ValueEquals(otherValue))
                     return false;
             }
 
             return true;
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = 17;
+            foreach (KeyValuePair<string, SimpleFeatureValue> binding in _varBindings)
+            {
+                int bindingHashCode = binding.Key.GetHashCode();
+                if (binding.Value != null)
+                    bindingHashCode = bindingHashCode * 31 + binding.Value.ToString().GetHashCode();
+                hashCode += bindingHashCode;
+            }
+
+            return hashCode;
         }
     }
 }

@@ -56,9 +56,23 @@ namespace SIL.Machine.FiniteState
             _filter = ann => true;
             _registersEqualityComparer = new RegistersEqualityComparer<TOffset>(offsetEqualityComparer);
             _offsetEqualityComparer = offsetEqualityComparer;
+            foreach (State<TData, TOffset> state in States)
+            {
+                foreach (AcceptInfo<TData, TOffset> acceptInfo in state.AcceptInfos)
+                {
+                    if (acceptInfo.Acceptable != null)
+                    {
+                        HasAcceptable = true;
+                        break;
+                    }
+                }
+            }
+
         }
 
         public bool IsDeterministic { get; private set; }
+
+        public bool HasAcceptable { get; private set; }
 
         public State<TData, TOffset> CreateAcceptingState()
         {
@@ -424,7 +438,12 @@ namespace SIL.Machine.FiniteState
                 compare = -compare;
             if (IsDeterministic)
             {
-                compare = x.IsLazy ? -compare : compare;
+                if (x.IsLazy && y.IsLazy)
+                    // prefer the shorter one
+                    compare = -compare;
+                else if (x.IsLazy || y.IsLazy)
+                    // prefer the lazy one, regardless of direction
+                    compare = x.IsLazy ? -1 : 1;
             }
             else if (compare == 0)
             {

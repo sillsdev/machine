@@ -649,27 +649,16 @@ namespace SIL.Machine.FiniteState
             }
             if (!allMatches && instances.Count > 1)
             {
-                StableSort(instances, InstanceCompare);
                 TInst first = instances.First();
+                for (int i = 1; i < instances.Count; i++)
+                {
+                    if (InstanceCompare(instances[i], first) < 0)
+                        first = instances[i];
+                }
                 instances.Clear();
                 instances.Add(first);
             }
             return instances;
-        }
-
-        private static void StableSort(IList<TInst> items, Comparison<TInst> compare)
-        {
-            for (int i = 1; i < items.Count; i++)
-            {
-                TInst item = items[i];
-                int j = i - 1;
-                while (j >= 0 && compare(items[j], item) > 0)
-                {
-                    items[j + 1] = items[j];
-                    j--;
-                }
-                items[j + 1] = item;
-            }
         }
 
         private void AdvanceInstance(
@@ -722,7 +711,7 @@ namespace SIL.Machine.FiniteState
                 return x.State.Equals(y.State) && x.AnnotationIndex.Equals(y.AnnotationIndex);
             return x.State.Equals(y.State)
                 && x.AnnotationIndex.Equals(y.AnnotationIndex)
-                && x.VariableBindings.ValueEquals(y.VariableBindings);
+                && x.VariableBindings.Equals(y.VariableBindings);
         }
 
         private int LatticeNodeKeyGetHashCode(LatticeNode m)

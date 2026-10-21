@@ -34,12 +34,13 @@ namespace SIL.Machine.FiniteState
             );
 
             var curResults = new List<FstResult<TData, TOffset>>();
-            var lattice = !HasAcceptable(Fst) ? CreateFstLattice() : null;
+            var lattice = !Fst.HasAcceptable ? CreateFstLattice() : null;
 
             while (instStack.Count != 0)
             {
                 DeterministicFsaTraversalInstance<TData, TOffset> inst = instStack.Pop();
-                DeterministicFsaTraversalInstance<TData, TOffset> origInst = CopyInstanceAndBindings(inst);
+                DeterministicFsaTraversalInstance<TData, TOffset> origInst =
+                    lattice != null ? CopyInstanceAndBindings(inst) : null;
 
                 bool releaseInstance = true;
                 foreach (Arc<TData, TOffset> arc in inst.State.Arcs)

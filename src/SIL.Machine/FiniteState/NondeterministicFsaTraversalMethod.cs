@@ -75,23 +75,19 @@ namespace SIL.Machine.FiniteState
                                 arc,
                                 curResults
                             );
-                            bool skip = false;
-                            if (!skip)
+                            Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(
+                                newInst.State,
+                                newInst.AnnotationIndex,
+                                newInst.Registers
+                            );
+                            if (!traversed.Contains(key))
                             {
-                                Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(
-                                    newInst.State,
-                                    newInst.AnnotationIndex,
-                                    newInst.Registers
-                                );
-                                if (!traversed.Contains(key))
-                                {
-                                    instStack.Push(newInst);
-                                    traversed.Add(key);
-                                }
-                                if (isInstReusable)
-                                    releaseInstance = false;
-                                varBindings = null;
+                                instStack.Push(newInst);
+                                traversed.Add(key);
                             }
+                            if (isInstReusable)
+                                releaseInstance = false;
+                            varBindings = null;
                         }
                     }
                     else
