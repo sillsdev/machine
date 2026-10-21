@@ -34,6 +34,8 @@ words:
         rules: [prHiatusI]
       - signature: "TUIIKI|tuki"
         rules: [prHiatusI]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
       - signature: "TUIIIKI|tuki"
         rules: [prHiatusI]
   - word: tuiiki

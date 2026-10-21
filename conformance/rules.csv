@@ -41,6 +41,7 @@ PathologicalDeepOptionalAffixNesting,mrP8,xxxxxxk;xxxxxxxxxxxxk
 PathologicalDeepOptionalAffixNesting,mrP9,xxxxxxk;xxxxxxxxxxxxk
 DefaultSymbolAfterMerge,prMerge,f
 DefaultSymbolAfterMerge,prShorten,f
+DeletionReapplications,prHiatusI,tuki
 DeletionReinsertedFeatureUnapply,prFinalDevoice,bag;bak
 DeletionReinsertedFeatureUnapply,prFinalTDeletion,bag;bak
 LatinDiacriticProbe,rDim,caféta;kelîta;!añota;!gölta
