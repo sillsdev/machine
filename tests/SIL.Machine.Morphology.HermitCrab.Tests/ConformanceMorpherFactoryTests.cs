@@ -26,7 +26,7 @@ public sealed class ConformanceMorpherFactoryTests
         Fixture fixture = Fixture.DiscoverAll(Path.Combine(RepositoryRoot(), "conformance")).First();
         Language language = XmlLanguageLoader.Load(fixture.GrammarPath);
 
-        Morpher morpher = ConformanceMorpherFactory.Create(language);
+        Morpher morpher = ConformanceMorpherFactory.Create(language, fixture.Words.Morpher);
 
         Assert.Multiple(() =>
         {
@@ -41,7 +41,7 @@ public sealed class ConformanceMorpherFactoryTests
         Fixture fixture = Fixture.DiscoverAll(Path.Combine(RepositoryRoot(), "conformance")).First();
         Language language = XmlLanguageLoader.Load(fixture.GrammarPath);
 
-        Morpher morpher = ConformanceMorpherFactory.Create(language, useMemoization: false);
+        Morpher morpher = ConformanceMorpherFactory.Create(language, fixture.Words.Morpher, useMemoization: false);
 
         Assert.Multiple(() =>
         {
@@ -64,7 +64,7 @@ public sealed class ConformanceMorpherFactoryTests
         Fixture fixture = Fixture.DiscoverAll(Path.Combine(RepositoryRoot(), "conformance")).First();
         Language language = XmlLanguageLoader.Load(fixture.GrammarPath);
 
-        Morpher morpher = ConformanceMorpherFactory.CreateTracing(language);
+        Morpher morpher = ConformanceMorpherFactory.CreateTracing(language, fixture.Words.Morpher);
 
         Assert.Multiple(() =>
         {

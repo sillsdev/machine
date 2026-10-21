@@ -32,6 +32,11 @@ public class FixtureManifest
     [JsonPropertyName("pathological")]
     public bool? Pathological { get; set; }
 
+    /// <summary>The fixture's <c>morpher:</c> block; an engine runs this fixture only if it declares
+    /// <see cref="MorpherSettings.Capability"/>, and must apply every value.</summary>
+    [JsonPropertyName("morpher")]
+    public MorpherSettings Morpher { get; set; } = new();
+
     [JsonPropertyName("expectCrash")]
     public bool ExpectCrash { get; set; }
 

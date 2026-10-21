@@ -68,7 +68,7 @@ public static class MaterializedRunner
                 continue;
             }
 
-            List<string> derivedRequires = RequiresDerivation.Derive(fixture.GrammarPath);
+            List<string> derivedRequires = RequiresDerivation.Derive(fixture.GrammarPath, fixture.Manifest.Morpher);
             if (
                 !new HashSet<string>(derivedRequires, StringComparer.Ordinal).SetEquals(
                     new HashSet<string>(fixture.Manifest.Requires, StringComparer.Ordinal)
