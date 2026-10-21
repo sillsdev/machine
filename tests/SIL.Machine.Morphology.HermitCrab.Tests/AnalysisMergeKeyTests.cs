@@ -82,6 +82,28 @@ public class AnalysisMergeKeyTests : HermitCrabTestBase
         Assert.That(KeysEqual(wordX, wordY), Is.False);
     }
 
+    [Test]
+    public void Equals_False_WhenSyntacticFeatureStructDiffers()
+    {
+        Word wordX = NewTestWord();
+        wordX.SyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value;
+        wordX.Freeze();
+
+        Word wordY = NewTestWord();
+        wordY.SyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value;
+        wordY.Freeze();
+
+        Assert.That(KeysEqual(wordX, wordY), Is.False);
+    }
+
+    [Test]
+    public void Constructor_Throws_WhenWordIsNotFrozen()
+    {
+        Word unfrozen = NewTestWord();
+
+        Assert.That(() => new AnalysisStratumRule.AnalysisMergeKey(unfrozen), Throws.ArgumentException);
+    }
+
     private static bool KeysEqual(Word x, Word y) =>
         new AnalysisStratumRule.AnalysisMergeKey(x).Equals(new AnalysisStratumRule.AnalysisMergeKey(y));
 
