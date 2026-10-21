@@ -17,4 +17,9 @@ public class MaterializedFixture(string directory, FixtureManifest manifest)
     public string GrammarPath => Path.Combine(Directory, "grammar.xml");
     public string WordsPath => Path.Combine(Directory, "words.txt");
     public string ExpectedPath => Path.Combine(Directory, "expected.tsv");
+
+    /// <summary>The JSON object of the fixture's <c>morpher:</c> block, keyed by FieldWorks element name; <c>{}</c> when absent.</summary>
+    public const string MorpherFileName = "morpher.json";
+
+    public string MorpherPath => Path.Combine(Directory, MorpherFileName);
 }

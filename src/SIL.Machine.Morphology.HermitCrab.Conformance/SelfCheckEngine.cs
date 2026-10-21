@@ -22,7 +22,11 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 /// </param>
 public class SelfCheckEngine(IReadOnlySet<string> capabilities = null, bool useMemoization = true) : IEngine
 {
-    private static readonly IReadOnlySet<string> DefaultCapabilities = new HashSet<string> { "phonology" };
+    private static readonly IReadOnlySet<string> DefaultCapabilities = new HashSet<string>
+    {
+        "phonology",
+        MorpherSettings.Capability,
+    };
 
     public string Name => useMemoization ? "self-check" : "self-check (memoization disabled)";
 
@@ -37,7 +41,7 @@ public class SelfCheckEngine(IReadOnlySet<string> capabilities = null, bool useM
         try
         {
             language = XmlLanguageLoader.Load(fixture.GrammarPath);
-            morpher = ConformanceMorpherFactory.Create(language, useMemoization);
+            morpher = ConformanceMorpherFactory.Create(language, fixture.Manifest.Morpher, useMemoization);
         }
         catch (Exception ex)
         {

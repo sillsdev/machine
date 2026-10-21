@@ -224,8 +224,9 @@ Two mechanisms make the suite serve engines of different scope without forking i
   `--capabilities ""` (empty) for a purely morphotactic engine. Self-check mode (running the live C#
   oracle in-process) always implies full capability, `phonology` included.
 - **Fixture capability requirement.** Every fixture's metadata (`words.yaml` front matter) carries a
-  `requires` array — today the only defined value is `phonology`, meaning "this fixture's
-  `grammar.xml` contains at least one `PhonologicalRule` or `MetathesisRule` element." An empty/absent
+  `requires` array. `phonology` means "this fixture's `grammar.xml` contains at least one
+  `PhonologicalRule` or `MetathesisRule` element"; `morpher-settings` means "this fixture's
+  `words.yaml` declares a `morpher:` block" (section 8), which the engine must apply. An empty/absent
   `requires` is pure morphotactics, runnable by any conforming engine. The harness mechanically
   re-derives this list from `grammar.xml` on every run and FAILs the fixture (a metadata error, not
   a conformance failure) if the checked-in `requires` disagrees, so this can never silently drift.
@@ -286,7 +287,8 @@ Two consequences:
 parse. `Morpher` (`src/SIL.Machine.Morphology.HermitCrab/Morpher.cs`) has several settable
 properties that change which analyses are found for the **same** grammar and word, and every one of
 this suite's `expected.tsv` files was generated with `Morpher` left at its plain constructor
-defaults: both `BatchCommand`'s host (`HCContext.Compile`,
+defaults **unless the fixture's `words.yaml` declares a `morpher:` block** (see "Overriding a default
+per fixture" at the end of this section): both `BatchCommand`'s host (`HCContext.Compile`,
 `src/SIL.Machine.Morphology.HermitCrab.Tool/HCContext.cs`) and the harness's self-check runner
 construct `new Morpher(traceManager, language)` and never assign any of the properties below. A
 formalism-correct reimplementation that happens to pick different values for these will diverge from
@@ -360,6 +362,52 @@ These are the only settable, parse-affecting properties found on `Morpher`; `Xml
 (which builds the `Language` object from `grammar.xml`) does not read, set, or expose any of them —
 every one of the above is host-side configuration layered on top of the grammar, never something a
 grammar file itself can express or override.
+
+### Overriding a default per fixture: the `morpher:` block
+
+A fixture whose ground truth depends on a non-default setting declares it in `words.yaml`'s front
+matter, keyed by the FieldWorks `<ParserParameters><HC>` element name that sets it in FieldWorks
+(`HCParser.LoadParser`), so the same names a FieldWorks project carries reach every engine:
+
+```yaml
+requires: [phonology, morpher-settings]
+morpher:
+  DelReapps: 1
+```
+
+| Key | `Morpher` property | Value | Default when absent |
+|---|---|---|---|
+| `DelReapps` | `DeletionReapplications` | whole number, at least 0 | 0 |
+| `MaxRoots` | `MaxStemCount` | whole number, at least 1 | 2 |
+| `MergeAnalyses` | `MergeEquivalentAnalyses` | `true` or `false` | `true` |
+| `MakePartialsFinal` | `AlwaysEnforceFinalTemplates` | `true` or `false` | `false` |
+
+Rules, each enforced by the loader (`WordsYamlLoader`) and the published schema
+(`schema/words.schema.json`):
+
+- **Absent means the defaults above**, exactly as before this block existed. An empty block is an
+  error: omit it instead.
+- **The vocabulary is closed.** Any other key is an error rather than ignored, because a setting the
+  harness cannot apply must never fall back silently to the default it was meant to override. The
+  remaining FieldWorks `<HC>` settings are deliberately not keys: `MaxAlternatives` turns an exceeded
+  search into an exception, not a parse result; `GuessRoots` is per-word here (`parses[].guess`,
+  section 3); `MergeMSAs`, `NotOnClitics`, `NoDefaultCompounding`, `AcceptUnspecifiedGraphemes` and
+  `Strata` shape how FieldWorks builds a `Language`, which `grammar.xml` already states directly.
+- **A block is a capability requirement.** A fixture with a block must list `morpher-settings` in
+  `requires`, and the harness re-derives that from `words.yaml` the same way it derives `phonology`
+  from `grammar.xml` (section 5): an engine that does not declare `morpher-settings` is reported
+  `SKIPPED` for the fixture, never run at the defaults. Self-check declares it.
+- **How an adapter receives the values.** Materialization writes `morpher.json` beside `grammar.xml`
+  (a JSON object of the same keys; `{}` for a fixture with no block), and the harness substitutes its
+  path for a `{morpher}` placeholder in the `--adapter` command template. An adapter that declares
+  `morpher-settings` must take that placeholder; the harness fails the fixture, naming the missing
+  placeholder, rather than run it without the settings.
+- **Counterfactual and coverage gates** that rebuild a mutated grammar in a child process
+  (`CounterfactualGate`) still evaluate every fixture at the defaults; their surface deltas for a
+  fixture with a block are therefore measured under the defaults, not under the block.
+
+`edge-cases/deletion-reapplications` is the first fixture to use it (`DelReapps: 1`), observed from
+the C# oracle at 0, 1 and 2 to show the setting is what moves its expected parses.
 
 ## 9. FieldWorks producibility
 
