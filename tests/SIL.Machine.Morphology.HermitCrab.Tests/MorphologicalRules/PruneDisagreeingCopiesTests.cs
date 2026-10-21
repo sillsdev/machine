@@ -422,8 +422,8 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
     }
 
     /// <summary>
-    /// A rewrite between segments that differ only by their string representation (no symbolic features) is
-    /// never unapplied, so analysis cannot make the changed copy agree with the other; pruning must not drop it.
+    /// A rewrite between segments that differ only by their string representation (no symbolic features) must
+    /// be unapplied by analysis so the changed copy can agree with the other; otherwise pruning would drop the parse.
     /// </summary>
     [TestCase(false)]
     [TestCase(true)]
