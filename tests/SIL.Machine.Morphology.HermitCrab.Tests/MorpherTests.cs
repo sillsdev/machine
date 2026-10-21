@@ -579,19 +579,11 @@ public class MorpherTests : HermitCrabTestBase
         // Both rule types exercise the sequential and parallel cascade paths.
         AddCompoundingAndPrefixRules();
 
-        var parallel = new Morpher(TraceManager, Language);
-        var singleThreaded = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
-
-        foreach (string word in new[] { "pʰutdidat", "pʰutdat" })
-        {
-            List<Word> singleResult = singleThreaded.ParseWord(word).ToList();
-            List<Word> parallelResult = parallel.ParseWord(word).ToList();
-            Assert.That(
-                singleResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal),
-                Is.EqualTo(parallelResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal)),
-                $"single-threaded parse of '{word}' must match the parallel parse"
-            );
-        }
+        string[] words = { "pʰutdidat", "pʰutdat" };
+        AssertSingleThreadedMatchesParallel(words);
+        // Absolute, so a bug that empties both sides identically is still caught. pʰutdidat has no parse here,
+        // so only pʰutdat (two compound analyses) is compared non-trivially.
+        Assert.That(new Morpher(TraceManager, Language).ParseWord("pʰutdat"), Is.Not.Empty);
     }
 
     [Test]
@@ -647,7 +639,12 @@ public class MorpherTests : HermitCrabTestBase
         SetRuleOrder(MorphologicalRuleOrder.Linear);
 
         AssertSingleThreadedMatchesParallel("digusagd", "disagd", "gusagd", "sagd", "sag");
-        Assert.That(new Morpher(TraceManager, Language).ParseWord("sagd"), Is.Not.Empty);
+        // With the Linear order the di and gu prefixes cannot both apply, so digusagd has no parse. The other
+        // four words parse, and the parity check on digusagd is only an empty-equals-empty comparison.
+        var parallel = new Morpher(TraceManager, Language);
+        Assert.That(parallel.ParseWord("digusagd"), Is.Empty);
+        foreach (string word in new[] { "disagd", "gusagd", "sagd", "sag" })
+            Assert.That(parallel.ParseWord(word), Is.Not.Empty, $"'{word}' must parse");
     }
 
     private void AssertSingleThreadedMatchesParallel(params string[] words)
@@ -667,7 +664,8 @@ public class MorpherTests : HermitCrabTestBase
         }
     }
 
-    // Two commuting prefixes, so one word is reached by more than one unapplication order.
+    // Two prefixes that commute on an Unordered stratum, so one word is reached by more than one unapplication
+    // order. On a Linear stratum they cannot both apply, so the double-prefixed word has no parse.
     private void AddAffixTemplateAndCommutingPrefixes()
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
