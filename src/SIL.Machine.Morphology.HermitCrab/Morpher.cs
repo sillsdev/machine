@@ -117,7 +117,9 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <summary>
         /// Caps concurrency within a parse or generation, including the analysis cascade, affix-template
         /// unapplication, and synthesis. A value of 1 runs the work sequentially; values below 1 leave
-        /// concurrency unbounded. This is constructor-only because it determines how the analysis rules compile.
+        /// concurrency unbounded. This is constructor-only because it determines how the analysis rules compile
+        /// (a value of 1 compiles the sequential cascade for unordered strata). It is a performance knob only:
+        /// every value produces equal parse results, though the work may run through a different path.
         /// </summary>
         public int MaxDegreeOfParallelism { get; }
 

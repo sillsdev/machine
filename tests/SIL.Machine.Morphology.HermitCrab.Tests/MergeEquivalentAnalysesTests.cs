@@ -28,8 +28,8 @@ public class MergeEquivalentAnalysesTests : HermitCrabTestBase
 
         AffixProcessRule vRule = Suffix("vRule", v, v, Table1, "t");
         AffixProcessRule anyRule = Suffix("anyRule", FeatureStruct.New().Value, v, Table1, "t");
-        // The cascade runs the stratum's rules in reverse order of registration, and the first analysis to
-        // reach the same analysis state first becomes canonical, so registration order decides which one.
+        // The cascade runs the stratum's rules in reverse order of registration, so registration order sets
+        // which same-shape analysis reaches the merge first. Their AnalysisMergeKeys differ, so both stay.
         if (unconstrainedFirst)
             Allophonic.MorphologicalRules.Add(vRule);
         Allophonic.MorphologicalRules.Add(anyRule);
