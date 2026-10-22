@@ -17,10 +17,7 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 /// exercised against the live oracle without needing a second, capability-limited engine on hand.
 /// Null (the default) means the full set.
 /// </param>
-/// <param name="useMemoization">
-/// True for the authoritative memoized oracle; false only for a diagnostic comparison.
-/// </param>
-public class SelfCheckEngine(IReadOnlySet<string> capabilities = null, bool useMemoization = true) : IEngine
+public class SelfCheckEngine(IReadOnlySet<string> capabilities = null) : IEngine
 {
     private static readonly IReadOnlySet<string> DefaultCapabilities = new HashSet<string>
     {
@@ -28,7 +25,7 @@ public class SelfCheckEngine(IReadOnlySet<string> capabilities = null, bool useM
         MorpherSettings.Capability,
     };
 
-    public string Name => useMemoization ? "self-check" : "self-check (memoization disabled)";
+    public string Name => "self-check";
 
     // The reference C# engine implements every capability the suite currently knows about, unless
     // overridden above.
@@ -41,7 +38,7 @@ public class SelfCheckEngine(IReadOnlySet<string> capabilities = null, bool useM
         try
         {
             language = XmlLanguageLoader.Load(fixture.GrammarPath);
-            morpher = ConformanceMorpherFactory.Create(language, fixture.Manifest.Morpher, useMemoization);
+            morpher = ConformanceMorpherFactory.Create(language, fixture.Manifest.Morpher);
         }
         catch (Exception ex)
         {
