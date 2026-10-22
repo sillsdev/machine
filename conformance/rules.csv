@@ -8,7 +8,7 @@ BoundaryFirstInNarrowingLhsStrrep,mrSfxMo,kanmo;katmo
 BoundaryFirstInNarrowingLhsStrrep,prPostNasal,kanmo
 BoundaryLeftoverInNarrowingLhsStrrep,mrSfxBo,kamo;katbo
 BoundaryLeftoverInNarrowingLhsStrrep,mrSfxMo,kamo;kanmo;katmo
-BoundaryLeftoverInNarrowingLhsStrrep,prPostNasal,kamo;kanmo
+BoundaryLeftoverInNarrowingLhsStrrep,prPostNasal,kamo
 BoundaryMidInNarrowingLhsStrrep,mrSfxBo,kanmo;katbo
 BoundaryMidInNarrowingLhsStrrep,mrSfxMo,kanmo;katmo
 BoundaryMidInNarrowingLhsStrrep,prPostNasal,kanmo
