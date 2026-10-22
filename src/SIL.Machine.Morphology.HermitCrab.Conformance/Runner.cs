@@ -155,7 +155,7 @@ result.WordResults
         {
             sw.Stop();
             result.ElapsedMs = sw.ElapsedMilliseconds;
-            // The watchdog's own timeout is never a crash match (PROTOCOL.md), as in adapter mode.
+            // The watchdog's own timeout is never a crash match, as in adapter mode.
             if (fixture.Words.ExpectCrash && ex is not TimeoutException)
             {
                 result.Outcome = FixtureOutcome.Passed;
