@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -69,13 +70,13 @@ public class GrammarRuleIndex
                     index.AllRuleIds.Add(id);
                     if (morphemeId != null)
                     {
-                        index._ruleIdByMorphemeId[morphemeId] = id;
+                        AddUnique(index._ruleIdByMorphemeId, morphemeId, id, grammarPath, "MorphemeId");
                     }
                     else
                     {
                         string name = (string)el.Element("Name");
                         if (name != null)
-                            index._ruleIdByRuleName[name] = id;
+                            AddUnique(index._ruleIdByRuleName, name, id, grammarPath, "Name");
                     }
                     break;
                 }
@@ -89,7 +90,7 @@ public class GrammarRuleIndex
                         continue;
                     index.AllRuleIds.Add(id);
                     if (name != null)
-                        index._ruleIdByRuleName[name] = id;
+                        AddUnique(index._ruleIdByRuleName, name, id, grammarPath, "Name");
                     break;
                 }
                 case "MorphemeCoOccurrenceRule":
@@ -105,6 +106,25 @@ public class GrammarRuleIndex
             }
         }
         return index;
+    }
+
+    /// <summary>Records <paramref name="id"/> under <paramref name="key"/>, throwing if a different rule already
+    /// claimed that key: a fired rule is resolved by key, so a shared key would credit the wrong rule.</summary>
+    private static void AddUnique(
+        Dictionary<string, string> map,
+        string key,
+        string id,
+        string grammarPath,
+        string keyKind
+    )
+    {
+        if (map.TryGetValue(key, out string existing) && !string.Equals(existing, id, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException(
+                $"{grammarPath}: rules '{existing}' and '{id}' share the {keyKind} '{key}', so a fired rule cannot be attributed"
+            );
+        }
+        map[key] = id;
     }
 
     /// <summary>

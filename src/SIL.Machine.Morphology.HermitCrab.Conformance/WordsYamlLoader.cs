@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using YamlDotNet.Core;
@@ -145,7 +146,17 @@ public static class WordsYamlLoader
         AppendScalarList(map, "sources", doc.Sources, path, "front matter");
         AppendScalarList(map, "requires", doc.Requires, path, "front matter");
         if (map.TryGetValue("budget_ms", out YamlNode budgetNode))
-            doc.BudgetMs = long.Parse(RequireScalarNode(budgetNode, path, "front matter.budget_ms"));
+        {
+            string budget = RequireScalarNode(budgetNode, path, "front matter.budget_ms");
+            if (!long.TryParse(budget, NumberStyles.None, CultureInfo.InvariantCulture, out long budgetMs))
+            {
+                throw new WordsYamlException(
+                    path,
+                    $"front matter.budget_ms: expected a whole number of milliseconds, got '{budget}'"
+                );
+            }
+            doc.BudgetMs = budgetMs;
+        }
         if (map.TryGetValue("expect_crash", out YamlNode crashNode))
             doc.ExpectCrash = ParseBool(RequireScalarNode(crashNode, path, "front matter.expect_crash"), path);
         if (map.TryGetValue("fieldworks_producible", out YamlNode fwProducibleNode))
