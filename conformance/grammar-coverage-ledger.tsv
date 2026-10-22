@@ -215,6 +215,14 @@ edge-cases/default-symbol-after-merge	Interface	Stratum.characterDefinitionTable
 edge-cases/default-symbol-after-merge	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/default-symbol-after-merge	Interface	SymbolicFeature.defaultSymbol	present-but-inert	Unobservable
 edge-cases/default-symbol-after-merge	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
+edge-cases/deletion-reapplications	Interface	FeatureValue.feature	witness-not-yet-computed	-
+edge-cases/deletion-reapplications	Interface	FeatureValue.symbolValues	witness-not-yet-computed	-
+edge-cases/deletion-reapplications	Interface	LexicalEntry.partOfSpeech	witness-not-yet-computed	-
+edge-cases/deletion-reapplications	Interface	Segment.segment	witness-not-yet-computed	-
+edge-cases/deletion-reapplications	Interface	SimpleContext.naturalClass	witness-not-yet-computed	-
+edge-cases/deletion-reapplications	Interface	Stratum.characterDefinitionTable	witness-not-yet-computed	-
+edge-cases/deletion-reapplications	Interface	Stratum.phonologicalRules	witness-not-yet-computed	-
+edge-cases/deletion-reapplications	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
 edge-cases/deletion-reinserted-feature-unapply	Surface	dtd:element/RightEnvironment	witnessed	Evidenced
 edge-cases/deletion-reinserted-feature-unapply	Surface	dtd:enum/PhoneticTemplate/finalBoundaryCondition/true	witnessed	Evidenced
 edge-cases/deletion-reinserted-feature-unapply	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
@@ -334,6 +342,15 @@ edge-cases/feature-system-breadth	Construct	Element deactivation (isActive) acro
 edge-cases/feature-system-breadth	Construct	MetathesisRule	claimed-confirmed	10 claim(s)
 edge-cases/feature-system-breadth	Construct	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	claimed-confirmed	3 claim(s)
 edge-cases/feature-system-breadth	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	2 claim(s)
+edge-cases/final-template-merge-key	Interface	AffixTemplate.requiredPartsOfSpeech	witnessed	Evidenced
+edge-cases/final-template-merge-key	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/final-template-merge-key	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/final-template-merge-key	Interface	MorphologicalRule.outputPartOfSpeech	witnessed	Evidenced
+edge-cases/final-template-merge-key	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/final-template-merge-key	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/final-template-merge-key	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
+edge-cases/final-template-merge-key	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/final-template-merge-key	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/final-template-merge-key	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	1 claim(s)
 edge-cases/final-template-partial-discriminators	Surface	dtd:enum/AffixTemplate/final/false	witnessed	Evidenced
 edge-cases/final-template-partial-discriminators	Surface	dtd:enum/AffixTemplate/final/true	witnessed	Evidenced
@@ -368,6 +385,17 @@ edge-cases/geminate-under-merge	Interface	SimpleContext.naturalClass	required-by
 edge-cases/geminate-under-merge	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/geminate-under-merge	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/geminate-under-merge	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
+edge-cases/guess-roots-settings	Interface	CopyFromInput.index	witness-not-yet-computed	-
+edge-cases/guess-roots-settings	Interface	FeatureValue.feature	witness-not-yet-computed	-
+edge-cases/guess-roots-settings	Interface	FeatureValue.symbolValues	witness-not-yet-computed	-
+edge-cases/guess-roots-settings	Interface	LexicalEntry.partOfSpeech	witness-not-yet-computed	-
+edge-cases/guess-roots-settings	Interface	MorphologicalRule.outputPartOfSpeech	witness-not-yet-computed	-
+edge-cases/guess-roots-settings	Interface	MorphologicalRule.requiredPartsOfSpeech	witness-not-yet-computed	-
+edge-cases/guess-roots-settings	Interface	Segment.segment	witness-not-yet-computed	-
+edge-cases/guess-roots-settings	Interface	SimpleContext.naturalClass	witness-not-yet-computed	-
+edge-cases/guess-roots-settings	Interface	Stratum.characterDefinitionTable	witness-not-yet-computed	-
+edge-cases/guess-roots-settings	Interface	Stratum.morphologicalRules	witness-not-yet-computed	-
+edge-cases/guess-roots-settings	Construct	Guesser/LexicalGuess	claimed-unmapped	4 claim(s)
 edge-cases/iterative-epenthesis-cascade	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/iterative-epenthesis-cascade	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
 edge-cases/iterative-epenthesis-cascade	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced

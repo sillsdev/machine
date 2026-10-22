@@ -175,21 +175,14 @@ alone from a real lexical entry that happened to share the same id (e.g. word `"
 "foo" unknown but a lexical guess pattern `[Any]*` in scope, plus a real suffix rule PL="-s", yields
 signature entries `foo+PL|foos` and — because the guess pattern is also tried against the
 zero-affixes candidate — `foos|foos`; pinned executably in
-`tests/SIL.Machine.Morphology.HermitCrab.Tests/GuesserSignatureTests.cs`). **Separately, and more
-importantly for this suite: `BatchCommand` — the CLI `batch` subcommand every conformance adapter
-and oracle invocation goes through — can never produce a guess-stem parse at all.**
-`SignatureFormat.ParseOneWord` (what `BatchCommand.RunSequential` and the harness's own self-check
-engine both call) invokes the 2-argument `Morpher.ParseWord(word, out trace)` overload, which
-hardcodes `guessRoot: false`; no CLI command in `SIL.Machine.Morphology.HermitCrab.Tool` exposes the
-3-argument, `guessRoot: true` overload at all. The harness's self-check mode works around this by
-calling `Morpher.ParseWord` directly with `guessRoot: true` whenever a word declares a `guess: true`
-parse (`src/SIL.Machine.Morphology.HermitCrab.Conformance/Runner.cs`) — but **adapter mode
-cannot**: an external engine driven through the documented `batch` contract has no way to opt into
-guessing, so a fixture with a `guess: true` word is self-check-only until `BatchCommand`/the adapter
-contract gains an opt-in flag for it. Concretely: the harness's adapter-mode materialization **omits
-any word carrying a `guess: true` parse** from the generated `words.txt`/`expected.tsv`, so such
-words are asserted by self-check only and an adapter run neither sees them nor can falsely fail on
-them.
+`tests/SIL.Machine.Morphology.HermitCrab.Tests/GuesserSignatureTests.cs`). The legacy `BatchCommand` calls the two-argument `SignatureFormat.ParseOneWord` overload,
+which disables root guessing. The harness self-check uses an explicit `morpher.GuessRoots` value
+when present; otherwise it retains the legacy per-word rule: a `guess: true` parse enables guessing
+for that word. Settings-aware adapters receive the per-call flag through `morpher.json` (section 8).
+When `GuessRoots` is explicitly present, either `true` or `false`, adapter materialization retains
+all word rows. When it is absent, words carrying a `guess: true` parse are omitted from the legacy
+adapter input. A named variant with no adapter-visible words fails rather than passing without a
+comparison.
 
 ## 4. Comparison semantics (what "pass" means)
 
@@ -342,11 +335,9 @@ defaults are pinned executably against the constructor in
   suite's `expected.tsv` was generated under, and a reimplementation that skips the equivalent-shape
   merge (most will — it is a C#-side performance optimization, not part of the formalism) must still
   ensure it explores the same eventual analysis set that expansion restores.
-- **`guessRoot` — see section 3's "Guess-stem rendering" discussion above.** Already documented
-  there: `BatchCommand`/`SignatureFormat.ParseOneWord` hardcode `guessRoot: false`, so no adapter-mode
-  fixture output ever reflects root-guessing, and `guess: true` words are self-check-only. Restated
-  here because it is host configuration in exactly the same sense as the four properties above — it
-  just already had its own writeup.
+- **`guessRoot` — see section 3's "Guess-stem rendering" discussion above.** This is a
+  per-call flag rather than a `Morpher` property. The legacy batch command disables it; the harness
+  supports explicit `GuessRoots` settings in both self-check and settings-aware adapters.
 - **`LexEntrySelector` / `RuleSelector` — default `entry => true` / `rule => true`.** These are
   host-installed predicates that can exclude specific lexical entries or specific rules from
   participating in analysis/synthesis at all (checked in, e.g., `Morpher.LexicalLookup` and in each
@@ -381,26 +372,38 @@ morpher:
 | `MaxRoots` | `MaxStemCount` | whole number, at least 1 | 2 |
 | `MergeAnalyses` | `MergeEquivalentAnalyses` | `true` or `false` | `true` |
 | `MakePartialsFinal` | `AlwaysEnforceFinalTemplates` | `true` or `false` | `false` |
+| `GuessRoots` | per-call `ParseWord(..., guessRoot)` flag | `true` or `false` | per-word `parses[].guess` in self-check; otherwise `false` |
 
-Rules, each enforced by the loader (`WordsYamlLoader`) and the published schema
-(`schema/words.schema.json`):
+Rules enforced by the loader (`WordsYamlLoader`). The published schema
+(`schema/words.schema.json`) checks structural constraints; the loader also checks ordered
+word-list equality, default-only coverage metadata, unique names, and exact capability equivalence:
 
 - **Absent means the defaults above**, exactly as before this block existed. An empty block is an
-  error: omit it instead.
+  error: omit it instead. `GuessRoots` is an explicit per-call flag and is never applied to a
+  `Morpher` property; when absent, self-check retains legacy per-word `parses[].guess` behavior.
+- **Named run variants** are an optional top-level `variants` sequence. Each entry has a unique
+  `name` matching `[a-z0-9-]+` (`default` is reserved), a non-empty `morpher` block, and a complete
+  `words` sequence with exactly the same ordered `word` values as the top-level sequence. Its
+  expectations use the same `parses`, `expect_fail`, and `expect_skip` fields. Each run starts from
+  engine constructor defaults and applies only its own settings; a variant never inherits the
+  top-level `morpher` block. Coverage metadata remains on the default word list. The harness runs the
+  default and every named variant independently and labels variant diagnostics by name.
 - **The vocabulary is closed.** Any other key is an error rather than ignored, because a setting the
-  harness cannot apply must never fall back silently to the default it was meant to override. The
-  remaining FieldWorks `<HC>` settings are deliberately not keys: `MaxAlternatives` turns an exceeded
-  search into an exception, not a parse result; `GuessRoots` is per-word here (`parses[].guess`,
-  section 3); `MergeMSAs`, `NotOnClitics`, `NoDefaultCompounding`, `AcceptUnspecifiedGraphemes` and
-  `Strata` shape how FieldWorks builds a `Language`, which `grammar.xml` already states directly.
-- **A block is a capability requirement.** A fixture with a block must list `morpher-settings` in
-  `requires`, and the harness re-derives that from `words.yaml` the same way it derives `phonology`
-  from `grammar.xml` (section 5): an engine that does not declare `morpher-settings` is reported
-  `SKIPPED` for the fixture, never run at the defaults. Self-check declares it.
-- **How an adapter receives the values.** Materialization writes `morpher.json` beside `grammar.xml`
-  (a JSON object of the same keys; `{}` for a fixture with no block), and the harness substitutes its
-  path for a `{morpher}` placeholder in the `--adapter` command template. An adapter that declares
-  `morpher-settings` must take that placeholder; the harness fails the fixture, naming the missing
+  harness cannot apply must never fall back silently to the default it was meant to override.
+  `MaxAlternatives` remains unsupported because its limit changes search completion into an error,
+  while `MergeMSAs` requires FieldWorks loader support; both are hard errors. `NotOnClitics`,
+  `NoDefaultCompounding`, `AcceptUnspecifiedGraphemes` and `Strata` shape how FieldWorks builds a
+  `Language`, which `grammar.xml` already states directly.
+- **A settings block is a capability requirement.** A fixture with a default or variant `morpher`
+  block must list `morpher-settings` in `requires`, and the harness re-derives that from `words.yaml`
+  the same way it derives `phonology` from `grammar.xml` (section 5): an engine that does not declare
+  `morpher-settings` is reported `SKIPPED` for that run, never run at defaults. Self-check declares it.
+- **How an adapter receives the values.** Each run is materialized separately and writes its own
+  `morpher.json` beside `grammar.xml` (a JSON object of the same keys; `{}` for a default run with no
+  block), and the harness substitutes its path for a `{morpher}` placeholder in the `--adapter`
+  command template. Guessed-root rows are materialized only when `GuessRoots` is explicit, so an
+  adapter cannot silently appear to support guessing from omitted rows. An adapter that declares
+  `morpher-settings` must take the placeholder; the harness fails the run, naming the missing
   placeholder, rather than run it without the settings.
 - **Counterfactual and coverage gates** that rebuild a mutated grammar in a child process
   (`CounterfactualGate`) still evaluate every fixture at the defaults; their surface deltas for a

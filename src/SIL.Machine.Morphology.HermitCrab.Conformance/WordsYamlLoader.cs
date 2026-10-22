@@ -29,6 +29,7 @@ public static class WordsYamlLoader
         "fieldworks_producible_notes",
         "morpher",
         "words",
+        "variants",
     };
 
     // The morpher: block's keys are FieldWorks <ParserParameters><HC> element names (HCParser.LoadParser),
@@ -39,6 +40,7 @@ public static class WordsYamlLoader
         "MaxRoots",
         "MergeAnalyses",
         "MakePartialsFinal",
+        "GuessRoots",
     };
     private static readonly HashSet<string> WordKeys = new(StringComparer.Ordinal)
     {
@@ -180,7 +182,83 @@ public static class WordsYamlLoader
         foreach (YamlNode wordNode in wordsSeq.Children)
             doc.Words.Add(ParseWord(wordNode, path));
 
+        if (map.TryGetValue("variants", out YamlNode variantsNode))
+            ParseVariants(variantsNode, doc, path);
+
+        bool requiresSettings = !doc.Morpher.IsEmpty || doc.Variants.Count > 0;
+        if (doc.Requires.Contains(MorpherSettings.Capability) != requiresSettings)
+        {
+            throw new WordsYamlException(
+                path,
+                $"front matter: requires must {(requiresSettings ? "contain" : "not contain")} '{MorpherSettings.Capability}' "
+                    + "when a run declares morpher settings"
+            );
+        }
+
         return doc;
+    }
+
+    private static void ParseVariants(YamlNode node, WordsYaml doc, string path)
+    {
+        if (node is not YamlSequenceNode variants)
+            throw new WordsYamlException(path, "front matter.variants: expected a sequence");
+        if (variants.Children.Count == 0)
+            throw new WordsYamlException(path, "front matter.variants: expected at least one named run");
+        var names = new HashSet<string>(StringComparer.Ordinal) { "default" };
+        foreach (YamlNode variantNode in variants.Children)
+        {
+            if (variantNode is not YamlMappingNode variantMap)
+                throw new WordsYamlException(path, "each 'variants' entry must be a mapping");
+            Dictionary<string, YamlNode> fields = RequireMapping(
+                variantMap,
+                new HashSet<string>(StringComparer.Ordinal) { "name", "morpher", "words" },
+                path,
+                "variant"
+            );
+            string name = RequireScalar(fields, "name", path, "variant");
+            if (name.Any(c => !(c is >= 'a' and <= 'z' or >= '0' and <= '9' or '-')))
+                throw new WordsYamlException(path, $"variant name '{name}' must match [a-z0-9-]+");
+            if (!names.Add(name))
+                throw new WordsYamlException(path, $"duplicate variant name '{name}' (default is reserved)");
+            if (!fields.TryGetValue("morpher", out YamlNode morpherNode))
+                throw new WordsYamlException(path, $"variant '{name}': missing required key 'morpher'");
+            var settings = new MorpherSettings();
+            ParseMorpher(morpherNode, settings, path);
+            if (
+                !fields.TryGetValue("words", out YamlNode wordListNode) || wordListNode is not YamlSequenceNode wordList
+            )
+            {
+                throw new WordsYamlException(path, $"variant '{name}': expected a 'words' sequence");
+            }
+            List<WordEntry> words = wordList.Children.Select(word => ParseWord(word, path)).ToList();
+            if (
+                words.Count != doc.Words.Count
+                || !words.Select(w => w.Word).SequenceEqual(doc.Words.Select(w => w.Word), StringComparer.Ordinal)
+            )
+            {
+                throw new WordsYamlException(
+                    path,
+                    $"variant '{name}': words must contain exactly the default word list in the same order"
+                );
+            }
+            foreach (WordEntry word in words)
+            {
+                if (
+                    word.BlockedBy.Count > 0
+                    || word.Neutralizes.Count > 0
+                    || word.Exercises.Count > 0
+                    || word.ClaimedCells.Count > 0
+                    || word.Parses.Any(p => p.Exercises.Count > 0)
+                )
+                {
+                    throw new WordsYamlException(
+                        path,
+                        $"variant '{name}', word '{word.Word}': coverage metadata is default-only"
+                    );
+                }
+            }
+            doc.Variants.Add(new WordRun(name, settings, words));
+        }
     }
 
     /// <summary>
@@ -215,6 +293,13 @@ public static class WordsYamlLoader
         {
             settings.MakePartialsFinal = ParseBool(
                 RequireScalarNode(partialsNode, path, "front matter.morpher.MakePartialsFinal"),
+                path
+            );
+        }
+        if (map.TryGetValue("GuessRoots", out YamlNode guessRootsNode))
+        {
+            settings.GuessRoots = ParseBool(
+                RequireScalarNode(guessRootsNode, path, "front matter.morpher.GuessRoots"),
                 path
             );
         }

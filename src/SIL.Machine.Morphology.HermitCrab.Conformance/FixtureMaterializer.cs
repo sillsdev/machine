@@ -20,12 +20,28 @@ public static class FixtureMaterializer
     /// </summary>
     public static MaterializedFixture Materialize(Fixture fixture)
     {
+        return Materialize(fixture, new WordRun("default", fixture.Words.Morpher, fixture.Words.Words));
+    }
+
+    public static MaterializedFixture Materialize(Fixture fixture, WordRun run)
+    {
+        var adapterWords = run.Morpher.GuessRoots.HasValue
+            ? run.Words
+            : run.Words.Where(w => w.Parses.All(p => !p.Guess)).ToList();
+        if (run.Name != "default" && adapterWords.Count == 0)
+        {
+            throw new NamedVariantHasNoAdapterVisibleWordsException(
+                fixture.Id,
+                run.Name,
+                "no adapter-visible words remain after legacy guess filtering; set morpher.GuessRoots explicitly "
+                    + "if the variant is intended to include guessed-word rows"
+            );
+        }
+
         string tempDir = Path.Combine(Path.GetTempPath(), "hc-conformance-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempDir);
 
         File.Copy(fixture.GrammarPath, Path.Combine(tempDir, "grammar.xml"));
-
-        var adapterWords = fixture.Words.Words.Where(w => w.Parses.All(p => !p.Guess)).ToList();
 
         string wordsPath = Path.Combine(tempDir, "words.txt");
         File.WriteAllLines(wordsPath, adapterWords.Select(w => w.Word));
@@ -55,7 +71,7 @@ public static class FixtureMaterializer
 
         File.WriteAllText(
             Path.Combine(tempDir, MaterializedFixture.MorpherFileName),
-            System.Text.Json.JsonSerializer.Serialize(fixture.Words.Morpher.ToDictionary())
+            System.Text.Json.JsonSerializer.Serialize(run.Morpher.ToDictionary())
         );
 
         var manifest = new FixtureManifest
@@ -63,18 +79,26 @@ public static class FixtureMaterializer
             Id = fixture.Id,
             Category = fixture.Words.BudgetMs.HasValue ? "pathological" : "single-feature",
             Requires = fixture.Words.Requires,
-            Morpher = fixture.Words.Morpher,
+            Morpher = run.Morpher,
             ExpectCrash = fixture.Words.ExpectCrash,
             Budget = fixture.Words.BudgetMs.HasValue
                 ? new FixtureBudget { WallClockMs = fixture.Words.BudgetMs.Value }
                 : null,
             Provenance = string.Join(
                 "; ",
-                fixture.Words.Words.Where(w => !string.IsNullOrEmpty(w.Provenance)).Select(w => w.Provenance)
+                run.Words.Where(w => !string.IsNullOrEmpty(w.Provenance)).Select(w => w.Provenance)
             ),
         };
 
-        return new MaterializedFixture(tempDir, manifest);
+        bool requiresMorpherSettings = RequiresDerivation
+            .Derive(fixture.GrammarPath, fixture.Words.Runs.Select(candidate => candidate.Morpher))
+            .Contains(MorpherSettings.Capability, StringComparer.Ordinal);
+        return new MaterializedFixture(
+            tempDir,
+            manifest,
+            run.Name == "default" ? null : run.Name,
+            requiresMorpherSettings
+        );
     }
 
     public static void Cleanup(MaterializedFixture materialized)
@@ -97,3 +121,6 @@ public static class FixtureMaterializer
         return string.Join(";", word.Parses.Select(p => p.Signature).OrderBy(s => s, StringComparer.Ordinal));
     }
 }
+
+internal sealed class NamedVariantHasNoAdapterVisibleWordsException(string fixtureId, string variantName, string reason)
+    : InvalidOperationException($"fixture '{fixtureId}' variant '{variantName}' {reason}.") { }

@@ -224,7 +224,7 @@ public static class GateObligationLedger
 
         foreach (WordEntry entry in fixture.Words.Words)
         {
-            bool guessRoot = entry.Parses.Any(p => p.Guess);
+            bool guessRoot = fixture.Words.Morpher.GuessRootsFor(entry);
             List<Word> results;
             object? trace;
             try
