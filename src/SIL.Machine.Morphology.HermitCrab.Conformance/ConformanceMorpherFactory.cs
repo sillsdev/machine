@@ -6,9 +6,9 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 /// </summary>
 internal static class ConformanceMorpherFactory
 {
-    internal static Morpher Create(Language language, MorpherSettings settings, bool useMemoization = true)
+    internal static Morpher Create(Language language, MorpherSettings settings)
     {
-        var morpher = new Morpher(new TraceManager(), language, maxDegreeOfParallelism: useMemoization ? 1 : 0);
+        var morpher = new Morpher(new TraceManager(), language, maxDegreeOfParallelism: 1);
         settings.ApplyTo(morpher);
         return morpher;
     }

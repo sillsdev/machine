@@ -19,7 +19,6 @@ internal class Program
         bool coverageReport = false;
         string constructsPath = null;
         bool propose = false;
-        bool useMemoization = true;
         bool semanticCoverage = false;
         bool writeCoverageBaseline = false;
         bool proposeSemanticCatalog = false;
@@ -79,9 +78,6 @@ internal class Program
                     break;
                 case "--propose":
                     propose = true;
-                    break;
-                case "--no-memoization":
-                    useMemoization = false;
                     break;
                 case "--semantic-coverage":
                     semanticCoverage = true;
@@ -182,12 +178,6 @@ internal class Program
                     PrintUsage();
                     return 2;
             }
-        }
-
-        if (!useMemoization && adapterTemplate != null)
-        {
-            Console.Error.WriteLine("--no-memoization is only valid in self-check mode");
-            return 2;
         }
 
         // One mutant evaluation, in its own process so a non-terminating parse can be killed rather
@@ -346,20 +336,13 @@ internal class Program
         else
         {
             IReadOnlySet<string> capabilities = capabilitiesProvided ? ParseCapabilities(capabilitiesArg) : null;
-            engine = new SelfCheckEngine(capabilities, useMemoization);
+            engine = new SelfCheckEngine(capabilities);
         }
 
         RunReport report =
             adapterTemplate != null
                 ? Runner.RunAdapter(fixtures, engine, includePathological)
-                : Runner.RunSelfCheck(
-                    fixtures,
-                    includePathological,
-                    engine.Capabilities,
-                    propose,
-                    Console.Out,
-                    useMemoization
-                );
+                : Runner.RunSelfCheck(fixtures, includePathological, engine.Capabilities, propose, Console.Out);
         PrintRunReport(report, engine);
 
         bool anyRan = report.Passed > 0 || report.Failed > 0;
@@ -1589,8 +1572,6 @@ internal class Program
                                                 in self-check mode, empty in --adapter mode.
               --include-pathological           Also run category:pathological fixtures (excluded by
                                                 default).
-              --no-memoization                 Self-check only: disable analysis memoization for a
-                                                diagnostic comparison. Memoization is on by default.
               --coverage-report                Print a coverage report instead of running fixtures;
                                                 exits 1 on an uncovered construct or an unallowed
                                                 dead rule.
