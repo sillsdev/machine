@@ -29,6 +29,57 @@ public sealed class ConformanceHarnessTests
         return string.Empty;
     }
 
+    // A copy of the slow fixture with a 1 ms budget, so the self-check watchdog fires after its 1 s margin while
+    // the fast first word has already finished and the 924-parse second word has not.
+    private static FixtureResult RunSlowFixtureOverBudget(string extraFrontMatter)
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"slow-fixture-{Guid.NewGuid():N}");
+        string source = Path.Combine(RepositoryRoot(), "conformance", "edge-cases", "deep-optional-affix-nesting");
+        string target = Path.Combine(root, "edge-cases", "deep-optional-affix-nesting");
+        Directory.CreateDirectory(target);
+        foreach (string file in Directory.GetFiles(source))
+            File.Copy(file, Path.Combine(target, Path.GetFileName(file)));
+        string wordsPath = Path.Combine(target, "words.yaml");
+        string words = File.ReadAllText(wordsPath);
+        Assert.That(words, Does.Contain("budget_ms: 15000"));
+        File.WriteAllText(wordsPath, words.Replace("budget_ms: 15000", "budget_ms: 1" + extraFrontMatter));
+        try
+        {
+            RunReport report = Runner.RunSelfCheck(
+                Fixture.DiscoverAll(root),
+                includePathological: true,
+                engineCapabilities: new HashSet<string>(StringComparer.Ordinal),
+                propose: false,
+                proposeOutput: TextWriter.Null
+            );
+            return report.Results.Single();
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Test]
+    public void RunSelfCheck_ExpectCrashFixtureThatTimesOut_Fails()
+    {
+        FixtureResult result = RunSlowFixtureOverBudget("\nexpect_crash: true");
+
+        Assert.That(result.Outcome, Is.EqualTo(FixtureOutcome.Failed), result.Reason);
+    }
+
+    [Test]
+    public void RunSelfCheck_TimedOutFixture_ReportsNoWordResults()
+    {
+        FixtureResult result = RunSlowFixtureOverBudget("");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Outcome, Is.EqualTo(FixtureOutcome.Failed), result.Reason);
+            Assert.That(result.WordResults, Is.Empty);
+        });
+    }
+
     [Test]
     public void RunAdapter_ExpectCrashFixture_FailsWhenTheEngineAlsoCrashesOnAnOrdinaryFixture()
     {
