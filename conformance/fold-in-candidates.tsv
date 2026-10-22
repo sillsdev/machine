@@ -20,7 +20,7 @@ Surface	dtd:element/PhoneticSequence	PresentInLanguageGrammarAlready	recorded be
 Surface	dtd:element/RequiredFootFeatures	PresentInLanguageGrammarAlready	recorded best evidence: edge-cases/feature-gating-breadth; also structurally present in a languages/* grammar
 Surface	dtd:element/Segments	EdgeCaseOnly	recorded best evidence: edge-cases/strrep-identity; no languages/* grammar contains this surface at all
 Surface	dtd:element/SimpleContext	PresentInLanguageGrammarAlready	recorded best evidence: edge-cases/alpha-variable-name-collision; also structurally present in a languages/* grammar
-Surface	dtd:enum/AffixTemplate/final/false	EdgeCaseOnly	recorded best evidence: edge-cases/final-template-partial-discriminators; no languages/* grammar contains this surface at all
+Surface	dtd:enum/AffixTemplate/final/false	EdgeCaseOnly	recorded best evidence: edge-cases/final-template-merge-key; no languages/* grammar contains this surface at all
 Surface	dtd:enum/AffixTemplate/final/true	EdgeCaseOnly	recorded best evidence: edge-cases/final-template-partial-discriminators; no languages/* grammar contains this surface at all
 Surface	dtd:enum/AffixTemplate/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/AffixTemplate/isActive/yes	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
