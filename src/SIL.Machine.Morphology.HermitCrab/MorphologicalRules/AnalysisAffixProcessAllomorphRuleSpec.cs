@@ -12,6 +12,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             : base(allomorph.Lhs, allomorph.Rhs)
         {
             _allomorph = allomorph;
+            Pattern.Acceptable = CopyAgreementCheck;
             Pattern.Freeze();
         }
 

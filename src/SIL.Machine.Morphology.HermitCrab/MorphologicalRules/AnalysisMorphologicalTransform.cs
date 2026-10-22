@@ -12,6 +12,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         private readonly Pattern<Word, ShapeNode> _pattern;
         private readonly Dictionary<string, Tuple<int, FeatureStruct>> _modifyFromInfos;
         private readonly Dictionary<string, int> _capturedParts;
+        private readonly List<KeyValuePair<string, int>> _copyCheckedParts;
 
         public AnalysisMorphologicalTransform(
             IEnumerable<Pattern<Word, ShapeNode>> lhs,
@@ -34,7 +35,14 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     );
                 }
             }
+            // a modified part is never checked for disagreeing copies, so repeating it needs no predicate
+            _copyCheckedParts = _capturedParts
+                .Where(part => part.Value >= 2 && !_modifyFromInfos.ContainsKey(part.Key))
+                .ToList();
+            HasRepeatedParts = _copyCheckedParts.Count > 0;
         }
+
+        internal bool HasRepeatedParts { get; }
 
         internal static string GetGroupName(string partName, int index)
         {
@@ -44,6 +52,118 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         protected IDictionary<string, int> CapturedParts
         {
             get { return _capturedParts; }
+        }
+
+        /// <summary>
+        /// Synthesis writes every copy of a part from the same input, and anything that later changes one
+        /// copy is unapplied before this rule, so copies proven to disagree segment by segment cannot lead
+        /// to a valid analysis. An optional segment (an unapplied deletion) stands for any number of segments
+        /// it unifies with, because <see cref="Morpher.DeletionReapplications"/> can restore fewer segments
+        /// than were deleted, so copies disagree only if no such choice lines them up. A part the rule
+        /// modifies, or a copy with an optional node that is not a segment, is never reported as disagreeing.
+        /// </summary>
+        internal bool HasDisagreeingCopies(Match<Word, ShapeNode> match)
+        {
+            foreach (KeyValuePair<string, int> capturedPart in _copyCheckedParts)
+            {
+                if (
+                    TryGetSegmentCopies(match, capturedPart.Key, capturedPart.Value, out List<List<ShapeNode>> copies)
+                    && AnyCopiesDisagree(copies)
+                )
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool TryGetSegmentCopies(
+            Match<Word, ShapeNode> match,
+            string partName,
+            int copyCount,
+            out List<List<ShapeNode>> copies
+        )
+        {
+            copies = new List<List<ShapeNode>>(copyCount);
+            for (int i = 0; i < copyCount; i++)
+            {
+                GroupCapture<ShapeNode> capture = match.GroupCaptures[GetGroupName(partName, i)];
+                if (!capture.Success)
+                    return false;
+
+                // an unapplied word-initial deletion sits before the capture, not inside it
+                List<ShapeNode> nodes = MorphologicalOutputAction
+                    .CollectSkippedOptionalNodes(match.Input.Shape, capture.Range)
+                    .Concat(match.Input.Shape.GetNodes(capture.Range))
+                    .ToList();
+                if (nodes.Any(node => node.Annotation.Optional && node.Annotation.Type() != HCFeatureSystem.Segment))
+                    return false;
+
+                copies.Add(nodes.Where(node => node.Annotation.Type() == HCFeatureSystem.Segment).ToList());
+            }
+            return true;
+        }
+
+        // unifiability is not transitive, so every pair is compared, not just each copy against the first
+        private static bool AnyCopiesDisagree(List<List<ShapeNode>> copies)
+        {
+            for (int i = 0; i < copies.Count; i++)
+            {
+                for (int j = i + 1; j < copies.Count; j++)
+                {
+                    if (!CanAlign(copies[i], copies[j]))
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        private static bool CanAlign(List<ShapeNode> first, List<ShapeNode> second)
+        {
+            if (!first.Any(node => node.Annotation.Optional) && !second.Any(node => node.Annotation.Optional))
+            {
+                if (first.Count != second.Count)
+                    return false;
+                for (int k = 0; k < first.Count; k++)
+                {
+                    if (!first[k].Annotation.FeatureStruct.IsUnifiable(second[k].Annotation.FeatureStruct))
+                        return false;
+                }
+                return true;
+            }
+
+            // reachable[i, j]: the first i nodes of one copy can be lined up with the first j of the other;
+            // an optional node is passed over, or absorbs a node of the other copy and stays available
+            var reachable = new bool[first.Count + 1, second.Count + 1];
+            reachable[0, 0] = true;
+            for (int i = 0; i <= first.Count; i++)
+            {
+                for (int j = 0; j <= second.Count; j++)
+                {
+                    if (!reachable[i, j])
+                        continue;
+                    bool firstOptional = i < first.Count && first[i].Annotation.Optional;
+                    bool secondOptional = j < second.Count && second[j].Annotation.Optional;
+                    if (firstOptional)
+                        reachable[i + 1, j] = true;
+                    if (secondOptional)
+                        reachable[i, j + 1] = true;
+                    if (
+                        i < first.Count
+                        && j < second.Count
+                        && first[i].Annotation.FeatureStruct.IsUnifiable(second[j].Annotation.FeatureStruct)
+                    )
+                    {
+                        reachable[i + 1, j + 1] = true;
+                        if (firstOptional)
+                            reachable[i, j + 1] = true;
+                        if (secondOptional)
+                            reachable[i + 1, j] = true;
+                    }
+                }
+            }
+            return reachable[first.Count, second.Count];
         }
 
         public Pattern<Word, ShapeNode> Pattern
