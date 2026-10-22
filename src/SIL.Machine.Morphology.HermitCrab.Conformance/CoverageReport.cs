@@ -31,7 +31,7 @@ public static class CoverageReport
         foreach (string rawLine in File.ReadAllLines(path))
         {
             string line = rawLine.Trim();
-            if (line.Length == 0 || line.StartsWith("#"))
+            if (line.Length == 0 || line.StartsWith("#", StringComparison.Ordinal))
                 continue;
             constructs.Add(line);
         }
@@ -172,10 +172,11 @@ public static class CoverageReport
 
     private static void WriteCsv(string path, string[] header, IEnumerable<string[]> rows)
     {
+        // Always \n, so the checked-in CSVs compare clean on every platform (local_check.sh diffs them).
         var sb = new StringBuilder();
-        sb.AppendLine(string.Join(",", header.Select(CsvField)));
+        sb.Append(string.Join(",", header.Select(CsvField))).Append('\n');
         foreach (string[] row in rows)
-            sb.AppendLine(string.Join(",", row.Select(CsvField)));
+            sb.Append(string.Join(",", row.Select(CsvField))).Append('\n');
         File.WriteAllText(path, sb.ToString());
     }
 
