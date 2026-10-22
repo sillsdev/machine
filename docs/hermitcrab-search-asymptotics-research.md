@@ -67,9 +67,10 @@ checkout, commit `a4b29742b6274a01c7398ca3e800a19fa6d2c9aa`; paths are relative 
 `src/SIL.Machine.Morphology.HermitCrab/` unless qualified. The six central files (`AnalysisStratumRule`,
 `AnalysisStateKey`, `MemoizedCombinationRuleCascade`, `AnalysisAffixTemplateRule`, `Morpher`, `Word`) are
 text-identical in this PR worktree's starting commit `5bbfa018bdbd5228c3f1aa73db951a4f01d167d3`, ignoring
-line endings. **Rust** paths are relative to the supplied checkout's `rust/crates/`, with branch tip
-`fa3bfb186852baaaf1ed28fcc0ba4602b2c19e96` at inspection. This identifies inspected files; it is not a
-claim that either external checkout was clean.
+line endings. The C# anchors are a snapshot at `a4b29742`, before #491 (`b240b7b5`) merged; they were not
+re-read at current master. **Rust** paths are relative to the supplied checkout's `rust/crates/`, with
+branch tip `fa3bfb186852baaaf1ed28fcc0ba4602b2c19e96` at inspection. This identifies inspected files; it is
+not a claim that either external checkout was clean.
 
 | Anchor / fact | C# file:line | Rust file:line |
 | --- | --- | --- |
@@ -83,12 +84,13 @@ claim that either external checkout was clean.
 | **C8 — template admission and slot semantics** | `AnalysisAffixTemplateRule.cs:18–73`; non-disjunctive union: `src/SIL.Machine/Rules/RuleBatch.cs:52–61`, configured at `AnalysisStratumRule.cs:27–30` | `pg-rules/src/stratum.rs:894–962,990–1075` |
 | **C9 — proposer is followed by exact-engine confirmation** | exact confirmation target: `Morpher.cs:346–367` | current emitter: `pg-foma/src/emit.rs:2615–2675,2704–2745,2768–2808`; confirmation filters/reparse: `pg-foma-runtime/src/confirm.rs:498–517` |
 
-In particular, the C# key contains shape, stratum, syntactic and realizational features, non-head count,
-and exact per-rule unapplication counts. It contains neither final-template state nor a separate morphology
-history. Rust adds both, saturates counts at each rule's maximum, and clears its analysis final-template
-state at the stratum fold (`pg-rules/src/stratum.rs:1196–1200`). The same key name does not imply the same
-equivalence relation [C3]. Neither key is a synthesis key. This inspection verifies these fields and call
-sites; it does not certify a new key as complete for every continuation.
+In particular, at `a4b29742` the C# key contains shape, stratum, syntactic and realizational features,
+non-head count, and exact per-rule unapplication counts. It contains neither final-template state nor a
+separate morphology history; #491 later added final-template state to the key, so current master lacks only
+the morphology history. Rust adds both, saturates counts at each rule's maximum, and clears its analysis
+final-template state at the stratum fold (`pg-rules/src/stratum.rs:1196–1200`). The same key name does not
+imply the same equivalence relation [C3]. Neither key is a synthesis key. This inspection verifies these
+fields and call sites; it does not certify a new key as complete for every continuation.
 
 There is a second relevant implementation difference: Rust's common dispatch applies the count gate and
 pushes a pending-rule entry for every morphological rule kind. C# realizational unapplication has no count
