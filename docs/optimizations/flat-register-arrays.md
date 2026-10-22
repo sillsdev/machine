@@ -1,8 +1,9 @@
 # Flat register arrays in the FST traversal
 
-**Status:** retained (`SIL.Machine.FiniteState`: `Register<TOffset>[]` indexed by `RegisterArray.Idx(r, k)`
-replaces `Register<TOffset>[,]` internally; the public `FstResult.Registers` stays two-dimensional and is
-materialized once per accepting state). **Portable:** no; a .NET-specific allocation path.
+**Status:** retained on `perf/hc-optimization-archive`, not merged (`SIL.Machine.FiniteState`:
+`Register<TOffset>[]` indexed by `RegisterArray.Idx(r, k)` replaces `Register<TOffset>[,]` internally; the
+public `FstResult.Registers` stays two-dimensional and is materialized once per accepting state).
+**Portable:** no; a .NET-specific allocation path.
 
 ## The observation
 

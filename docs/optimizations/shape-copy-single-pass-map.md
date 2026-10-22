@@ -1,6 +1,6 @@
 # Build `Shape.CopyTo`'s node map in the copy pass
 
-**Status:** retained (`Shape.CopyTo`).
+**Status:** retained on `perf/hc-optimization-archive`, not merged (`Shape.CopyTo`).
 **Portable:** yes, when a port has the same node-remapping requirement.
 
 ## Invariant

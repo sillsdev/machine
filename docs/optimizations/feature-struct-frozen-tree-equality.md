@@ -1,6 +1,6 @@
 # Allocation-free equality for frozen flat feature structures
 
-**Status:** retained (`FeatureStruct.ValueEquals`).
+**Status:** retained on `perf/hc-optimization-archive`, not merged (`FeatureStruct.ValueEquals`).
 **Portable:** yes; the proof depends on immutability and tree shape, not the CLR.
 
 ## Invariant

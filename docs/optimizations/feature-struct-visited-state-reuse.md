@@ -1,7 +1,8 @@
 # Reuse feature-structure traversal state
 
-**Status:** retained (`FeatureStruct.ValueEquals` and `Freeze`).
-**Portable:** the allocation-avoidance principle is portable; the `[ThreadStatic]` pool is .NET-specific.
+**Status:** retained on `perf/hc-optimization-archive`, not merged (`FeatureStruct.ValueEquals` and
+`Freeze`). **Portable:** the allocation-avoidance principle is portable; the `[ThreadStatic]` pool is
+.NET-specific.
 
 ## Invariant
 
