@@ -112,10 +112,19 @@ public static class CounterfactualGate
         Action<string, long>? onTimed = null
     )
     {
-        Language language = XmlLanguageLoader.Load(grammarPath);
-        // Baseline and mutant both run at Morpher's constructor defaults. Fixture host settings are not
-        // passed to the mutant child, so a surface delta is measured under the same configuration each time.
-        Morpher morpher = ConformanceMorpherFactory.Create(language, MorpherSettings.Defaults);
+        Morpher morpher;
+        try
+        {
+            Language language = XmlLanguageLoader.Load(grammarPath);
+            // Baseline and mutant both run at Morpher's constructor defaults. Fixture host settings are not
+            // passed to the mutant child, so a surface delta is measured under the same configuration each time.
+            morpher = ConformanceMorpherFactory.Create(language, MorpherSettings.Defaults);
+        }
+        // A file that cannot be read is the harness's problem, not the grammar's.
+        catch (Exception ex) when (ex is not OutOfMemoryException and not IOException)
+        {
+            throw new GrammarRejectedException($"{ex.GetType().Name}: {ex.Message}");
+        }
         return words.Select(word => Outcome(morpher, word, onTimed)).ToArray();
     }
 
@@ -123,6 +132,12 @@ public static class CounterfactualGate
 
     /// <summary>The exit code of a mutant child that ran out of memory under the GC heap limit.</summary>
     internal const int MemoryLimitExitCode = 3;
+
+    /// <summary>The exit code of a mutant child whose grammar was refused.</summary>
+    internal const int GrammarRejectedExitCode = 4;
+
+    // The runtime prints this before aborting a process whose stack overflowed.
+    private const string StackOverflowPrefix = "Stack overflow.";
 
     /// <summary>A mutant child's GC heap limit, 2 GB, unless DOTNET_GCHeapHardLimit is already set.</summary>
     internal const string MutantHeapHardLimit = "0x80000000";
@@ -242,8 +257,12 @@ public static class CounterfactualGate
             string error = ExtractWordTimings(errorTask.GetAwaiter().GetResult(), onTimed);
             if (child.ExitCode == MemoryLimitExitCode)
                 throw new MemoryLimitExceededException(error.Trim());
+            if (child.ExitCode == GrammarRejectedExitCode)
+                throw new GrammarRejectedException(error.Trim());
+            if (error.StartsWith(StackOverflowPrefix, StringComparison.Ordinal))
+                throw new StackLimitExceededException(error.Trim());
             if (child.ExitCode != 0)
-                throw new InvalidOperationException(error.Trim());
+                throw new InvalidOperationException($"mutant child exited {child.ExitCode}: {error.Trim()}");
             return output
                 .Split('\n', StringSplitOptions.RemoveEmptyEntries)
                 .Select(line => line.TrimEnd('\r'))
@@ -714,7 +733,14 @@ public static class CounterfactualGate
                 // Neutralizing the root element leaves a document that will not even serialize -- the
                 // most extreme case of RequiredByDtd there is, since it fails before DTD validation
                 // itself gets a document to validate.
-                mutation.Mutated.Save(mutatedPath);
+                try
+                {
+                    mutation.Mutated.Save(mutatedPath);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    throw new GrammarRejectedException($"{ex.GetType().Name}: {ex.Message}");
+                }
                 mutated = OutcomesWithTimeout(mutatedPath, words, timeout, onWordTimed);
             }
             catch (TimeoutException ex)
@@ -725,16 +751,19 @@ public static class CounterfactualGate
                     fixture.Id,
                     CounterfactualVerdict.Timeout,
                     mutation.Detail,
-                    ex is MemoryLimitExceededException
-                        ? $"the mutant exceeded the GC heap limit: {Summarize(ex.Message)}"
-                        : $"the mutant did not terminate within {timeout.TotalSeconds:0}s"
+                    ex switch
+                    {
+                        MemoryLimitExceededException =>
+                            $"the mutant exceeded the GC heap limit: {Summarize(ex.Message)}",
+                        StackLimitExceededException => $"the mutant overflowed the stack: {Summarize(ex.Message)}",
+                        _ => $"the mutant did not terminate within {timeout.TotalSeconds:0}s",
+                    }
                 );
             }
-            // Only a rejected grammar is evidence: a document that will not serialize, or a child that exits
-            // with an error, both InvalidOperationException. Any other failure is the harness's and fails the sweep.
-            catch (InvalidOperationException ex)
+            // Only a refused grammar is evidence. Any other child failure is the harness's and fails the sweep.
+            catch (GrammarRejectedException ex)
             {
-                string loadFailure = $"{ex.GetType().Name}: {Summarize(ex.Message)}";
+                string loadFailure = Summarize(ex.Message);
                 return new CounterfactualResult(
                     surfaceId,
                     fixture.Id,
