@@ -41,6 +41,22 @@ public class RuleCascadeTests
         AssertSameResults(sequential, parallel);
     }
 
+    [Test]
+    public void Constructor_NullComparer_UsesDefaultComparer()
+    {
+        var combination = new ParallelCombinationRuleCascade<AnnotatedStringData, int>(
+            DuplicateProducingRules(),
+            null!
+        );
+        var permutation = new ParallelPermutationRuleCascade<AnnotatedStringData, int>(
+            DuplicateProducingRules(),
+            null!
+        );
+
+        Assert.That(combination.Comparer, Is.SameAs(EqualityComparer<AnnotatedStringData>.Default));
+        Assert.That(permutation.Comparer, Is.SameAs(EqualityComparer<AnnotatedStringData>.Default));
+    }
+
     private static void AssertSameResults(
         RuleCascade<AnnotatedStringData, int> sequential,
         RuleCascade<AnnotatedStringData, int> parallel

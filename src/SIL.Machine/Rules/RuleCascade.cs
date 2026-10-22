@@ -30,7 +30,7 @@ namespace SIL.Machine.Rules
         {
             _rules = new ReadOnlyList<IRule<TData, TOffset>>(rules.ToList());
             _multiApp = multiApp;
-            _comparer = comparer;
+            _comparer = comparer ?? EqualityComparer<TData>.Default;
         }
 
         public IEqualityComparer<TData> Comparer
