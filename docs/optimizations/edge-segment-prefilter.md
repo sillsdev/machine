@@ -1,8 +1,8 @@
 # Edge-segment prefilter for analysis affix rules
 
-**Status:** retained (`AnalysisAffixProcessRule`; internal same-binary toggle
-`Morpher.EdgePrefilterEnabled`). **Portable:** yes; it is a property of the pattern semantics,
-not of the C# engine.
+**Status:** retained on `perf/hc-optimization-archive`, not merged (`AnalysisAffixProcessRule`; internal
+same-binary toggle `Morpher.EdgePrefilterEnabled`). **Portable:** yes; it is a property of the pattern
+semantics, not of the C# engine.
 
 ## The observation
 

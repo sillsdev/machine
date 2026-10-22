@@ -40,12 +40,12 @@ speedup, or numbered optimization row is claimed.**
 
 ## Final disposition of the September follow-up
 
-The follow-up branch does deliver product improvements. Its authoritative summary is
-`hermitcrab-perf-2026-09-counts.md`, and each retained optimization has one record under
-`docs/optimizations/`. The retained set is: deferred template cloning, feature-structure traversal-state
-reuse, frozen-flat-tree equality, frozen-flat-tree cloning, single-pass `Shape.CopyTo` mapping,
-copy-on-write shape sharing, flat FST register arrays, the analysis edge-segment prefilter, and
-copy-on-write syntactic feature structures.
+The follow-up branch does deliver product improvements, retained on `perf/hc-optimization-archive` and not
+merged to master. Its authoritative summary is `hermitcrab-perf-2026-09-counts.md`, and each retained
+optimization has one record under `docs/optimizations/`. The retained set is: deferred template cloning,
+feature-structure traversal-state reuse, frozen-flat-tree equality, frozen-flat-tree cloning, single-pass
+`Shape.CopyTo` mapping, copy-on-write shape sharing, flat FST register arrays, the analysis edge-segment
+prefilter, and copy-on-write syntactic feature structures.
 
 Four attractive experiments were deliberately excluded from the final product diff and are recorded under
 `docs/rejected-optimizations/`: the negative two-pass nondeterministic traversal, the inert final-template

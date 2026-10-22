@@ -1,7 +1,7 @@
 # Deferred per-template clone in `AnalysisAffixTemplateRule`
 
-**Status:** retained. **Portable:** the observation is; the saving is allocation, so the Rust port gains
-little unless it also clones eagerly.
+**Status:** retained on `perf/hc-optimization-archive`, not merged. **Portable:** the observation is; the
+saving is allocation, so the Rust port gains little unless it also clones eagerly.
 
 ## The observation
 
