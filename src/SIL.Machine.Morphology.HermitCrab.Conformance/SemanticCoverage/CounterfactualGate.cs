@@ -432,7 +432,8 @@ public static class CounterfactualGate
     /// cref="CounterfactualVerdict.Evidenced"/> (a word-level counter-example) always wins and stops
     /// the search; a load failure (see <see cref="IsLoadFailureFromEnumRewrite"/>) is kept only until
     /// something stronger turns up, and a <see cref="CounterfactualVerdict.Timeout"/> only until anything
-    /// else does, so an all-timeout search reports Timeout rather than claiming no sibling had an effect. Word and LoadFailure are different strengths of evidence (see
+    /// else does, so an all-timeout search reports Timeout rather than claiming no sibling had an effect.
+    /// Word and LoadFailure are different strengths of evidence (see
     /// <see cref="CounterexampleKind"/>), so stopping at whichever verdict a caller happens to reach
     /// first in declared sibling order would make the recorded strength depend on the DTD's
     /// alphabetical value ordering rather than on what the grammar actually shows.
