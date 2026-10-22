@@ -5,7 +5,7 @@ inspired_by: ["synthetic final-template partial-rule discriminator probe (not mo
 sources:
   - "https://github.com/sillsdev/machine/issues/507"
   - "src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/SynthesisStratumRule.cs"
-requires: []
+requires: [morpher-settings]
 fieldworks_producible: false
 fieldworks_producible_notes: >-
   Partial ordinary rules mrGate2Partial/mrGate3Partial set outputPartOfSpeech, but FieldWorks
@@ -14,6 +14,8 @@ fieldworks_producible_notes: >-
   outputPartOfSpeech; LoadAffixTemplate (1672-1735) obtains inflectional rules from IMoInflAffMsa,
   and LoadInflAffixProcessRule does not set output syntactic features. These combined usages
   are HC-engine-only, even though partial rules and output POS are individually producible.
+morpher:
+  MakePartialsFinal: false
 words:
   - word: dakfaga
     note: >-
@@ -102,3 +104,117 @@ words:
     parses:
       - signature: "NIB+GATE3PARTIAL|nibgi"
         rules: [mrGate3Partial]
+
+# Named-run expectations observed from C# HC at 1836d23c (core unchanged from 72dbd4f9),
+# 2026-10-22, DOP 1. Each run starts from engine defaults and sets only its own morpher block.
+variants:
+- name: partial-rescue
+  morpher:
+    MakePartialsFinal: false
+  words:
+  - word: dakfaga
+    expect_fail: true
+    note: C# oracle observation with MakePartialsFinal = false.
+  - word: dakfa
+    parses:
+    - signature: DAK+FINTAGA|dakfa
+      rules:
+      - mrFinTagA
+    note: C# oracle observation with MakePartialsFinal = false.
+  - word: daknagafa
+    parses:
+    - signature: DAK+NONFINTAGA+GATE1+FINTAGA|daknagafa
+      rules:
+      - mrNonFinTagA
+      - mrGate1
+      - mrFinTagA
+    note: C# oracle observation with MakePartialsFinal = false.
+  - word: dakna
+    expect_fail: true
+    note: C# oracle observation with MakePartialsFinal = false.
+  - word: pilnbvbfb
+    expect_fail: true
+    note: C# oracle observation with MakePartialsFinal = false.
+  - word: pilnbtbfb
+    parses:
+    - signature: PIL+NONFINTAGB+GATE2COMPLETE+FINTAGB|pilnbtbfb
+      rules:
+      - mrNonFinTagB
+      - mrGate2Complete
+      - mrFinTagB
+    note: C# oracle observation with MakePartialsFinal = false.
+  - word: pilnb
+    expect_fail: true
+    note: C# oracle observation with MakePartialsFinal = false.
+  - word: pilfb
+    parses:
+    - signature: PIL+FINTAGB|pilfb
+      rules:
+      - mrFinTagB
+    note: C# oracle observation with MakePartialsFinal = false.
+  - word: pilfbvb
+    parses:
+    - signature: PIL+FINTAGB+GATE2PARTIAL|pilfbvb
+      rules:
+      - mrFinTagB
+      - mrGate2Partial
+    note: C# oracle observation with MakePartialsFinal = false.
+  - word: nibgi
+    parses:
+    - signature: NIB+GATE3PARTIAL|nibgi
+      rules:
+      - mrGate3Partial
+    note: C# oracle observation with MakePartialsFinal = false.
+- name: enforce-final
+  morpher:
+    MakePartialsFinal: true
+  words:
+  - word: dakfaga
+    expect_fail: true
+    note: C# oracle observation with MakePartialsFinal = true.
+  - word: dakfa
+    parses:
+    - signature: DAK+FINTAGA|dakfa
+      rules:
+      - mrFinTagA
+    note: C# oracle observation with MakePartialsFinal = true.
+  - word: daknagafa
+    parses:
+    - signature: DAK+NONFINTAGA+GATE1+FINTAGA|daknagafa
+      rules:
+      - mrFinTagA
+      - mrGate1
+      - mrNonFinTagA
+    note: C# oracle observation with MakePartialsFinal = true.
+  - word: dakna
+    expect_fail: true
+    note: C# oracle observation with MakePartialsFinal = true.
+  - word: pilnbvbfb
+    expect_fail: true
+    note: C# oracle observation with MakePartialsFinal = true.
+  - word: pilnbtbfb
+    parses:
+    - signature: PIL+NONFINTAGB+GATE2COMPLETE+FINTAGB|pilnbtbfb
+      rules:
+      - mrFinTagB
+      - mrGate2Complete
+      - mrNonFinTagB
+    note: C# oracle observation with MakePartialsFinal = true.
+  - word: pilnb
+    expect_fail: true
+    note: C# oracle observation with MakePartialsFinal = true.
+  - word: pilfb
+    parses:
+    - signature: PIL+FINTAGB|pilfb
+      rules:
+      - mrFinTagB
+    note: C# oracle observation with MakePartialsFinal = true.
+  - word: pilfbvb
+    expect_fail: true
+    note: C# oracle observation with MakePartialsFinal = true.
+  - word: nibgi
+    parses:
+    - signature: NIB+GATE3PARTIAL|nibgi
+      rules:
+      - mrGate3Partial
+    note: C# oracle observation with MakePartialsFinal = true.

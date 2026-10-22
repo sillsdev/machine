@@ -10,6 +10,7 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 public class RunReport
 {
     public List<FixtureResult> Results { get; } = new();
+    public int FixtureCount { get; set; }
     public int ExcludedPathologicalCount { get; set; }
 
     public int Passed => Results.Count(r => r.Outcome == FixtureOutcome.Passed);
@@ -36,26 +37,32 @@ public static class Runner
     )
     {
         var report = new RunReport();
+        report.FixtureCount = fixtures.Count;
         foreach (Fixture fixture in fixtures)
         {
-            FixtureResult result = RunOneSelfCheck(
-                fixture,
-                includePathological,
-                engineCapabilities,
-                propose,
-                proposeOutput,
-                useMemoization
-            );
-            if (result == null)
-                report.ExcludedPathologicalCount++;
-            else
-                report.Results.Add(result);
+            foreach (WordRun run in fixture.Words.Runs)
+            {
+                FixtureResult result = RunOneSelfCheck(
+                    fixture,
+                    run,
+                    includePathological,
+                    engineCapabilities,
+                    propose,
+                    proposeOutput,
+                    useMemoization
+                );
+                if (result == null)
+                    report.ExcludedPathologicalCount++;
+                else
+                    report.Results.Add(result);
+            }
         }
         return report;
     }
 
     private static FixtureResult RunOneSelfCheck(
         Fixture fixture,
+        WordRun run,
         bool includePathological,
         IReadOnlySet<string> engineCapabilities,
         bool propose,
@@ -63,9 +70,13 @@ public static class Runner
         bool useMemoization
     )
     {
-        var result = new FixtureResult { FixtureId = fixture.Id };
+        string runId = run.Name == "default" ? fixture.Id : $"{fixture.Id} [variant {run.Name}]";
+        var result = new FixtureResult { FixtureId = runId };
 
-        List<string> derivedRequires = RequiresDerivation.Derive(fixture.GrammarPath, fixture.Words.Morpher);
+        List<string> derivedRequires = RequiresDerivation.Derive(
+            fixture.GrammarPath,
+            fixture.Words.Runs.Select(r => r.Morpher)
+        );
         if (
             !new HashSet<string>(derivedRequires, StringComparer.Ordinal).SetEquals(
                 new HashSet<string>(fixture.Words.Requires, StringComparer.Ordinal)
@@ -95,7 +106,7 @@ public static class Runner
         var sw = Stopwatch.StartNew();
         try
         {
-            RunWithBudget(fixture, result, propose, proposeOutput, useMemoization);
+            RunWithBudget(fixture, run, result, propose, proposeOutput, useMemoization);
             sw.Stop();
             result.ElapsedMs = sw.ElapsedMilliseconds;
 
@@ -151,7 +162,7 @@ result.WordResults
             else
             {
                 result.Outcome = FixtureOutcome.Failed;
-                result.Reason = $"engine crashed: {ex.Message}";
+                result.Reason = $"engine crashed in run '{run.Name}': {ex.Message}";
             }
         }
 
@@ -162,6 +173,7 @@ result.WordResults
     // budgeted fixture gets the same "background thread + Task.Wait" timeout enforcement.
     private static void RunWithBudget(
         Fixture fixture,
+        WordRun run,
         FixtureResult result,
         bool propose,
         TextWriter proposeOutput,
@@ -170,12 +182,12 @@ result.WordResults
     {
         if (!fixture.Words.BudgetMs.HasValue)
         {
-            RunAllWords(fixture, result, propose, proposeOutput, useMemoization);
+            RunAllWords(fixture, run, result, propose, proposeOutput, useMemoization);
             return;
         }
 
         long budgetMs = fixture.Words.BudgetMs.Value;
-        Task task = Task.Run(() => RunAllWords(fixture, result, propose, proposeOutput, useMemoization));
+        Task task = Task.Run(() => RunAllWords(fixture, run, result, propose, proposeOutput, useMemoization));
         long marginMs = Math.Max(budgetMs / 5, 1000);
         bool completed;
         try
@@ -192,6 +204,7 @@ result.WordResults
 
     private static void RunAllWords(
         Fixture fixture,
+        WordRun run,
         FixtureResult result,
         bool propose,
         TextWriter proposeOutput,
@@ -199,13 +212,13 @@ result.WordResults
     )
     {
         Language language = XmlLanguageLoader.Load(fixture.GrammarPath);
-        Morpher resultMorpher = ConformanceMorpherFactory.Create(language, fixture.Words.Morpher, useMemoization);
-        Morpher tracingMorpher = ConformanceMorpherFactory.CreateTracing(language, fixture.Words.Morpher);
+        Morpher resultMorpher = ConformanceMorpherFactory.Create(language, run.Morpher, useMemoization);
+        Morpher tracingMorpher = ConformanceMorpherFactory.CreateTracing(language, run.Morpher);
         GrammarRuleIndex ruleIndex = GrammarRuleIndex.Load(fixture.GrammarPath);
 
-        foreach (WordEntry word in fixture.Words.Words)
+        foreach (WordEntry word in run.Words)
         {
-            bool guessRoot = word.Parses.Any(p => p.Guess);
+            bool guessRoot = run.Morpher.GuessRootsFor(word);
             List<Word> results;
             bool wasSkipped = false;
             try
@@ -237,8 +250,16 @@ result.WordResults
                             $"expected [{string.Join(" | ", expectedEntries)}] got [{string.Join(" | ", actualEntries)}]",
                     }
                 );
-                if (propose)
+                if (propose && run.Name == "default")
+                {
                     ProposePatchWriter.WriteSignatureProposal(proposeOutput, fixture, word, actualEntries);
+                }
+                else if (propose)
+                {
+                    proposeOutput.WriteLine(
+                        $"# --propose cannot safely patch variant '{run.Name}' in {fixture.Id}; edit that variant's complete words list by hand."
+                    );
+                }
                 continue;
             }
 
@@ -317,26 +338,43 @@ result.WordResults
     public static RunReport RunAdapter(List<Fixture> fixtures, IEngine engine, bool includePathological)
     {
         var report = new RunReport();
+        report.FixtureCount = fixtures.Count;
         foreach (Fixture fixture in fixtures)
         {
-            MaterializedFixture materialized = FixtureMaterializer.Materialize(fixture);
-            try
+            foreach (WordRun run in fixture.Words.Runs)
             {
-                MaterializedRunReport oneReport = MaterializedRunner.Run(
-                    new List<MaterializedFixture> { materialized },
-                    engine,
-                    includePathological
-                );
-                report.ExcludedPathologicalCount += oneReport.ExcludedPathologicalCount;
-                foreach (FixtureResult r in oneReport.Results)
+                MaterializedFixture materialized;
+                try
                 {
-                    r.FixtureId = fixture.Id; // already fixture.Id (came from the synthetic manifest); kept explicit for clarity
-                    report.Results.Add(r);
+                    materialized = FixtureMaterializer.Materialize(fixture, run);
                 }
-            }
-            finally
-            {
-                FixtureMaterializer.Cleanup(materialized);
+                catch (NamedVariantHasNoAdapterVisibleWordsException ex)
+                {
+                    report.Results.Add(
+                        new FixtureResult
+                        {
+                            FixtureId = run.Name == "default" ? fixture.Id : $"{fixture.Id} [variant {run.Name}]",
+                            Outcome = FixtureOutcome.Failed,
+                            Reason = ex.Message,
+                        }
+                    );
+                    continue;
+                }
+
+                try
+                {
+                    MaterializedRunReport oneReport = MaterializedRunner.Run(
+                        new List<MaterializedFixture> { materialized },
+                        engine,
+                        includePathological
+                    );
+                    report.ExcludedPathologicalCount += oneReport.ExcludedPathologicalCount;
+                    report.Results.AddRange(oneReport.Results);
+                }
+                finally
+                {
+                    FixtureMaterializer.Cleanup(materialized);
+                }
             }
         }
         return report;

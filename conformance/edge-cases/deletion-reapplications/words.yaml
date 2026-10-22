@@ -46,3 +46,51 @@ words:
     parses:
       - signature: "TAIKI|taiki"
         rules: []
+
+# Named-run expectations observed from C# HC at 1836d23c (core unchanged from 72dbd4f9),
+# 2026-10-22, DOP 1. Each run starts from engine defaults and sets only its own morpher block.
+variants:
+- name: del-reapps-zero
+  morpher:
+    DelReapps: 0
+  words:
+  - word: tuki
+    parses:
+    - signature: TUKI|tuki
+      rules: []
+    note: C# oracle observation with DelReapps = 0.
+  - word: tuiiki
+    expect_fail: true
+    note: C# oracle observation with DelReapps = 0.
+  - word: taiki
+    parses:
+    - signature: TAIKI|taiki
+      rules: []
+    note: C# oracle observation with DelReapps = 0.
+- name: del-reapps-two
+  morpher:
+    DelReapps: 2
+  words:
+  - word: tuki
+    parses:
+    - signature: TUIIIIKI|tuki
+      rules:
+      - prHiatusI
+    - signature: TUIIIKI|tuki
+      rules:
+      - prHiatusI
+    - signature: TUIIKI|tuki
+      rules:
+      - prHiatusI
+    - signature: TUKI|tuki
+      rules:
+      - prHiatusI
+    note: C# oracle observation with DelReapps = 2.
+  - word: tuiiki
+    expect_fail: true
+    note: C# oracle observation with DelReapps = 2.
+  - word: taiki
+    parses:
+    - signature: TAIKI|taiki
+      rules: []
+    note: C# oracle observation with DelReapps = 2.
