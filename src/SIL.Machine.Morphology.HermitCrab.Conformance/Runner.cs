@@ -184,7 +184,15 @@ result.WordResults
     {
         if (!fixture.Words.BudgetMs.HasValue)
         {
-            RunAllWords(fixture, run, result.WordResults, propose, proposeOutput, useMemoization, CancellationToken.None);
+            RunAllWords(
+                fixture,
+                run,
+                result.WordResults,
+                propose,
+                proposeOutput,
+                useMemoization,
+                CancellationToken.None
+            );
             return;
         }
 
