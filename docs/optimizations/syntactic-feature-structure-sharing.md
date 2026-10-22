@@ -1,7 +1,8 @@
 # Copy-on-write syntactic feature structures in engine clones
 
-**Status:** retained (`Word.CloneForEngine`, `EnsureOwnSyntacticFeatureStruct`).
-**Portable:** partly; immutable sharing is general, while the ownership plumbing is specific to this engine.
+**Status:** retained on `perf/hc-optimization-archive`, not merged (`Word.CloneForEngine`,
+`EnsureOwnSyntacticFeatureStruct`). **Portable:** partly; immutable sharing is general, while the ownership
+plumbing is specific to this engine.
 
 ## Invariant
 

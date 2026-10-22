@@ -1,9 +1,9 @@
 # Copy-on-write Shape sharing in `Word.Clone`
 
-**Status:** retained (`Word.CloneForEngine`, `EnsureOwnShape`, `ResetShape`, `Shape.CreateEmptyLike`).
-**Portable:** partly. The *observation* (three of four clone sites never use the copied shape) is
-engine-independent; the mechanism (shared reference to an immutable structure) is how a Rust port would
-naturally write it already.
+**Status:** retained on `perf/hc-optimization-archive`, not merged (`Word.CloneForEngine`, `EnsureOwnShape`,
+`ResetShape`, `Shape.CreateEmptyLike`). **Portable:** partly. The *observation* (three of four clone sites
+never use the copied shape) is engine-independent; the mechanism (shared reference to an immutable
+structure) is how a Rust port would naturally write it already.
 
 ## The observation
 
