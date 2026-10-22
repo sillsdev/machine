@@ -126,11 +126,10 @@ word list, and the rulestats HTML report so they cannot be staged by accident.
 
 ## What to do next, in order
 
-1. ~~Fix and merge PR #491~~ — merged on 2026-09-28 as `b240b7b5`. Two of the three concerns are fixed on
-   master: a final template that would follow a non-template now returns no output instead of marking its
-   clone, so the duplicate parse is gone, and the affix-process rules set `FinalTemplateState` only while
-   the prune is enabled (the compounding rule still sets it unconditionally). The guard is unchanged: it is
-   still grammar-wide and still counts partial lexical entries (`Morpher.IsPartial`).
+1. ~~Fix and merge PR #491~~ — merged on 2026-09-28 as `b240b7b5`. On master the duplicate parse is fixed (a
+   final template that would follow a non-template now returns no output instead of marking its clone), and
+   the affix-process rules set `FinalTemplateState` only while the prune is enabled. The guard,
+   `Morpher.IsPartial`, is still grammar-wide and still counts partial lexical entries.
 2. Classify the unclassified affixes in the FLEx projects (Mbugwe 1, Amharic 1, Sena 6); that turns #491's default
    prune on. Add the finding to the grammar advisor.
 3. ~~Open the prefilter PR from `perf/hc-edge-prefilter`~~ — that branch and its own archive tag are both
