@@ -1,8 +1,9 @@
 # HermitCrab optimization round, September 2026: final disposition of the branch
 
 **Date:** 2026-09-03. **Branch:** `perf/hc-optimization-pr` @ `179708d2`, renamed `perf/hc-optimization-archive`.
-**Decision:** do not merge the branch. Isolate one mechanism onto master as its own small PR; archive the rest with
-its records. Re-focus on sillsdev/machine PR #491 and on grammar hygiene, which are where the large returns are.
+Origin now holds that branch as one squashed commit, `3a0a3316`; that is the authoritative tip. **Decision:** do not
+merge the branch. Isolate one mechanism onto master as its own small PR; archive the rest with its records. Re-focus
+on sillsdev/machine PR #491 and on grammar hygiene, which are where the large returns are.
 
 ## Why the package is not merged
 
@@ -85,7 +86,7 @@ branches remain.
 
 | Branch | Tip | What it is | State |
 | --- | --- | --- | --- |
-| `perf/hc-optimization-archive` (was `perf/hc-optimization-pr`) | `b58b1642`+ | the whole round, code + records | archived, unmerged; worktree `.worktrees/ledger` |
+| `perf/hc-optimization-archive` (was `perf/hc-optimization-pr`) | `3a0a3316` (squashed) | the whole round, code + records | archived, unmerged; worktree `.worktrees/ledger` |
 | `perf/hc-defer-template-clone` | `4a6a47ed` | working branch of the round | fully contained in the archive; worktree removed |
 | `perf/hc-engine-alloc` | `f22f88a8` | allocation/two-pass side branch | fully contained in the archive; worktree removed |
 | `perf/hc-conformance-check` | `0799a977` | archive merged into the conformance integration branch for the 603-test gate | verification only; worktree `.worktrees/hc-conf` can go |
@@ -135,4 +136,5 @@ word list, and the rulestats HTML report so they cannot be staged by accident.
 3. ~~Open the prefilter PR from `perf/hc-edge-prefilter`~~ — that branch and its own archive tag are both
    deleted; a PR now starts from the mechanism preserved on branch
    `perf/hc-optimization-archive` rather than resuming the deleted branch.
-4. Port the prune to PanGloss per the handoff (`HANDOFF-pangloss-final-template-prune.md`, session scratchpad).
+4. Port the prune to PanGloss per the handoff, `docs/pangloss-final-template-prune-handoff.md` on branch
+   `perf/hc-optimization-archive`.
