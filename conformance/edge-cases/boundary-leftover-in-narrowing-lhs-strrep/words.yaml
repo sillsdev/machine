@@ -35,7 +35,7 @@ words:
     note: Only KAN+MO; a KAN+BO reading would have lost the n.
     parses:
       - signature: "KAN+MO|kan+?mo"
-        rules: [mrSfxMo, prPostNasal]
+        rules: [mrSfxMo]
   - word: katbo
     note: No nasal before the boundary, so the rule does not apply.
     parses:
