@@ -90,7 +90,7 @@ branches remain.
 | `perf/hc-engine-alloc` | `f22f88a8` | allocation/two-pass side branch | fully contained in the archive; worktree removed |
 | `perf/hc-conformance-check` | `0799a977` | archive merged into the conformance integration branch for the 603-test gate | verification only; worktree `.worktrees/hc-conf` can go |
 | `perf/hc-edge-prefilter` | `be7f241d` | the one isolated mechanism on `origin/master` | optional small PR at the time; **branch and its own archive tag have both since been deleted, but the mechanism is preserved on branch `perf/hc-optimization-archive`** |
-| `pr-491` | `96c97f76` | jtmaxwell3's PR head | worktree `.worktrees/pr491` holds uncommitted throwaway counters + `FinalTemplateUpperBound` harness |
+| `pr-491` | `96c97f76` | jtmaxwell3's PR head at review time | merged to master as `b240b7b5` on 2026-09-28; worktree `.worktrees/pr491` holds uncommitted throwaway counters + `FinalTemplateUpperBound` harness |
 | `docs/hc-optimization-ledger` (remote, PR #490) | `cc806613` | the ledger, now 23 rows | open docs PR |
 | `feature/forest-memo`, `feature/synthesis-fold-probes`, `feature/synthesis-fold-sharing`, `feature/per-node-cost` | — | evidence branches of the ledger round | see `hermitcrab-optimization-ledger.md` |
 | `investigate-memoization-rule-order` | `4f5aeeb4` | despite the name, conformance-suite commits | belongs to the conformance line, not this round |
@@ -125,8 +125,11 @@ word list, and the rulestats HTML report so they cannot be staged by accident.
 
 ## What to do next, in order
 
-1. Fix and merge PR #491 (duplicate parses, memo splitting while disabled, entry-counting guard). Draft comment in the
-   re-review record.
+1. ~~Fix and merge PR #491~~ — merged on 2026-09-28 as `b240b7b5`. Two of the three concerns are fixed on
+   master: a final template that would follow a non-template now returns no output instead of marking its
+   clone, so the duplicate parse is gone, and the affix-process rules set `FinalTemplateState` only while
+   the prune is enabled (the compounding rule still sets it unconditionally). The guard is unchanged: it is
+   still grammar-wide and still counts partial lexical entries (`Morpher.IsPartial`).
 2. Classify the unclassified affixes in the FLEx projects (Mbugwe 1, Amharic 1, Sena 6); that turns #491's default
    prune on. Add the finding to the grammar advisor.
 3. ~~Open the prefilter PR from `perf/hc-edge-prefilter`~~ — that branch and its own archive tag are both
