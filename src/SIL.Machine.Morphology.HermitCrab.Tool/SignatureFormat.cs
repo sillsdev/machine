@@ -16,10 +16,19 @@ internal static class SignatureFormat
 
     public static (string status, long elapsedMs, string signature) ParseOneWord(Morpher morpher, string word)
     {
+        return ParseOneWord(morpher, word, guessRoot: false);
+    }
+
+    public static (string status, long elapsedMs, string signature) ParseOneWord(
+        Morpher morpher,
+        string word,
+        bool guessRoot
+    )
+    {
         var sw = Stopwatch.StartNew();
         try
         {
-            Word[] results = morpher.ParseWord(word, out _).ToArray();
+            Word[] results = morpher.ParseWord(word, out _, guessRoot).ToArray();
             sw.Stop();
             return ("ok", sw.ElapsedMilliseconds, BuildSignature(results));
         }

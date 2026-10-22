@@ -28,10 +28,32 @@ public class WordsYaml
     /// offending construct(s) and cites the HCLoader evidence grounding the verdict.</summary>
     public string FieldworksProducibleNotes = "";
 
-    /// <summary>The <c>morpher:</c> block; empty when absent, meaning the PROTOCOL.md section 8 defaults.</summary>
+    /// <summary>The <c>morpher:</c> block; empty when absent, meaning the engine constructor defaults.</summary>
     public MorpherSettings Morpher { get; } = new();
 
     public List<WordEntry> Words { get; } = new();
+
+    /// <summary>
+    /// Named complete runs against the same grammar; coverage remains attached to <see cref="Words"/>.
+    /// </summary>
+    public List<WordRun> Variants { get; } = new();
+
+    public IEnumerable<WordRun> Runs
+    {
+        get
+        {
+            yield return new WordRun("default", Morpher, Words);
+            foreach (WordRun variant in Variants)
+                yield return variant;
+        }
+    }
+}
+
+public class WordRun(string name, MorpherSettings morpher, List<WordEntry> words)
+{
+    public string Name { get; } = name;
+    public MorpherSettings Morpher { get; } = morpher;
+    public List<WordEntry> Words { get; } = words;
 }
 
 public class WordEntry

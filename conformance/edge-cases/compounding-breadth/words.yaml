@@ -35,8 +35,10 @@ language: CompoundingBreadth
 inspired_by: ["synthetic compounding-constraint probe (not modeling any real language)"]
 sources:
   - "conformance/semantic-coverage-baseline.txt compounding todo entries"
-requires: []
+requires: [morpher-settings]
 fieldworks_producible: true
+morpher:
+  MaxRoots: 2
 words:
   - word: ka
     note: Bare head root, number=sg, class=a.
@@ -148,3 +150,86 @@ words:
     expect_fail: true
     exercises:
       - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+# Named-run expectations observed from C# HC at 1836d23c (core unchanged from 72dbd4f9),
+# 2026-10-22, DOP 1. Each run starts from engine defaults and sets only its own morpher block.
+variants:
+- name: one-root
+  morpher:
+    MaxRoots: 1
+  words:
+  - word: ka
+    parses:
+    - signature: KA|ka
+      rules: []
+    note: C# oracle observation with MaxRoots = 1.
+  - word: tu
+    parses:
+    - signature: TU|tu
+      rules: []
+    note: C# oracle observation with MaxRoots = 1.
+  - word: katu
+    expect_fail: true
+    note: C# oracle observation with MaxRoots = 1.
+  - word: katumi
+    expect_fail: true
+    note: C# oracle observation with MaxRoots = 1.
+  - word: kaki
+    expect_fail: true
+    note: C# oracle observation with MaxRoots = 1.
+  - word: kati
+    expect_fail: true
+    note: C# oracle observation with MaxRoots = 1.
+  - word: kamtu
+    expect_fail: true
+    note: C# oracle observation with MaxRoots = 1.
+  - word: kaptu
+    expect_fail: true
+    note: C# oracle observation with MaxRoots = 1.
+  - word: kutu
+    expect_fail: true
+    note: C# oracle observation with MaxRoots = 1.
+  - word: patu
+    expect_fail: true
+    note: C# oracle observation with MaxRoots = 1.
+- name: two-roots
+  morpher:
+    MaxRoots: 2
+  words:
+  - word: ka
+    parses:
+    - signature: KA|ka
+      rules: []
+    note: C# oracle observation with MaxRoots = 2.
+  - word: tu
+    parses:
+    - signature: TU|tu
+      rules: []
+    note: C# oracle observation with MaxRoots = 2.
+  - word: katu
+    parses:
+    - signature: KA+TU|katu
+      rules:
+      - crJoin
+    note: C# oracle observation with MaxRoots = 2.
+  - word: katumi
+    expect_fail: true
+    note: C# oracle observation with MaxRoots = 2.
+  - word: kaki
+    expect_fail: true
+    note: C# oracle observation with MaxRoots = 2.
+  - word: kati
+    expect_fail: true
+    note: C# oracle observation with MaxRoots = 2.
+  - word: kamtu
+    expect_fail: true
+    note: C# oracle observation with MaxRoots = 2.
+  - word: kaptu
+    expect_fail: true
+    note: C# oracle observation with MaxRoots = 2.
+  - word: kutu
+    expect_fail: true
+    note: C# oracle observation with MaxRoots = 2.
+  - word: patu
+    expect_fail: true
+    note: C# oracle observation with MaxRoots = 2.

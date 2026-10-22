@@ -59,7 +59,11 @@ public class SelfCheckEngine(IReadOnlySet<string> capabilities = null, bool useM
             string word = words[i];
             try
             {
-                (string status, long elapsedMs, string signature) = SignatureFormat.ParseOneWord(morpher, word);
+                (string status, long elapsedMs, string signature) = SignatureFormat.ParseOneWord(
+                    morpher,
+                    word,
+                    fixture.Manifest.Morpher.GuessRoots ?? false
+                );
                 rows.Add(new TsvRow(i, word, elapsedMs, status, signature));
             }
             catch (Exception ex)

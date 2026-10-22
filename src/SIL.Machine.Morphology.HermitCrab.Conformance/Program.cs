@@ -1467,7 +1467,7 @@ internal class Program
         if (report.ExcludedPathologicalCount > 0)
         {
             Console.WriteLine(
-                $"{report.ExcludedPathologicalCount} pathological (budget_ms) fixture(s) excluded by default (--include-pathological to run)"
+                $"{report.ExcludedPathologicalCount} pathological run(s) (budget_ms) excluded by default (--include-pathological to run)"
             );
         }
         Console.WriteLine();
@@ -1491,7 +1491,8 @@ internal class Program
 
         Console.WriteLine();
         Console.WriteLine(
-            $"totals: {report.Passed} passed, {report.Failed} failed, {report.Skipped} skipped (of {report.Results.Count} attempted)"
+            $"totals: {report.Passed} runs passed, {report.Failed} failed, {report.Skipped} skipped "
+                + $"(of {report.Results.Count} runs attempted across {report.FixtureCount} fixtures)"
         );
     }
 

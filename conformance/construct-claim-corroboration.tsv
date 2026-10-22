@@ -58,6 +58,7 @@ edge-cases/cross-table-root-respelling	tu	ROOT3+SUF|tu	CharacterDefinitionTable:
 edge-cases/deep-optional-affix-nesting	k	K|k	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/deep-optional-affix-nesting	xxxxxxxxxxxxk	P12+P11+P10+P9+P8+P7+P6+P5+P4+P3+P2+P1+K|xxxxxxxxxxxxk	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/default-symbol-after-merge	f	ROOT|f	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/deletion-reapplications	tuki	TUIIKI|tuki	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/deletion-reinserted-feature-unapply	bag	BAGD|bag	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/diacritic-segments	años	YEAR+PL|años	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/diacritic-segments	años	YEAR+PL|años	AffixProcessRule: prefix/suffix/circumfix/infix	Unmapped	-
@@ -139,6 +140,10 @@ edge-cases/free-fluctuating-allomorph-pair	kots	-	Disjunctive allomorphs / free-
 edge-cases/free-fluctuating-allomorph-pair	pel	ALT|pel	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/free-fluctuating-allomorph-pair	pol	ALT|pol	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/geminate-under-merge	f	ROOT|f	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/guess-roots-settings	takuvuq	taku+INFL|takuvuq	Guesser/LexicalGuess	Unmapped	-
+edge-cases/guess-roots-settings	takuvuq	taku+INFL|takuvuq	Guesser/LexicalGuess	Unmapped	-
+edge-cases/guess-roots-settings	takuvuq	takuvuq|takuvuq	Guesser/LexicalGuess	Unmapped	-
+edge-cases/guess-roots-settings	takuvuq	takuvuq|takuvuq	Guesser/LexicalGuess	Unmapped	-
 edge-cases/iterative-epenthesis-cascade	uotaa	BOTH|uotaa	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/loader-default-symbol	bat	|bat	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/loader-default-symbol	bdt	-	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable

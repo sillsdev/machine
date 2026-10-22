@@ -21,11 +21,18 @@
       "additionalProperties": false,
       "minProperties": 1,
       "properties": {
-        "DelReapps": { "type": "integer", "minimum": 0 },
-        "MaxRoots": { "type": "integer", "minimum": 1 },
+        "DelReapps": { "type": "integer", "minimum": 0, "maximum": 2147483647 },
+        "MaxRoots": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
         "MergeAnalyses": { "type": "boolean" },
-        "MakePartialsFinal": { "type": "boolean" }
+        "MakePartialsFinal": { "type": "boolean" },
+        "GuessRoots": { "type": "boolean", "description": "Per-call ParseWord guessRoot flag; not a Morpher property." }
       }
+    },
+    "variants": {
+      "description": "Additional named complete runs. Each settings block starts from engine constructor defaults and does not inherit the top-level morpher block. Variant words repeat the default list in the same order; coverage metadata remains default-only.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/variant" }
     },
     "words": {
       "type": "array",
@@ -45,11 +52,33 @@
     },
     {
       "description": "A morpher block is a capability requirement: an engine that cannot apply it must skip the fixture, not run it at the defaults.",
-      "if": { "type": "object", "required": ["morpher"] },
+      "if": { "type": "object", "anyOf": [{ "required": ["morpher"] }, { "required": ["variants"] }] },
       "then": { "required": ["requires"], "properties": { "requires": { "contains": { "const": "morpher-settings" } } } }
     }
   ],
   "$defs": {
+    "variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "morpher", "words"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z0-9-]+$", "not": { "const": "default" } },
+        "morpher": { "$ref": "#/$defs/morpherSettings" },
+        "words": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/word" } }
+      }
+    },
+    "morpherSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "DelReapps": { "type": "integer", "minimum": 0, "maximum": 2147483647 },
+        "MaxRoots": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "MergeAnalyses": { "type": "boolean" },
+        "MakePartialsFinal": { "type": "boolean" },
+        "GuessRoots": { "type": "boolean" }
+      }
+    },
     "word": {
       "type": "object",
       "additionalProperties": false,

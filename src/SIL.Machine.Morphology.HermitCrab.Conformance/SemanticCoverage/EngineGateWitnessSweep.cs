@@ -55,7 +55,7 @@ public static class EngineGateWitnessSweep
 
             foreach (WordEntry word in fixture.Words.Words)
             {
-                bool guessRoot = word.Parses.Any(p => p.Guess);
+                bool guessRoot = fixture.Words.Morpher.GuessRootsFor(word);
                 object? trace;
                 try
                 {
