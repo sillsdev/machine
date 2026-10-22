@@ -33,8 +33,7 @@ public static class Runner
         bool includePathological,
         IReadOnlySet<string> engineCapabilities,
         bool propose,
-        TextWriter proposeOutput,
-        bool useMemoization = true
+        TextWriter proposeOutput
     )
     {
         var report = new RunReport();
@@ -49,8 +48,7 @@ public static class Runner
                     includePathological,
                     engineCapabilities,
                     propose,
-                    proposeOutput,
-                    useMemoization
+                    proposeOutput
                 );
                 if (result == null)
                     report.ExcludedPathologicalCount++;
@@ -67,8 +65,7 @@ public static class Runner
         bool includePathological,
         IReadOnlySet<string> engineCapabilities,
         bool propose,
-        TextWriter proposeOutput,
-        bool useMemoization
+        TextWriter proposeOutput
     )
     {
         string runId = run.Name == "default" ? fixture.Id : $"{fixture.Id} [variant {run.Name}]";
@@ -107,7 +104,7 @@ public static class Runner
         var sw = Stopwatch.StartNew();
         try
         {
-            RunWithBudget(fixture, run, result, propose, proposeOutput, useMemoization);
+            RunWithBudget(fixture, run, result, propose, proposeOutput);
             sw.Stop();
             result.ElapsedMs = sw.ElapsedMilliseconds;
 
@@ -178,21 +175,12 @@ result.WordResults
         WordRun run,
         FixtureResult result,
         bool propose,
-        TextWriter proposeOutput,
-        bool useMemoization
+        TextWriter proposeOutput
     )
     {
         if (!fixture.Words.BudgetMs.HasValue)
         {
-            RunAllWords(
-                fixture,
-                run,
-                result.WordResults,
-                propose,
-                proposeOutput,
-                useMemoization,
-                CancellationToken.None
-            );
+            RunAllWords(fixture, run, result.WordResults, propose, proposeOutput, CancellationToken.None);
             return;
         }
 
@@ -200,9 +188,7 @@ result.WordResults
         // The task fills its own list, so a task abandoned on timeout cannot mutate the reported result.
         var wordResults = new List<WordResult>();
         using var cancellation = new CancellationTokenSource();
-        Task task = Task.Run(() =>
-            RunAllWords(fixture, run, wordResults, propose, proposeOutput, useMemoization, cancellation.Token)
-        );
+        Task task = Task.Run(() => RunAllWords(fixture, run, wordResults, propose, proposeOutput, cancellation.Token));
         long marginMs = Math.Max(budgetMs / 5, 1000);
         bool completed;
         try
@@ -227,13 +213,11 @@ result.WordResults
         List<WordResult> wordResults,
         bool propose,
         TextWriter proposeOutput,
-        bool useMemoization,
         CancellationToken cancellationToken
     )
     {
         Language language = XmlLanguageLoader.Load(fixture.GrammarPath);
-        Morpher resultMorpher = ConformanceMorpherFactory.Create(language, run.Morpher, useMemoization);
-        Morpher tracingMorpher = ConformanceMorpherFactory.CreateTracing(language, run.Morpher);
+        Morpher morpher = ConformanceMorpherFactory.CreateTracing(language, run.Morpher);
         GrammarRuleIndex ruleIndex = GrammarRuleIndex.Load(fixture.GrammarPath);
 
         foreach (WordEntry word in run.Words)
@@ -241,12 +225,11 @@ result.WordResults
             cancellationToken.ThrowIfCancellationRequested();
             bool guessRoot = run.Morpher.GuessRootsFor(word);
             List<Word> results;
+            object trace = null;
             bool wasSkipped = false;
             try
             {
-                // This is the conformance oracle. Memoization is enabled by the factory; a mismatch
-                // remains a failure rather than falling back to an unmemoized result.
-                results = resultMorpher.ParseWord(word.Word, out _, guessRoot).ToList();
+                results = morpher.ParseWord(word.Word, out trace, guessRoot).ToList();
             }
             catch (InvalidShapeException)
             {
@@ -313,8 +296,6 @@ result.WordResults
                 );
                 continue;
             }
-
-            tracingMorpher.ParseWord(word.Word, out object trace, guessRoot).ToList();
 
             Dictionary<string, List<Word>> actualBySignature = results
                 .GroupBy(w => SignatureFormat.BuildSignature(new[] { w }))
