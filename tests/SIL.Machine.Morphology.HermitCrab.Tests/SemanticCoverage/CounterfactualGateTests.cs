@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using NUnit.Framework;
 using SIL.Machine.Morphology.HermitCrab.Conformance;
 using SIL.Machine.Morphology.HermitCrab.Conformance.SemanticCoverage;
@@ -209,6 +210,47 @@ public sealed class CounterfactualGateTests
         );
 
         Assert.That(result.Verdict, Is.EqualTo(CounterfactualVerdict.RequiredByDtd));
+    }
+
+    [Test]
+    public void AMutantChildThatRefusesTheGrammarReportsARejection()
+    {
+        XDocument mutant = XDocument.Parse(ProbeGrammar);
+        mutant.Root!.Element("Language")!.Remove();
+        Directory.CreateDirectory(_scratchDirectory);
+        string mutatedPath = Path.Combine(_scratchDirectory, "rejected.xml");
+        mutant.Save(mutatedPath);
+
+        Assert.Throws<GrammarRejectedException>(() => CounterfactualGate.EvaluateWithTimeout(mutatedPath, ["a"]));
+    }
+
+    [Test]
+    public void AMutantChildThatOverflowsTheStackReportsAResourceLimit()
+    {
+        // Without its required MPR features, one of this fixture's words recurses until the stack overflows;
+        // the loader accepts the grammar.
+        Fixture fixture = Fixture
+            .DiscoverAll(Path.Combine(RepositoryRoot(), "conformance"))
+            .Single(f => f.Id == "languages/suffixing-extension-slot-ordering");
+        XDocument mutant = XDocument.Load(fixture.GrammarPath);
+        foreach (XElement input in mutant.Descendants("MorphologicalInput"))
+            input.Attribute("requiredMPRFeatures")?.Remove();
+        Directory.CreateDirectory(_scratchDirectory);
+        string mutatedPath = Path.Combine(_scratchDirectory, "overflowing.xml");
+        mutant.Save(mutatedPath);
+
+        string[] words = fixture.Words.Words.Select(word => word.Word).ToArray();
+
+        Assert.Throws<StackLimitExceededException>(() => CounterfactualGate.EvaluateWithTimeout(mutatedPath, words));
+    }
+
+    [Test]
+    public void AMutantChildThatFailsForAnotherReasonIsNotARejection()
+    {
+        Directory.CreateDirectory(_scratchDirectory);
+        string missingPath = Path.Combine(_scratchDirectory, "missing.xml");
+
+        Assert.Throws<InvalidOperationException>(() => CounterfactualGate.EvaluateWithTimeout(missingPath, ["a"]));
     }
 
     [Test]
