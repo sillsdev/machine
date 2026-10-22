@@ -274,12 +274,12 @@ Written before the measurements, scored after. Kept because the misses are infor
    first write-up.
 10. **Search completeness is never traded for speed.** HermitCrab is the permanent fallback engine
    behind the FST work.
-7. **A bucket reporting exactly `0.00` is broken until proven otherwise.** `NodeCostProbe.Enabled`
+11. **A bucket reporting exactly `0.00` is broken until proven otherwise.** `NodeCostProbe.Enabled`
    was declared and read in `Matcher.cs` but set by nothing — two gates in two assemblies, one
    wired. Both lower-layer buckets read `0.00ms`, which looks like "measured and negligible"
    rather than "never ran", and their time silently inflated the remainder. Wire cross-assembly
    probe gates from a single place.
-8. **Always carry an explicit remainder column.** It caught the wall-split misattribution and the
+12. **Always carry an explicit remainder column.** It caught the wall-split misattribution and the
    dead probe gate. Four of the five retractions in this work would have been caught at the point
    of measurement by a remainder that did not sum.
 
