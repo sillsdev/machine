@@ -127,6 +127,8 @@ public static class CounterfactualGate
     /// <summary>A mutant child's GC heap limit, 2 GB, unless DOTNET_GCHeapHardLimit is already set.</summary>
     internal const string MutantHeapHardLimit = "0x80000000";
 
+    /// <summary>How many timed-out attempts in a row it takes to report a timeout. At 1, the first timeout is
+    /// final and nothing is re-run.</summary>
     private const int TimeoutConfirmationAttempts = 1;
 
     /// <summary>Parses every line of <paramref name="wordsPath"/> against a grammar.</summary>
@@ -161,9 +163,8 @@ public static class CounterfactualGate
 
     /// <summary>
     /// Runs the parse in a child process so a mutant that never terminates can be killed. Waiting on an
-    /// in-process task only abandons it: it keeps allocating for the rest of the sweep. Requires
-    /// <see cref="TimeoutConfirmationAttempts"/> independent timeouts in a row before reporting one --
-    /// see that constant's own doc comment for why a single sample is not trusted.
+    /// in-process task only abandons it: it keeps allocating for the rest of the sweep. Reports a timeout
+    /// after <see cref="TimeoutConfirmationAttempts"/> timed-out attempts in a row.
     /// </summary>
     private static IReadOnlyList<string> OutcomesWithTimeout(
         string grammarPath,
@@ -189,8 +190,8 @@ public static class CounterfactualGate
         }
     }
 
-    /// <summary>One wall-clock-bounded attempt; see <see cref="TimeoutConfirmationAttempts"/> for why
-    /// <see cref="OutcomesWithTimeout"/> never accepts a single one of these as final.</summary>
+    /// <summary>One wall-clock-bounded attempt; <see cref="OutcomesWithTimeout"/> decides whether its timeout is
+    /// final.</summary>
     private static IReadOnlyList<string> RunOnceWithTimeout(
         string grammarPath,
         IReadOnlyList<string> words,
@@ -430,7 +431,8 @@ public static class CounterfactualGate
     /// Folds one enum-sibling mutation result into the best found so far. <see
     /// cref="CounterfactualVerdict.Evidenced"/> (a word-level counter-example) always wins and stops
     /// the search; a load failure (see <see cref="IsLoadFailureFromEnumRewrite"/>) is kept only until
-    /// something stronger turns up. Word and LoadFailure are different strengths of evidence (see
+    /// something stronger turns up, and a <see cref="CounterfactualVerdict.Timeout"/> only until anything
+    /// else does, so an all-timeout search reports Timeout rather than claiming no sibling had an effect. Word and LoadFailure are different strengths of evidence (see
     /// <see cref="CounterexampleKind"/>), so stopping at whichever verdict a caller happens to reach
     /// first in declared sibling order would make the recorded strength depend on the DTD's
     /// alphabetical value ordering rather than on what the grammar actually shows.
@@ -443,7 +445,14 @@ public static class CounterfactualGate
         ArgumentNullException.ThrowIfNull(candidate);
         if (candidate.Verdict == CounterfactualVerdict.Evidenced)
             return (candidate, EnumSiblingSearchAction.Stop);
-        if (IsLoadFailureFromEnumRewrite(candidate.Verdict) && bestSoFar is null)
+        if (
+            IsLoadFailureFromEnumRewrite(candidate.Verdict)
+            && (bestSoFar is null || bestSoFar.Verdict == CounterfactualVerdict.Timeout)
+        )
+        {
+            return (candidate, EnumSiblingSearchAction.Continue);
+        }
+        if (candidate.Verdict == CounterfactualVerdict.Timeout && bestSoFar is null)
             return (candidate, EnumSiblingSearchAction.Continue);
         return (bestSoFar, EnumSiblingSearchAction.Continue);
     }
@@ -720,7 +729,9 @@ public static class CounterfactualGate
                         : $"the mutant did not terminate within {timeout.TotalSeconds:0}s"
                 );
             }
-            catch (Exception ex)
+            // Only a rejected grammar is evidence: a document that will not serialize, or a child that exits
+            // with an error, both InvalidOperationException. Any other failure is the harness's and fails the sweep.
+            catch (InvalidOperationException ex)
             {
                 string loadFailure = $"{ex.GetType().Name}: {Summarize(ex.Message)}";
                 return new CounterfactualResult(

@@ -630,6 +630,28 @@ public sealed class CounterfactualGateTests
         Assert.That(best3, Is.EqualTo(first), "the first load failure wins when nothing stronger is ever found");
     }
 
+    [Test]
+    public void ConsiderEnumSiblingResultKeepsATimeoutUntilAStrongerResultFollows()
+    {
+        var timeout = new CounterfactualResult("s", "fx", CounterfactualVerdict.Timeout, "m1", "d1");
+        var unobservable = new CounterfactualResult("s", "fx", CounterfactualVerdict.Unobservable, "m2", "d2");
+        var requiredToLoad = new CounterfactualResult(
+            "s",
+            "fx",
+            CounterfactualVerdict.RequiredByLoader,
+            "m3",
+            "d3",
+            CounterexampleKind: CounterexampleKind.LoadFailure
+        );
+
+        (CounterfactualResult? best1, _) = CounterfactualGate.ConsiderEnumSiblingResult(null, timeout);
+        (CounterfactualResult? best2, _) = CounterfactualGate.ConsiderEnumSiblingResult(best1, unobservable);
+        Assert.That(best2, Is.EqualTo(timeout), "an all-timeout search must not be reported as Unobservable");
+
+        (CounterfactualResult? best3, _) = CounterfactualGate.ConsiderEnumSiblingResult(best2, requiredToLoad);
+        Assert.That(best3, Is.EqualTo(requiredToLoad), "a load failure outranks a timeout");
+    }
+
     // Recomputes the whole sweep, so it costs minutes and is excluded from the default suite; the
     // counterfactual-coverage workflow is what runs it.
     [Test]
