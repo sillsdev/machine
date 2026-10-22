@@ -212,11 +212,9 @@ clones are *discarded unused*: cloned, rejected by a guard or a failed match, th
 are discarded, the lever is **not cloning until a rule commits**; if most survive, the lever is
 **making a clone cheaper** (copy-on-write shape, which the RUSTIFY branch already explored). The
 gate was >=70% discarded for the defer-clone build. **Measured at 66.2% (row 17b), it misses the
-gate, so the main build target is the cheaper clone.** That does not contradict the retained
-deferred template clone: row 17b counts only `AnalysisAffixTemplateRule`'s eager per-template clone,
-the same site that change defers, and deferring there still skips the two thirds of those clones
-that are discarded. It is a local 1.054x fix, not the main lever; the retained copy-on-write shape
-sharing is the cheaper-clone build.
+gate, so the main build target is the cheaper clone.** Row 17b counts only
+`AnalysisAffixTemplateRule`'s eager per-template clone, the site the retained deferred template
+clone changes; how that change's 1.054x relates to the 66.2% was not measured.
 
 ## Two durable code constraints
 
