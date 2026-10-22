@@ -9,12 +9,26 @@ public static class RequiresDerivation
 {
     /// <summary>
     /// <c>phonology</c> when the grammar has a phonological rule, plus
-    /// <see cref="MorpherSettings.Capability"/> when the fixture declares a <c>morpher:</c> block, in that order.
+    /// <see cref="MorpherSettings.Capability"/> when any fixture run declares a <c>morpher:</c> block, in that order.
     /// </summary>
     public static List<string> Derive(string grammarPath, MorpherSettings morpher)
     {
+        return Derive(grammarPath, hasMorpherSettings: !morpher.IsEmpty);
+    }
+
+    public static List<string> Derive(string grammarPath, IEnumerable<MorpherSettings> runs)
+    {
+        return Derive(grammarPath, hasMorpherSettings: runs.Any(settings => !settings.IsEmpty));
+    }
+
+    /// <summary>
+    /// Derive grammar capabilities and add the fixture-level settings capability when any run has
+    /// settings. A selected run's settings may be empty while another named run requires support.
+    /// </summary>
+    public static List<string> Derive(string grammarPath, bool hasMorpherSettings)
+    {
         List<string> requires = Derive(grammarPath);
-        if (!morpher.IsEmpty)
+        if (hasMorpherSettings)
             requires.Add(MorpherSettings.Capability);
         return requires;
     }

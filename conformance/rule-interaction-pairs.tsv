@@ -91,6 +91,7 @@ edge-cases/deep-optional-affix-nesting	Main	Main	SameStage	AffixTemplate	deepOpt
 edge-cases/default-symbol-after-merge	Main	Main	SameStage	PhonologicalRule	prMerge	PhonologicalRule	prMerge	Overlaps
 edge-cases/default-symbol-after-merge	Main	Main	SameStage	PhonologicalRule	prShorten	PhonologicalRule	prMerge	Overlaps
 edge-cases/default-symbol-after-merge	Main	Main	SameStage	PhonologicalRule	prShorten	PhonologicalRule	prShorten	Overlaps
+edge-cases/deletion-reapplications	Main	Main	SameStage	PhonologicalRule	prHiatusI	PhonologicalRule	prHiatusI	Overlaps
 edge-cases/deletion-reinserted-feature-unapply	Main	Main	SameStage	PhonologicalRule	prFinalDevoice	PhonologicalRule	prFinalDevoice	Overlaps
 edge-cases/deletion-reinserted-feature-unapply	Main	Main	SameStage	PhonologicalRule	prFinalDevoice	PhonologicalRule	prFinalTDeletion	Overlaps
 edge-cases/deletion-reinserted-feature-unapply	Main	Main	SameStage	PhonologicalRule	prFinalTDeletion	PhonologicalRule	prFinalTDeletion	Overlaps
@@ -212,6 +213,11 @@ edge-cases/feature-system-breadth	Main	Main	CrossStage	MorphologicalRule	mrSuffi
 edge-cases/feature-system-breadth	Main	Main	CrossStage	MorphologicalRule	mrSuffixK	PhonologicalRule	prDecoy	Undetermined
 edge-cases/feature-system-breadth	Main	Main	CrossStage	MorphologicalRule	mrSuffixK	PhonologicalRule	prHighTrigger	Undetermined
 edge-cases/feature-system-breadth	Main	Main	CrossStage	MorphologicalRule	mrSuffixK	PhonologicalRule	prRaise	Undetermined
+edge-cases/final-template-merge-key	Morphophonemic	Morphophonemic	SameStage	AffixTemplate	finalTemplate	AffixTemplate	finalTemplate	Undetermined
+edge-cases/final-template-merge-key	Surface	Surface	SameStage	MorphologicalRule	mrNom	MorphologicalRule	mrNom	Undetermined
+edge-cases/final-template-merge-key	Surface	Surface	SameStage	MorphologicalRule	mrNom	AffixTemplate	nonFinalTemplate	Undetermined
+edge-cases/final-template-merge-key	Surface	Surface	SameStage	AffixTemplate	nonFinalTemplate	MorphologicalRule	mrNom	Undetermined
+edge-cases/final-template-merge-key	Surface	Surface	SameStage	AffixTemplate	nonFinalTemplate	AffixTemplate	nonFinalTemplate	Undetermined
 edge-cases/final-template-partial-discriminators	Main	Main	SameStage	MorphologicalRule	mrGate1	MorphologicalRule	mrGate1	Undetermined
 edge-cases/final-template-partial-discriminators	Main	Main	SameStage	MorphologicalRule	mrGate1	MorphologicalRule	mrGate2Complete	Undetermined
 edge-cases/final-template-partial-discriminators	Main	Main	SameStage	MorphologicalRule	mrGate1	MorphologicalRule	mrGate2Partial	Undetermined
@@ -297,6 +303,7 @@ edge-cases/free-fluctuating-allomorph-pair	S	S	SameStage	MorphologicalRule	ruleS
 edge-cases/geminate-under-merge	Main	Main	SameStage	PhonologicalRule	prMerge	PhonologicalRule	prMerge	Overlaps
 edge-cases/geminate-under-merge	Main	Main	SameStage	PhonologicalRule	prShorten	PhonologicalRule	prMerge	Overlaps
 edge-cases/geminate-under-merge	Main	Main	SameStage	PhonologicalRule	prShorten	PhonologicalRule	prShorten	Overlaps
+edge-cases/guess-roots-settings	Inflection	Inflection	SameStage	MorphologicalRule	mrInfl	MorphologicalRule	mrInfl	Undetermined
 edge-cases/iterative-epenthesis-cascade	Main	Main	SameStage	PhonologicalRule	prRule1	PhonologicalRule	prRule1	Overlaps
 edge-cases/iterative-epenthesis-cascade	Main	Main	SameStage	PhonologicalRule	prRule1	PhonologicalRule	prRule2	Overlaps
 edge-cases/iterative-epenthesis-cascade	Main	Main	SameStage	PhonologicalRule	prRule2	PhonologicalRule	prRule2	Disjoint

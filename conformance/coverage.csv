@@ -132,6 +132,10 @@ FreeFluctuatingAllomorphPair,kots,,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,kot,ORD|kot,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,kit,,Disjunctive allomorphs / free-fluctuation
 GeminateUnderMerge,f,ROOT|f,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+GuessRootsSettings,takuvuq,taku+INFL|takuvuq,Guesser/LexicalGuess
+GuessRootsSettings,takuvuq,taku+INFL|takuvuq,Guesser/LexicalGuess
+GuessRootsSettings,takuvuq,takuvuq|takuvuq,Guesser/LexicalGuess
+GuessRootsSettings,takuvuq,takuvuq|takuvuq,Guesser/LexicalGuess
 IterativeEpenthesisCascade,uotaa,BOTH|uotaa,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 N2-DefaultSymbol,bat,|bat,Boundary markers (CharacterDefinitionTable)
 N2-DefaultSymbol,bdt,,Boundary markers (CharacterDefinitionTable)
