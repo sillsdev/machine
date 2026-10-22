@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SIL.Machine.Morphology.HermitCrab.Conformance;
@@ -154,7 +155,8 @@ result.WordResults
         {
             sw.Stop();
             result.ElapsedMs = sw.ElapsedMilliseconds;
-            if (fixture.Words.ExpectCrash)
+            // The watchdog's own timeout is never a crash match (PROTOCOL.md), as in adapter mode.
+            if (fixture.Words.ExpectCrash && ex is not TimeoutException)
             {
                 result.Outcome = FixtureOutcome.Passed;
                 result.Reason = $"engine crashed as expected (words.yaml expect_crash: true): {ex.Message}";
@@ -182,12 +184,17 @@ result.WordResults
     {
         if (!fixture.Words.BudgetMs.HasValue)
         {
-            RunAllWords(fixture, run, result, propose, proposeOutput, useMemoization);
+            RunAllWords(fixture, run, result.WordResults, propose, proposeOutput, useMemoization, CancellationToken.None);
             return;
         }
 
         long budgetMs = fixture.Words.BudgetMs.Value;
-        Task task = Task.Run(() => RunAllWords(fixture, run, result, propose, proposeOutput, useMemoization));
+        // The task fills its own list, so a task abandoned on timeout cannot mutate the reported result.
+        var wordResults = new List<WordResult>();
+        using var cancellation = new CancellationTokenSource();
+        Task task = Task.Run(() =>
+            RunAllWords(fixture, run, wordResults, propose, proposeOutput, useMemoization, cancellation.Token)
+        );
         long marginMs = Math.Max(budgetMs / 5, 1000);
         bool completed;
         try
@@ -199,16 +206,21 @@ result.WordResults
             throw ex.InnerException;
         }
         if (!completed)
+        {
+            cancellation.Cancel();
             throw new TimeoutException("watchdog timed out waiting for self-check engine");
+        }
+        result.WordResults.AddRange(wordResults);
     }
 
     private static void RunAllWords(
         Fixture fixture,
         WordRun run,
-        FixtureResult result,
+        List<WordResult> wordResults,
         bool propose,
         TextWriter proposeOutput,
-        bool useMemoization
+        bool useMemoization,
+        CancellationToken cancellationToken
     )
     {
         Language language = XmlLanguageLoader.Load(fixture.GrammarPath);
@@ -218,6 +230,7 @@ result.WordResults
 
         foreach (WordEntry word in run.Words)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             bool guessRoot = run.Morpher.GuessRootsFor(word);
             List<Word> results;
             bool wasSkipped = false;
@@ -241,7 +254,7 @@ result.WordResults
             bool signatureMatches = actualEntries.SequenceEqual(expectedEntries, StringComparer.Ordinal);
             if (!signatureMatches)
             {
-                result.WordResults.Add(
+                wordResults.Add(
                     new WordResult
                     {
                         Word = word.Word,
@@ -265,7 +278,7 @@ result.WordResults
 
             if (word.ExpectSkip)
             {
-                result.WordResults.Add(
+                wordResults.Add(
                     new WordResult
                     {
                         Word = word.Word,
@@ -280,7 +293,7 @@ result.WordResults
 
             if (word.ExpectFail)
             {
-                result.WordResults.Add(
+                wordResults.Add(
                     new WordResult
                     {
                         Word = word.Word,
@@ -322,7 +335,7 @@ result.WordResults
                 }
             }
 
-            result.WordResults.Add(
+            wordResults.Add(
                 new WordResult
                 {
                     Word = word.Word,
@@ -339,43 +352,41 @@ result.WordResults
     {
         var report = new RunReport();
         report.FixtureCount = fixtures.Count;
-        foreach (Fixture fixture in fixtures)
+        // One call over every run of every fixture, so an expect_crash fixture has an ordinary fixture to use
+        // as its control.
+        var materialized = new List<MaterializedFixture>();
+        try
         {
-            foreach (WordRun run in fixture.Words.Runs)
+            foreach (Fixture fixture in fixtures)
             {
-                MaterializedFixture materialized;
-                try
+                foreach (WordRun run in fixture.Words.Runs)
                 {
-                    materialized = FixtureMaterializer.Materialize(fixture, run);
-                }
-                catch (NamedVariantHasNoAdapterVisibleWordsException ex)
-                {
-                    report.Results.Add(
-                        new FixtureResult
-                        {
-                            FixtureId = run.Name == "default" ? fixture.Id : $"{fixture.Id} [variant {run.Name}]",
-                            Outcome = FixtureOutcome.Failed,
-                            Reason = ex.Message,
-                        }
-                    );
-                    continue;
-                }
-
-                try
-                {
-                    MaterializedRunReport oneReport = MaterializedRunner.Run(
-                        new List<MaterializedFixture> { materialized },
-                        engine,
-                        includePathological
-                    );
-                    report.ExcludedPathologicalCount += oneReport.ExcludedPathologicalCount;
-                    report.Results.AddRange(oneReport.Results);
-                }
-                finally
-                {
-                    FixtureMaterializer.Cleanup(materialized);
+                    try
+                    {
+                        materialized.Add(FixtureMaterializer.Materialize(fixture, run));
+                    }
+                    catch (NamedVariantHasNoAdapterVisibleWordsException ex)
+                    {
+                        report.Results.Add(
+                            new FixtureResult
+                            {
+                                FixtureId = run.Name == "default" ? fixture.Id : $"{fixture.Id} [variant {run.Name}]",
+                                Outcome = FixtureOutcome.Failed,
+                                Reason = ex.Message,
+                            }
+                        );
+                    }
                 }
             }
+
+            MaterializedRunReport runReport = MaterializedRunner.Run(materialized, engine, includePathological);
+            report.ExcludedPathologicalCount = runReport.ExcludedPathologicalCount;
+            report.Results.AddRange(runReport.Results);
+        }
+        finally
+        {
+            foreach (MaterializedFixture fixture in materialized)
+                FixtureMaterializer.Cleanup(fixture);
         }
         return report;
     }
