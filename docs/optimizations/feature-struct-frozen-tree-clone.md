@@ -1,6 +1,6 @@
 # Reuse or skip the feature-structure clone map
 
-**Status:** retained (`FeatureStruct.Clone`).
+**Status:** retained on `perf/hc-optimization-archive`, not merged (`FeatureStruct.Clone`).
 **Portable:** yes; the specific pool is .NET-oriented, while the tree proof is general.
 
 ## Invariant
