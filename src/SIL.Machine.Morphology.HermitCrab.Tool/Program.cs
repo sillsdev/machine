@@ -145,9 +145,7 @@ internal class Program
 
     /// <summary>Splits a command line into tokens, honoring double- and single-quoted segments.
     /// Shared with <c>SIL.Machine.Morphology.HermitCrab.Conformance</c>'s <c>AdapterEngine</c> via
-    /// <c>InternalsVisibleTo</c> so both consumers tokenize the exact same way instead of
-    /// maintaining a second, divergent implementation (the Conformance harness's own copy did not
-    /// handle single quotes).</summary>
+    /// <c>InternalsVisibleTo</c> so both consumers tokenize the exact same way.</summary>
     internal static string[] SplitCommandLine(string commandLine)
     {
         var parmChars = commandLine.ToCharArray();

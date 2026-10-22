@@ -83,7 +83,8 @@ public sealed class ConformanceManifestTests
         Assert.That(
             File.ReadAllText(Absolute(GrammarCoverageGate.DtdRelativePath)).ReplaceLineEndings("\n"),
             Is.EqualTo(File.ReadAllText(Absolute(GrammarCoverageGate.LibraryDtdRelativePath)).ReplaceLineEndings("\n")),
-            $"copy {GrammarCoverageGate.LibraryDtdRelativePath} over {GrammarCoverageGate.DtdRelativePath}"
+            $"copy {GrammarCoverageGate.LibraryDtdRelativePath} over {GrammarCoverageGate.DtdRelativePath} "
+                + "and regenerate the coverage ledgers"
         );
     }
 

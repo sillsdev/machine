@@ -6,15 +6,9 @@ namespace SIL.Machine.Morphology.HermitCrab;
 
 /// <summary>
 /// Parses every word in a word list and records a per-word result signature plus elapsed time, so two
-/// runs (e.g. before/after an engine change on this branch) can be diffed to confirm parse results are
-/// unchanged. Flushed per word and crash-resumable via --start, since some corpus words are expensive
-/// enough (this branch is plain master, with none of the hc-rustify or parse-optimization speedups, so a
-/// handful of words can take minutes) that losing partial progress on a long corpus run is unacceptable.
-///
-/// Ported from the parse-opt worktree's BatchCommand.cs, with the --rule-stats and --parallel options
-/// removed: those depend on Morpher.AccumulateRuleStats / AnalysisRuleStats / SynthesisRuleStats and
-/// Morpher.MaxDegreeOfParallelism, which are parse-optimization-branch-only additions (#446/#451) that do
-/// not exist on this branch's plain-master Morpher.
+/// runs (for example, before and after an engine change) can be diffed to confirm parse results are
+/// unchanged. Output is flushed per word, and --start resumes a run after a crash, because a single word
+/// can take minutes.
 /// </summary>
 internal class BatchCommand : ConsoleCommand
 {
@@ -36,9 +30,16 @@ internal class BatchCommand : ConsoleCommand
         string wordListPath = remainingArguments[0];
         string outputPath = remainingArguments[1];
 
-        string[] words = SignatureFormat.LoadWords(wordListPath);
-
-        return RunSequential(words, outputPath);
+        try
+        {
+            string[] words = SignatureFormat.LoadWords(wordListPath);
+            return RunSequential(words, outputPath);
+        }
+        finally
+        {
+            // One instance serves every line of a script, and --start is parsed only when given.
+            _startIndex = 0;
+        }
     }
 
     private int RunSequential(string[] words, string outputPath)
