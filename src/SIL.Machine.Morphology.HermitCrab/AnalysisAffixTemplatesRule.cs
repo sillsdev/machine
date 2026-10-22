@@ -54,7 +54,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public override IEnumerable<Word> Apply(Word input)
         {
-            // A configured limit must stop before later templates are evaluated.
+            // The original walk is required when: no tail is shared; tracing (ApplySlots pairs per-template
+            // Begin/End events); parallel slots (a separate breadth-first walk); a configured alternative limit
+            // (it must stop before later templates run); or slot optionality changed since the trie was built.
             if (
                 !_hasSharedSlots
                 || _morpher.TraceManager.IsTracing
@@ -84,8 +86,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 if (templateOutput != null)
                     output.UnionWith(templateOutput);
-                if (MaxAlternatives > 0 && output.Count > MaxAlternatives)
-                    throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
             }
             return output;
         }
@@ -114,7 +114,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             foreach (SlotNode child in node.Children)
             {
-                if (!child.Templates.Any(t => outputs[t] != null))
+                if (!AnyAdmitted(child.Templates, outputs))
                     continue;
 
                 foreach (Word word in child.Rule.Apply(input))
@@ -122,6 +122,16 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (child.Optional)
                     Walk(child, input, outputs);
             }
+        }
+
+        private static bool AnyAdmitted(List<int> templates, HashSet<Word>[] outputs)
+        {
+            for (int i = 0; i < templates.Count; i++)
+            {
+                if (outputs[templates[i]] != null)
+                    return true;
+            }
+            return false;
         }
 
         private sealed class SlotNode
