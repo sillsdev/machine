@@ -202,6 +202,11 @@ internal class Program
                 Console.Error.WriteLine(ex.Message);
                 return SemanticCoverage.CounterfactualGate.MemoryLimitExitCode;
             }
+            catch (SemanticCoverage.GrammarRejectedException ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                return SemanticCoverage.CounterfactualGate.GrammarRejectedExitCode;
+            }
             foreach (string outcome in outcomes)
                 Console.Out.WriteLine(outcome);
 

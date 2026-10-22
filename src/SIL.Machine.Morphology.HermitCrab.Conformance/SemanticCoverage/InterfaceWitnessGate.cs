@@ -138,10 +138,17 @@ public static class InterfaceWitnessGate
             IReadOnlyList<string> mutated;
             try
             {
-                mutant.Save(mutatedPath);
+                try
+                {
+                    mutant.Save(mutatedPath);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    throw new GrammarRejectedException($"{ex.GetType().Name}: {ex.Message}");
+                }
                 mutated = CounterfactualGate.EvaluateWithTimeout(mutatedPath, words, effectiveTimeout, onWordTimed);
             }
-            catch (TimeoutException)
+            catch (TimeoutException ex)
             {
                 return new InterfaceWitnessResult(
                     element,
@@ -149,12 +156,19 @@ public static class InterfaceWitnessGate
                     fixture.Id,
                     CounterfactualVerdict.Timeout,
                     mutation,
-                    $"the mutant did not terminate within {effectiveTimeout.TotalSeconds:0}s"
+                    ex switch
+                    {
+                        MemoryLimitExceededException =>
+                            $"the mutant exceeded the GC heap limit: {Summarize(ex.Message)}",
+                        StackLimitExceededException => $"the mutant overflowed the stack: {Summarize(ex.Message)}",
+                        _ => $"the mutant did not terminate within {effectiveTimeout.TotalSeconds:0}s",
+                    }
                 );
             }
-            catch (Exception ex)
+            // Only a refused grammar is evidence. Any other child failure is the harness's and fails the sweep.
+            catch (GrammarRejectedException ex)
             {
-                string loadFailure = Summarize($"{ex.GetType().Name}: {ex.Message}");
+                string loadFailure = Summarize(ex.Message);
                 CounterfactualVerdict verdict = IsRequiredByDtd(inventory, element, attribute)
                     ? CounterfactualVerdict.RequiredByDtd
                     : CounterfactualVerdict.RequiredByLoader;
