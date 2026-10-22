@@ -87,7 +87,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                             )
                         )
                         {
-                            if (_morpher.TraceManager.IsTracing)
+                            // A plain ITraceManager never receives this reason, so it should not pay for the clone.
+                            if (_morpher.TraceManager is IDetailedTraceManager && _morpher.TraceManager.IsTracing)
                             {
                                 Word tempInput = outWord.Clone();
                                 tempInput.CurrentNonHead.RootAllomorph = allo;
