@@ -177,7 +177,8 @@ untraced census confirms it:
 - **Policy.** Avoiding it would be a per-parse memo, which this work excludes.
 
 C#'s `LexicalLookup` repeats lookups the same way, so there is no Machine PR. Dead-candidate lookups
-are 30-75% of lookup work, but lookup is only 1-12% of parser work, so they were not pursued either.
+are 30-75% of lookup work, but lookup is only 1-12% of parser work (35.7% on the
+deletion variant before fix B), so they were not pursued either.
 
 ## C2: share trailing slot batches inside one battery call (research lead #2) — kept, ported to C#
 
@@ -332,7 +333,7 @@ Each lead is tagged **[C# analogue]** where the same question applies to `hc.dll
 2. **Shadow summary experiment on Aweti and v1** [C# analogue]. These are the only lists whose
    plain dead-internal bucket is material (39.8% and 12.2%). Run a sound summary in shadow mode and
    count the plain-bucket work it would actually decide, along with the summary's own cost. Close
-   lead 1 if the decided share is small.
+   research lead 1 (C1) if the decided share is small.
 3. **Mbugwe's step-capped words** [C# analogue]. 86 of 1,645 words hit the 2M step cap and account
    for about 2/3 of Mbugwe's work. They have not been examined individually.
 4. **Root-reachable synthesis failure** [C# analogue]. 86% (deletion variant, before fix B) and 98%
