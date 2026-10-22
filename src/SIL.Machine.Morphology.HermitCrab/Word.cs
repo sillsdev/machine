@@ -18,6 +18,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private RootAllomorph _rootAllomorph;
         private Shape _shape;
         private readonly List<IMorphologicalRule> _mruleApps;
+        private readonly List<Allomorph> _allomorphApps;
         private int _mruleAppIndex = -1;
         private readonly Dictionary<IMorphologicalRule, int> _mrulesUnapplied;
         private readonly Dictionary<IMorphologicalRule, int> _mrulesApplied;
@@ -42,6 +43,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             ResetDirty();
             SetRootAllomorph(rootAllomorph);
             RealizationalFeatureStruct = realizationalFS;
+            _allomorphApps = new List<Allomorph>();
             _mruleApps = new List<IMorphologicalRule>();
             _mrulesUnapplied = new Dictionary<IMorphologicalRule, int>();
             _mrulesApplied = new Dictionary<IMorphologicalRule, int>();
@@ -61,6 +63,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             SyntacticFeatureStruct = new FeatureStruct();
             RealizationalFeatureStruct = new FeatureStruct();
             _mprFeatures = new MprFeatureSet();
+            _allomorphApps = new List<Allomorph>();
             _mruleApps = new List<IMorphologicalRule>();
             _mrulesUnapplied = new Dictionary<IMorphologicalRule, int>();
             _mrulesApplied = new Dictionary<IMorphologicalRule, int>();
@@ -88,6 +91,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             SyntacticFeatureStruct = word.SyntacticFeatureStruct.Clone();
             RealizationalFeatureStruct = word.RealizationalFeatureStruct.Clone();
             _mprFeatures = word.MprFeatures.Clone();
+            _allomorphApps = new List<Allomorph>(word._allomorphApps);
             _mruleApps = new List<IMorphologicalRule>(word._mruleApps);
             _mruleAppIndex = word._mruleAppIndex;
             _mrulesUnapplied = new Dictionary<IMorphologicalRule, int>(word._mrulesUnapplied);
@@ -263,6 +267,15 @@ namespace SIL.Machine.Morphology.HermitCrab
             return curRule == rule || (curRule == null && rule is CompoundingRule);
         }
 
+        internal bool IsAllomorphApplicable(Allomorph allomorph)
+        {
+            if (_mruleAppIndex < 0)
+                return false;
+
+            Allomorph curAllomorph = _allomorphApps[_mruleAppIndex];
+            return curAllomorph == null || curAllomorph == allomorph;
+        }
+
         internal bool HasRemainingRulesFromStratum(Stratum stratum)
         {
             if (_mruleAppIndex < 0)
@@ -329,7 +342,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>
-        /// Notifies this word that the specified morphological rule was unapplied. Null
+        /// Notifies this word that the specified morphological rule and allomorph were unapplied.
+        /// A null allomorph means that any allomorph is acceptable.  A null morphological rule
         /// indicates that an unknown compounding rule was unapplied. This is used when
         /// generating a compound word, because the compounding rule is usually not known just
         /// the non-head allomorph.
@@ -340,7 +354,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// they do so on both sides of any comparison; any other divergence misaligns the graft.
         /// </para>
         /// </summary>
-        internal void MorphologicalRuleUnapplied(IMorphologicalRule mrule)
+        internal void MorphologicalRuleUnapplied(IMorphologicalRule mrule, Allomorph allomorph = null)
         {
             CheckFrozen();
             if (mrule != null)
@@ -348,6 +362,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (!(mrule is RealizationalAffixProcessRule))
             {
                 _mruleApps.Add(mrule);
+                _allomorphApps.Add(allomorph);
                 _mruleAppIndex++;
             }
         }

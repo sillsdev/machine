@@ -89,7 +89,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                                 : FinalTemplateState.None;
                         }
                     }
-                    outWord.MorphologicalRuleUnapplied(_rule);
+                    outWord.MorphologicalRuleUnapplied(_rule, _rule.Allomorphs[i]);
                     outWord.Freeze();
                     if (_morpher.TraceManager.IsTracing)
                         _morpher.TraceManager.MorphologicalRuleUnapplied(_rule, i, input, outWord);
