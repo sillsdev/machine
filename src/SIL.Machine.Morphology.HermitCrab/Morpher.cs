@@ -111,10 +111,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// unapplication, and synthesis. A value of 1 runs the work sequentially; values below 1 leave
         /// concurrency unbounded. This is constructor-only because it determines how the analysis rules compile
         /// (a value of 1 compiles the sequential cascade for unordered strata). It must remain a performance
-        /// knob only: nothing that changes which analyses a parse returns may depend on it. One known exception
-        /// predates this rule: with <see cref="MaxAlternatives"/> set, the parallel cascade counts alternatives
-        /// before removing duplicates, so it can throw <see cref="MaxAlternativesExceededException"/> on a word
-        /// that a value of 1 parses.
+        /// knob only: nothing that changes which analyses a parse returns, or whether
+        /// <see cref="MaxAlternatives"/> is exceeded, may depend on it.
         /// </summary>
         public int MaxDegreeOfParallelism { get; }
 
