@@ -18,7 +18,7 @@ product assemblies, since the probes gate on `volatile bool` reads inside `Match
 loop in `SIL.Machine` used by every consumer.
 
 **`docs/hermitcrab-probe-design.md` is the replacement.** It carries the probe architecture and its
-two-assembly gate trap, the eight exclusive wall-time buckets and why `synForward` must be recorded
+two-assembly gate trap, the seven exclusive wall-time buckets and why `synForward` must be recorded
 net of cascade and battery, the per-node decomposition, the census designs, all three key designs
 with field-level audits, the classifier's direction trap, and the full A/B methodology with the
 three measurement failures that forced each part of it — enough to rebuild any probe in a day. The
@@ -163,7 +163,7 @@ packs without merging states; row 19 was later measured independently and closed
 
 ## Where the time actually is
 
-Measured with eight exclusive buckets summing to wall. Amharic is a single run (`unaccounted`
+Measured with seven exclusive buckets summing to wall. Amharic is a single run (`unaccounted`
 0.1%). **Sena is spliced from two runs -- see the note in its row.**
 
 | grammar | breakdown |

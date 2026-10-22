@@ -30,8 +30,8 @@ accumulated with `Interlocked.Add`, with `Reset*` methods so a harness reads per
 
 ### The wall-time split
 
-**Eight mutually exclusive top-level slices that sum to wall**, measured around
-`Morpher.ParseWord`:
+**Seven mutually exclusive top-level slices that sum to wall** (six measured plus the remainder),
+measured around `Morpher.ParseWord`:
 
 `lookup` (brackets `LexicalLookup`, materialised with `.ToList()` so the bracket covers only the
 lookup itself) · `synCascade` · `synBattery` · `synForward` · `synExpand` (brackets
