@@ -205,15 +205,18 @@ prefilter" — 92.3% do fail, but matching is 12.5%, so it does not dominate; do
 So there is no declared build target yet. The next probe splits the 37.4%: `RuleCascade` /
 enumerator orchestration, trail dictionary operations, LINQ allocation, memo lookups, GC.
 
-**A caution on the 46.7% before anyone acts on it.** `Word.Clone` being half the cascade does not
-by itself mean cloning is waste — the cascade forks a `Word` per rule application precisely so it
-can explore alternatives without mutating shared state. The deciding question is what fraction of
-clones are *discarded unused*: cloned, rejected by a guard or a failed match, thrown away. Given
-92.3% of pattern matches fail, that fraction has now been **measured at 66.2%** (row 17b), which misses the >=70% gate and points at the cheaper-clone build rather than the defer-clone one. If most
-clones are discarded, the lever is **not cloning until a rule commits**. If most survive, the lever
-is **making a clone cheaper** (copy-on-write shape, which the RUSTIFY branch already explored).
-Different builds; measure first. **Gate: probe the clone-discard fraction; >=70% discarded means
-the defer-clone build, below that the cheaper-clone build.**
+**A caution on the 46.7% before anyone acts on it.** `Word.Clone` being half the cascade does not by
+itself mean cloning is waste — the cascade forks a `Word` per rule application precisely so it can
+explore alternatives without mutating shared state. The deciding question was what fraction of
+clones are *discarded unused*: cloned, rejected by a guard or a failed match, thrown away. If most
+are discarded, the lever is **not cloning until a rule commits**; if most survive, the lever is
+**making a clone cheaper** (copy-on-write shape, which the RUSTIFY branch already explored). The
+gate was >=70% discarded for the defer-clone build. **Measured at 66.2% (row 17b), it misses the
+gate, so the main build target is the cheaper clone.** That does not contradict the retained
+deferred template clone: row 17b counts only `AnalysisAffixTemplateRule`'s eager per-template clone,
+the same site that change defers, and deferring there still skips the two thirds of those clones
+that are discarded. It is a local 1.054x fix, not the main lever; the retained copy-on-write shape
+sharing is the cheaper-clone build.
 
 ## Two durable code constraints
 
