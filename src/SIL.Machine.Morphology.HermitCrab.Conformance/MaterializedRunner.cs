@@ -100,8 +100,7 @@ public static class MaterializedRunner
                 continue;
             }
 
-            // Read once, before the try: the old code re-read expected.tsv from inside the catch
-            // block too, so a genuinely missing file could throw from inside exception handling.
+            // Read once, before the try, so a missing expected.tsv cannot throw from inside a catch block.
             List<TsvRow> expected = SignatureTsv.ReadFile(fixture.ExpectedPath);
 
             var sw = Stopwatch.StartNew();

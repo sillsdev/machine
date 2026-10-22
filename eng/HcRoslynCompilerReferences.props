@@ -1,4 +1,6 @@
 <Project>
+  <!-- Roslyn/bincore exists only in the .NET SDK layout, so projects importing this build with the dotnet CLI,
+       not Visual Studio's MSBuild. The compiler is the one in the SDK that global.json selects. -->
   <ItemGroup>
     <Reference Include="Microsoft.CodeAnalysis">
       <HintPath>$(MSBuildToolsPath)/Roslyn/bincore/Microsoft.CodeAnalysis.dll</HintPath>

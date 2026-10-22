@@ -2,22 +2,6 @@ using NUnit.Framework;
 
 namespace SIL.Machine.Morphology.HermitCrab;
 
-file static class MiniSignatureFormat
-{
-    public static string BuildSignature(IEnumerable<Word> results)
-    {
-        List<string> signatures = results
-            .Select(w =>
-                string.Join("+", w.AllomorphsInMorphOrder.Select(a => a.Morpheme.Id))
-                + "|"
-                + w.Shape.ToRegexString(w.Stratum.CharacterDefinitionTable, true)
-            )
-            .OrderBy(s => s, StringComparer.Ordinal)
-            .ToList();
-        return signatures.Count == 0 ? "-" : string.Join(";", signatures);
-    }
-}
-
 [TestFixture]
 public class GuesserSignatureTests
 {
@@ -96,7 +80,7 @@ public class GuesserSignatureTests
             Word[] results = morpher.ParseWord("foos", out _).ToArray();
 
             Assert.That(results, Is.Empty);
-            Assert.That(MiniSignatureFormat.BuildSignature(results), Is.EqualTo("-"));
+            Assert.That(SignatureFormat.BuildSignature(results), Is.EqualTo("-"));
         }
         finally
         {
@@ -116,7 +100,7 @@ public class GuesserSignatureTests
             Word[] results = morpher.ParseWord("foos", out _, guessRoot: true).ToArray();
 
             Assert.That(results, Is.Not.Empty);
-            string signature = MiniSignatureFormat.BuildSignature(results);
+            string signature = SignatureFormat.BuildSignature(results);
 
             Assert.That(signature, Is.EqualTo("foo+PL|foos;foos|foos"));
         }
