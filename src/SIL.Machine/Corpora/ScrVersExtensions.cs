@@ -67,8 +67,7 @@ namespace SIL.Machine.Corpora
             if (scrVers.Equals(other))
                 return true;
 
-            // If all verses in the versifications are 1) equal (accounts for mapping)
-            // and 2) graphically identical in regard to book, chapter, and verse, then the versifications are equivalent
+            // Equivalence requires both mapped equality and identical book, chapter, and verse numbers.
             foreach (
                 (VerseRef thisVerse, VerseRef otherVerse) in scrVers
                     .AllIncludedVerses()
