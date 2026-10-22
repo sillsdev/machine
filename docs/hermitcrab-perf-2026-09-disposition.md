@@ -70,7 +70,7 @@ under a real signature. But the traversals removed are the cheap ones: they woul
 check, so wall time moves only 2–13%. The branch's package figure (1.76x Amharic, 1.83x Mbugwe) therefore came
 mostly from the allocation, clone, and GC work, not from this mechanism. Standalone, the prefilter is correct,
 small, and reviewable, but it is **not a large return**. Recommendation at the time: keep `perf/hc-edge-prefilter`
-ready as an optional small PR (7–13% on Bantu grammars, where it stacks with #491's prune on the surviving
+ready as an optional small PR (2–13% on Bantu grammars, where it stacks with #491's prune on the surviving
 branches), and do not spend review budget on it ahead of #491. The standalone single-commit branch is deleted
 (see status note above); a PR now starts from the mechanism preserved in the whole-round archive
 (branch `perf/hc-optimization-archive`) rather than resuming
