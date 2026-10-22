@@ -51,7 +51,7 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
     {
         (string first, string second) = FindIncompatibleSegments();
         AffixProcessRule rule = CreateCopyRule(SingleSegmentPart());
-        var input = new Word(Surface, Table3.Segment(first + second)) { AnalysisScope = new AnalysisScope() };
+        var input = new Word(Surface, Table3.Segment(first + second));
         TraceManager.AnalyzeWord(Language, input);
         input.Freeze();
         TraceManager.IsTracing = true;
@@ -74,7 +74,7 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
         // the first copy is underspecified, as unapplied phonology can leave it, so it unifies with both others
         (string first, string second) = FindIncompatibleSegments();
         AffixProcessRule rule = CreateCopyRule(SingleSegmentPart(), copyCount: 3);
-        var input = new Word(Surface, Table3.Segment(first + first + second)) { AnalysisScope = new AnalysisScope() };
+        var input = new Word(Surface, Table3.Segment(first + first + second));
         input.Shape.First.Annotation.FeatureStruct = AnySegment.Clone();
         input.Freeze();
 
@@ -127,7 +127,7 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
     {
         (string first, string second) = FindIncompatibleSegments();
         AffixProcessRule rule = CreateCopyRule(FullPart());
-        var input = new Word(Surface, Table3.Segment(first + second + second)) { AnalysisScope = new AnalysisScope() };
+        var input = new Word(Surface, Table3.Segment(first + second + second));
         input.Shape.AddAfter(input.Shape.First.Next, FeatureStruct.New().Symbol(HCFeatureSystem.Boundary).Value, true);
         input.Freeze();
 
@@ -143,10 +143,7 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
         // the matcher skips the leading boundary, so it sits before the first copy rather than inside it
         (string first, string second) = FindIncompatibleSegments();
         AffixProcessRule rule = CreateCopyRule(FullPart());
-        var input = new Word(Surface, Table3.Segment(first + second + first + second))
-        {
-            AnalysisScope = new AnalysisScope(),
-        };
+        var input = new Word(Surface, Table3.Segment(first + second + first + second));
         input.Shape.AddAfter(input.Shape.Begin, FeatureStruct.New().Symbol(HCFeatureSystem.Boundary).Value, true);
         input.Freeze();
 
@@ -618,7 +615,7 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
 
     private Word CreateInputWithOptionalSecondSegment(string representation)
     {
-        var input = new Word(Surface, Table3.Segment(representation)) { AnalysisScope = new AnalysisScope() };
+        var input = new Word(Surface, Table3.Segment(representation));
         input.Shape.First.Next.Annotation.Optional = true;
         input.Freeze();
         return input;
@@ -626,7 +623,7 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
 
     private Word CreateInputWithOptionalFirstSegment(string representation)
     {
-        var input = new Word(Surface, Table3.Segment(representation)) { AnalysisScope = new AnalysisScope() };
+        var input = new Word(Surface, Table3.Segment(representation));
         input.Shape.First.Annotation.Optional = true;
         input.Freeze();
         return input;
@@ -634,7 +631,7 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
 
     private Word CreateInput(string representation)
     {
-        var input = new Word(Surface, Table3.Segment(representation)) { AnalysisScope = new AnalysisScope() };
+        var input = new Word(Surface, Table3.Segment(representation));
         input.Freeze();
         return input;
     }
