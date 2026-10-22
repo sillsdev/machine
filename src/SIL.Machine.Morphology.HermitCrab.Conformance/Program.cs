@@ -1537,6 +1537,12 @@ internal class Program
                     Console.WriteLine($"  {c}");
             }
         }
+        else
+        {
+            failed = true;
+            Console.WriteLine();
+            Console.WriteLine($"*** CONSTRUCT CHECKLIST NOT FOUND: {constructsPath} ***");
+        }
 
         string allowlistPath = Path.Combine(fixturesRoot, "dead-rules-allowed.tsv");
         Dictionary<(string FixtureId, string RuleId), string> allowed = File.Exists(allowlistPath)
