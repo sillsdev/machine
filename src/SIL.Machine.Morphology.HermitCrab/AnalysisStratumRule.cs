@@ -24,10 +24,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             _prulesRule = new LinearRuleCascade<Word, ShapeNode>(
                 stratum.PhonologicalRules.Select(prule => CompilePhonologicalRule(prule, morpher)).Reverse()
             );
-            _templatesRule = new RuleBatch<Word, ShapeNode>(
-                stratum.AffixTemplates.Select(template => CompileAffixTemplate(template, morpher)),
-                false,
-                FreezableEqualityComparer<Word>.Default
+            _templatesRule = new AnalysisAffixTemplatesRule(
+                morpher,
+                stratum.AffixTemplates.Select(template => CompileAffixTemplate(template, morpher))
             );
             _mrulesRule = null;
             IEnumerable<IRule<Word, ShapeNode>> mrules = stratum
