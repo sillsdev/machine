@@ -11,6 +11,7 @@ public sealed class OrderingGeneratorTests
 {
     // 62 baseline fixtures plus 69 shared additions: 67 graduates and two order-variant fixtures.
     private const int MeasuredCorpusFixtureCount = 131;
+
     private static string RepositoryRoot()
     {
         string? directory = TestContext.CurrentContext.TestDirectory;

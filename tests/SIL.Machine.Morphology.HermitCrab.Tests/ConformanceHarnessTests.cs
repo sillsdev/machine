@@ -82,14 +82,8 @@ public sealed class ConformanceHarnessTests
     public void CompareRuleTraceMultisets_WrongTraceForSameSignature_Fails()
     {
         const string Signature = "DAK+IMO|dakimo";
-        var expected = new (string Signature, IEnumerable<string> RuleIds)[]
-        {
-            (Signature, new[] { "crLeftHead" }),
-        };
-        var actual = new (string Signature, IEnumerable<string> RuleIds)[]
-        {
-            (Signature, new[] { "crWrongHead" }),
-        };
+        var expected = new (string Signature, IEnumerable<string> RuleIds)[] { (Signature, new[] { "crLeftHead" }) };
+        var actual = new (string Signature, IEnumerable<string> RuleIds)[] { (Signature, new[] { "crWrongHead" }) };
 
         List<string> details = Runner.CompareRuleTraceMultisets(expected, actual);
 
@@ -119,6 +113,7 @@ public sealed class ConformanceHarnessTests
         Assert.That(details, Has.Some.Contains("declared rules [crLeftHead] count 2 != traced count 1"));
         Assert.That(details, Has.Some.Contains("declared rules [crRightHead] count 0 != traced count 1"));
     }
+
     [Test]
     public void RunSelfCheck_ExpectCrashFixtureThatTimesOut_Fails()
     {
