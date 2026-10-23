@@ -256,7 +256,7 @@ result.WordResults
                 );
                 if (propose && run.Name == "default")
                 {
-                    ProposePatchWriter.WriteSignatureProposal(proposeOutput, fixture, word, actualEntries);
+                    ProposePatchWriter.WriteSignatureProposal(proposeOutput, fixture, word, actualEntries, wasSkipped);
                 }
                 else if (propose)
                 {
