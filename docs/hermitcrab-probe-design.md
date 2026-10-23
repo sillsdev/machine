@@ -229,22 +229,3 @@ whole process if its budget expires. Do not restore an in-process `Task` timeout
 running, contaminates later samples, and can race shared engine state. `scripts/hc-bench-compare.ps1`, also on
 that branch only, compares grammar and word keys symmetrically before comparing errors, signatures, timing, or
 spread.
-
----
-
-## 4. Two durable engine facts, restated here so they survive independently
-
-Both facts concern the analysis memo that #522 removed from master. They apply to the archived branches and to
-any revival of the memo.
-
-**`Word.ReplayOnto` does not splice `_mrulesUnapplied`.** It splices `_mruleApps` and `_nonHeadApps`
-only. This is safe *solely* because `AnalysisStateKey` includes the count multiset, which guarantees
-a memo hit has identical arrival and stored-arrival counts. **Narrowing that key breaks correctness
-with no test failure.** Fix, if the key ever changes: store arrival counts on `MemoEntry` and compute
-`stored - storedArrival + query` — a no-op under today's key, which is also how to test it.
-
-**`AnalysisScope.MaxMemoEntries` is a per-scope cap with no eviction.** Sharing one scope across a
-corpus therefore makes words compete for a fixed budget: two heavy Sena words exhausted it at index
-74 and 76, and every later word lost the within-word memoization a fresh scope would have given it.
-Cross-word hits went *negative* and the corpus ran 28–32% slower. A shared bounded cache without
-eviction is not a smaller version of the optimization.
