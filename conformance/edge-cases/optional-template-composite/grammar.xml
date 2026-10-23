@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>Kotavu</Name>
+    <!-- composite-explosion reference corpus's pathology mimic (docs/conformance-staging-plan.md's
+         pathology catalog; see also docs/fst-plan/morphotactic-composite-pruning.md's 2026-07-18
+         end-to-end result section for the measured finding this pins). That reference corpus: 855
+         roots x 47
+         fusion-eligible rules across several mostly-optional AffixTemplates on an Unordered
+         stratum - a combinatorial composite-generation/pruning-automaton stress case, NOT
+         reproduced at scale here (this fixture has 8 roots / 3 templates / 6 rules, deliberately
+         miniature per the plan doc's own instruction: "the point is exercising the code paths...
+         not reproducing the blow-up"). Three pathologies pinned at fixture-correctness (Morpher)
+         level, all mechanically checkable without needing foma/emit scale:
+           1. Several mostly-optional AffixTemplates sharing one requiredPartsOfSpeech (posAweti)
+              on an Unordered stratum - the composite-explosion STRUCTURE (candidate space =
+              roots x templates x slot-rule choices), same shared-category idea as this repo's
+              own template-category-sharing fixture, here with 3 templates instead of 2 and
+              a genuinely mandatory slot (below) rather than all-optional.
+           2. mrVacuous: a MANDATORY (non-optional) slot whose rule's own MorphologicalOutput is
+              PURE CopyFromInput - no InsertSegments at all, i.e. a real morpheme that changes
+              NOTHING in the surface string. "monu" (bare root) and "monu" (via template2 with
+              ONLY the mandatory mrVacuous slot filled) are surface-IDENTICAL but distinct
+              analyses - the recall trap the morphotactic-pruning automaton must not collapse:
+              an engine that treats a silent-output rule as prunable/optional loses this second
+              analysis entirely (docs/fst-plan/morphotactic-composite-pruning.md's "vacuous rules
+              in mandatory slots" finding).
+           3. mrTrunc: a truncation-shaped AffixProcessRule (structural-composite path, same
+              mechanism as edge-cases/truncate-morphotactic's mruleTruncTrail) - a literal
+              trailing segment is dropped from the copied stem, not just appended-to.
+         Plus one root ("toʼa") spelled with U+02BC MODIFIER LETTER APOSTROPHE, mirroring that
+         reference corpus's own non-ASCII root-spelling glyphs (the tokenization-bug family) -
+         exercised through a real affixed derivation (katoʼata), not just a bare-tokenization smoke
+         test. All lexemes invented; none copied from the real (gitignored) corpus. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posAweti"><Name>vAweti</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- No PhonologicalFeatureSystem/PhonologicalRuleDefinitions - pure morphotactics (the
+         composite/pruning pathology is a morphotactic-automaton concern, not phonological), so
+         requires: [] (mechanically derived). -->
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cW"><Representations><Representation>w</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cR"><Representations><Representation>r</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cGlot"><Representations><Representation>ʼ</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cE"><Representations><Representation>e</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <!-- Deliberately NO morphologicalRules= attribute: every rule below is referenced ONLY from
+           its own AffixTemplate's Slot, never listed as a free-standing stratum rule - confirmed
+           load-bearing empirically (see template-category-sharing/grammar.xml's own comment on
+           this same point for the full citation). Listing these rules at the stratum level too
+           would let e.g. mrOpt3 apply free-standing without template2's mandatory mrVacuous slot,
+           and would let template1's rules recursively re-enter template2's silent slot in more
+           than one internal order (multiple textually-identical analyses for the same word) -
+           both would blur this fixture's actual pin (the vacuous MANDATORY slot itself, not
+           incidental cross-template noise). -->
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- Template 1's pair. -->
+          <MorphologicalRule id="mrOpt1" requiredPartsOfSpeech="posAweti" outputPartOfSpeech="posAweti">
+            <Name>opt1</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subOpt1">
+                <MorphologicalInput><PhoneticSequence id="stemOpt1"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>ka</PhoneticShape></InsertSegments><CopyFromInput index="stemOpt1" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>OPT1</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrOpt2" requiredPartsOfSpeech="posAweti" outputPartOfSpeech="posAweti">
+            <Name>opt2</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subOpt2">
+                <MorphologicalInput><PhoneticSequence id="stemOpt2"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemOpt2" /><InsertSegments><PhoneticShape>ta</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>OPT2</MorphemeId>
+          </MorphologicalRule>
+          <!-- Template 2's trio - mrVacuous (mandatory, silent) sits between two optional
+               slots. -->
+          <MorphologicalRule id="mrOpt3" requiredPartsOfSpeech="posAweti" outputPartOfSpeech="posAweti">
+            <Name>opt3</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subOpt3">
+                <MorphologicalInput><PhoneticSequence id="stemOpt3"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>pi</PhoneticShape></InsertSegments><CopyFromInput index="stemOpt3" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>OPT3</MorphemeId>
+          </MorphologicalRule>
+          <!-- The vacuous mandatory-slot rule: a REAL morpheme (its own MorphemeId, its own rule
+               identity) whose MorphologicalOutput is pure CopyFromInput - zero surface change. -->
+          <MorphologicalRule id="mrVacuous" requiredPartsOfSpeech="posAweti" outputPartOfSpeech="posAweti">
+            <Name>vacuous</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subVacuous">
+                <MorphologicalInput><PhoneticSequence id="stemVac"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemVac" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>VAC</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrOpt4" requiredPartsOfSpeech="posAweti" outputPartOfSpeech="posAweti">
+            <Name>opt4</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subOpt4">
+                <MorphologicalInput><PhoneticSequence id="stemOpt4"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemOpt4" /><InsertSegments><PhoneticShape>ki</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>OPT4</MorphemeId>
+          </MorphologicalRule>
+          <!-- Template 3's pair - mrTrunc (truncation-shaped, structural-composite path) +
+               an ordinary optional suffix. -->
+          <MorphologicalRule id="mrTrunc" requiredPartsOfSpeech="posAweti" outputPartOfSpeech="posAweti">
+            <Name>trunc</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subTrunc">
+                <MorphologicalInput>
+                  <PhoneticSequence id="stemTrunc"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                  <PhoneticSequence id="stemTruncDrop"><Segment segment="cU" /></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemTrunc" /><InsertSegments><PhoneticShape>mo</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>TRUNC</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrOpt5" requiredPartsOfSpeech="posAweti" outputPartOfSpeech="posAweti">
+            <Name>opt5</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subOpt5">
+                <MorphologicalInput><PhoneticSequence id="stemOpt5"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemOpt5" /><InsertSegments><PhoneticShape>lu</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>OPT5</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posAweti">
+            <Name>template1</Name>
+            <Slot optional="true" morphologicalRules="mrOpt1"><Name>t1pfx</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrOpt2"><Name>t1sfx</Name></Slot>
+          </AffixTemplate>
+          <AffixTemplate requiredPartsOfSpeech="posAweti">
+            <Name>template2</Name>
+            <Slot optional="true" morphologicalRules="mrOpt3"><Name>t2pfx</Name></Slot>
+            <Slot morphologicalRules="mrVacuous"><Name>t2mandatory</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrOpt4"><Name>t2sfx</Name></Slot>
+          </AffixTemplate>
+          <AffixTemplate requiredPartsOfSpeech="posAweti">
+            <Name>template3</Name>
+            <Slot optional="true" morphologicalRules="mrTrunc"><Name>t3trunc</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrOpt5"><Name>t3sfx</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eSipu" partOfSpeech="posAweti">
+            <Allomorphs><Allomorph id="aSipu"><PhoneticShape>sipu</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SIPU</MorphemeId>
+            <Gloss>root.sipu</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eMonu" partOfSpeech="posAweti">
+            <Allomorphs><Allomorph id="aMonu"><PhoneticShape>monu</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>MONU</MorphemeId>
+            <Gloss>root.monu</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eWaru" partOfSpeech="posAweti">
+            <Allomorphs><Allomorph id="aWaru"><PhoneticShape>waru</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>WARU</MorphemeId>
+            <Gloss>root.waru</Gloss>
+          </LexicalEntry>
+          <!-- Non-ASCII root spelling: U+02BC MODIFIER LETTER APOSTROPHE (that reference corpus's
+               own tokenization-bug family). -->
+          <LexicalEntry id="eToa" partOfSpeech="posAweti">
+            <Allomorphs><Allomorph id="aToa"><PhoneticShape>toʼa</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TOA</MorphemeId>
+            <Gloss>root.toa</Gloss>
+          </LexicalEntry>
+          <!-- Structural bulk only (no dedicated words.yaml rows) - widening the roots x
+               templates combinatorial space a little further, gesturing at that reference corpus's
+               real "dozens of roots" without inflating this fixture's own verification burden. -->
+          <LexicalEntry id="eKidi" partOfSpeech="posAweti">
+            <Allomorphs><Allomorph id="aKidi"><PhoneticShape>kidi</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>KIDI</MorphemeId>
+            <Gloss>root.kidi</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eNasu" partOfSpeech="posAweti">
+            <Allomorphs><Allomorph id="aNasu"><PhoneticShape>nasu</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>NASU</MorphemeId>
+            <Gloss>root.nasu</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eLemo" partOfSpeech="posAweti">
+            <Allomorphs><Allomorph id="aLemo"><PhoneticShape>lemo</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>LEMO</MorphemeId>
+            <Gloss>root.lemo</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eDosi" partOfSpeech="posAweti">
+            <Allomorphs><Allomorph id="aDosi"><PhoneticShape>dosi</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DOSI</MorphemeId>
+            <Gloss>root.dosi</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

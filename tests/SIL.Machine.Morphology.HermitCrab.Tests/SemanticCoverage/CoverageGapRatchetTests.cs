@@ -4,12 +4,10 @@ using SIL.Machine.Morphology.HermitCrab.Conformance.SemanticCoverage;
 namespace SIL.Machine.Morphology.HermitCrab;
 
 /// <summary>
-/// Pins the corpus-wide gap count -- items neither evidenced (conformance/semantic-coverage-evidence.tsv)
-/// nor proven (conformance/semantic-coverage-proofs.tsv plus a fresh, cheap disjoint-domains/unordered-
-/// invariant/inactive-member/pos-disjoint recompute for Ordering) -- without recomputing the expensive
-/// sweep: every input here is either a checked-in file or a pure, engine-free grammar read. Gaps may only
-/// go down. A gate that fails on every existing gap would block all ordinary work and get switched off, so
-/// this is a ratchet: it fails only if the count goes UP.
+/// Pins the exact open coverage debt by item ID and resolution. New gaps fail, and a resolved item
+/// must be removed from the named baseline; the baseline is not an exception list. Inputs are either
+/// checked-in files or pure, engine-free grammar reads, so the test avoids recomputing the expensive
+/// counterfactual sweep.
 /// </summary>
 [TestFixture]
 public sealed class CoverageGapRatchetTests
@@ -28,17 +26,38 @@ public sealed class CoverageGapRatchetTests
         return string.Empty;
     }
 
-    private const int PinnedGapCount = 26;
+    private static IReadOnlyDictionary<string, CoverageResolution> ReadGapBaseline(string root)
+    {
+        string path = Path.Combine(root, "conformance", "semantic-coverage-gap-baseline.tsv");
+        Assert.That(File.Exists(path), Is.True, $"missing named open-debt baseline: {path}");
+        var gaps = new Dictionary<string, CoverageResolution>(StringComparer.Ordinal);
+        foreach (string raw in File.ReadAllLines(path))
+        {
+            string line = raw.Trim();
+            if (line.Length == 0 || line.StartsWith("#", StringComparison.Ordinal) || line.StartsWith("item_id\t", StringComparison.Ordinal))
+                continue;
+
+            string[] fields = line.Split('\t');
+            Assert.That(fields, Has.Length.EqualTo(2), $"malformed named coverage debt row in {path}: {line}");
+            bool known = Enum.TryParse(fields[1], out CoverageResolution resolution);
+            Assert.That(known, Is.True, $"unknown coverage resolution in {path}: {fields[1]}");
+            Assert.That(
+                resolution,
+                Is.AnyOf(CoverageResolution.Unresolved, CoverageResolution.Rejected),
+                $"only open unresolved/rejected coverage debt belongs in {path}: {line}"
+            );
+            Assert.That(gaps.TryAdd(fields[0], resolution), Is.True, $"duplicate item ID in {path}: {fields[0]}");
+        }
+        return gaps;
+    }
 
     [Test]
-    public void CorpusWideGapCountNeverIncreasesFromThePinnedValue()
+    public void OpenCoverageDebtMatchesTheNamedItemAndResolutionBaselineExactly()
     {
         string root = RepositoryRoot();
+        IReadOnlyDictionary<string, CoverageResolution> expectedGaps = ReadGapBaseline(root);
 
-        // The evidenced set: read, never recomputed -- this is what makes the test cheap.
         IReadOnlyList<EvidenceLedger.Row> evidenceLedger = EvidenceLedger.Read(root);
-        var evidencedIds = evidenceLedger.Select(row => row.ItemId).ToHashSet(StringComparer.Ordinal);
-
         IReadOnlyList<CounterfactualResult> surfaceResults = CounterfactualLedger.Read(root);
         IReadOnlyList<CoverageItem> orderingItems = CoverageEvidencePipeline.BuildOrderingItems(root);
 
@@ -60,11 +79,12 @@ public sealed class CoverageGapRatchetTests
         Assert.That(
             orphanedEvidenceRows,
             Is.Empty,
-            "evidence rows outside the generated inventory must fail independently of the gap pin"
+            "evidence rows outside the generated inventory must fail independently of the named debt baseline"
         );
         IReadOnlyList<Evidence> evidence = evidenceLedger
             .Select(row => EvidenceLedger.ToEvidence(row, itemsById[row.ItemId]))
             .ToArray();
+        var evidencedIds = evidenceLedger.Select(row => row.ItemId).ToHashSet(StringComparer.Ordinal);
         CoverageItem[] nonEvidencedOrdering = orderingItems.Where(item => !evidencedIds.Contains(item.Id)).ToArray();
         IReadOnlyList<Proof> proofs = CoverageEvidencePipeline.BuildProofs(root, nonEvidencedOrdering);
         CompletenessReport completeness = CoverageCompletenessGate.Evaluate(
@@ -76,36 +96,46 @@ public sealed class CoverageGapRatchetTests
         Assert.That(
             completeness.OrphanedEvidenceItemIds,
             Is.Empty,
-            "evidence outside the generated inventory must fail independently of the gap pin"
+            "evidence outside the generated inventory must fail independently of the named debt baseline"
         );
         Assert.That(
             completeness.Items.Where(result => result.Resolution == CoverageResolution.Conflicting),
             Is.Empty,
-            "evidence/proof conflicts are stale claims, not gaps the numeric ratchet may absorb"
+            "evidence/proof conflicts are stale claims, not coverage debt"
         );
         Assert.That(
             completeness.OrphanedProofItemIds,
             Is.Empty,
-            "proofs outside the generated inventory must fail independently of the gap pin"
+            "proofs outside the generated inventory must fail independently of the named debt baseline"
         );
+
+        CoverageResolution[] debtResolutions = { CoverageResolution.Unresolved, CoverageResolution.Rejected };
+        CoverageResolutionResult[] actualGaps = completeness
+            .Items.Where(result => debtResolutions.Contains(result.Resolution))
+            .OrderBy(result => result.ItemId, StringComparer.Ordinal)
+            .ToArray();
+        var actualById = actualGaps.ToDictionary(result => result.ItemId, result => result.Resolution, StringComparer.Ordinal);
+        string[] unexpectedOrChanged = actualById
+            .Where(pair => !expectedGaps.TryGetValue(pair.Key, out CoverageResolution expected) || expected != pair.Value)
+            .Select(pair => $"{pair.Key}\t{pair.Value}")
+            .ToArray();
+        string[] resolvedOrChanged = expectedGaps
+            .Where(pair => !actualById.TryGetValue(pair.Key, out CoverageResolution actual) || actual != pair.Value)
+            .Select(pair => $"{pair.Key}\t{pair.Value}")
+            .ToArray();
         var kindByItemId = items.ToDictionary(item => item.Id, item => item.Kind, StringComparer.Ordinal);
-        int surfaceGaps = completeness.Items.Count(result =>
-            result.Resolution is CoverageResolution.Unresolved or CoverageResolution.Rejected
-            && kindByItemId[result.ItemId] == CoverageItemKind.Surface
-        );
-        int orderingGaps = completeness.Items.Count(result =>
-            result.Resolution is CoverageResolution.Unresolved or CoverageResolution.Rejected
-            && kindByItemId[result.ItemId] == CoverageItemKind.Ordering
-        );
-        int totalGaps = surfaceGaps + orderingGaps;
+        int surfaceGaps = actualGaps.Count(result => kindByItemId[result.ItemId] == CoverageItemKind.Surface);
+        int orderingGaps = actualGaps.Length - surfaceGaps;
 
         TestContext.Out.WriteLine(
-            $"total items: {surfaceResults.Count + orderingItems.Count} "
-                + $"(Surface {surfaceResults.Count}, Ordering {orderingItems.Count})"
+            $"total items: {surfaceResults.Count + orderingItems.Count} (Surface {surfaceResults.Count}, Ordering {orderingItems.Count})"
         );
         TestContext.Out.WriteLine(
-            $"gaps: {totalGaps} (Surface {surfaceGaps}, Ordering {orderingGaps}); pinned at {PinnedGapCount}"
+            $"open coverage debt: {actualGaps.Length} (Surface {surfaceGaps}, Ordering {orderingGaps}); "
+                + $"named item/resolution baseline {expectedGaps.Count}"
         );
+        TestContext.Out.WriteLine($"  unresolved: {actualGaps.Count(result => result.Resolution == CoverageResolution.Unresolved)}");
+        TestContext.Out.WriteLine($"  rejected: {actualGaps.Count(result => result.Resolution == CoverageResolution.Rejected)}");
         foreach (
             var group in completeness
                 .Items.Where(result => result.Resolution == CoverageResolution.Proven)
@@ -115,24 +145,18 @@ public sealed class CoverageGapRatchetTests
         {
             TestContext.Out.WriteLine($"  proven ({group.Key}): {group.Count()}");
         }
-        TestContext.Out.WriteLine(
-            $"  rejected: {completeness.Items.Count(result => result.Resolution == CoverageResolution.Rejected)}"
-        );
-        TestContext.Out.WriteLine(
-            $"  unresolved: {completeness.Items.Count(result => result.Resolution == CoverageResolution.Unresolved)}"
-        );
-
-        Assert.That(
-            totalGaps,
-            Is.LessThanOrEqualTo(PinnedGapCount),
-            $"corpus-wide gaps increased from the pinned {PinnedGapCount} to {totalGaps}; coverage regressed"
-        );
-        if (totalGaps < PinnedGapCount)
+        Assert.Multiple(() =>
         {
-            Assert.Warn(
-                $"corpus-wide gaps decreased from the pinned {PinnedGapCount} to {totalGaps}; "
-                    + $"lower CoverageGapRatchetTests.PinnedGapCount to {totalGaps}."
+            Assert.That(
+                unexpectedOrChanged,
+                Is.Empty,
+                $"new or changed coverage debt; investigate the item, update its evidence/proof, or review the baseline after an audit:\n  {string.Join("\n  ", unexpectedOrChanged)}"
             );
-        }
+            Assert.That(
+                resolvedOrChanged,
+                Is.Empty,
+                $"baseline entries no longer match open coverage debt; remove resolved pairs after verification:\n  {string.Join("\n  ", resolvedOrChanged)}"
+            );
+        });
     }
 }

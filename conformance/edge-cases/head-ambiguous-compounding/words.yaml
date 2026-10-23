@@ -1,0 +1,62 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# Equal flat signatures retain both analyses and distinct rule-trace sets.
+# The shared self-check compares their trace annotations as a multiset, so
+# crLeftHead and crRightHead need not occur in a particular result order.
+# Flat signatures do not encode root_index. PanGloss separately asserts
+# root_index 0 versus 1 using its full AnalysisIdentity tests.
+# The original cross-product matcher limitation is preserved in README.md.
+language: HeadAmbiguousCompounding
+inspired_by: ["synthetic headedness-ambiguous compounding probe (not modeling any real language)"]
+sources:
+  - "rust/crates/pg-parse/src/identity.rs (AnalysisIdentity::root_index)"
+  - "rust/crates/pg-foma/tests/cross_compiler_equivalence_gate.rs (RED-1's uflexc compound-loop fix)"
+requires: []
+fieldworks_producible: true
+words:
+  - word: dak
+    note: DAK bare root, no compounding -- a plain control.
+    parses:
+      - signature: "DAK|dak"
+        rules: []
+
+  - word: imo
+    note: IMO bare root, no compounding -- a plain control.
+    parses:
+      - signature: "IMO|imo"
+        rules: []
+
+  - word: dakimo
+    note: >-
+      THE headedness-ambiguity witness. "dakimo" has exactly one morpheme split (DAK's lexical entry
+      is the only 3-character prefix in the lexicon, IMO's the only matching remainder; see
+      STAGING.md's "single-segmentation verification" for the explicit by-construction argument), so
+      the ONLY remaining ambiguity is which morpheme is the compound's head/root. crLeftHead
+      (head=posH=DAK, nonhead=posN=IMO, output copies head-then-nonhead) and crRightHead
+      (head=posN=IMO, nonhead=posH=DAK, output copies nonhead-then-head) both instantiate to the same
+      surface "dakimo" and the same output category posH, but crLeftHead's derivation has DAK as the
+      head/root (root_index 0) and crRightHead's has IMO as the head/root (root_index 1). Both
+      analyses render to the identical flat signature "DAK+IMO|dakimo" -- see this file's header note
+      and STAGING.md for why the real assertion is a dedicated Rust test, not this signature string.
+    provenance: "rust/crates/pg-parse/src/identity.rs AnalysisIdentity::root_index"
+    parses:
+      - signature: "DAK+IMO|dakimo"
+        rules: [crLeftHead]
+        exercises:
+          - "CompoundingRule"
+      - signature: "DAK+IMO|dakimo"
+        rules: [crRightHead]
+        exercises:
+          - "CompoundingRule"
+
+  - word: imodak
+    note: >-
+      Negative control: the mirror-order concatenation. Both compounding rules here always copy
+      material in an order that yields "dakimo" (crLeftHead: head-then-nonhead = DAK-then-IMO;
+      crRightHead: nonhead-then-head = DAK-then-IMO), so neither rule -- nor any other combination of
+      the two lexical entries -- ever produces "imodak". Proves the two mirrored rules do not also
+      license the reverse surface order, keeping the fixture's ambiguity confined to headedness alone.
+    provenance: "rust/crates/pg-parse/src/identity.rs AnalysisIdentity::root_index"
+    expect_fail: true
+    blocked_by: [crLeftHead, crRightHead]

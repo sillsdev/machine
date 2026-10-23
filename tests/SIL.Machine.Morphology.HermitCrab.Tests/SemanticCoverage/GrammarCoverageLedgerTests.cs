@@ -35,11 +35,12 @@ public sealed class GrammarCoverageLedgerTests
             $"rows={rows.Count} fixtures={distinctFixtures} surface={surface} interface={@interface} construct={construct}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(926));
-        Assert.That(distinctFixtures, Is.EqualTo(62));
+        // Canonical tags cover all 131 fixtures, including the 16 formerly silent fixtures.
+        Assert.That(rows, Has.Count.EqualTo(1593));
+        Assert.That(distinctFixtures, Is.EqualTo(131));
         Assert.That(surface, Is.EqualTo(180));
-        Assert.That(@interface, Is.EqualTo(617));
-        Assert.That(construct, Is.EqualTo(129));
+        Assert.That(@interface, Is.EqualTo(1191));
+        Assert.That(construct, Is.EqualTo(222));
     }
 
     [Test]

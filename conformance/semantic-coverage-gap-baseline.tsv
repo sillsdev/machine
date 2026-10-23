@@ -1,0 +1,36 @@
+# OPEN COVERAGE DEBT. These exact item/resolution pairs remain unresolved or rejected by the completeness gate.
+# New or changed gaps require explicit review; listed items remain open coverage debt.
+# Remove a row only after evidence or a valid proof closes its item.
+item_id	resolution
+dtd:element/Gloss	Unresolved
+dtd:element/Properties	Rejected
+dtd:enum/AllomorphCoOccurrenceRule/adjacency/adjacentToLeft	Unresolved
+dtd:enum/AllomorphCoOccurrenceRule/adjacency/adjacentToRight	Unresolved
+dtd:enum/AllomorphCoOccurrenceRule/adjacency/somewhereToLeft	Unresolved
+dtd:enum/AllomorphCoOccurrenceRule/adjacency/somewhereToRight	Unresolved
+dtd:enum/Stratum/cyclicity/cyclic	Rejected
+dtd:enum/Stratum/phonologicalRuleOrder/simultaneous	Rejected
+ordering:edge-cases/compounding-breadth/morphologicalRules/crJoin~crNever	Unresolved
+ordering:edge-cases/expansion-interposed-optional/phonologicalRules/prExpand~prDelete	Unresolved
+ordering:edge-cases/head-ambiguous-compounding/morphologicalRules/crLeftHead~crRightHead	Unresolved
+ordering:edge-cases/interposed-optional-multi-rhs/phonologicalRules/merge~delete	Unresolved
+ordering:edge-cases/literal-hash-affix-context/phonologicalRules/prInitial~prFinal	Unresolved
+ordering:edge-cases/morphotactic-attribute-breadth/slots/exASlot~exBSlot	Unresolved
+ordering:edge-cases/morphotactic-attribute-breadth/slots/exBSlot~exCSlot	Unresolved
+ordering:edge-cases/morphotactic-attribute-breadth/slots/exCSlot~exDSlot	Unresolved
+ordering:edge-cases/morphotactic-attribute-breadth/slots/exclReaderSlot~exASlot	Unresolved
+ordering:edge-cases/morphotactic-attribute-breadth/slots/mbSlot~exclReaderSlot	Unresolved
+ordering:edge-cases/morphotactic-attribute-breadth/slots/partialSlot~coASlot	Unresolved
+ordering:edge-cases/optional-template-composite/slots/t1pfx~t1sfx	Unresolved
+ordering:edge-cases/right-to-left-anchor-environment/phonologicalRules/prRtlAnchor~prSpread	Unresolved
+ordering:edge-cases/template-category-sharing/slots/prefixA~suffixA	Unresolved
+ordering:edge-cases/template-category-sharing/slots/prefixB~suffixB	Unresolved
+ordering:edge-cases/two-merges-cascade-env/phonologicalRules/prMerge~prMergeBdry	Unresolved
+ordering:edge-cases/word-boundary-affix-rewrite/phonologicalRules/prInitial~prFinal	Unresolved
+ordering:languages/suffixing-extension-slot-ordering/morphologicalRules/mrAppl~mrFV	Unresolved
+ordering:languages/suffixing-extension-slot-ordering/morphologicalRules/mrPhonoDestroy~mrPhXSource	Unresolved
+ordering:languages/suffixing-extension-slot-ordering/morphologicalRules/mrStemReq~rrRRealTest	Unresolved
+ordering:languages/suffixing-extension-slot-ordering/morphologicalRules/mrTense~rrPast	Unresolved
+ordering:languages/suffixing-extension-slot-ordering/morphologicalRules/rrPast~mrExtX	Unresolved
+ordering:languages/suffixing-extension-slot-ordering/morphologicalRules/rrRRealTest~mrPhonoDestroy	Unresolved
+ordering:languages/suffixing-vowel-harmony/phonologicalRules/prGradation~prEpenthesis	Unresolved

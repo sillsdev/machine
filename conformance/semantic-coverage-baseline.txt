@@ -61,7 +61,6 @@ dtd:enum/CompoundingRule/multipleApplication/5	alphabet-quotient
 dtd:enum/CompoundingRule/multipleApplication/6	alphabet-quotient
 dtd:enum/CompoundingRule/multipleApplication/7	alphabet-quotient
 dtd:enum/CompoundingRule/multipleApplication/8	alphabet-quotient
-dtd:enum/CompoundingRule/multipleApplication/9	alphabet-quotient
 dtd:enum/CompoundingSubrule/isActive/no	todo
 dtd:enum/CompoundingSubrule/isActive/yes	dtd-default
 dtd:enum/FeatureValue/isActive/yes	dtd-default
@@ -86,7 +85,6 @@ dtd:enum/PhoneticTemplate/finalBoundaryCondition/false	dtd-default
 dtd:enum/PhoneticTemplate/initialBoundaryCondition/false	dtd-default
 dtd:enum/PhonologicalFeatureSystem/isActive/yes	dtd-default
 dtd:enum/PhonologicalRule/isActive/yes	dtd-default
-dtd:enum/PhonologicalRule/multipleApplicationOrder/leftToRightIterative	dtd-default
 dtd:enum/PhonologicalSubrule/isActive/yes	dtd-default
 dtd:enum/RealizationalRule/blockable/false	todo
 dtd:enum/RealizationalRule/blockable/true	dtd-default

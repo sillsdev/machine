@@ -1,0 +1,86 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# Synthetic construct-shaped mimic -- see STAGING.md and grammar.xml's own header comment. The
+# grammar was fixed to be loadable by hc.dll (an environment-embedded `<Segments>` needs an explicit
+# `characterDefinitionTable`; see grammar.xml's own header comment). Verified against the C# founding
+# oracle (hc.dll, via hc-conformance.exe self-check): signature matches exactly; `rules:` below is
+# transcribed from the oracle's own trace output.
+
+language: RightToLeftSegmentsEnvironment
+inspired_by: ["synthetic right-to-left inline-pre-segmented-environment rewrite probe (not modeling any real language)"]
+sources:
+  - "openspec/changes/plan-construct-coverage-completion task 4.2 (RightToLeftRewrite: additional in-scope pattern shapes -- Segments)"
+requires: [phonology]
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  PERMANENTLY KEEP-ENGINE-ONLY, not a temporary or deferred verdict (re-examined 2026-09-16): the surface
+  behaviour (a rewrite gated on one literal right-adjacent segment) is reachable through an
+  IPhSimpleContextSeg context, but that lowers to a Constraint node and never touches the
+  Segments-node lowering this fixture exists to pin; rewriting it that way would keep the words and
+  lose the coverage.
+  Exercises Segments.characterDefinitionTable: an inline literal Segments node with an explicit
+  table reference sits inside a phonological rule's RightEnvironment PhoneticTemplate. HCLoader
+  builds exactly one CharacterDefinitionTable per grammar (HCLoader.cs:204,2669-2742), and its
+  generic LoadPatternNode (HCLoader.cs:2313-2391) -- the same function used for every RewriteRule
+  LHS/RHS/environment context (HCLoader.cs:2036,2063,2079-2094) -- only ever builds pattern nodes
+  from typed LibLCM contexts (IPhSimpleContextNC/Seg, IPhIterationContext, IPhSequenceContext),
+  never from a re-parsed literal PhoneticShape string needing characterDefinitionTable resolution.
+  Same underlying gap as Segments.characterDefinitionTable/InsertSegments.characterDefinitionTable
+  (both No in fieldworks-producibility.tsv): an explicit table reference on a Segments node -- same
+  table or not -- has no FieldWorks source.
+words:
+  - word: ey
+    note: >-
+      ROOT1's correctly-rewritten surface form: underlying "ay". The rule (`prRtlSegEnv`) rewrites
+      "a" -> "e" only when immediately followed by "y" -- authored as
+      `<Segments><PhoneticShape>y</PhoneticShape></Segments>` (an inline pre-segmented literal,
+      same table as the rule's own stratum) rather than an ordinary `<SimpleContext>`/`<Segment>`
+      reference.
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    parses:
+      - signature: "ROOT1|ey"
+        rules: [prRtlSegEnv]
+        exercises:
+          - "RewriteRule direction (Dir): right-to-left"
+
+  - word: a
+    note: >-
+      ROOT2's own (unchanged) spelling -- no "y" follows at all, so the Segments-authored right
+      environment correctly fails to match and the rule does not fire.
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    parses:
+      - signature: "ROOT2|a"
+        rules: []
+        exercises:
+          - "RewriteRule direction (Dir): right-to-left"
+
+  - word: ay
+    note: >-
+      ROOT1's own RAW, un-rewritten underlying shape, queried directly as a surface string -- the
+      rule is obligatory wherever its environment matches, so this exact string is NOT a valid
+      surface form for ROOT1 at all (it should have rewritten to "ey"). Proves the rule genuinely
+      fires (obligatorily) via the Segments-authored environment, rather than being vacuously
+      inapplicable.
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"
+
+  - word: e
+    note: >-
+      A structurally-invalid string: "a" rewritten to "e" with no "y" following at all (unlike
+      "ey", where the "y" that licensed the rewrite is still present after it). Never a valid
+      surface form for either root.
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"
+
+  - word: "y"
+    note: A bare "y" with no preceding root segment at all -- never a valid surface form for either root.
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"

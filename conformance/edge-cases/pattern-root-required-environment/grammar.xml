@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>PatternRootRequiredEnvironment</Name>
+    <!-- Synthetic probe for EmissionStrategy::TunedSurfaceProbed's `collect_roots` regex route
+         (rust/crates/pg-foma/src/emit.rs). "ePattern"'s one allomorph is a LEXICAL PATTERN (an
+         iterative "[Any]*" shape over an empty-FS natural class, same construct
+         edge-cases/guesser-pattern-root-fallback and edge-cases/backend-strata-generic already pin
+         as guess-only/never ordinarily trie-indexed), but here it ALSO carries a
+         <RequiredEnvironments> constraint. `collect_roots` only routes an Unbounded pattern shape
+         to a compiled regex entry when `allo.environments.is_empty()`; the precision flags a
+         required environment needs have no literal surface to check on an unbounded shape, so this
+         allomorph cannot take that route. With no other representation available it is left
+         uncovered, which is what `crate::emit::eager_route_drops_root_spellings` and the
+         `surface-probe.root-spelling-cap` capability predicate (capability.rs) exist to name.
+         Two ordinary literal roots ("tik", "bon") plus one unconstrained suffix rule give this
+         fixture real adapter-visible analyses independent of the pattern root, which, exactly
+         like the two fixtures above, never participates in ordinary (non-guess) lookup at all, so
+         its presence changes nothing about how "tik"/"bon" and their suffixed forms analyze. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>Verb</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- requires: [] (no PhonologicalRule/MetathesisRule element), so no PhonologicalFeatureSystem
+         is needed: the natural classes below are SegmentNaturalClass (members listed directly) and
+         the empty-FS FeatureNaturalClass "Any", neither of which needs one. -->
+    <CharacterDefinitionTable id="t1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cZ"><Representations><Representation>z</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <!-- Empty feature struct: matches every segment, referenced from PhoneticShape by NAME
+           ("Any"), not by this "ncAny" id, same convention as guesser-pattern-root-fallback. -->
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <!-- Referenced only by ePattern's RequiredEnvironments below; this fixture's pattern root is
+           guess-only and never ordinarily consulted, so the environment it names is never actually
+           tested by any word in words.yaml. Its role is purely to give `collect_roots` a
+           non-empty `allo.environments`, which is the one condition that keeps the regex route from
+           applying to an Unbounded shape. -->
+      <SegmentNaturalClass id="ncV"><Name>Vowel</Name>
+        <Segment segment="cI" /><Segment segment="cO" /><Segment segment="cU" />
+      </SegmentNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="t1" morphologicalRules="mrPast">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrPast" requiredPartsOfSpeech="posV">
+            <Name>past_suffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPast">
+                <MorphologicalInput>
+                  <PhoneticSequence id="stem">
+                    <OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="stem" />
+                  <InsertSegments><PhoneticShape>us</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PAST</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <!-- The construct: an iterative pattern root allomorph carrying a RequiredEnvironments
+               constraint. Guess-only (RootAllomorphDef::is_pattern), so never ordinarily looked up;
+               no word below is expected to reach it. -->
+          <LexicalEntry id="ePattern">
+            <Allomorphs>
+              <Allomorph id="aPattern">
+                <PhoneticShape>[Any]*</PhoneticShape>
+                <RequiredEnvironments>
+                  <Environment>
+                    <RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncV" /></PhoneticSequence></PhoneticTemplate></RightEnvironment>
+                  </Environment>
+                </RequiredEnvironments>
+              </Allomorph>
+            </Allomorphs>
+            <MorphemeId>PATTERN</MorphemeId>
+            <Gloss>pattern</Gloss>
+          </LexicalEntry>
+          <!-- Two ordinary literal roots, trie-indexed normally: the positive/negative words below
+               come entirely from these plus mrPast, independent of ePattern. -->
+          <LexicalEntry id="eTik" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aTik"><PhoneticShape>tik</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TIK</MorphemeId>
+            <Gloss>tik</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eBon" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aBon"><PhoneticShape>bon</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>BON</MorphemeId>
+            <Gloss>bon</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

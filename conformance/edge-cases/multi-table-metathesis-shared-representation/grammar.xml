@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>MultiTableMetathesisSharedRepresentation</Name>
+    <!-- Synthetic construct-shaped mimic (docs/conformance/representative-typology-basis.md
+         S1.2.4/S1.2.5 combined - "Metathesis" + "Multi-table: shared-representation-across-tables
+         configuration"), the residual-gap fixture `docs/conformance/
+         multitable-shared-representation-design.md`'s own "Residual gap this fix does NOT close"
+         section flags: `crate::replace::compile_metathesis_swap_net` used to render tokens DIRECTLY
+         (`SegAlphabet::token`, table-blind, no cross-table alias expansion), so a `MetathesisRule`
+         in a grammar whose tables share a normalized representation kept exactly the false negative
+         `two-table-shared-representation-recall` (4.4b) already fixed for ordinary rewrite rules.
+         This fixture combines BOTH shapes: `two-table-shared-representation-recall`'s two-table,
+         misaligned-index-for-a-shared-spelling structure, and `right-to-left-metathesis-reversal`'s
+         multi-member-natural-class MetathesisRule.
+
+         Structural shape: `Grammar::char_tables.len() == 2` ("Inner"/t0, "Outer"/t1, each stratum's
+         own `StratumDef::table` pointing at a DIFFERENT table). BOTH of the metathesis rule's two
+         switch spellings ("m" and "x") are declared in EACH table, at DELIBERATELY MISALIGNED raw
+         indices (t0: m=0,x=1; t1: z=0[decoy],m=1,x=2,w=3[decoy]). ROOT1 is entered on the Inner
+         stratum (table t0), spelled "mx" using table t0's own char-defs; the metathesis rule lives on
+         the Outer stratum (table t1) and must swap ROOT1's material to surface "xm" even though its
+         own natural classes are resolved against table t1's DIFFERENT raw indices for the SAME two
+         spellings. ROOT2 (Outer stratum, table t1, spelled "wx" using ncSwitchA's OTHER, table-B-only
+         member "w") is a same-table positive control, unaffected by the fix, proving ordinary
+         same-table metathesis recall stays untouched.
+
+         ncSwitchA is a genuine 2-member class ({m, w}) so this fixture ALSO exercises the
+         pre-existing per-branch cross-product precision fix (`tests/phase_c_metathesis.rs`'s
+         `metathesis_multi_member_classes_transpose_precisely_not_naively`) TOGETHER with cross-table
+         aliasing, in the SAME rule - proving the two fixes compose without either weakening the
+         other (`rust/crates/pg-foma/tests/multi_table_metathesis_shared_representation.rs`'s own
+         module doc has the full identity-preservation argument and the FST-proposer-vs-oracle
+         containment check; this fixture's own `words.yaml` is graded against the oracle only,
+         `pg_parse::Morpher`, per this repo's `conformance_fixtures_gate.rs` convention). -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>N</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featId">
+        <Name>id</Name>
+        <Symbols>
+          <Symbol id="symM">m</Symbol>
+          <Symbol id="symX">x</Symbol>
+          <Symbol id="symW">w</Symbol>
+          <Symbol id="symZ">z</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="t0">
+      <Name>Inner</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="c0m">
+          <Representations><Representation>m</Representation></Representations>
+          <FeatureValue feature="featId" symbolValues="symM" />
+        </SegmentDefinition>
+        <SegmentDefinition id="c0x">
+          <Representations><Representation>x</Representation></Representations>
+          <FeatureValue feature="featId" symbolValues="symX" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <CharacterDefinitionTable id="t1">
+      <Name>Outer</Name>
+      <SegmentDefinitions>
+        <!-- "z" declared FIRST so t1's own "m"/"x" sit at raw indices 1/2, not 0/1 - t0's "m"/"x"
+             sit at raw indices 0/1 (t0's only two segments). Deliberately misaligned raw indices for
+             BOTH shared spellings across the two tables (module doc). -->
+        <SegmentDefinition id="c1z">
+          <Representations><Representation>z</Representation></Representations>
+          <FeatureValue feature="featId" symbolValues="symZ" />
+        </SegmentDefinition>
+        <SegmentDefinition id="c1m">
+          <Representations><Representation>m</Representation></Representations>
+          <FeatureValue feature="featId" symbolValues="symM" />
+        </SegmentDefinition>
+        <SegmentDefinition id="c1x">
+          <Representations><Representation>x</Representation></Representations>
+          <FeatureValue feature="featId" symbolValues="symX" />
+        </SegmentDefinition>
+        <SegmentDefinition id="c1w">
+          <Representations><Representation>w</Representation></Representations>
+          <FeatureValue feature="featId" symbolValues="symW" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <!-- Two-member class (m OR w) - the SAME multi-member-precision shape
+           `tests/phase_c_metathesis.rs`'s MULTI_MEMBER_XML fixture uses, here combined with
+           cross-table aliasing: "m" is shared with table t0 (aliased), "w" is table-t1-only
+           (never aliased). FeatureNaturalClass (not SegmentNaturalClass) so the ORACLE's own
+           feature-lane matching - not literal per-table CharDefId identity - is what recognizes
+           an Inner-table "m" as a member, mirroring `two-table-shared-representation-recall`'s own
+           FeatureNaturalClass convention (`pg_rules::bridge::nat_class_lanes` matches by
+           phonological feature lane, never char-def identity, `docs/conformance/
+           multitable-shared-representation-design.md`'s own supporting-evidence section). -->
+      <FeatureNaturalClass id="ncSwitchA"><Name>SwitchA</Name>
+        <FeatureValue feature="featId" symbolValues="symM symW" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncSwitchB"><Name>SwitchB</Name>
+        <FeatureValue feature="featId" symbolValues="symX" />
+      </FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <MetathesisRule id="mrCrossTableSwap" leftSwitch="swB" rightSwitch="swA">
+        <Name>crossTableSwap</Name>
+        <StructuralDescription>
+          <PhoneticTemplate>
+            <PhoneticSequence>
+              <SimpleContext id="swA" naturalClass="ncSwitchA" />
+              <SimpleContext id="swB" naturalClass="ncSwitchB" />
+            </PhoneticSequence>
+          </PhoneticTemplate>
+        </StructuralDescription>
+      </MetathesisRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="t0" morphologicalRuleOrder="unordered">
+        <Name>Inner</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot1">
+            <Allomorphs><Allomorph id="aRoot1"><PhoneticShape>mx</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT1</MorphemeId>
+            <Gloss>root1</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered" phonologicalRules="mrCrossTableSwap">
+        <Name>Outer</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot2">
+            <Allomorphs><Allomorph id="aRoot2"><PhoneticShape>wx</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT2</MorphemeId>
+            <Gloss>root2</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

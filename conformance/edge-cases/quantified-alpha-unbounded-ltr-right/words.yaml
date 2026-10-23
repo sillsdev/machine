@@ -1,0 +1,104 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# Recorded with hc.dll, Machine 18cf242f4b114b0eb9bac304b4b171ca2f499a39.
+language: quantified-alpha-unbounded-ltr-right
+inspired_by: ["synthetic repeated feature agreement"]
+sources: ["HCLoader.cs:2338-2344,2745-2770"]
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: acet
+    note: "Negative control for quantified alpha unbounded ltr right: 'acet' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: ecct
+    note: "Positive witness for quantified alpha unbounded ltr right: 'ecct' must retain the declared analysis."
+    parses:
+      - signature: "ROOT2|ecct"
+        rules: ["prRtlBq"]
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: accct
+    note: "Negative control for quantified alpha unbounded ltr right: 'accct' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: acat
+    note: "Negative control for quantified alpha unbounded ltr right: 'acat' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: acct
+    note: "Negative control for quantified alpha unbounded ltr right: 'acct' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: et
+    note: "Negative control for quantified alpha unbounded ltr right: 'et' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: at
+    note: "Negative control for quantified alpha unbounded ltr right: 'at' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: ecat
+    note: "Positive witness for quantified alpha unbounded ltr right: 'ecat' must retain the declared analysis."
+    parses:
+      - signature: "ROOT1|ecat"
+        rules: ["prRtlBq"]
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: etct
+    note: "Negative control for quantified alpha unbounded ltr right: 'etct' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: ctat
+    note: "Negative control for quantified alpha unbounded ltr right: 'ctat' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: ctet
+    note: "Negative control for quantified alpha unbounded ltr right: 'ctet' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: accccct
+    note: "Negative control for quantified alpha unbounded ltr right: 'accccct' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: eccccct
+    note: "Negative control for quantified alpha unbounded ltr right: 'eccccct' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: eccct
+    note: "Positive witness for quantified alpha unbounded ltr right: 'eccct' must retain the declared analysis."
+    parses:
+      - signature: "ROOT3|eccct"
+        rules: ["prRtlBq"]
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: ecet
+    note: "Negative control for quantified alpha unbounded ltr right: 'ecet' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: actt
+    note: "Positive witness for quantified alpha unbounded ltr right: 'actt' must retain the declared analysis."
+    parses:
+      - signature: "MIXED|actt"
+        rules: []
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: ectt
+    note: "Negative control for quantified alpha unbounded ltr right: 'ectt' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"

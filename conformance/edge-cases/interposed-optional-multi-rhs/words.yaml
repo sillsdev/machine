@@ -1,0 +1,32 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: forward-synthesis
+# The positive is intentionally red against C#: its existing narrowing unapply loses this parse.
+# The C# result was not rerun in this lane; the expected parse is independently forward-derived.
+# Trace: root ABC/abc -> merge abc to de -> x deletion is vacuous -> surface de (ABC|de).
+# Inverse deletion can interpose optional x between d/e; merge must capture both real RHS positions.
+language: interposed-optional-multi-rhs
+sources: ["HCLoader.cs:2362-2374 (literal contexts), 2745-2786 (natural classes), 2005-2011 and 2765-2773 (alpha variables); machine/conformance/fieldworks-producibility.tsv"]
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: de
+    note: "Positive witness for interposed optional multi rhs: 'de' must retain the declared analysis."
+    parses:
+      - signature: "ABC|de"
+        rules: ["merge"]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+  - word: abc
+    note: "Negative control for interposed optional multi rhs: 'abc' must complete with no analysis."
+    expect_fail: true
+  - word: dex
+    note: "Negative control for interposed optional multi rhs: 'dex' must complete with no analysis."
+    expect_fail: true
+  - word: dxe
+    note: "Negative control for interposed optional multi rhs: 'dxe' must complete with no analysis."
+    expect_fail: true
+  - word: dd
+    note: "Negative control for interposed optional multi rhs: 'dd' must complete with no analysis."
+    expect_fail: true

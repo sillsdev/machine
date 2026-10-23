@@ -1,0 +1,109 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# hc.dll, Machine 18cf242f4b114b0eb9bac304b4b171ca2f499a39.
+language: partial-class-disagree-unbounded-rtl-left
+inspired_by: ["synthetic feature disagreement with a partial class"]
+sources: ["HCLoader.cs:2338-2344,2745-2770"]
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: ii
+    note: "Negative control for partial class disagree unbounded rtl left: 'ii' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: iy
+    note: "Negative control for partial class disagree unbounded rtl left: 'iy' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: ia
+    note: "Positive witness for partial class disagree unbounded rtl left: 'ia' must retain the declared analysis."
+    parses:
+      - signature: "AU|ia"
+        rules: ["prDoubleAlpha"]
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: iu
+    note: "Negative control for partial class disagree unbounded rtl left: 'iu' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: yi
+    note: "Negative control for partial class disagree unbounded rtl left: 'yi' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: yy
+    note: "Negative control for partial class disagree unbounded rtl left: 'yy' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: ya
+    note: "Negative control for partial class disagree unbounded rtl left: 'ya' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: yu
+    note: "Negative control for partial class disagree unbounded rtl left: 'yu' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: ai
+    note: "Negative control for partial class disagree unbounded rtl left: 'ai' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: ay
+    note: "Negative control for partial class disagree unbounded rtl left: 'ay' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: aa
+    note: "Negative control for partial class disagree unbounded rtl left: 'aa' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: au
+    note: "Negative control for partial class disagree unbounded rtl left: 'au' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: ui
+    note: "Negative control for partial class disagree unbounded rtl left: 'ui' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: uy
+    note: "Negative control for partial class disagree unbounded rtl left: 'uy' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: ua
+    note: "Negative control for partial class disagree unbounded rtl left: 'ua' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: uu
+    note: "Negative control for partial class disagree unbounded rtl left: 'uu' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"

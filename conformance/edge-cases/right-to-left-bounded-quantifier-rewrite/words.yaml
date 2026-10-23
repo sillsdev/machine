@@ -1,0 +1,83 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# Synthetic construct-shaped mimic -- see STAGING.md and grammar.xml's own header comment. Verified
+# against the C# founding oracle (hc.dll, via hc-conformance.exe self-check): signatures match
+# exactly; `rules:` fields below are transcribed from the oracle's own trace output.
+#
+# Authoring note: an early all-featureless draft (SegmentNaturalClass only, no
+# PhonologicalFeatureSystem at all) made every segment share an identical (empty) feature bundle,
+# and pg_parse's own shape rendering collapsed every analysis into a bracketed alternates class
+# (e.g. "[aect][aect][aect]t") instead of the literal input string. Fixed by giving every segment a
+# fully unique feature bundle, mirroring `conformance-staging/edge-cases/mpr-gated-exception`'s own
+# fix for the identical symptom (see grammar.xml's own G2a-discipline comment).
+
+language: RightToLeftBoundedQuantifierRewrite
+inspired_by: ["synthetic right-to-left bounded-quantifier rewrite probe (not modeling any real language)"]
+sources:
+  - "docs/conformance/representative-typology-basis.md S1.2.2 (Right-to-left rewrite: additional in-scope pattern shapes)"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: acet
+    note: >-
+      ROOT1's correctly-rewritten surface form: underlying "acat", prRtlBq's rightmost "a" (index 2,
+      immediately before the trigger "t", 0 intervening consonants -- within the bounded
+      OptionalSegmentSequence min=0 max=2) rewrites to "e"; the leftmost "a" (index 0, followed by
+      "c" then another "a", never reaching the trigger within the environment shape) does not.
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.2"
+    parses:
+      - signature: "ROOT1|acet"
+        rules: [prRtlBq]
+        exercises:
+          - "RewriteRule direction (Dir): right-to-left"
+          - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+
+  - word: ecct
+    note: >-
+      ROOT2's correctly-rewritten surface form: underlying "acct", the sole "a" is followed by
+      EXACTLY 2 consonants ("cc") then the trigger "t" -- exactly saturating the bounded
+      quantifier's own max=2, the load-bearing positive witness that the bound is genuinely
+      reachable, not just vacuously satisfied at 0.
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.2"
+    parses:
+      - signature: "ROOT2|ecct"
+        rules: [prRtlBq]
+        exercises:
+          - "RewriteRule direction (Dir): right-to-left"
+          - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+
+  - word: accct
+    note: >-
+      ROOT3's surface form, UNCHANGED from its own underlying shape: the sole "a" is followed by 3
+      consonants ("ccc") before the trigger "t" -- one past the bounded quantifier's own max=2, so
+      the environment genuinely fails to match and the obligatory rule does not fire. The
+      load-bearing negative witness that the quantifier is truly BOUNDED (a finite max=2, not the
+      DTD's -1/unbounded sentinel): without this control, "acet"/"ecct" alone could not distinguish
+      a genuinely-bounded rule from a rule that (incorrectly) treated the quantifier as unbounded.
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.2"
+    parses:
+      - signature: "ROOT3|accct"
+        rules: []
+        exercises:
+          - "RewriteRule direction (Dir): right-to-left"
+          - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+
+  - word: acat
+    note: >-
+      ROOT1's own RAW underlying shape, queried directly as a surface string -- prRtlBq is
+      obligatory wherever its environment matches, so this exact string is NOT a valid surface form
+      for ROOT1 at all (it should have rewritten to "acet"). Proves the rule genuinely fires
+      (obligatorily), rather than being vacuously never-applicable.
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.2"
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"
+
+  - word: acct
+    note: ROOT2's own RAW underlying shape, queried directly -- same reasoning as acat (should have rewritten to "ecct").
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.2"
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"

@@ -1,0 +1,63 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# hc.dll, Machine 18cf242f4b114b0eb9bac304b4b171ca2f499a39.
+language: nullable-disagree-plain-ltr-right
+inspired_by: ["synthetic feature disagreement at a word edge"]
+sources: ["HCLoader.cs:2338-2344,2745-2770"]
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: ii
+    note: "Negative control for nullable disagree plain ltr right: 'ii' must complete with no analysis."
+    expect_fail: true
+  - word: iy
+    note: "Negative control for nullable disagree plain ltr right: 'iy' must complete with no analysis."
+    expect_fail: true
+  - word: ia
+    note: "Positive witness for nullable disagree plain ltr right: 'ia' must retain the declared analysis."
+    parses:
+      - signature: "AU|ia"
+        rules: ["prDoubleAlpha"]
+        exercises:
+          - "Alpha-variable phonological environments (VariableFeature/AlphaVariables)"
+  - word: iu
+    note: "Negative control for nullable disagree plain ltr right: 'iu' must complete with no analysis."
+    expect_fail: true
+  - word: yi
+    note: "Negative control for nullable disagree plain ltr right: 'yi' must complete with no analysis."
+    expect_fail: true
+  - word: yy
+    note: "Negative control for nullable disagree plain ltr right: 'yy' must complete with no analysis."
+    expect_fail: true
+  - word: ya
+    note: "Negative control for nullable disagree plain ltr right: 'ya' must complete with no analysis."
+    expect_fail: true
+  - word: yu
+    note: "Negative control for nullable disagree plain ltr right: 'yu' must complete with no analysis."
+    expect_fail: true
+  - word: ai
+    note: "Negative control for nullable disagree plain ltr right: 'ai' must complete with no analysis."
+    expect_fail: true
+  - word: ay
+    note: "Negative control for nullable disagree plain ltr right: 'ay' must complete with no analysis."
+    expect_fail: true
+  - word: aa
+    note: "Negative control for nullable disagree plain ltr right: 'aa' must complete with no analysis."
+    expect_fail: true
+  - word: au
+    note: "Negative control for nullable disagree plain ltr right: 'au' must complete with no analysis."
+    expect_fail: true
+  - word: ui
+    note: "Negative control for nullable disagree plain ltr right: 'ui' must complete with no analysis."
+    expect_fail: true
+  - word: uy
+    note: "Negative control for nullable disagree plain ltr right: 'uy' must complete with no analysis."
+    expect_fail: true
+  - word: ua
+    note: "Negative control for nullable disagree plain ltr right: 'ua' must complete with no analysis."
+    expect_fail: true
+  - word: uu
+    note: "Negative control for nullable disagree plain ltr right: 'uu' must complete with no analysis."
+    expect_fail: true

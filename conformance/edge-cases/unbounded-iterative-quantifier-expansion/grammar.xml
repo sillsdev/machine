@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>UnboundedIterativeQuantifierExpansion</Name>
+    <!-- Synthetic construct-shaped mimic (docs/conformance/representative-typology-basis.md
+         S1.2.6 - "Quantifier pattern - genuinely unbounded quantifier"). Invented VC(C*)C roots
+         only, no natural-language lexemes. Representative typological pattern: scalar/iconic
+         repetition where the degree of copying is not capped at one extra copy - attested
+         alongside ordinary (single) reduplication in the iconicity-of-reduplication literature (see
+         this fixture's own STAGING.md for citations). Structural shape here: an ordinary
+         `Iterative`, `LeftToRight` `PhonRuleDef` whose subrule's own `RightEnvironment` contains a
+         `Quantifier` node (`<OptionalSegmentSequence min="1" max="-1">`, the DTD's own UNBOUNDED
+         Kleene sentinel, never any finite cutoff) before a trigger segment - modeling an
+         arbitrarily-long run of "expressive" material standing between a vowel and its own
+         triggering context, the phonological-rule-level stand-in this DTD's own construct
+         vocabulary offers for scalar copying (the research doc's own "Structural shape" section: a
+         rule whose repeated element plausibly models scalar iconic copying with no principled
+         finite bound the grammar itself declares).
+
+         Until `openspec/changes/build-unbounded-quantifier-support`, THIS shape was one of the
+         genuinely honestly-`Refuse`d configurations: `crate::replace::pattern_slots`
+         unconditionally returned `None` for ANY `PatternNode::Quantifier` with `max == None`,
+         regardless of where it occurred, so this rule could not even be compiled by the
+         `-engine=foma` FST path (`rust/crates/pg-foma/src/capability.rs`'s own
+         `QuantifierBoundedExpansionPredicate`, pre-widening, `Refuse`d every rule with
+         `!all_bounded` unconditionally). `Slot::Repeat`'s widened `max: Option<u32>` now renders
+         this via foma's own native `E^>N` unbounded-repetition xre operator
+         (`crate::lower::render_slots`'s own doc), so this fixture is a POSITIVE witness:
+         `QuantifierPatternDetail::compile_attempted == true` and
+         `QuantifierBoundedExpansionPredicate` returns `ConfirmOnly`, not `Refuse` - see
+         STAGING.md for the full account, mirroring `right-to-left-bounded-quantifier-rewrite`'s own
+         precedent for a BOUNDED environment quantifier (this fixture is that one's direct
+         unbounded/iterative counterpart).
+
+         G2a discipline (`conformance-staging/edge-cases/mpr-gated-exception`'s own authoring note,
+         re-confirmed empirically while authoring `right-to-left-bounded-quantifier-rewrite`): every
+         segment needs a feature bundle that FULLY and UNIQUELY distinguishes it from every other
+         segment, or a phonological-subrule rewrite collapses feature-identical segments into a
+         bracketed alternates class instead of the literal input string. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>N</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="fConsPlus">+</Symbol><Symbol id="fConsMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featVoice"><Name>voice</Name><Symbols><Symbol id="fVoicePlus">+</Symbol><Symbol id="fVoiceMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featHigh"><Name>high</Name><Symbols><Symbol id="fHighLow">low</Symbol><Symbol id="fHighMid">mid</Symbol><Symbol id="fHighNA">na</Symbol></Symbols></SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="t1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="ca"><Representations><Representation>a</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featHigh" symbolValues="fHighLow" />
+        </SegmentDefinition>
+        <SegmentDefinition id="ce"><Representations><Representation>e</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featHigh" symbolValues="fHighMid" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cc"><Representations><Representation>c</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featHigh" symbolValues="fHighNA" />
+        </SegmentDefinition>
+        <SegmentDefinition id="ct"><Representations><Representation>t</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoice" symbolValues="fVoiceMinus" /><FeatureValue feature="featHigh" symbolValues="fHighNA" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <SegmentNaturalClass id="ncVowel"><Name>Vowel</Name><Segment segment="ca" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncCons"><Name>Cons</Name><Segment segment="cc" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncTrig"><Name>Trigger</Name><Segment segment="ct" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prIterUnbounded">
+        <Name>iterUnboundedDemo</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncVowel" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="ce" /></PhoneticSequence></PhoneticOutput>
+            <Environment><RightEnvironment><PhoneticTemplate><PhoneticSequence>
+              <OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncCons" /></OptionalSegmentSequence>
+              <SimpleContext naturalClass="ncTrig" />
+            </PhoneticSequence></PhoneticTemplate></RightEnvironment></Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="t1" phonologicalRules="prIterUnbounded">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot1">
+            <Allomorphs><Allomorph id="aRoot1"><PhoneticShape>act</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT1</MorphemeId>
+            <Gloss>root1</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eRoot2">
+            <Allomorphs><Allomorph id="aRoot2"><PhoneticShape>acct</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT2</MorphemeId>
+            <Gloss>root2</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eRoot3">
+            <Allomorphs><Allomorph id="aRoot3"><PhoneticShape>accccct</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT3</MorphemeId>
+            <Gloss>root3</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eRoot4">
+            <Allomorphs><Allomorph id="aRoot4"><PhoneticShape>at</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT4</MorphemeId>
+            <Gloss>root4</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

@@ -50,6 +50,15 @@ construction), whether it is load-bearing (evidenced, or classified impossible t
 reason), and interactions between surfaces (not yet enumerated) — closing that third level is what
 remains between here and the goal.
 
+**Open coverage debt is tracked by exact item and resolution** in `semantic-coverage-gap-baseline.tsv`.
+These are active gaps, not accepted parity exceptions or formalism exclusions. New or changed gaps
+require explicit review and fail the gate; a row is removed when evidence or a valid proof closes its
+item. The shared fixture corpus grew from 62 to 131 fixtures (67 graduated shared grammars and two
+rule-order variants), expanding the measured inventory from 367 to 389 items. The 22 new ordering
+items initially added 12 proof-resolved items and 10 unresolved items. Targeted C# measurements then
+found real word-level counterexamples for four of those ten; six remain unresolved. All 26 prior gaps
+remain, so the current exact debt is 32 items: 29 unresolved and three rejected proofs.
+
 **Rule order is part of the contract, not an implementation detail.** A parse runs in two passes:
 the word is **torn down** to find candidate stems, then **built back up** to check the rebuild
 reproduces the surface it started from. This is analysis-by-synthesis — propose by stripping,
@@ -90,7 +99,7 @@ subset it claims to support.
 ```
 conformance/
   languages/<name>/    grammar.xml + words.yaml   -- 8 typologically-selected synthetic languages
-  edge-cases/<name>/   grammar.xml + words.yaml   -- 50 micro-grammars for things no shared grammar hosts
+  edge-cases/<name>/   grammar.xml + words.yaml   -- focused micro-grammars for things no shared grammar hosts
   coverage.csv         GENERATED: language x word x construct
   rules.csv            GENERATED: language x grammar rule id x exercising words
   HermitCrabInput.dtd  the published grammar DTD (byte-identical to the library's embedded copy)
@@ -130,7 +139,9 @@ resolving a grammar's DOCTYPE, admit only the system identifier `HermitCrabInput
 the published DTD path the manifest records. Any other external entity, network fetch, or
 filesystem fallback should be refused rather than attempted.
 
-Exactly two files per fixture. `words.yaml` is the single ground truth: front matter (`language`,
+Two files are required per fixture: `grammar.xml` and `words.yaml`. An optional `README.md`
+preserves the fixture's rationale and oracle history; optional FieldWorks witnesses are described
+in the protocol. `words.yaml` is the single ground truth: front matter (`language`,
 `inspired_by`, `sources`, `requires`) plus one entry per word, each carrying a `note` and either
 `parses` (`signature`/`gloss`/`rules`/`exercises`, one per distinct analysis), `expect_fail` +
 `blocked_by` (well-formed input, zero valid analyses), or `expect_skip` (the oracle throws
@@ -184,7 +195,10 @@ gap needs selective, named interaction coverage instead, tracked as `conformance
 `exercises:` values are drawn from — the coverage report cross-references against it and flags both
 zero-coverage constructs and **dead rules** (a `grammar.xml` rule id no word exercises). `rules:`
 per parse is a verified dimension, not aspirational: self-check runs the oracle with tracing on and
-FAILs if the traced rule applications diverge from the declared list. As of this writing, 19/19
+FAILs if the traced rule applications diverge from the declared list. Analyses with identical
+signatures are retained: self-check compares `(signature, rule-id set)` as a multiset, so two
+equal signatures with different valid traces can match independently of result order. A missing,
+extra or incorrectly attributed trace still fails. As of this writing, 31/31
 in-scope constructs are covered (`Tracing (TraceType)` is out of scope — it was never in
 `expected.tsv`'s domain).
 

@@ -1,0 +1,85 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# Synthetic construct-shaped mimic -- see STAGING.md and grammar.xml's own header comment. Verified
+# against the C# founding oracle (hc.dll, via hc-conformance.exe self-check): signatures match
+# exactly; `rules:` fields below are transcribed from the oracle's own trace output.
+
+language: RightToLeftMetathesisReversal
+inspired_by: ["synthetic right-to-left metathesis-reversal probe (not modeling any real language)"]
+sources:
+  - "docs/conformance/representative-typology-basis.md S1.2.4 (Metathesis -- right-to-left direction)"
+  - "docs/conformance/needs-decision-resolutions.md (row 8)"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: sq
+    note: >-
+      ROOT1's correctly-metathesized surface form: underlying "qs" (SwitchA={q,r} then
+      SwitchB={s,t}), leftSwitch tags SwitchB (physically last), so the swap's obligatory reorder
+      produces SwitchB's own value first, SwitchA's second -- "s"+"q" = "sq". This grammar's own
+      MetathesisRule declares Dir::RightToLeft (multipleApplicationOrder="rightToLeftIterative");
+      ROOT1 has exactly one valid switch window (no overlap), so this word alone cannot
+      distinguish RightToLeft from LeftToRight -- see grammar.xml's own header comment for the
+      dedicated, oracle-free FST-level test that does (rust/crates/pg-foma/tests/
+      phase_c_metathesis.rs). This word's job is the Stage-2 containment obligation: the oracle's
+      own analysis must appear in pg_foma::replace::compile_metathesis_rule's proposer output.
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.4"
+    parses:
+      - signature: "ROOT1|sq"
+        rules: [mrRtlReversal]
+        exercises:
+          - "MetathesisRule"
+
+  - word: tr
+    note: >-
+      ROOT2's correctly-metathesized surface form: underlying "rt", same rule, same reorder
+      algorithm -- "t"+"r" = "tr". A second, independent root so the "sr"/"tq" negative controls
+      below are a genuine cross-contamination check (neither root's own raw nor swapped form),
+      not merely "no root exists with this shape at all".
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.4"
+    parses:
+      - signature: "ROOT2|tr"
+        rules: [mrRtlReversal]
+        exercises:
+          - "MetathesisRule"
+
+  - word: qs
+    note: >-
+      ROOT1's own RAW underlying shape, queried directly as a surface string -- metathesis is
+      obligatory wherever its pattern matches, so this exact string is NOT a valid surface form for
+      ROOT1 at all (it should have metathesized to "sq"). Proves the rule genuinely fires
+      (obligatorily) under its own Dir::RightToLeft declaration, rather than being vacuously
+      never-applicable.
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.4"
+    expect_fail: true
+    exercises:
+      - "MetathesisRule"
+
+  - word: rt
+    note: ROOT2's own RAW underlying shape, queried directly -- same reasoning as "qs" (should have metathesized to "tr").
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.4"
+    expect_fail: true
+    exercises:
+      - "MetathesisRule"
+
+  - word: sr
+    note: >-
+      Every OTHER combination of SwitchA={q,r} x SwitchB={s,t} this rule's own pattern could also
+      match against SOME root -- but neither ROOT1 ("qs"/"sq") nor ROOT2 ("rt"/"tr") has this
+      shape. Precision negative control: proves the per-branch literal cross-product swap
+      (mirroring the LeftToRight `metathesis_multi_member_classes_transpose_precisely_not_naively`
+      witness in rust/crates/pg-foma/tests/phase_c_metathesis.rs) does not cross-contaminate under
+      Dir::RightToLeft either.
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.4"
+    expect_fail: true
+    exercises:
+      - "MetathesisRule"
+
+  - word: tq
+    note: The remaining spurious combination -- same reasoning as "sr".
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.4"
+    expect_fail: true
+    exercises:
+      - "MetathesisRule"
