@@ -42,7 +42,8 @@ would have produced, so traces are unchanged.
 | traversal instances used | 15,642,175 | 2,429,643 |
 | pattern-match attempts (counted before the check) | 11,979,916 | 11,979,916 |
 
-Parity: identical analysis signature sets on all 45 Sena words and on all 464 conformance-fixture words
+Parity: identical `WordAnalysisSignature` sets on all 45 Sena words (morph counts only on Sena; see
+`hermitcrab-perf-2026-09-disposition.md`) and on all 464 conformance-fixture words
 (33 grammars). Fixture traversals fell 21% (31,278 to 24,741); their patterns fail less often.
 
 `AnalysisEdgePrefilterTests` covers left/right constraints, boundary skipping, optional nodes, and the

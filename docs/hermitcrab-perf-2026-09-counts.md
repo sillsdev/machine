@@ -23,7 +23,7 @@ portability, and limits:
 
 | Optimization | Principal evidence | Record |
 | --- | --- | --- |
-| Deferred template clone | 1.054x on the 45-word Sena battery; exact parity | `optimizations/deferred-template-clone.md` |
+| Deferred template clone | 1.054x on the 45-word Sena battery; `WordAnalysisSignature` parity (morph counts only on Sena) | `optimizations/deferred-template-clone.md` |
 | Feature-structure traversal-state reuse | equality/freezing allocation left the hot profile; not isolated | `optimizations/feature-struct-visited-state-reuse.md` |
 | Frozen flat-tree equality | removes visited sets from the proved tree case; not isolated | `optimizations/feature-struct-frozen-tree-equality.md` |
 | Frozen flat-tree clone | removes the copies map from the proved tree case; not isolated | `optimizations/feature-struct-frozen-tree-clone.md` |

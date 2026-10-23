@@ -27,7 +27,8 @@ tried first and failed the new tests immediately (`FeatureStruct.Add` threw on a
 ## Measured and verified
 
 Alternating wall-time A/B against the pinned baseline, 45 Sena words, min of two interleaved rounds:
-1.054x overall, heavy words 1.02x to 1.08x; parity clean on all words and both rounds. Smaller than the
+1.054x overall, heavy words 1.02x to 1.08x; `WordAnalysisSignature` parity on all words and both rounds (on
+Sena that signature compares morph counts only; see `hermitcrab-perf-2026-09-disposition.md`). Smaller than the
 ledger's framing suggested: the eager clone was not where the heavy words' time went.
 
 Focused template tests cover required/optional slots, traced execution, and both sequential and parallel
