@@ -264,8 +264,13 @@ namespace SIL.Machine.DataStructures
                         break;
                     if (res == 0)
                     {
-                        result = next;
-                        return true;
+                        if (i == 0)
+                        {
+                            result = next;
+                            return true;
+                        }
+
+                        break;
                     }
                     cur = next;
                     next = dir == Direction.LeftToRight ? cur.GetNext(i) : cur.GetPrev(i);
