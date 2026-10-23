@@ -11,3 +11,8 @@
 # this, a platform/config-dependent CRLF checkout of an otherwise-text XML file makes the hash
 # non-reproducible across machines.
 *.fwdata binary
+
+# Preserve the original bytes of these historical oracle captures and their input list.
+conformance/edge-cases/simultaneous-subrule-genuine-overlap/hc_stderr.txt -text
+conformance/edge-cases/simultaneous-subrule-genuine-overlap/output.tsv -text
+conformance/edge-cases/simultaneous-subrule-genuine-overlap/words.txt -text

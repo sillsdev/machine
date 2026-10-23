@@ -1,0 +1,96 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# Synthetic construct-shaped mimic -- see STAGING.md and grammar.xml's own header comment. Verified
+# against the C# founding oracle (hc.dll, via hc-conformance.exe self-check): signatures match
+# exactly; `rules:` fields below are transcribed from the oracle's own trace output.
+
+language: MultiTableMetathesisSharedRepresentation
+inspired_by: ["synthetic multi-table metathesis shared-representation probe (not modeling any real language)"]
+sources:
+  - "docs/conformance/representative-typology-basis.md S1.2.4 (Metathesis) / S1.2.5 (Multi-table: shared-representation-across-tables configuration)"
+  - "docs/conformance/multitable-shared-representation-design.md (residual gap this fixture closes)"
+requires: [phonology]
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  PERMANENTLY KEEP-ENGINE-ONLY, not a temporary or deferred verdict (re-examined 2026-09-16): the effect
+  itself -- one spelling resolving to different segment identities depending on the table -- has no
+  single-table analog. HCLoader builds one table from PhonemeSetsOS[0] and reuses it for every
+  stratum, and inside that table a second phoneme sharing a grapheme is dropped as DuplicateGrapheme
+  (HCLoader.cs:2686-2689); several PhCodes per phoneme run the other way (many spellings, one
+  identity). Kept because each two-table fixture pins a distinct Rust seam (see STAGING.md).
+  Core premise (cross-table metathesis over a shared representation) requires two distinct
+  CharacterDefinitionTables (t0/Inner, t1/Outer) referenced by different Stratum elements; HCLoader
+  builds exactly one table per grammar and reuses it for every stratum (HCLoader.cs:204,227-233,374,
+  2669-2742) -- same gap as edge-cases/cross-table-root-respelling and
+  edge-cases/bistratal-overlapping-segment-representation.
+words:
+  - word: xw
+    note: >-
+      ROOT2 (Outer stratum, table t1), correctly metathesized by the OBLIGATORY MetathesisRule --
+      the same-table positive control: ncSwitchA's own table-t1-only member ("w") is unaffected by
+      cross-table aliasing, proving ordinary same-table metathesis recall stays untouched by the
+      `pg_foma::replace` fix this fixture's paired Rust test pins.
+    provenance: "rust/crates/pg-foma/tests/multi_table_metathesis_shared_representation.rs"
+    parses:
+      - signature: "ROOT2|xw"
+        rules: [mrCrossTableSwap]
+        exercises:
+          - "MetathesisRule"
+          - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: wx
+    note: >-
+      ROOT2's own raw (un-metathesized) spelling -- metathesis is obligatory (a MetathesisRule
+      always applies wherever its structural description matches), so this must never be a valid
+      surface form.
+    provenance: "rust/crates/pg-foma/tests/multi_table_metathesis_shared_representation.rs"
+    expect_fail: true
+    exercises:
+      - "MetathesisRule"
+
+  - word: xm
+    note: >-
+      ROOT1's (Inner stratum, table t0) expected, correctly-metathesized surface -- "m"/"x" are
+      declared in BOTH tables at DELIBERATELY MISALIGNED raw indices (the same premise
+      `two-table-shared-representation-recall` uses for an ordinary rewrite rule). 2026-07-27
+      follow-up: the oracle-side `TableId(0)` hardcoding this note originally cited
+      (`pg_rules::metathesis::synthesize`/`analyze`) was fixed by the `pg-rules/src/cache.rs`
+      owning-table sweep, and the SEPARATE, then-not-fully-isolated mechanism this note also flagged
+      is now root-caused and fixed too: `pg_rules::metathesis::synthesis_reorder` physically
+      relocated a segment without ever resetting its `char_def` (unlike every rewrite-rule
+      identity-changing path, `syn_feature`/`sim_feature`, which reset a changed node's `char_def` to
+      `NO_CHAR_DEF`), so a metathesized root kept carrying its ORIGIN table's raw char-def index all
+      the way to `pg_parse::Morpher::is_match_traced`'s surface-match gate, which renders against the
+      grammar's OUTERMOST stratum's table -- an apples-to-oranges collision. TRANSCRIBED AS OBSERVED
+      after both fixes: the oracle now finds exactly ROOT1's own analysis here. Re-derived directly
+      (not hand-derived) via a throwaway probe driving `pg_parse::Morpher::parse_word` over every
+      word in this fixture, deleted after transcription, per this file's own "Oracle discipline"
+      section. See STAGING.md's dated follow-up section for the full account.
+    provenance: "rust/crates/pg-foma/tests/multi_table_metathesis_shared_representation.rs"
+    parses:
+      - signature: "ROOT1|xm"
+        rules: [mrCrossTableSwap]
+        exercises:
+          - "MetathesisRule"
+          - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: mx
+    note: >-
+      ROOT1's own raw (un-metathesized) underlying spelling -- never a valid surface form regardless
+      of the finding above (metathesis is obligatory).
+    provenance: "rust/crates/pg-foma/tests/multi_table_metathesis_shared_representation.rs"
+    expect_fail: true
+    exercises:
+      - "MetathesisRule"
+
+  - word: z
+    note: >-
+      Table t1's own decoy segment (declared FIRST in t1's SegmentDefinitions, so t1's own "m"/"x"
+      sit at raw indices 1/2, not 0/1 -- the deliberate misalignment). Unattached to any entry or
+      rule output -- a plain negative control.
+    provenance: "rust/crates/pg-foma/tests/multi_table_metathesis_shared_representation.rs"
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable: more than one table, one per stratum"

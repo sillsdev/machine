@@ -297,33 +297,19 @@ result.WordResults
                 continue;
             }
 
-            Dictionary<string, List<Word>> actualBySignature = results
-                .GroupBy(w => SignatureFormat.BuildSignature(new[] { w }))
-                .ToDictionary(g => g.Key, g => g.ToList());
             HashSet<string> wordLevelRuleIds = TraceRuleAttributor.WordLevelRuleIds(trace, ruleIndex);
 
-            bool wordRulesOk = true;
-            var ruleDetails = new List<string>();
-            foreach (ParseEntry parse in word.Parses)
-            {
-                if (!actualBySignature.TryGetValue(parse.Signature, out List<Word> matches) || matches.Count == 0)
-                    continue; // can't happen given signatureMatches, but stay defensive
-                foreach (Word match in matches)
+            List<string> ruleDetails = CompareRuleTraceMultisets(
+                word.Parses.Select(parse => (parse.Signature, (IEnumerable<string>)parse.Rules)),
+                results.Select(match =>
                 {
+                    string signature = SignatureFormat.BuildSignature(new[] { match });
                     HashSet<string> actualRuleIds = TraceRuleAttributor.MorphologicalRuleIds(match, ruleIndex);
                     actualRuleIds.UnionWith(wordLevelRuleIds);
-                    var declaredRuleIds = new HashSet<string>(parse.Rules, StringComparer.Ordinal);
-                    if (!actualRuleIds.SetEquals(declaredRuleIds))
-                    {
-                        wordRulesOk = false;
-                        ruleDetails.Add(
-                            $"parse '{parse.Signature}': declared rules [{string.Join(",", parse.Rules)}] "
-                                + $"!= traced [{string.Join(",", actualRuleIds.OrderBy(x => x, StringComparer.Ordinal))}]"
-                        );
-                    }
-                }
-            }
-
+                    return (signature, (IEnumerable<string>)actualRuleIds);
+                })
+            );
+            bool wordRulesOk = ruleDetails.Count == 0;
             wordResults.Add(
                 new WordResult
                 {
@@ -333,6 +319,57 @@ result.WordResults
                 }
             );
         }
+    }
+
+    internal static List<string> CompareRuleTraceMultisets(
+        IEnumerable<(string Signature, IEnumerable<string> RuleIds)> expected,
+        IEnumerable<(string Signature, IEnumerable<string> RuleIds)> actual
+    )
+    {
+        static string CanonicalRuleIds(IEnumerable<string> ruleIds) => string.Join(
+            '\u001f',
+            ruleIds.Distinct(StringComparer.Ordinal).OrderBy(ruleId => ruleId, StringComparer.Ordinal)
+        );
+
+        static Dictionary<(string Signature, string RuleIds), int> CountTraces(
+            IEnumerable<(string Signature, IEnumerable<string> RuleIds)> traces
+        )
+        {
+            var counts = new Dictionary<(string Signature, string RuleIds), int>();
+            foreach ((string signature, IEnumerable<string> ruleIds) in traces)
+            {
+                var key = (signature, CanonicalRuleIds(ruleIds));
+                counts[key] = counts.GetValueOrDefault(key) + 1;
+            }
+            return counts;
+        }
+
+        Dictionary<(string Signature, string RuleIds), int> expectedCounts = CountTraces(expected);
+        Dictionary<(string Signature, string RuleIds), int> actualCounts = CountTraces(actual);
+        var details = new List<string>();
+        foreach (
+            (string Signature, string RuleIds) key in expectedCounts
+                .Keys.Union(actualCounts.Keys)
+                .OrderBy(key => key.Signature, StringComparer.Ordinal)
+                .ThenBy(key => key.RuleIds, StringComparer.Ordinal)
+        )
+        {
+            int declaredCount = expectedCounts.GetValueOrDefault(key);
+            int tracedCount = actualCounts.GetValueOrDefault(key);
+            if (declaredCount == tracedCount)
+                continue;
+
+            string declaredRuleIds = string.Join(
+                ',',
+                key.RuleIds.Length == 0 ? Array.Empty<string>() : key.RuleIds.Split('\u001f')
+            );
+            details.Add(
+                $"parse '{key.Signature}': declared rules [{declaredRuleIds}] count {declaredCount} "
+                    + $"!= traced count {tracedCount}"
+            );
+        }
+
+        return details;
     }
 
     // ---- Adapter mode: materialize onto disk + reuse MaterializedRunner/AdapterEngine, unmodified. ----

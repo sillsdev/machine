@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>RightToLeftMetathesisReversal</Name>
+    <!-- Synthetic construct-shaped mimic (docs/conformance/representative-typology-basis.md
+         S1.2.4 - "Metathesis - right-to-left direction"; openspec/changes/
+         plan-construct-coverage-completion task 4.6; docs/conformance/needs-decision-resolutions.md
+         row 8). Invented CV roots only, no natural-language lexemes.
+
+         Structural shape: one MetathesisRuleDef, multipleApplicationOrder="rightToLeftIterative",
+         whose StructuralDescription is TWO adjacent SimpleContext switch positions, each a
+         TWO-member natural class ({q,r} / {s,t}) - mirrors
+         rust/crates/pg-foma/tests/phase_c_metathesis.rs's own MULTI_MEMBER_XML fixture (the
+         per-branch literal cross-product precision witness), declared Dir::RightToLeft instead of
+         the default Dir::LeftToRight that file already covers.
+
+         Before openspec/changes/plan-construct-coverage-completion task 4.6,
+         `crate::replace::compile_metathesis_rule` returned `Ok(None)` unconditionally for
+         `Dir::RightToLeft` (an honest-unsupported scope boundary, not a wrong compile). Task 4.6
+         built the SAME mirror-and-reverse construction `compile_rtl_branch_net` already uses for
+         RTL *rewrite* rules (reverse the pattern's own slot order, remap the two switch indices to
+         their mirrored positions, run the existing swap construction on the mirror, `fsm_reverse`
+         the result, and `fsm_union` with the plain/LeftToRight-style net) - see
+         `rust/crates/pg-foma/src/replace.rs`'s module doc, "Metathesis" section, and
+         `crate::capability::MetathesisFaithfulSwapPredicate`'s own doc for the disposition
+         (`ConfirmOnly`, never `Admit` - the union is a proven SUPERSET of the true RTL relation,
+         not proven exact).
+
+         Empirical finding while authoring this fixture (rust/crates/pg-foma tests, deleted
+         throwaway probe): `pg_rules::metathesis::synthesize`'s own match-candidate selection
+         (`match_candidates`'s ascending, direction-independent sort, in
+         `rust/crates/pg-rules/src/metathesis.rs`) picks the LEFTMOST non-overlapping switch window
+         regardless of `rule.dir`, for an overlapping-window probe - i.e. the real oracle is,
+         empirically, direction-BLIND for metathesis today, the SAME shape
+         `compile_rtl_branch_net`'s own doc found (before ITS OWN oracle fix) for ordinary
+         `Iterative` rewrite rules. This grammar's own two lexical entries each have exactly ONE
+         valid switch window (no overlap), so this empirical direction-blindness does not affect
+         which surface each root resynthesizes to - oracle recall for BOTH roots here is identical
+         to what the corresponding Dir::LeftToRight declaration would give. That is exactly why the
+         FST-level "the construction genuinely differs from compiling as if LeftToRight" witness
+         lives in `rust/crates/pg-foma/tests/phase_c_metathesis.rs` as a bare-automaton, oracle-free
+         proof (mirroring `tests/phase_c_right_to_left.rs`'s own "aa -> b" worked example) rather
+         than in this conformance fixture: this fixture's own job is the Stage-2 containment
+         obligation (oracle recall subset-of FST propose), which holds regardless of whether the
+         oracle happens to be direction-aware or -blind for the words it is asked about. -->
+    <!-- G2a discipline (`conformance-staging/edge-cases/mpr-gated-exception`'s own authoring note):
+         every segment needs a feature bundle that FULLY and UNIQUELY distinguishes it from every
+         other segment, or a phonological-subrule reversal collapses feature-identical segments into
+         a bracketed alternates class instead of the literal input string - the identical discipline
+         `rust/crates/pg-foma/tests/phase_c_metathesis.rs`'s own fixtures already follow ("one
+         distinct symbol value per segment"). -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>N</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featId">
+        <Name>id</Name>
+        <Symbols>
+          <Symbol id="symQ">q</Symbol><Symbol id="symR">r</Symbol>
+          <Symbol id="symS">s</Symbol><Symbol id="symT">t</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="t1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cQ"><Representations><Representation>q</Representation></Representations><FeatureValue feature="featId" symbolValues="symQ" /></SegmentDefinition>
+        <SegmentDefinition id="cR"><Representations><Representation>r</Representation></Representations><FeatureValue feature="featId" symbolValues="symR" /></SegmentDefinition>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations><FeatureValue feature="featId" symbolValues="symS" /></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations><FeatureValue feature="featId" symbolValues="symT" /></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <SegmentNaturalClass id="ncSwitchA"><Name>SwitchA</Name><Segment segment="cQ" /><Segment segment="cR" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncSwitchB"><Name>SwitchB</Name><Segment segment="cS" /><Segment segment="cT" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <MetathesisRule id="mrRtlReversal" leftSwitch="swB" rightSwitch="swA" multipleApplicationOrder="rightToLeftIterative">
+        <Name>metathesisRtlReversal</Name>
+        <StructuralDescription>
+          <PhoneticTemplate>
+            <PhoneticSequence>
+              <SimpleContext id="swA" naturalClass="ncSwitchA" />
+              <SimpleContext id="swB" naturalClass="ncSwitchB" />
+            </PhoneticSequence>
+          </PhoneticTemplate>
+        </StructuralDescription>
+      </MetathesisRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered" phonologicalRules="mrRtlReversal">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot1">
+            <Allomorphs><Allomorph id="aRoot1"><PhoneticShape>qs</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT1</MorphemeId>
+            <Gloss>root1</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eRoot2">
+            <Allomorphs><Allomorph id="aRoot2"><PhoneticShape>rt</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT2</MorphemeId>
+            <Gloss>root2</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

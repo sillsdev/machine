@@ -1,0 +1,76 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle machine-commit=caa4ddde8782557c6fb58cac57e4761ffcafc2a6 verified-date=2026-08-31
+# RECONCILED 2026-08-31: rust/tools/oracle-conformance.ps1's hc-conformance.exe self-check PASSED
+# against every word below (signature AND traced rules: both matched). Any older "NOT the C#
+# founding oracle" / "Oracle: pangloss" sentence elsewhere in this file's own header describes how
+# it was originally authored, not its current verification status -- superseded by the marker above.
+# Boundary-combining-mark pathology mimic -- see STAGING.md and grammar.xml's own header comment.
+# Pins the dormant `vendor`/crates.io `foma` apply-time-tokenizer bug where a base char's trailing
+# combining marks get merged across a lexc-entry's CHAR-DEF BOUNDARY (not just within one char-def's
+# own representation, which `pg_foma::emit::combining_run_symbols` already covered before this
+# fixture's companion fix, `boundary_combining_run_symbols`). Oracle: pangloss (`pg_parse::Morpher`,
+# driven directly -- see STAGING.md's "Verification" section), NOT the C# founding oracle --
+# authored and verified against this repo's own Rust engine only. Signatures below are transcribed
+# verbatim from that run, not hand-derived.
+#
+# Words below use explicit ́ (YAML double-quoted-string unicode escapes) for the standalone
+# COMBINING ACUTE ACCENT codepoint, never a precomposed letter -- this fixture's whole point is that
+# the tone mark is its OWN char-def (cHigh), concatenated after cA's plain "a", not folded into one
+# precomposed grapheme the way an ordinary accented-letter grammar would author it. Using a
+# precomposed character here (e.g. U+00E1 "á") would silently test an entirely different,
+# UNDEFINED string (no char-def in grammar.xml has that representation) instead of the boundary
+# case -- do not "simplify" these escapes when editing this file.
+
+language: Autoseg
+inspired_by: ["synthetic autosegmental-tone-shaped standalone-combining-mark probe (not modeling any real language)"]
+sources:
+  - "docs/fst-plan/foma-fst-plan.md's non-Latin/non-ASCII robustness follow-up (combining marks, NFC vs NFD inputs)"
+  - "rust/crates/pg-foma/src/emit.rs boundary_combining_run_symbols (the fix this fixture pins)"
+requires: []
+fieldworks_producible: true
+words:
+  - word: pa
+    note: >-
+      PA bare root: ordinary plain segments only ("p" + "a"), no combining mark anywhere. Control
+      case -- distinguishes the tone-bearing PAH root below by segmental shape alone at the PLAIN
+      end, so a reader can see the two roots are otherwise identical.
+    parses:
+      - signature: "PA|pa"
+        rules: []
+
+  - word: "pá"
+    note: >-
+      THE boundary case: PAH root, authored as PhoneticShape "pá" -- three char-defs'
+      worth of segments concatenated (cP "p", cA "a", cHigh U+0301 COMBINING ACUTE ACCENT as its
+      OWN standalone char-def, not folded into "a"'s own representation the way an ordinary
+      accented-letter grammar like g_dia.xml's e/i/n/o-with-diacritic authors it). cA's surface
+      text "a" sits immediately before cHigh's surface text "́" in this root's own emitted
+      lexc entry -- exactly the char-def BOUNDARY vendor/foma's apply-time tokenizer would merge
+      into one token absent `boundary_combining_run_symbols`' declaration, silently forcing
+      IDENTITY and a zero-parse. Same segmental root as "pa" plus the standalone tone-mark
+      segment; distinguished only by MorphemeId (PA vs PAH), not by any additional plain segment.
+    parses:
+      - signature: "PAH|pá"
+        rules: []
+
+  - word: pan
+    note: PA + mrSuf (SUF, "-n" suffix) -- the plain-root control case carried through a real derivation.
+    parses:
+      - signature: "PA+SUF|pan"
+        rules: [mrSuf]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: "pán"
+    note: >-
+      THE boundary case carried through a real derivation: PAH + mrSuf (SUF), surface
+      "pán" -- cA "a" . cHigh "́" (the char-def-boundary run under test) followed
+      by mrSuf's own inserted "n" segment. Confirms the boundary fix survives concatenation with a
+      DIFFERENT rule's own inserted material afterward, not just the bare root in isolation.
+    parses:
+      - signature: "PAH+SUF|pán"
+        rules: [mrSuf]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"

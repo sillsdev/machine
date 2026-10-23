@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>CircumfixConditionedHalves</Name>
+    <!-- A circumfix whose 4 subrules realize a 2-prefix ("pu"/"ki") x 2-suffix ("mo"/"zo")
+         cross-product, built the way HCLoader's IsCircumfix() path actually builds one
+         (HCLoader.cs:1051-1082): each prefix-half allomorph x suffix-half allomorph pairing gets
+         its own MorphologicalSubrule, and each half's phonological context is embedded as literal
+         mandatory pattern nodes inside the ONE shared stem Lhs (HCLoader.cs:1289-1290 for the
+         prefix-side first segment, :1298-1299 for the suffix-side last segment), never as a
+         RequiredEnvironments element, which LoadCircumfixAffixProcessAllomorph never stacks more
+         than once per allomorph (HCLoader.cs:1273-1332, hcAllo.Environments.Add at :1322). The
+         former encoding's stacked-RequiredEnvironments rejection of puabzo/kibamo/kibbzo was an
+         XML-only artifact of that unproducible shape, removed 2026-09-16. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posRoot"><Name>root</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- No PhonologicalRule/MetathesisRule element at all - pure morphotactics, so requires: []
+         (mechanically derived, per the conformance-grammars skill's own note). SegmentNaturalClass
+         needs no PhonologicalFeatureSystem (it lists member segments directly), so none is
+         declared here. -->
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cZ"><Representations><Representation>z</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <SegmentNaturalClass id="ncV"><Name>Vowel</Name><Segment segment="cA" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncC"><Name>Consonant</Name><Segment segment="cB" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered"
+        morphologicalRules="mrCirc">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrCirc" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>circ</Name>
+            <MorphologicalSubrules>
+              <!-- subVV: prefix pu- (stem's first segment must be [V]) x suffix -mo (stem's last
+                   segment must be [V]). Fires only for a V-initial, V-final stem (eAA, "aa"). -->
+              <MorphologicalSubrule id="subVV">
+                <MorphologicalInput>
+                  <PhoneticSequence id="vvFirst"><SimpleContext naturalClass="ncV" /></PhoneticSequence>
+                  <PhoneticSequence id="vvMid"><OptionalSegmentSequence min="0" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                  <PhoneticSequence id="vvLast"><SimpleContext naturalClass="ncV" /></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments><PhoneticShape>pu</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="vvFirst" />
+                  <CopyFromInput index="vvMid" />
+                  <CopyFromInput index="vvLast" />
+                  <InsertSegments><PhoneticShape>mo</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+              <!-- subVC: prefix pu- (stem's first segment must be [V]) x suffix -zo (stem's last
+                   segment must be [C]). Fires only for a V-initial, C-final stem (eAB, "ab"). -->
+              <MorphologicalSubrule id="subVC">
+                <MorphologicalInput>
+                  <PhoneticSequence id="vcFirst"><SimpleContext naturalClass="ncV" /></PhoneticSequence>
+                  <PhoneticSequence id="vcMid"><OptionalSegmentSequence min="0" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                  <PhoneticSequence id="vcLast"><SimpleContext naturalClass="ncC" /></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments><PhoneticShape>pu</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="vcFirst" />
+                  <CopyFromInput index="vcMid" />
+                  <CopyFromInput index="vcLast" />
+                  <InsertSegments><PhoneticShape>zo</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+              <!-- subCV: prefix ki- (stem's first segment must be [C]) x suffix -mo (stem's last
+                   segment must be [V]). Fires only for a C-initial, V-final stem (eBA, "ba").
+                   Declared 3rd (non-first), echoing circumfix-cross-product-and-infix-drop's own
+                   "declared later" reachability concern. -->
+              <MorphologicalSubrule id="subCV">
+                <MorphologicalInput>
+                  <PhoneticSequence id="cvFirst"><SimpleContext naturalClass="ncC" /></PhoneticSequence>
+                  <PhoneticSequence id="cvMid"><OptionalSegmentSequence min="0" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                  <PhoneticSequence id="cvLast"><SimpleContext naturalClass="ncV" /></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments><PhoneticShape>ki</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="cvFirst" />
+                  <CopyFromInput index="cvMid" />
+                  <CopyFromInput index="cvLast" />
+                  <InsertSegments><PhoneticShape>mo</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+              <!-- subCC: prefix ki- (stem's first segment must be [C]) x suffix -zo (stem's last
+                   segment must be [C]): the 4th cross-product cell, declared last. Fires only for a
+                   C-initial, C-final stem (eBB, "bb"). -->
+              <MorphologicalSubrule id="subCC">
+                <MorphologicalInput>
+                  <PhoneticSequence id="ccFirst"><SimpleContext naturalClass="ncC" /></PhoneticSequence>
+                  <PhoneticSequence id="ccMid"><OptionalSegmentSequence min="0" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                  <PhoneticSequence id="ccLast"><SimpleContext naturalClass="ncC" /></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments><PhoneticShape>ki</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="ccFirst" />
+                  <CopyFromInput index="ccMid" />
+                  <CopyFromInput index="ccLast" />
+                  <InsertSegments><PhoneticShape>zo</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>CIRC</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eAA" partOfSpeech="posRoot">
+            <Allomorphs><Allomorph id="aAA"><PhoneticShape>aa</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOTAA</MorphemeId>
+            <Gloss>rootVV</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eAB" partOfSpeech="posRoot">
+            <Allomorphs><Allomorph id="aAB"><PhoneticShape>ab</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOTAB</MorphemeId>
+            <Gloss>rootVC</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eBA" partOfSpeech="posRoot">
+            <Allomorphs><Allomorph id="aBA"><PhoneticShape>ba</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOTBA</MorphemeId>
+            <Gloss>rootCV</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eBB" partOfSpeech="posRoot">
+            <Allomorphs><Allomorph id="aBB"><PhoneticShape>bb</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOTBB</MorphemeId>
+            <Gloss>rootCC</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

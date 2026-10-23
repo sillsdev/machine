@@ -1,0 +1,113 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# Synthetic construct-shaped mimic -- see STAGING.md and grammar.xml's own header comment. Verified
+# against the C# founding oracle (hc.dll, via hc-conformance.exe self-check) after the grammar was
+# fixed to be loadable (PartsOfSpeech must precede PhonologicalFeatureSystem; PhonologicalSubrule
+# carries no `id` attribute in hc.dll's DTD).
+#
+# DIVERGENCE FROM HC-RUST FOUND HERE (since fixed): word "g" was authored (against
+# `pg_parse::Morpher`) with a single expected analysis, "ROOT2|g". The founding oracle reports TWO:
+# "ROOT1|z" as well. That is not the wrong-table natural-class collision this fixture was designed
+# around, and it is not the rule's doing at all -- deleting `prKtoG` leaves hc.dll analysing "g" as
+# ROOT1|z. In HermitCrab a segment is its feature bundle and a table only spells it for one stratum:
+# t0's "z" and t1's "g" are both {f=+}, one segment, so ROOT1 (Inner stratum) surfaces as "g" on the
+# Outer stratum. The rule makes the word ambiguous by also deriving "g" from ROOT2's "k". Per this
+# repo's oracle hierarchy (CLAUDE.md), hc.dll is ground truth: `words.yaml` records BOTH analyses, and
+# HC-Rust now matches (`rust/crates/pg-parse/tests/conformance_fixtures_gate.rs`).
+
+language: SegmentNaturalClassTableBinding
+inspired_by: ["synthetic bistratal segment-natural-class-table-resolution probe (not modeling any real language)"]
+sources:
+  - "docs/conformance/representative-typology-basis.md S1.2.5 (Multi-table: shared-representation-across-tables configuration)"
+  - "rust/crates/pg-rules/src/cache.rs owning_table_tests module"
+requires: [phonology]
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  PERMANENTLY KEEP-ENGINE-ONLY, not a temporary or deferred verdict (re-examined 2026-09-16): the effect
+  itself -- one spelling resolving to different segment identities depending on the table -- has no
+  single-table analog. HCLoader builds one table from PhonemeSetsOS[0] and reuses it for every
+  stratum, and inside that table a second phoneme sharing a grapheme is dropped as DuplicateGrapheme
+  (HCLoader.cs:2686-2689); several PhCodes per phoneme run the other way (many spellings, one
+  identity). Kept because each two-table fixture pins a distinct Rust seam (see STAGING.md).
+  Declares two distinct CharacterDefinitionTables (t0 "Inner", t1 "Outer"), with the Inner and
+  Outer strata each bound to a different one via Stratum@characterDefinitionTable. HCLoader loads
+  exactly one CharacterDefinitionTable per grammar and reuses it for every stratum it builds
+  (HCLoader.cs:204,227-233,374,2669-2742) -- the same gap behind edge-cases/cross-table-root-respelling
+  and edge-cases/bistratal-overlapping-segment-representation. A FieldWorks project can never
+  produce the second, distinct per-stratum table this fixture's own SegmentNaturalClass-table-
+  dependence premise needs.
+words:
+  - word: g
+    note: >-
+      ROOT2, entered directly on the Outer stratum (table t1), correctly devoiced -- er, voiced --
+      by the Outer stratum's own obligatory "k -> g" phonological rule. The rule's own natural
+      classes (`ncK`={k}, `ncG`={g}) are `SegmentNaturalClass`, whose members are raw per-table
+      `CharDefId`s with no table of their own (`pg_rules::bridge::PatternBridge::nat_class_lanes`'s
+      `NaturalClassKind::Segments` branch resolves them via `self.table`, unlike a
+      `FeatureNaturalClass`, whose lanes are table-agnostic -- see `rust/crates/pg-rules/src/
+      cache.rs`'s `owning_table_tests` module doc for why that distinction matters). `ncK`'s one
+      member ("k") sits at t1's raw index 0, which t0 (the OTHER table) also has an entry at --
+      "z", carrying the OPPOSITE feature value (f=+ vs. "k"'s f=-) -- deliberately, so a
+      wrong-table (table-0) resolution of `ncK` could never match a real t1-native "k" at all. This
+      is the fixture that a table-agnostic `FeatureNaturalClass`-only suite could never have caught:
+      every existing multi-table fixture (two-table-shared-representation-recall, multi-table-
+      metathesis-shared-representation, bistratal-overlapping-segment-representation) builds its
+      rules from `FeatureNaturalClass` only, so none of them can detect a wrong-table char-def
+      resolution -- see `rust/crates/pg-foma/tests/segment_natural_class_table_binding_discriminates.rs`
+      for the direct demonstration that this fixture's own `SegmentNaturalClass` WOULD catch it.
+      FOUNDING-ORACLE FINDING (see this file's header): hc.dll ALSO analyses this word as
+      "ROOT1|z", not through the rule but because t0's "z" and t1's "g" are the same feature bundle
+      spelled by two tables -- cross-table respelling, a different construct from the wrong-table
+      class resolution this fixture set out to catch. Both analyses are recorded below as ground
+      truth.
+    provenance: "rust/crates/pg-rules/src/cache.rs owning_table_tests module"
+    parses:
+      - signature: "ROOT1|z"
+        rules: [prKtoG]
+        exercises:
+          - "CharacterDefinitionTable: more than one table, one per stratum"
+          - "CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)"
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+      - signature: "ROOT2|g"
+        rules: [prKtoG]
+        exercises:
+          - "CharacterDefinitionTable: more than one table, one per stratum"
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: k
+    note: >-
+      ROOT2's own raw (unvoiced) spelling -- the phonological rule is obligatory (phonological
+      rules always apply where their context matches, no optionality), so this must never be a
+      valid surface form.
+    provenance: "rust/crates/pg-rules/src/cache.rs owning_table_tests module"
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable: more than one table, one per stratum"
+      - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: z
+    note: >-
+      ROOT1, entered on the Inner stratum (table t0) -- a same-table, rule-untouched decoy proving
+      the "more than one table, one per stratum" construct has genuine substance on BOTH tables, not
+      merely the rule-bearing one. Per this codebase's own surface-tokenization convention (the
+      initial input string is segmented ONLY against the grammar's LAST stratum's table, t1 here,
+      which does not declare "z" at all -- the same architectural fact
+      `bistratal-overlapping-segment-representation`'s own STAGING.md and
+      `two_table_symbol_divergence.rs`'s module doc already document), a bare Inner-stratum root can
+      never itself be a complete, tokenizable surface word in this architecture. Pinned honestly as
+      SKIPPED (invalid shape), not silently omitted.
+    provenance: "conformance-staging/edge-cases/bistratal-overlapping-segment-representation/STAGING.md"
+    expect_skip: true
+    exercises:
+      - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: gk
+    note: >-
+      A well-formed string over t1's own alphabet ("g"/"k" both legitimate t1 segments) that is
+      simply not any lexical entry's own shape -- a plain negative control proving t1's inventory
+      coverage alone doesn't manufacture spurious analyses.
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable: more than one table, one per stratum"

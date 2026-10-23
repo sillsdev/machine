@@ -1,0 +1,75 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle machine-commit=f150e2a005ce639f7d68ef17fb0db25b2f6aaa3c verified-date=2026-09-16
+language: CircumfixConditionedHalves
+inspired_by: ["synthetic circumfix cross-product with live per-side V/C conditioning (not modeling any real language)"]
+sources:
+  - "docs/research/circumfix-cross-product-loading.md"
+requires: []
+fieldworks_producible: true
+fieldworks_producible_notes: >-
+  This is the IsCircumfix() cross-product shape (HCLoader.cs:1051-1082): one prefix-half allomorph x
+  suffix-half allomorph pairing per MorphologicalSubrule, with each half's phonological context
+  embedded as literal mandatory pattern nodes inside the ONE shared stem Lhs (HCLoader.cs:1289-1290
+  for the prefix-side first segment, :1298-1299 for the suffix-side last segment), never as a
+  RequiredEnvironments element. The earlier encoding of this fixture stacked two separate
+  RequiredEnvironments/Environment entries on one MorphologicalSubrule to gate each half; that shape
+  has no HCLoader code path (LoadCircumfixAffixProcessAllomorph, HCLoader.cs:1273-1332, calls
+  hcAllo.Environments.Add at most once, :1322) and was dropped 2026-09-16 as unproducible.
+words:
+  - word: aa
+    note: "ROOTAA bare, no mrCirc applied -- a plain control."
+    parses:
+      - signature: "ROOTAA|aa"
+        rules: []
+
+  - word: puaamo
+    note: "ROOTAA + mrCirc's subVV (prefix pu-, suffix -mo) -- a V-initial, V-final stem satisfies subVV's own embedded first-segment [V] and last-segment [V] stem-pattern gates."
+    parses:
+      - signature: "CIRC+ROOTAA|puaamo"
+        rules: [mrCirc]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: puabzo
+    note: "ROOTAB + mrCirc's subVC (prefix pu-, suffix -zo) -- a V-initial, C-final stem satisfies subVC's own embedded first-segment [V] and last-segment [C] stem-pattern gates."
+    parses:
+      - signature: "CIRC+ROOTAB|puabzo"
+        rules: [mrCirc]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: kibamo
+    note: "ROOTBA + mrCirc's subCV (prefix ki-, suffix -mo) -- a C-initial, V-final stem satisfies subCV's own embedded first-segment [C] and last-segment [V] stem-pattern gates."
+    parses:
+      - signature: "CIRC+ROOTBA|kibamo"
+        rules: [mrCirc]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: kibbzo
+    note: "ROOTBB + mrCirc's subCC (prefix ki-, suffix -zo) -- a C-initial, C-final stem satisfies subCC's own embedded first-segment [C] and last-segment [C] stem-pattern gates."
+    parses:
+      - signature: "CIRC+ROOTBB|kibbzo"
+        rules: [mrCirc]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: pubbmo
+    note: >-
+      Over-generation control: subVV's literal affixes (pu-...-mo) wrapped around a C-initial,
+      C-final stem, which satisfies neither of subVV's embedded [V] stem-pattern gates -- must not
+      parse. No other subrule shares the literal pu-...-mo affix pair.
+    expect_fail: true
+
+  - word: puabmo
+    note: >-
+      Over-generation control: subVV's literal affixes (pu-...-mo) wrapped around a V-initial,
+      C-final stem -- only the first-segment [V] gate holds, the last-segment [V] gate does not, so
+      this must still fail (proves the stem pattern requires BOTH embedded gates, not just one).
+    expect_fail: true
+
+  - word: aamo
+    note: "Structurally invalid control -- missing the required leading prefix material entirely."
+    expect_fail: true

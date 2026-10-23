@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>CircumfixCrossProductAndInfixDrop</Name>
+    <!-- Two constructs, continuing the circumfix-structural-composite census
+         (docs/research/circumfix-composite-precedence-census.md): a 2-prefix x 2-suffix circumfix
+         CROSS PRODUCT (mrCross, 4 MorphologicalSubrules, one per prefix-allomorph x suffix-
+         allomorph pairing) and a genuinely Infix-shaped allomorph that also drops LHS material
+         (mrInfixDrop, one subrule, 3-part LHS whose final part is never copied into the RHS).
+
+         mrCross's 4 subrules (subCrossAA/AB/BA/BB, declared in that document order) each classify
+         Role::CircumfixPrefix (leading AND trailing InsertSegments around the copied stem).
+         subCrossBA/BB are declared 3rd/4th (non-first), echoing census C1's own "declared later"
+         reachability concern.
+
+         mrInfixDrop's one subrule classifies Role::Infix (an interior InsertSegments strictly
+         between two Copy actions, no leading/trailing insert) and drops the 3rd LHS part (idP2)
+         entirely: genuinely Infix, not a misclassified circumfix (unlike census C1-C3). -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posRoot"><Name>root</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- No PhonologicalRule/MetathesisRule element at all - pure morphotactics, so requires: []
+         (mechanically derived, per the conformance-grammars skill's own note). Bare
+         SegmentDefinitions + one empty ncAny FeatureNaturalClass suffice (see
+         `circumfix-non-first-allomorph-selection`'s own template): no per-segment feature symbols
+         are needed since no subrule constrains a specific segment class. -->
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered"
+        morphologicalRules="mrCross mrInfixDrop">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrCross" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>cross</Name>
+            <MorphologicalSubrules>
+              <!-- subCrossAA: prefix pa- x suffix -an. -->
+              <MorphologicalSubrule id="subCrossAA">
+                <MorphologicalInput>
+                  <PhoneticSequence id="aaStem"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments><PhoneticShape>pa</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="aaStem" />
+                  <InsertSegments><PhoneticShape>an</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+              <!-- subCrossAB: prefix pa- x suffix -in. -->
+              <MorphologicalSubrule id="subCrossAB">
+                <MorphologicalInput>
+                  <PhoneticSequence id="abStem"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments><PhoneticShape>pa</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="abStem" />
+                  <InsertSegments><PhoneticShape>in</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+              <!-- subCrossBA: prefix ma- x suffix -an. Declared 3rd (non-first), echoing census
+                   C1's reachability concern. -->
+              <MorphologicalSubrule id="subCrossBA">
+                <MorphologicalInput>
+                  <PhoneticSequence id="baStem"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments><PhoneticShape>ma</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="baStem" />
+                  <InsertSegments><PhoneticShape>an</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+              <!-- subCrossBB: prefix ma- x suffix -in: the 4th cross-product cell, declared last. -->
+              <MorphologicalSubrule id="subCrossBB">
+                <MorphologicalInput>
+                  <PhoneticSequence id="bbStem"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments><PhoneticShape>ma</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="bbStem" />
+                  <InsertSegments><PhoneticShape>in</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>CROSS</MorphemeId>
+          </MorphologicalRule>
+          <!-- mrInfixDrop: one subrule, 3-part LHS (idP0 = stem's first segment, idP1 = the next
+               two segments, idP2 = the final two segments). RHS = Copy(idP0) + InsertSegments(um)
+               + Copy(idP1): idP2 is NEVER copied, modeling an infix that co-occurs with apocope
+               of the root's final material. -->
+          <!-- Classifies Role::Infix (interior insert strictly between two Copy actions, no
+               leading/trailing insert) while genuinely dropping LHS material. -->
+          <MorphologicalRule id="mrInfixDrop" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>infixDrop</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subInfixDrop">
+                <MorphologicalInput>
+                  <PhoneticSequence id="idP0"><SimpleContext naturalClass="ncAny" /></PhoneticSequence>
+                  <PhoneticSequence id="idP1"><SimpleContext naturalClass="ncAny" /><SimpleContext naturalClass="ncAny" /></PhoneticSequence>
+                  <PhoneticSequence id="idP2"><SimpleContext naturalClass="ncAny" /><SimpleContext naturalClass="ncAny" /></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="idP0" />
+                  <InsertSegments><PhoneticShape>um</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="idP1" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>INFIXDROP</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot" partOfSpeech="posRoot">
+            <Allomorphs><Allomorph id="aRoot"><PhoneticShape>batid</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT</MorphemeId>
+            <Gloss>root</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

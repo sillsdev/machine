@@ -68,7 +68,8 @@ public sealed class InteractionChainLedgerTests
         Assert.That(rows, Has.Count.EqualTo(40));
         Assert.That(exercised, Is.EqualTo(26));
         Assert.That(rows.Count - exercised, Is.EqualTo(14));
-        Assert.That(hazardous, Is.EqualTo(4));
+        // The added compounding-non-recursive fixture confirms a fifth hazardous interface chain.
+        Assert.That(hazardous, Is.EqualTo(5));
 
         InteractionChainLedger.Row[] hazards = rows.Where(r => r.Hazardous).ToArray();
 
@@ -77,6 +78,7 @@ public sealed class InteractionChainLedgerTests
             Is.EquivalentTo(
                 new[]
                 {
+                    ("LexicalEntry", "ruleFeatures", "CompoundingRule"),
                     ("LexicalEntry", "ruleFeatures", "MorphologicalInput"),
                     ("LexicalEntry", "ruleFeatures", "PhonologicalSubrule"),
                     ("MorphologicalOutput", "MPRFeatures", "MorphologicalInput"),
@@ -85,7 +87,15 @@ public sealed class InteractionChainLedgerTests
             )
         );
         Assert.That(hazards.All(h => h.PayloadType == "MorphologicalPhonologicalRuleFeature"), Is.True);
-        Assert.That(hazards.All(h => h.ReaderAttribute == "requiredMPRFeatures"), Is.True);
+        Assert.That(hazards.Count(h => h.ReaderAttribute == "requiredMPRFeatures"), Is.EqualTo(4));
+        Assert.That(
+            hazards.Single(h => h.ReaderElement == "CompoundingRule").ReaderAttribute,
+            Is.EqualTo("headProdRestrictionsMprFeatures")
+        );
+        Assert.That(
+            hazards.Single(h => h.ReaderElement == "CompoundingRule").ExercisingFixtures,
+            Contains.Item("edge-cases/compounding-non-recursive")
+        );
         Assert.That(
             hazards
                 .Single(h => h.WriterElement == "MorphologicalOutput" && h.ReaderElement == "MorphologicalInput")

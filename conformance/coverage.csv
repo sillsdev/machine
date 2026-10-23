@@ -1,6 +1,71 @@
 language,word,signature,construct
 AlphaVariableNameCollision,au,,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
 AlphaVariableNameCollision,ia,AU|ia,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
+ambiguous-disagree-feature-class-bounded-rtl,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-bounded-rtl,ii,,RewriteRule direction (Dir): right-to-left
+ambiguous-disagree-feature-class-bounded-rtl,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-bounded-rtl,iy,,RewriteRule direction (Dir): right-to-left
+ambiguous-disagree-feature-class-bounded-rtl,ia,AU|[iy]a,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-bounded-rtl,ia,AU|[iy]a,RewriteRule direction (Dir): right-to-left
+ambiguous-disagree-feature-class-bounded-rtl,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-bounded-rtl,iu,,RewriteRule direction (Dir): right-to-left
+ambiguous-disagree-feature-class-bounded-rtl,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-bounded-rtl,yi,,RewriteRule direction (Dir): right-to-left
+ambiguous-disagree-feature-class-bounded-rtl,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-bounded-rtl,yy,,RewriteRule direction (Dir): right-to-left
+ambiguous-disagree-feature-class-bounded-rtl,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-bounded-rtl,ya,,RewriteRule direction (Dir): right-to-left
+ambiguous-disagree-feature-class-bounded-rtl,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-bounded-rtl,yu,,RewriteRule direction (Dir): right-to-left
+ambiguous-disagree-feature-class-bounded-rtl,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-bounded-rtl,ai,,RewriteRule direction (Dir): right-to-left
+ambiguous-disagree-feature-class-bounded-rtl,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-bounded-rtl,ay,,RewriteRule direction (Dir): right-to-left
+ambiguous-disagree-feature-class-bounded-rtl,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-bounded-rtl,aa,,RewriteRule direction (Dir): right-to-left
+ambiguous-disagree-feature-class-bounded-rtl,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-bounded-rtl,au,,RewriteRule direction (Dir): right-to-left
+ambiguous-disagree-feature-class-bounded-rtl,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-bounded-rtl,ui,,RewriteRule direction (Dir): right-to-left
+ambiguous-disagree-feature-class-bounded-rtl,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-bounded-rtl,uy,,RewriteRule direction (Dir): right-to-left
+ambiguous-disagree-feature-class-bounded-rtl,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-bounded-rtl,ua,,RewriteRule direction (Dir): right-to-left
+ambiguous-disagree-feature-class-bounded-rtl,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-bounded-rtl,uu,,RewriteRule direction (Dir): right-to-left
+ambiguous-disagree-feature-class-unbounded-ltr,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-unbounded-ltr,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-unbounded-ltr,ia,AU|[iy]a,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-unbounded-ltr,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-unbounded-ltr,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-unbounded-ltr,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-unbounded-ltr,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-unbounded-ltr,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-unbounded-ltr,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-unbounded-ltr,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-unbounded-ltr,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-unbounded-ltr,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-unbounded-ltr,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-unbounded-ltr,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-unbounded-ltr,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-feature-class-unbounded-ltr,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-mixed-plus-class,ia,AU|ia,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
+ambiguous-disagree-repeated-minus-partial-focus,ii,IU|ii,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-repeated-minus-partial-focus,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-repeated-minus-partial-focus,ia,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-repeated-minus-partial-focus,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-repeated-minus-partial-focus,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-repeated-minus-partial-focus,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-repeated-minus-partial-focus,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-repeated-minus-partial-focus,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-repeated-minus-partial-focus,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-repeated-minus-partial-focus,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-repeated-minus-partial-focus,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-repeated-minus-partial-focus,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-repeated-minus-partial-focus,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-repeated-minus-partial-focus,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-repeated-minus-partial-focus,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ambiguous-disagree-repeated-minus-partial-focus,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
 BistratalOverlappingSegmentRepresentation,des,ROOT3|des,"CharacterDefinitionTable: more than one table, one per stratum"
 BistratalOverlappingSegmentRepresentation,sed,ROOT4|sed,"CharacterDefinitionTable: more than one table, one per stratum"
 BistratalOverlappingSegmentRepresentation,basi,,"CharacterDefinitionTable: more than one table, one per stratum"
@@ -20,6 +85,31 @@ ChainedOutputFeatureOverrideLoss,zudu,ZUD+OUTER|zudu,Syntactic feature agreement
 ChainedOutputFeatureOverrideLoss,zudua,ZUD+OUTER+OUTERMOST|zudua,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 ChainedOutputFeatureOverrideLoss,zudia,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 ChainedOutputFeatureOverrideLoss,zudiua,ZUD+INNER+OUTER+OUTERMOST|zudiua,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+CircumfixConditionedHalves,puaamo,CIRC+ROOTAA|puaamo,AffixProcessRule: prefix/suffix/circumfix/infix
+CircumfixConditionedHalves,puabzo,CIRC+ROOTAB|puabzo,AffixProcessRule: prefix/suffix/circumfix/infix
+CircumfixConditionedHalves,kibamo,CIRC+ROOTBA|kibamo,AffixProcessRule: prefix/suffix/circumfix/infix
+CircumfixConditionedHalves,kibbzo,CIRC+ROOTBB|kibbzo,AffixProcessRule: prefix/suffix/circumfix/infix
+CircumfixCrossProductAndInfixDrop,pabatidan,CROSS+ROOT|pabatidan,AffixProcessRule: prefix/suffix/circumfix/infix
+CircumfixCrossProductAndInfixDrop,pabatidin,CROSS+ROOT|pabatidin,AffixProcessRule: prefix/suffix/circumfix/infix
+CircumfixCrossProductAndInfixDrop,mabatidan,CROSS+ROOT|mabatidan,AffixProcessRule: prefix/suffix/circumfix/infix
+CircumfixCrossProductAndInfixDrop,mabatidin,CROSS+ROOT|mabatidin,AffixProcessRule: prefix/suffix/circumfix/infix
+CircumfixCrossProductAndInfixDrop,bumat,ROOT+INFIXDROP|bumat,AffixProcessRule: prefix/suffix/circumfix/infix
+CircumfixCrossProductAndInfixDrop,pidatan,,AffixProcessRule: prefix/suffix/circumfix/infix
+CircumfixInTemplateSlot,talodien,CIRCUM+ROOT|talodien,AffixProcessRule: prefix/suffix/circumfix/infix
+CircumfixInfixInteriorActionPrecedence,kebzatan,CIRCINFIX+ROOT2|kebzatan,AffixProcessRule: prefix/suffix/circumfix/infix
+NonFirstAllomorphCircumfixSelection,mits,ROOT+MIXED|mits,AffixProcessRule: prefix/suffix/circumfix/infix
+NonFirstAllomorphCircumfixSelection,kemitan,MIXED+ROOT|kemitan,AffixProcessRule: prefix/suffix/circumfix/infix
+CircumfixReduplicationPrecedence,ketamtaman,CIRCREDUP+ROOTC2|ketamtaman,AffixProcessRule: prefix/suffix/circumfix/infix
+CircumfixReduplicationPrecedence,ketamtaman,CIRCREDUP+ROOTC2|ketamtaman,AffixProcessRule: reduplication (ReduplicationHint)
+ClassDeletionReinsertionStrrep,amili,AM+BILI|amili,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+ClassDeletionReinsertionStrrep,amili,AM+ILI|amili,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+ClassDeletionReinsertionStrrep,amili,AM+PILI|amili,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+ClassDeletionReinsertionStrrep,uma,UMA|uma,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+ClassDeletionReinsertionStrrep,uma,UMPA|uma,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+ClassDeletionReinsertionStrrep,amuma,AM+PUMA|amuma,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+ClassDeletionReinsertionStrrep,amuma,AM+UMA|amuma,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+ClassDeletionReinsertionStrrep,amuma,AM+UMPA|amuma,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+ClassDeletionReinsertionStrrep,umuma,UMBUMPA|umuma,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 CliticRuleDesignation,sagd,SAG+PAST|sagd,Affix template slots (obligatory/disjunctive/ordering)
 CliticRuleDesignation,sagds,SAG+PAST+ENC|sagds,Clitic rules (isCliticRule / Clitics stratum) after a final template
 CliticRuleDesignation,sagdk,,Clitic rules (isCliticRule / Clitics stratum) after a final template
@@ -38,6 +128,12 @@ CompoundingBreadth,kamtu,,CompoundingRule constraints (MaxApplicationCount/Block
 CompoundingBreadth,kaptu,,Element deactivation (isActive) across loader collections
 CompoundingBreadth,kutu,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,patu,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
+CompoundingNonRecursive,fasubel,HEADA+NONHEADOK|fasubel,CompoundingRule
+CompoundingNonRecursive,fasuzon,,CompoundingRule
+CompoundingNonRecursive,tikubel,HEADB+NONHEADOK|tikubel,CompoundingRule
+CompoundingNonRecursive,numobel,,CompoundingRule
+CrossStemMaterialDetermination,patoluka,PFXA+ROOT+SFX|patoluka,MPR features/groups
+CrossStemMaterialDetermination,butoluko,PFXB+ROOT+SFX|butoluko,MPR features/groups
 CrossTableRootRespelling,t,ROOT1|m,"CharacterDefinitionTable: more than one table, one per stratum"
 CrossTableRootRespelling,t,ROOT1|m,CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)
 CrossTableRootRespelling,t,ROOT3|t,"CharacterDefinitionTable: more than one table, one per stratum"
@@ -51,6 +147,8 @@ PathologicalDeepOptionalAffixNesting,k,K|k,Affix template slots (obligatory/disj
 PathologicalDeepOptionalAffixNesting,xxxxxxxxxxxxk,P12+P11+P10+P9+P8+P7+P6+P5+P4+P3+P2+P1+K|xxxxxxxxxxxxk,Affix template slots (obligatory/disjunctive/ordering)
 DefaultSymbolAfterMerge,f,ROOT|f,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 DeletionReapplications,tuki,TUIIKI|tuki,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+DeletionReduplicationExceptionComposite,menulik,NPFX+TULIK|menulik,RewriteRule direction (Dir): left-to-right
+DeletionReduplicationExceptionComposite,tuliktulik,RDPL+TULIK|tuliktulik,AffixProcessRule: reduplication (ReduplicationHint)
 DeletionReinsertedFeatureUnapply,bag,BAGD|bag,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 LatinDiacriticProbe,años,YEAR+PL|años,AffixProcessRule: prefix/suffix/circumfix/infix
 LatinDiacriticProbe,años,YEAR+PL|años,MorphologicalOutputAction: CopyFromInput/InsertSegments
@@ -87,6 +185,7 @@ DisjunctiveRecheckProbe,pitda,+|pitda,Disjunctive allomorphs / free-fluctuation
 DisjunctiveRecheckProbe,gray,|gray,Disjunctive allomorphs / free-fluctuation
 DisjunctiveRecheckProbe,grey,|grey,Disjunctive allomorphs / free-fluctuation
 EpenthesisFedMerge,bd,ROOT|bd,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+ExpansionInterposedOptional,ii,ROOT|ii,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 ExpansionOverlappingTargets,kaaa,KAA1|kaaa,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 FeatureGatingBreadth,kal,KAL|kal,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 FeatureGatingBreadth,kalka,KAL+AGR|kalka,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
@@ -136,7 +235,20 @@ GuessRootsSettings,takuvuq,taku+INFL|takuvuq,Guesser/LexicalGuess
 GuessRootsSettings,takuvuq,taku+INFL|takuvuq,Guesser/LexicalGuess
 GuessRootsSettings,takuvuq,takuvuq|takuvuq,Guesser/LexicalGuess
 GuessRootsSettings,takuvuq,takuvuq|takuvuq,Guesser/LexicalGuess
+GuesserPatternRootFallback,kad,KAD|kad,Guesser/LexicalGuess
+GuesserPatternRootFallback,gag,gag|gag,Guesser/LexicalGuess
+GuesserPatternRootFallback,gagd,gag+PAST|gag+?d,Guesser/LexicalGuess
+GuesserPatternRootFallback,gagd,gagd|gagd,Guesser/LexicalGuess
+HeadAmbiguousCompounding,dakimo,DAK+IMO|dakimo,CompoundingRule
+HeadAmbiguousCompounding,dakimo,DAK+IMO|dakimo,CompoundingRule
+Gezmara,kpfotab,KTB+PFV|kpfotab,AffixProcessRule: prefix/suffix/circumfix/infix
+Gezmara,kcvotab,KTB+CONV|kcvotab,AffixProcessRule: prefix/suffix/circumfix/infix
+interposed-optional-multi-rhs,de,ABC|de,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 IterativeEpenthesisCascade,uotaa,BOTH|uotaa,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+LiteralHashAffixContext,ara,PFX_AR+ROOT_A|ara,AffixProcessRule: prefix/suffix/circumfix/infix
+LiteralHashAffixContext,ra,PFX_R+ROOT_A|ra,AffixProcessRule: prefix/suffix/circumfix/infix
+LiteralHashAffixContext,raa,PFX_RA+ROOT_A|raa,AffixProcessRule: prefix/suffix/circumfix/infix
+LiteralHashAffixContext,ar,ROOT_A+SFX_R|ar,AffixProcessRule: prefix/suffix/circumfix/infix
 N2-DefaultSymbol,bat,|bat,Boundary markers (CharacterDefinitionTable)
 N2-DefaultSymbol,bdt,,Boundary markers (CharacterDefinitionTable)
 N1-IsActive,kat,|kat,Boundary markers (CharacterDefinitionTable)
@@ -163,9 +275,15 @@ N3-PatternShapes,bat,|b[ae]t,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bet,|b[ae]t,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bit,,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bt,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+MergeSubrulesPosLtrTemplate,Gs,TA_V+S|Gs,RewriteRule direction (Dir): left-to-right
+MergeSubrulesPosLtrTemplate,Gs,TA_V+S|Gs,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
+MergeSubrulesPosLtrTemplate,Gs,TA_V+S|Gs,Affix template slots (obligatory/disjunctive/ordering)
 MergeSubrulesPosRtlTemplate,Gs,TA_V+S|Gs,RewriteRule direction (Dir): right-to-left
 MergeSubrulesPosRtlTemplate,Gs,TA_V+S|Gs,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
 MergeSubrulesPosRtlTemplate,Gs,TA_V+S|Gs,Affix template slots (obligatory/disjunctive/ordering)
+MergeSubrulesPosSimultaneousTemplate,Gs,TA_V+S|Gs,RewriteRule Simultaneous
+MergeSubrulesPosSimultaneousTemplate,Gs,TA_V+S|Gs,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
+MergeSubrulesPosSimultaneousTemplate,Gs,TA_V+S|Gs,Affix template slots (obligatory/disjunctive/ordering)
 MergeThenMetathesis,aca,ATSA|aca,MetathesisRule
 MergeThenMetathesis,aca,ATSA|aca,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 MetathesisComparisonCrash,ti,,MetathesisRule
@@ -213,7 +331,720 @@ MprOverwriteOrderDependence,femopiqu,FEMO+SETP+SETQ|femopiqu,MPR features/groups
 MprOverwriteOrderDependence,femoqupi,FEMO+SETQ+SETP|femoqupi,MPR features/groups
 MprOverwriteOrderDependence,femopiquvo,FEMO+SETP+SETQ+GATEPQ|femopiquvo,MPR features/groups
 MprOverwriteOrderDependence,femoqupivo,FEMO+SETQ+SETP+GATEPQ|femoqupivo,MPR features/groups
+MultiTableMetathesisSharedRepresentation,xw,ROOT2|xw,MetathesisRule
+MultiTableMetathesisSharedRepresentation,xw,ROOT2|xw,"CharacterDefinitionTable: more than one table, one per stratum"
+MultiTableMetathesisSharedRepresentation,wx,,MetathesisRule
+MultiTableMetathesisSharedRepresentation,xm,ROOT1|xm,MetathesisRule
+MultiTableMetathesisSharedRepresentation,xm,ROOT1|xm,"CharacterDefinitionTable: more than one table, one per stratum"
+MultiTableMetathesisSharedRepresentation,mx,,MetathesisRule
+MultiTableMetathesisSharedRepresentation,z,,"CharacterDefinitionTable: more than one table, one per stratum"
+nullable-disagree-bounded-ltr-left,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-left,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-left,ia,AU|ia,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-left,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-left,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-left,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-left,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-left,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-left,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-left,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-left,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-left,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-left,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-left,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-left,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-left,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-right,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-right,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-right,ia,AU|ia,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-right,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-right,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-right,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-right,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-right,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-right,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-right,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-right,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-right,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-right,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-right,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-right,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-ltr-right,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,ii,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-left,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,iy,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-left,ia,AU|ia,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,ia,AU|ia,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-left,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,iu,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-left,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,yi,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-left,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,yy,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-left,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,ya,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-left,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,yu,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-left,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,ai,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-left,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,ay,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-left,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,aa,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-left,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,au,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-left,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,ui,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-left,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,uy,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-left,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,ua,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-left,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-left,uu,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-right,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-right,ii,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-right,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-right,iy,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-right,ia,AU|ia,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-right,ia,AU|ia,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-right,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-right,iu,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-right,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-right,yi,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-right,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-right,yy,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-right,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-right,ya,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-right,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-right,yu,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-right,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-right,ai,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-right,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-right,ay,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-right,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-right,aa,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-right,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-right,au,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-right,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-right,ui,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-right,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-right,uy,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-right,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-right,ua,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-bounded-rtl-right,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-bounded-rtl-right,uu,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-plain-ltr-right,ia,AU|ia,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
+nullable-disagree-unbounded-ltr-left,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-left,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-left,ia,AU|ia,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-left,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-left,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-left,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-left,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-left,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-left,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-left,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-left,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-left,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-left,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-left,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-left,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-left,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-right,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-right,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-right,ia,AU|ia,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-right,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-right,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-right,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-right,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-right,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-right,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-right,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-right,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-right,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-right,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-right,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-right,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-ltr-right,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,ii,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-left,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,iy,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-left,ia,AU|ia,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,ia,AU|ia,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-left,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,iu,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-left,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,yi,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-left,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,yy,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-left,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,ya,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-left,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,yu,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-left,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,ai,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-left,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,ay,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-left,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,aa,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-left,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,au,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-left,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,ui,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-left,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,uy,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-left,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,ua,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-left,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-left,uu,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-right,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-right,ii,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-right,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-right,iy,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-right,ia,AU|ia,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-right,ia,AU|ia,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-right,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-right,iu,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-right,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-right,yi,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-right,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-right,yy,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-right,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-right,ya,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-right,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-right,yu,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-right,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-right,ai,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-right,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-right,ay,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-right,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-right,aa,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-right,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-right,au,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-right,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-right,ui,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-right,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-right,uy,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-right,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-right,ua,,RewriteRule direction (Dir): right-to-left
+nullable-disagree-unbounded-rtl-right,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+nullable-disagree-unbounded-rtl-right,uu,,RewriteRule direction (Dir): right-to-left
+Kotavu,sipu,SIPU+VAC|sipu,Affix template slots (obligatory/disjunctive/ordering)
+Kotavu,kasiputa,OPT1+SIPU+OPT2|kasiputa,Affix template slots (obligatory/disjunctive/ordering)
+Kotavu,monu,MONU+VAC|monu,Affix template slots (obligatory/disjunctive/ordering)
+Kotavu,pimonu,OPT3+MONU+VAC|pimonu,Affix template slots (obligatory/disjunctive/ordering)
+Kotavu,monuki,MONU+VAC+OPT4|monuki,Affix template slots (obligatory/disjunctive/ordering)
+Kotavu,pimonuki,OPT3+MONU+VAC+OPT4|pimonuki,Affix template slots (obligatory/disjunctive/ordering)
+Kotavu,waru,WARU+VAC|waru,Affix template slots (obligatory/disjunctive/ordering)
+Kotavu,warmo,WARU+TRUNC|warmo,Affix template slots (obligatory/disjunctive/ordering)
+Kotavu,warmolu,WARU+TRUNC+OPT5|warmolu,Affix template slots (obligatory/disjunctive/ordering)
+Kotavu,toʼa,TOA+VAC|toʼa,Affix template slots (obligatory/disjunctive/ordering)
+Kotavu,katoʼata,OPT1+TOA+OPT2|katoʼata,Affix template slots (obligatory/disjunctive/ordering)
+overridden-alpha-bounded-ltr-left,ii,IU|ii,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-ltr-left,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-ltr-left,ia,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-ltr-left,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-ltr-left,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-ltr-left,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-ltr-left,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-ltr-left,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-ltr-left,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-ltr-left,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-ltr-left,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-ltr-left,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-ltr-left,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-ltr-left,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-ltr-left,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-ltr-left,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,ii,IU|ii,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,ii,IU|ii,RewriteRule direction (Dir): right-to-left
+overridden-alpha-bounded-rtl-left,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,iy,,RewriteRule direction (Dir): right-to-left
+overridden-alpha-bounded-rtl-left,ia,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,ia,,RewriteRule direction (Dir): right-to-left
+overridden-alpha-bounded-rtl-left,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,iu,,RewriteRule direction (Dir): right-to-left
+overridden-alpha-bounded-rtl-left,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,yi,,RewriteRule direction (Dir): right-to-left
+overridden-alpha-bounded-rtl-left,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,yy,,RewriteRule direction (Dir): right-to-left
+overridden-alpha-bounded-rtl-left,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,ya,,RewriteRule direction (Dir): right-to-left
+overridden-alpha-bounded-rtl-left,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,yu,,RewriteRule direction (Dir): right-to-left
+overridden-alpha-bounded-rtl-left,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,ai,,RewriteRule direction (Dir): right-to-left
+overridden-alpha-bounded-rtl-left,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,ay,,RewriteRule direction (Dir): right-to-left
+overridden-alpha-bounded-rtl-left,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,aa,,RewriteRule direction (Dir): right-to-left
+overridden-alpha-bounded-rtl-left,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,au,,RewriteRule direction (Dir): right-to-left
+overridden-alpha-bounded-rtl-left,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,ui,,RewriteRule direction (Dir): right-to-left
+overridden-alpha-bounded-rtl-left,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,uy,,RewriteRule direction (Dir): right-to-left
+overridden-alpha-bounded-rtl-left,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,ua,,RewriteRule direction (Dir): right-to-left
+overridden-alpha-bounded-rtl-left,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-bounded-rtl-left,uu,,RewriteRule direction (Dir): right-to-left
+overridden-alpha-plain-ltr-left,ii,IU|ii,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
+overridden-alpha-unbounded-ltr-left,ii,IU|ii,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-unbounded-ltr-left,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-unbounded-ltr-left,ia,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-unbounded-ltr-left,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-unbounded-ltr-left,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-unbounded-ltr-left,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-unbounded-ltr-left,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-unbounded-ltr-left,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-unbounded-ltr-left,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-unbounded-ltr-left,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-unbounded-ltr-left,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-unbounded-ltr-left,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-unbounded-ltr-left,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-unbounded-ltr-left,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-unbounded-ltr-left,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+overridden-alpha-unbounded-ltr-left,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-ltr-left,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-ltr-left,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-ltr-left,ia,AU|ia,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-ltr-left,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-ltr-left,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-ltr-left,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-ltr-left,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-ltr-left,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-ltr-left,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-ltr-left,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-ltr-left,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-ltr-left,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-ltr-left,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-ltr-left,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-ltr-left,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-ltr-left,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,ii,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-left,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,iy,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-left,ia,AU|ia,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,ia,AU|ia,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-left,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,iu,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-left,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,yi,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-left,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,yy,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-left,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,ya,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-left,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,yu,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-left,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,ai,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-left,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,ay,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-left,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,aa,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-left,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,au,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-left,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,ui,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-left,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,uy,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-left,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,ua,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-left,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-left,uu,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-right,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-right,ii,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-right,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-right,iy,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-right,ia,AU|ia,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-right,ia,AU|ia,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-right,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-right,iu,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-right,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-right,yi,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-right,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-right,yy,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-right,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-right,ya,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-right,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-right,yu,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-right,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-right,ai,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-right,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-right,ay,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-right,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-right,aa,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-right,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-right,au,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-right,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-right,ui,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-right,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-right,uy,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-right,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-right,ua,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-bounded-rtl-right,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-bounded-rtl-right,uu,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-ltr-right,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-ltr-right,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-ltr-right,ia,AU|ia,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-ltr-right,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-ltr-right,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-ltr-right,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-ltr-right,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-ltr-right,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-ltr-right,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-ltr-right,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-ltr-right,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-ltr-right,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-ltr-right,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-ltr-right,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-ltr-right,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-ltr-right,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,ii,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-left,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,iy,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-left,ia,AU|ia,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,ia,AU|ia,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-left,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,iu,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-left,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,yi,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-left,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,yy,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-left,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,ya,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-left,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,yu,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-left,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,ai,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-left,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,ay,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-left,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,aa,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-left,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,au,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-left,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,ui,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-left,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,uy,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-left,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,ua,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-left,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-left,uu,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-right,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-right,ii,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-right,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-right,iy,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-right,ia,AU|ia,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-right,ia,AU|ia,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-right,iu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-right,iu,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-right,yi,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-right,yi,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-right,yy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-right,yy,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-right,ya,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-right,ya,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-right,yu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-right,yu,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-right,ai,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-right,ai,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-right,ay,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-right,ay,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-right,aa,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-right,aa,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-right,au,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-right,au,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-right,ui,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-right,ui,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-right,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-right,uy,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-right,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-right,ua,,RewriteRule direction (Dir): right-to-left
+partial-class-disagree-unbounded-rtl-right,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+partial-class-disagree-unbounded-rtl-right,uu,,RewriteRule direction (Dir): right-to-left
+PatternRootRequiredEnvironment,tikus,TIK+PAST|tikus,AffixProcessRule: prefix/suffix/circumfix/infix
+PatternRootRequiredEnvironment,bonus,BON+PAST|bonus,AffixProcessRule: prefix/suffix/circumfix/infix
 ProcessMorphologyInPlaceMutation,a,ROOT+ABLAUT|a,MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
+quantified-alpha-bounded-ltr-left,teca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-left,tcce,ROOT2|tcce,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-left,tccca,ROOT3|tccca,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-left,taca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-left,tcca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-left,te,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-left,ta,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-left,tace,ROOT1|tace,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-left,tcte,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-left,tatc,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-left,tetc,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-left,tccccca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-left,tccccce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-left,tccce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-left,tece,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-left,ttca,MIXED|ttca,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-left,ttce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,acet,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,ecct,ROOT2|ecct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,accct,ROOT3|accct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,acat,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,acct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,et,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,at,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,ecat,ROOT1|ecat,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,etct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,ctat,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,ctet,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,accccct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,eccccct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,eccct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,ecet,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,actt,MIXED|actt,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-ltr-right,ectt,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,teca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,teca,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-left,tcce,ROOT2|tcce,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,tcce,ROOT2|tcce,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-left,tccca,ROOT3|tccca,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,tccca,ROOT3|tccca,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-left,taca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,taca,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-left,tcca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,tcca,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-left,te,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,te,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-left,ta,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,ta,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-left,tace,ROOT1|tace,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,tace,ROOT1|tace,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-left,tcte,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,tcte,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-left,tatc,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,tatc,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-left,tetc,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,tetc,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-left,tccccca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,tccccca,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-left,tccccce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,tccccce,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-left,tccce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,tccce,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-left,tece,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,tece,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-left,ttca,MIXED|ttca,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,ttca,MIXED|ttca,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-left,ttce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-left,ttce,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,acet,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,acet,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,ecct,ROOT2|ecct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,ecct,ROOT2|ecct,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,accct,ROOT3|accct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,accct,ROOT3|accct,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,acat,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,acat,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,acct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,acct,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,et,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,et,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,at,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,at,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,ecat,ROOT1|ecat,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,ecat,ROOT1|ecat,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,etct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,etct,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,ctat,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,ctat,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,ctet,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,ctet,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,accccct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,accccct,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,eccccct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,eccccct,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,eccct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,eccct,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,ecet,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,ecet,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,actt,MIXED|actt,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,actt,MIXED|actt,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-rtl-right,ectt,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-rtl-right,ectt,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-bounded-zero-left,a,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-left,e,ZERO|e,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-left,ca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-left,ce,ONE|ce,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-left,tca,MIXEDONE|tca,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-left,tce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-left,ta,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-left,te,TRIG|te,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-left,ttca,MIXED|ttca,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-left,ttce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-left,tcca,ROOT2|tcca,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-left,tcce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-left,tccca,ROOT3|tccca,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-left,tccce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-left,taca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-left,tace,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-right,a,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-right,e,ZERO|e,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-right,ac,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-right,ec,ONE|ec,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-right,act,MIXEDONE|act,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-right,ect,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-right,at,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-right,et,TRIG|et,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-right,actt,MIXED|actt,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-right,ectt,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-right,acct,ROOT2|acct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-right,ecct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-right,accct,ROOT3|accct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-right,eccct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-right,acat,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-bounded-zero-right,ecat,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,teca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,tcce,ROOT2|tcce,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,tccca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,taca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,tcca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,te,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,ta,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,tace,ROOT1|tace,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,tcte,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,tatc,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,tetc,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,tccccca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,tccccce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,tccce,ROOT3|tccce,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,tece,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,ttca,MIXED|ttca,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-left,ttce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,acet,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,ecct,ROOT2|ecct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,accct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,acat,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,acct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,et,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,at,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,ecat,ROOT1|ecat,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,etct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,ctat,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,ctet,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,accccct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,eccccct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,eccct,ROOT3|eccct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,ecet,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,actt,MIXED|actt,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-ltr-right,ectt,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,teca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,teca,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-left,tcce,ROOT2|tcce,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,tcce,ROOT2|tcce,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-left,tccca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,tccca,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-left,taca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,taca,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-left,tcca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,tcca,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-left,te,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,te,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-left,ta,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,ta,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-left,tace,ROOT1|tace,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,tace,ROOT1|tace,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-left,tcte,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,tcte,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-left,tatc,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,tatc,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-left,tetc,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,tetc,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-left,tccccca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,tccccca,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-left,tccccce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,tccccce,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-left,tccce,ROOT3|tccce,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,tccce,ROOT3|tccce,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-left,tece,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,tece,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-left,ttca,MIXED|ttca,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,ttca,MIXED|ttca,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-left,ttce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-left,ttce,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,acet,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,acet,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,ecct,ROOT2|ecct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,ecct,ROOT2|ecct,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,accct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,accct,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,acat,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,acat,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,acct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,acct,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,et,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,et,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,at,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,at,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,ecat,ROOT1|ecat,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,ecat,ROOT1|ecat,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,etct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,etct,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,ctat,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,ctat,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,ctet,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,ctet,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,accccct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,accccct,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,eccccct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,eccccct,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,eccct,ROOT3|eccct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,eccct,ROOT3|eccct,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,ecet,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,ecet,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,actt,MIXED|actt,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,actt,MIXED|actt,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-rtl-right,ectt,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-rtl-right,ectt,,RewriteRule direction (Dir): right-to-left
+quantified-alpha-unbounded-zero-left,a,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-left,e,ZERO|e,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-left,ca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-left,ce,ONE|ce,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-left,tca,MIXEDONE|tca,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-left,tce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-left,ta,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-left,te,TRIG|te,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-left,ttca,MIXED|ttca,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-left,ttce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-left,tcca,ROOT2|tcca,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-left,tcce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-left,tccca,ROOT3|tccca,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-left,tccce,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-left,taca,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-left,tace,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-right,a,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-right,e,ZERO|e,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-right,ac,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-right,ec,ONE|ec,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-right,act,MIXEDONE|act,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-right,ect,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-right,at,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-right,et,TRIG|et,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-right,actt,MIXED|actt,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-right,ectt,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-right,acct,ROOT2|acct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-right,ecct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-right,accct,ROOT3|accct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-right,eccct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-right,acat,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+quantified-alpha-unbounded-zero-right,ecat,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+ReduplicationNoProposalRoute,tata,ROOT+RED|tata,AffixProcessRule: reduplication (ReduplicationHint)
+RecursiveEndocentricCompounding,tevi,ROOT1|tevi,CompoundingRule
+RecursiveEndocentricCompounding,mafl,ROOT2|mafl,CompoundingRule
+RecursiveEndocentricCompounding,isra,ROOT3|isra,CompoundingRule
+RecursiveEndocentricCompounding,tevimafl,ROOT1+ROOT2|tevimafl,CompoundingRule
+RecursiveEndocentricCompounding,maflisra,ROOT2+ROOT3|maflisra,CompoundingRule
+RecursiveEndocentricCompounding,tevimaflisra,,CompoundingRule
 RewriteAnalysisFeatureNeutralization,d,ROOT1|b,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 RewriteAnalysisFeatureNeutralization,d,ROOT1|b,"CharacterDefinitionTable: more than one table, one per stratum"
 RewriteAnalysisFeatureNeutralization,d,ROOT1|b,CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)
@@ -232,10 +1063,48 @@ RightToLeftAnchorEnvironment,aea,,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,eaaa,,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,eeae,ROOT3|eeae,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,eeee,,RewriteRule direction (Dir): right-to-left
+RightToLeftBoundedQuantifierRewrite,acet,ROOT1|acet,RewriteRule direction (Dir): right-to-left
+RightToLeftBoundedQuantifierRewrite,acet,ROOT1|acet,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+RightToLeftBoundedQuantifierRewrite,ecct,ROOT2|ecct,RewriteRule direction (Dir): right-to-left
+RightToLeftBoundedQuantifierRewrite,ecct,ROOT2|ecct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+RightToLeftBoundedQuantifierRewrite,accct,ROOT3|accct,RewriteRule direction (Dir): right-to-left
+RightToLeftBoundedQuantifierRewrite,accct,ROOT3|accct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+RightToLeftBoundedQuantifierRewrite,acat,,RewriteRule direction (Dir): right-to-left
+RightToLeftBoundedQuantifierRewrite,acct,,RewriteRule direction (Dir): right-to-left
+RightToLeftCrossTableSegmentsEnvironment,ey,ROOT1|ey,RewriteRule direction (Dir): right-to-left
+RightToLeftCrossTableSegmentsEnvironment,a,ROOT2|a,RewriteRule direction (Dir): right-to-left
+RightToLeftCrossTableSegmentsEnvironment,ay,,RewriteRule direction (Dir): right-to-left
+RightToLeftCrossTableSegmentsEnvironment,e,,RewriteRule direction (Dir): right-to-left
+RightToLeftCrossTableSegmentsEnvironment,y,,RewriteRule direction (Dir): right-to-left
+RightToLeftMetathesisReversal,sq,ROOT1|sq,MetathesisRule
+RightToLeftMetathesisReversal,tr,ROOT2|tr,MetathesisRule
+RightToLeftMetathesisReversal,qs,,MetathesisRule
+RightToLeftMetathesisReversal,rt,,MetathesisRule
+RightToLeftMetathesisReversal,sr,,MetathesisRule
+RightToLeftMetathesisReversal,tq,,MetathesisRule
+RightToLeftSegmentsEnvironment,ey,ROOT1|ey,RewriteRule direction (Dir): right-to-left
+RightToLeftSegmentsEnvironment,a,ROOT2|a,RewriteRule direction (Dir): right-to-left
+RightToLeftSegmentsEnvironment,ay,,RewriteRule direction (Dir): right-to-left
+RightToLeftSegmentsEnvironment,e,,RewriteRule direction (Dir): right-to-left
+RightToLeftSegmentsEnvironment,y,,RewriteRule direction (Dir): right-to-left
+SegmentNaturalClassTableBinding,g,ROOT1|z,"CharacterDefinitionTable: more than one table, one per stratum"
+SegmentNaturalClassTableBinding,g,ROOT1|z,CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)
+SegmentNaturalClassTableBinding,g,ROOT1|z,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
+SegmentNaturalClassTableBinding,g,ROOT2|g,"CharacterDefinitionTable: more than one table, one per stratum"
+SegmentNaturalClassTableBinding,g,ROOT2|g,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
+SegmentNaturalClassTableBinding,k,,"CharacterDefinitionTable: more than one table, one per stratum"
+SegmentNaturalClassTableBinding,k,,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
+SegmentNaturalClassTableBinding,z,,"CharacterDefinitionTable: more than one table, one per stratum"
+SegmentNaturalClassTableBinding,gk,,"CharacterDefinitionTable: more than one table, one per stratum"
 SharedTemplateUnconstrainedSuffix,mivd,NROOT+IVERB+PAST|mivd,Affix template slots (obligatory/disjunctive/ordering)
 SimultaneousExpansionTerminates,biiiibiiii,ROOT|biiiibiiii,RewriteRule Simultaneous
 SimultaneousFeeding,gigugu,GIGI|gigugu,RewriteRule Simultaneous
 SimultaneousFeeding,gigugi,GIGI|gigugi,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+SimultaneousSubruleGenuineOverlap,be,|be,RewriteRule Simultaneous
+SimultaneousSubruleGenuineOverlap,bu,|bu,RewriteRule Simultaneous
+SimultaneousSubruleGenuineOverlap,di,|di,RewriteRule Simultaneous
+Autoseg,pan,PA+SUF|pan,AffixProcessRule: prefix/suffix/circumfix/infix
+Autoseg,pán,PAH+SUF|pán,AffixProcessRule: prefix/suffix/circumfix/infix
 StemNameRestrictedRootAllomorph,tam,ROOT|tam,Stem names
 StemNameRestrictedRootAllomorph,kap,,Stem names
 StemNameRestrictedRootAllomorph,kapom,ROOT+PERS1|kapom,Stem names
@@ -259,6 +1128,7 @@ StrRepIdentityProbe,imat,++|[(^0)∅]?+?i+?mat,NaturalClass: Segments vs Feature
 StrRepIdentityProbe,imat,++|i+?[(^0)∅]?+?mat,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 StrRepIdentityProbe,imat,+|i+?mat,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 StrRepIdentityProbe,ipat,,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
+StrRepRewriteUnapplication,xpuma,XMUMA|xpuma,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 SubruleMorphosyntacticGating,pat,ROOT1|pat,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
 SubruleMorphosyntacticGating,bat,ROOT1+DERIVE|bat,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
 SynthesisStratumRenderStaleTable,j,ROOTCROSS|,"CharacterDefinitionTable: more than one table, one per stratum"
@@ -280,6 +1150,21 @@ TruncateRulesProbe,bag,,AffixProcessRule: subtraction/truncation
 TwoMergesCascadeEnv,teK,TAK+SFX|teK,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 TwoMergesCascadeEnv,teK,TAK+SFX|teK,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
 TwoMergesCascadeEnv,teK,TAK+SFX|teK,Boundary markers (CharacterDefinitionTable)
+TwoTableSharedRepresentationRecall,y,ROOT1|,"CharacterDefinitionTable: more than one table, one per stratum"
+TwoTableSharedRepresentationRecall,x,,"CharacterDefinitionTable: more than one table, one per stratum"
+TwoTableSharedRepresentationRecall,z,,"CharacterDefinitionTable: more than one table, one per stratum"
+TwoTableSharedRepresentationRecall,q,ROOT2|q,"CharacterDefinitionTable: more than one table, one per stratum"
+UnboundedIterativeQuantifierExpansion,ect,ROOT1|ect,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+UnboundedIterativeQuantifierExpansion,ecct,ROOT2|ecct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+UnboundedIterativeQuantifierExpansion,eccccct,ROOT3|eccccct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+UnboundedIterativeQuantifierExpansion,at,ROOT4|at,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+UnboundedIterativeQuantifierExpansion,act,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+UnboundedIterativeQuantifierExpansion,acct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+UnboundedIterativeQuantifierExpansion,accccct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+WordBoundaryAffixRewrite,ta,PFX_R+ROOT_A|ta,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+WordBoundaryAffixRewrite,ta,ROOT_RA|ta,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+WordBoundaryAffixRewrite,taa,PFX_RA+ROOT_A|taa,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+WordBoundaryAffixRewrite,at,ROOT_A+SFX_R|at,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 FusionalRealizationalMorphology,mun,STEM|mun,Stem names
 FusionalRealizationalMorphology,muno,,Stem names
 FusionalRealizationalMorphology,muns,,Stem names
