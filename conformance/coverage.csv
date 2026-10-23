@@ -1148,6 +1148,13 @@ TruncateRulesProbe,as,+|as,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,gbubibi,+|gbubibi,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,gas,++|gas,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,gas,+|gas,AffixProcessRule: subtraction/truncation
+TruncateRulesProbe,a,++|a,AffixProcessRule: subtraction/truncation
+TruncateRulesProbe,a,++|a,AffixProcessRule: subtraction/truncation
+TruncateRulesProbe,ga,+++|ga,AffixProcessRule: subtraction/truncation
+TruncateRulesProbe,ga,+++|ga,AffixProcessRule: subtraction/truncation
+TruncateRulesProbe,ga,+++|ga,AffixProcessRule: subtraction/truncation
+TruncateRulesProbe,ga,++|ga,AffixProcessRule: subtraction/truncation
+TruncateRulesProbe,ga,++|ga,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,bag,,AffixProcessRule: subtraction/truncation
 TwoMergesCascadeEnv,teK,TAK+SFX|teK,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 TwoMergesCascadeEnv,teK,TAK+SFX|teK,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
