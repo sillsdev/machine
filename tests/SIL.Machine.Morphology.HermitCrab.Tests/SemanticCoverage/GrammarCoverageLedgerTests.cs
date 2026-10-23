@@ -36,11 +36,11 @@ public sealed class GrammarCoverageLedgerTests
         );
 
         // Canonical tags cover all 132 fixtures, including the 16 formerly silent fixtures.
-        Assert.That(rows, Has.Count.EqualTo(1603));
+        Assert.That(rows, Has.Count.EqualTo(1604));
         Assert.That(distinctFixtures, Is.EqualTo(132));
-        Assert.That(surface, Is.EqualTo(180));
+        Assert.That(surface, Is.EqualTo(181));
         Assert.That(@interface, Is.EqualTo(1200));
-        Assert.That(construct, Is.EqualTo(222));
+        Assert.That(construct, Is.EqualTo(223));
     }
 
     [Test]
