@@ -41,10 +41,10 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginUnapplyTemplate(_template, input);
 
-            // Do not allow a final template to unapply if we don't need to worry about partials
+            // Do not allow a final template to unapply if we don't need to worry about partial rules
             // and a non-template was last unapplied.
             if (
-                (!_morpher.IsPartial || _morpher.AlwaysEnforceFinalTemplates)
+                (!_morpher.HasPartialRules || _morpher.AlwaysEnforceFinalTemplates)
                 && input.FinalTemplateState == FinalTemplateState.NonTemplate
                 && _template.IsFinal
             )
