@@ -39,7 +39,9 @@ public sealed class CoverageGapRatchetTests
                 || line.StartsWith("#", StringComparison.Ordinal)
                 || line.StartsWith("item_id\t", StringComparison.Ordinal)
             )
+            {
                 continue;
+            }
 
             string[] fields = line.Split('\t');
             Assert.That(fields, Has.Length.EqualTo(2), $"malformed named coverage debt row in {path}: {line}");
