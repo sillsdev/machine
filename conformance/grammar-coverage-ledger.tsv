@@ -1369,7 +1369,7 @@ edge-cases/truncate-morphotactic	Interface	Segment.segment	required-by-dtd	Requi
 edge-cases/truncate-morphotactic	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic	Interface	Stratum.morphologicalRules	witnessed	Evidenced
-edge-cases/truncate-morphotactic	Construct	AffixProcessRule: subtraction/truncation	claimed-unmapped	10 claim(s)
+edge-cases/truncate-morphotactic	Construct	AffixProcessRule: subtraction/truncation	claimed-unmapped	17 claim(s)
 edge-cases/two-merges-cascade-env	Interface	AlphaVariable.variableFeature	required-by-dtd	RequiredByDtd
 edge-cases/two-merges-cascade-env	Interface	BoundaryMarker.boundary	required-by-dtd	RequiredByDtd
 edge-cases/two-merges-cascade-env	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd

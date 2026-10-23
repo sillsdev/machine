@@ -454,7 +454,7 @@ LexicalEntry	partOfSpeech	edge-cases/strrep-rewrite-unapplication	Unobservable	r
 LexicalEntry	partOfSpeech	edge-cases/subrule-morphosyntactic-gating	Evidenced	removed partOfSpeech from 1 <LexicalEntry> element(s)	'pat': ok::ROOT1|pat -> ok::-	pat	ok::ROOT1|pat	Word	ok::-
 LexicalEntry	partOfSpeech	edge-cases/synthesis-stratum-render-stale-table	Unobservable	removed partOfSpeech from 2 <LexicalEntry> element(s)	all 5 word(s) unchanged	-	-	None	-
 LexicalEntry	partOfSpeech	edge-cases/template-category-sharing	Unobservable	removed partOfSpeech from 3 <LexicalEntry> element(s)	all 6 word(s) unchanged	-	-	None	-
-LexicalEntry	partOfSpeech	edge-cases/truncate-morphotactic	Unobservable	removed partOfSpeech from 3 <LexicalEntry> element(s)	all 9 word(s) unchanged	-	-	None	-
+LexicalEntry	partOfSpeech	edge-cases/truncate-morphotactic	Unobservable	removed partOfSpeech from 3 <LexicalEntry> element(s)	all 11 word(s) unchanged	-	-	None	-
 LexicalEntry	partOfSpeech	edge-cases/two-merges-cascade-env	Unobservable	removed partOfSpeech from 3 <LexicalEntry> element(s)	all 6 word(s) unchanged	-	-	None	-
 LexicalEntry	partOfSpeech	edge-cases/two-table-shared-representation-recall	Unobservable	removed partOfSpeech from 2 <LexicalEntry> element(s)	all 4 word(s) unchanged	-	-	None	-
 LexicalEntry	partOfSpeech	edge-cases/word-boundary-affix-rewrite	Unobservable	removed partOfSpeech from 2 <LexicalEntry> element(s)	all 9 word(s) unchanged	-	-	None	-
@@ -625,7 +625,7 @@ MorphologicalRule	requiredPartsOfSpeech	edge-cases/standalone-combining-mark	Uno
 MorphologicalRule	requiredPartsOfSpeech	edge-cases/stem-name-restricted-root-allomorph	Unobservable	removed requiredPartsOfSpeech from 2 <MorphologicalRule> element(s)	all 6 word(s) unchanged	-	-	None	-
 MorphologicalRule	requiredPartsOfSpeech	edge-cases/strrep-identity	Unobservable	removed requiredPartsOfSpeech from 2 <MorphologicalRule> element(s)	all 12 word(s) unchanged	-	-	None	-
 MorphologicalRule	requiredPartsOfSpeech	edge-cases/template-category-sharing	Unobservable	removed requiredPartsOfSpeech from 4 <MorphologicalRule> element(s)	all 6 word(s) unchanged	-	-	None	-
-MorphologicalRule	requiredPartsOfSpeech	edge-cases/truncate-morphotactic	Unobservable	removed requiredPartsOfSpeech from 3 <MorphologicalRule> element(s)	all 9 word(s) unchanged	-	-	None	-
+MorphologicalRule	requiredPartsOfSpeech	edge-cases/truncate-morphotactic	Unobservable	removed requiredPartsOfSpeech from 3 <MorphologicalRule> element(s)	all 11 word(s) unchanged	-	-	None	-
 MorphologicalRule	requiredPartsOfSpeech	edge-cases/two-merges-cascade-env	Unobservable	removed requiredPartsOfSpeech from 1 <MorphologicalRule> element(s)	all 6 word(s) unchanged	-	-	None	-
 MorphologicalRule	requiredPartsOfSpeech	edge-cases/word-boundary-affix-rewrite	Unobservable	removed requiredPartsOfSpeech from 4 <MorphologicalRule> element(s)	all 9 word(s) unchanged	-	-	None	-
 MorphologicalRule	requiredPartsOfSpeech	languages/fusional-realizational-morphology	Evidenced	removed requiredPartsOfSpeech from 17 <MorphologicalRule> element(s)	'mano': ok::STEM+P1|mano -> ok::STEM+ABLAUT+P1|mano;STEM+P1|mano	mano	ok::STEM+P1|mano	Word	ok::STEM+ABLAUT+P1|mano;STEM+P1|mano

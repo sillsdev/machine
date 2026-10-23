@@ -1147,10 +1147,17 @@ edge-cases/synthesis-stratum-render-stale-table	j	ROOTCROSS|	CharacterDefinition
 edge-cases/synthesis-stratum-render-stale-table	k	ROOTSAME|k	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/synthesis-stratum-render-stale-table	w	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/template-category-sharing	pakolosa	PFXA+KOLO+SFXA|pakolosa	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/truncate-morphotactic	a	++|a	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic	a	++|a	AffixProcessRule: subtraction/truncation	Unmapped	-
 edge-cases/truncate-morphotactic	ag	+|ag	AffixProcessRule: subtraction/truncation	Unmapped	-
 edge-cases/truncate-morphotactic	as	+|as	AffixProcessRule: subtraction/truncation	Unmapped	-
 edge-cases/truncate-morphotactic	bag	-	AffixProcessRule: subtraction/truncation	Unmapped	-
 edge-cases/truncate-morphotactic	bubibi	|bubibi	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic	ga	+++|ga	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic	ga	+++|ga	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic	ga	+++|ga	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic	ga	++|ga	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic	ga	++|ga	AffixProcessRule: subtraction/truncation	Unmapped	-
 edge-cases/truncate-morphotactic	gas	++|gas	AffixProcessRule: subtraction/truncation	Unmapped	-
 edge-cases/truncate-morphotactic	gas	+|gas	AffixProcessRule: subtraction/truncation	Unmapped	-
 edge-cases/truncate-morphotactic	gbubibi	+|gbubibi	AffixProcessRule: subtraction/truncation	Unmapped	-
