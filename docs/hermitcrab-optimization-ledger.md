@@ -216,18 +216,11 @@ gate, so the main build target is the cheaper clone.** Row 17b counts only
 `AnalysisAffixTemplateRule`'s eager per-template clone, the site the retained deferred template
 clone changes; how that change's 1.054x relates to the 66.2% was not measured.
 
-## Two durable code constraints
+## One durable code constraint
 
-Neither is expressible in code, and both bite silently.
+It is not expressible in code, and it bites silently.
 
-1. **`Word.ReplayOnto` does not splice `_mrulesUnapplied`.** It splices `_mruleApps` and
-   `_nonHeadApps` only. This is safe *solely* because `AnalysisStateKey` includes the per-rule
-   count multiset, which guarantees a memo hit has identical arrival and stored-arrival counts.
-   **Anyone narrowing that key breaks correctness with no test failure.** Fix, if the key ever
-   changes: store arrival counts on `MemoEntry` and compute `stored - storedArrival + query` — a
-   no-op under today's key, which is also how to test it. This is the one code change from this
-   work worth making on its own merits, as defensive hardening.
-2. **HermitCrab's morphological rules are not order-invariant.** Same pending-rule multiset,
+**HermitCrab's morphological rules are not order-invariant.** Same pending-rule multiset,
    different application order, different synthesis output — 2 cases on Sena, 12 independently on
    Indonesian. This bounds every packed-readout scheme. It is the assumption
    Maxwell and Kaplan (CL 19(4):571–590) rely on and this engine does not satisfy.
