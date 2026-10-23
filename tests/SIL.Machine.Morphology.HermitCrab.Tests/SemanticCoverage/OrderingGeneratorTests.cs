@@ -9,8 +9,8 @@ namespace SIL.Machine.Morphology.HermitCrab;
 [TestFixture]
 public sealed class OrderingGeneratorTests
 {
-    // 62 baseline fixtures plus 69 shared additions: 67 graduates and two order-variant fixtures.
-    private const int MeasuredCorpusFixtureCount = 131;
+    // 62 baseline fixtures plus 70 additions: 67 graduates, two order variants and the partial-root probe.
+    private const int MeasuredCorpusFixtureCount = 132;
 
     private static string RepositoryRoot()
     {

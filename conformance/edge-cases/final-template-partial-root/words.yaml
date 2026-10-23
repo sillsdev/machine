@@ -1,0 +1,79 @@
+# oracle-provenance: founding-oracle machine-commit=a7056751 verified-date=2026-10-23
+# Expected parses are derived from the synthesis gates and checked against C#; see ../../docs/final-template-partial-root.md.
+language: FinalTemplatePartialRoot
+inspired_by: ["synthetic partial-root probe for final-template pruning (not modeling any real language)"]
+sources:
+  - "https://github.com/sillsdev/machine/issues/551"
+  - "src/SIL.Machine.Morphology.HermitCrab/AnalysisAffixTemplateRule.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/SynthesisAffixProcessRule.cs"
+requires: [morpher-settings]
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  Final affix templates over ordinary rules with output POS are HC-engine-only here; see
+  final-template-partial-discriminators for the same rationale.
+morpher:
+  MakePartialsFinal: false
+words:
+  - word: dakfa
+    note: Control. The final template alone on a non-partial root.
+    parses:
+      - signature: "DAK+FINX|dakfa"
+        rules: [mrFinX]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
+
+  - word: dakfaga
+    note: >-
+      Control (blocked). Non-partial root dak, ordinary non-partial rule after the final template.
+      Synthesis refuses it, so no analysis exists.
+    expect_fail: true
+    blocked_by: [mrGateX]
+
+  - word: pakga
+    note: >-
+      Control. Partial root in a lower stratum, ordinary rule, no template. The word is partial,
+      so no template applies and the rule is allowed.
+    parses:
+      - signature: "PAK+GATEX|pakga"
+        rules: [mrGateX]
+
+  - word: pakfa
+    note: >-
+      Partial root. SynthesisAffixTemplatesRule skips every template for a partial root morpheme,
+      so the final template never applies and this string has no analysis.
+    expect_fail: true
+
+  - word: pakfaga
+    note: >-
+      Partial root in a lower stratum, with the rule chain that dakfaga uses. The word inherits
+      partiality from pak, which would let mrGateX follow a final template, but no final template
+      ever applies to a partial root, so there is no derivation to license it. This is the case
+      that the lexical-entry half of Morpher.IsPartial was suspected to protect (issue 551).
+    expect_fail: true
+
+  - word: pibgb
+    note: Control. Partial root in the same stratum as the rules, ordinary rule, no template.
+    parses:
+      - signature: "PIB+GATEY|pibgb"
+        rules: [mrGateY]
+
+  - word: pibfb
+    note: Partial root in the template's own stratum. The final template does not apply to it.
+    expect_fail: true
+
+  - word: pibfbgb
+    note: >-
+      Same-stratum counterpart of pakfaga. Also has no analysis, for the same reason.
+    expect_fail: true
+
+  - word: nibfb
+    note: Control. The final template alone on the non-partial root nib, same stratum as pib.
+    parses:
+      - signature: "NIB+FINY|nibfb"
+        rules: [mrFinY]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
+
+  - word: nibfbgb
+    note: >-
+      Control (blocked). Non-partial root nib, same chain as pibfbgb.
+    expect_fail: true
+    blocked_by: [mrGateY]
