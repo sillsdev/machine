@@ -80,7 +80,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
                         outWord.SyntacticFeatureStruct = syntacticFS;
                     }
-                    if (!_morpher.IsPartial || _morpher.AlwaysEnforceFinalTemplates)
+                    if (!_morpher.HasPartialRules || _morpher.AlwaysEnforceFinalTemplates)
                     {
                         if (!_rule.GetIsCliticRule())
                         {
