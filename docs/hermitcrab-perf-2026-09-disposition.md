@@ -92,11 +92,11 @@ branches remain.
 | `perf/hc-conformance-check` | `0799a977` | archive merged into the conformance integration branch for the 603-test gate | verification only; worktree `.worktrees/hc-conf` can go |
 | `perf/hc-edge-prefilter` | `be7f241d` | the one isolated mechanism on `origin/master` | optional small PR at the time; **branch and its own archive tag have both since been deleted, but the mechanism is preserved on branch `perf/hc-optimization-archive`** |
 | `pr-491` | `96c97f76` | jtmaxwell3's PR head at review time | merged to master as `b240b7b5` on 2026-09-28; worktree `.worktrees/pr491` holds uncommitted throwaway counters + `FinalTemplateUpperBound` harness |
-| `docs/hc-optimization-ledger` (remote, PR #490) | `cc806613` | the ledger, now 23 rows | open docs PR |
+| `docs/hc-optimization-ledger` (remote, PR #490) | the PR head | the ledger, rows 1-30 | open docs PR |
 | `feature/forest-memo`, `feature/synthesis-fold-probes`, `feature/synthesis-fold-sharing`, `feature/per-node-cost` | — | evidence branches of the ledger round | see `hermitcrab-optimization-ledger.md` |
 | `investigate-memoization-rule-order` | `4f5aeeb4` | despite the name, conformance-suite commits | belongs to the conformance line, not this round |
 
-Records in this directory: `hermitcrab-optimization-ledger.md` (23 attempts), `hermitcrab-perf-2026-09-counts.md`
+Records in this directory: `hermitcrab-optimization-ledger.md` (rows 1-30), `hermitcrab-perf-2026-09-counts.md`
 (count round), `hermitcrab-probe-design.md`, `optimizations/*` and `rejected-optimizations/*` (one record per
 mechanism), and this file. The round's execution checklist has been folded into this record; it is not kept as
 a separate plan document.
