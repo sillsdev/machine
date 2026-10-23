@@ -2,7 +2,8 @@
 
 This is the final record for the count-driven round that followed
 `hermitcrab-optimization-ledger.md`. Temporary counters were used to choose targets and were then removed;
-the final branch carries only product changes, focused tests, the parity/timing harness, and these records.
+the final branch (`perf/hc-optimization-archive`, not master) carries only product changes, focused tests, the
+parity/timing harness, and these records.
 
 ## Measurement scope
 

@@ -219,15 +219,16 @@ task keeps mutating engine state after the harness moves on. Harmless with a per
 
 ### Final reusable harness
 
-The retained `PerfBench` is narrower than the historical probes above. It accepts `HC_BENCH_GRAMMAR`,
-`HC_BENCH_WORD_LIST`, `HC_BENCH_REPS`, `HC_BENCH_OUT`, and `HC_BENCH_LABEL`; it records timings, errors,
-resource observations, memo diagnostics, and canonical result signatures. It does not retain the completed
-round's hot-loop counters.
+The retained `PerfBench` lives on branch `perf/hc-optimization-archive`, not on master, and is narrower than the
+historical probes above. It accepts `HC_BENCH_GRAMMAR`, `HC_BENCH_WORD_LIST`, `HC_BENCH_REPS`, `HC_BENCH_OUT`,
+and `HC_BENCH_LABEL`; it records timings, errors, resource observations, memo diagnostics, and canonical result
+signatures. It does not retain the completed round's hot-loop counters.
 
 Timeouts are now the caller's responsibility: start one `dotnet test` process for an arm and terminate the
 whole process if its budget expires. Do not restore an in-process `Task` timeout—the abandoned parse continues
-running, contaminates later samples, and can race shared engine state. `scripts/hc-bench-compare.ps1` compares
-grammar and word keys symmetrically before comparing errors, signatures, timing, or spread.
+running, contaminates later samples, and can race shared engine state. `scripts/hc-bench-compare.ps1`, also on
+that branch only, compares grammar and word keys symmetrically before comparing errors, signatures, timing, or
+spread.
 
 ---
 
