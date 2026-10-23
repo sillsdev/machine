@@ -234,9 +234,8 @@ Run with `--threads 1 --step-cap 2000000` (Aweti 500000) and no wall timeout.
 `AnalysisAffixTemplateRule` has the same shape, so the trie ported directly to sequential
 `ApplySlots`. It is restricted to untraced, sequential walks with no alternative limit. Tracing,
 `ParallelApplySlots`, finite alternative limits, custom compiled templates, changed slot
-optionality, and grammars without shared tails all keep the original battery.
-`AnalysisScope.TemplateMemo` (row 2) still wraps the battery unchanged: row 2 reduces how often a
-battery runs, and #546 reduces repeats inside one run, so the two compose.
+optionality, and grammars without shared tails all keep the original battery. Row 2's battery memo is no
+longer on master, so there is no memo for this change to compose with.
 
 The figures below are C# slot batches on deterministic 200-row samples, single-threaded and warmed,
 with mode order alternated per input:
