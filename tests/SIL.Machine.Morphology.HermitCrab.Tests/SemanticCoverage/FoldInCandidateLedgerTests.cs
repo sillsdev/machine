@@ -49,7 +49,7 @@ public sealed class FoldInCandidateLedgerTests
         Assert.That(rows, Has.Count.EqualTo(85));
         Assert.That(interfaceEdgeCaseOnly, Is.EqualTo(2));
         Assert.That(interfaceNeverWitnessed, Is.EqualTo(25));
-        Assert.That(surfaceEdgeCaseOnly, Is.EqualTo(49));
+        Assert.That(surfaceEdgeCaseOnly, Is.EqualTo(50));
         Assert.That(surfacePresentElsewhere, Is.EqualTo(8));
     }
 
