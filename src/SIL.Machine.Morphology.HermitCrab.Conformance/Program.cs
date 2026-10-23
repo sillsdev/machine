@@ -1487,7 +1487,7 @@ internal class Program
     private const string OutOfScopeConstruct = "Tracing (TraceType)";
 
     /// <summary>Writes coverage.csv and rules.csv, then returns 1 if an in-scope construct has no
-    /// coverage, a rule no word exercises is missing from <c>dead-rules-allowed.tsv</c>, or an
+    /// coverage, a blocked_by label is not a grammar rule id, a rule no word exercises is missing from <c>dead-rules-allowed.tsv</c>, or an
     /// allowed rule is no longer dead; 0 otherwise.</summary>
     private static int RunCoverageReport(List<Fixture> fixtures, string fixturesRoot, string constructsPath)
     {
@@ -1530,6 +1530,17 @@ internal class Program
             failed = true;
             Console.WriteLine();
             Console.WriteLine($"*** CONSTRUCT CHECKLIST NOT FOUND: {constructsPath} ***");
+        }
+
+        if (result.UnknownBlockedBy.Count > 0)
+        {
+            failed = true;
+            Console.WriteLine();
+            Console.WriteLine(
+                $"*** {result.UnknownBlockedBy.Count} BLOCKED_BY LABEL(S) ARE NOT RULE IDS IN THEIR FIXTURE'S GRAMMAR ***"
+            );
+            foreach (CoverageReport.UnknownBlockedBy unknown in result.UnknownBlockedBy)
+                Console.WriteLine($"  {unknown.FixtureId}: word '{unknown.Word}' blocked_by '{unknown.Label}'");
         }
 
         string allowlistPath = Path.Combine(fixturesRoot, "dead-rules-allowed.tsv");

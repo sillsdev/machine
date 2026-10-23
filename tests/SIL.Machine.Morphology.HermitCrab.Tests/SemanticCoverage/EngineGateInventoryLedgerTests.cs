@@ -76,6 +76,7 @@ public sealed class EngineGateInventoryLedgerTests
     // Mirrors DataflowObligationLedgerTests.CheckedInDataflowObligationLedgerIsUpToDate: regenerate and
     // require the checked-in file to match byte for byte.
     [Explicit("Runs a traced sweep of every fixture word; the checked-in ledger is what the other tests read.")]
+    [Category("Counterfactual")]
     [Test]
     public void CheckedInEngineGateInventoryLedgerIsUpToDate()
     {

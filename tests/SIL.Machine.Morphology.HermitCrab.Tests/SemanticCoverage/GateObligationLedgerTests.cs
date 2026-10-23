@@ -201,6 +201,7 @@ public sealed class GateObligationLedgerTests
     }
 
     [Explicit("Runs a traced engine sweep plus severance re-parses across every gate's triggering fixtures.")]
+    [Category("Counterfactual")]
     [Test]
     public void CheckedInGateObligationLedgerIsUpToDate()
     {

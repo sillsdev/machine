@@ -7,9 +7,11 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 /// Failure-side counterpart to <see cref="TraceRuleAttributor"/>: for one EXPECT_FAIL word already
 /// confirmed elsewhere (self-check's own signature comparison) to have zero total parses, extracts
 /// the grammar rule ids a real engine trace shows were EVALUATED AND REJECTED -- or blocked after
-/// applying -- while reaching that result. This upgrades a hand-written <c>blocked_by</c> label from
-/// asserted to VERIFIED, the same standard a crash-attributed rule is held to elsewhere in the
-/// coverage report.
+/// applying -- while reaching that result. It is meant to let a hand-written <c>blocked_by</c> label
+/// be upgraded from asserted to verified, but nothing calls it yet: the dead-rule gate
+/// (<see cref="CoverageReport"/>) only checks that each label is a rule id in the fixture's grammar,
+/// so <c>blocked_by</c> is still asserted. Wiring this into the gate is tracked in
+/// sillsdev/machine#552.
 ///
 /// <b>One trace shape is used, inherently self-limiting rather than filtered by
 /// <see cref="FailureReason"/> value:</b> a <see cref="TraceType.Blocked"/> node

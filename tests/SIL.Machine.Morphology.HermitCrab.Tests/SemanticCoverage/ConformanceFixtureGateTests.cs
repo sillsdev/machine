@@ -84,6 +84,26 @@ public sealed class ConformanceFixtureGateTests
     }
 
     [Test]
+    public void EveryBlockedByLabelIsARuleIdInItsFixtureGrammar()
+    {
+        List<Fixture> fixtures = Discover();
+        Assert.That(fixtures, Has.Count.GreaterThanOrEqualTo(MinimumFixtures));
+
+        var unknown = new List<CoverageReport.UnknownBlockedBy>();
+        foreach (Fixture fixture in fixtures)
+        {
+            GrammarRuleIndex index = GrammarRuleIndex.Load(fixture.GrammarPath);
+            unknown.AddRange(CoverageReport.FindUnknownBlockedBy(fixture.Id, fixture.Words, index.AllRuleIds));
+        }
+
+        Assert.That(
+            unknown.Select(u => $"{u.FixtureId}: {u.Word} blocked_by {u.Label}"),
+            Is.Empty,
+            "blocked_by labels must name a rule id declared in the fixture's grammar.xml"
+        );
+    }
+
+    [Test]
     public void CheckedInCoverageTablesAreUpToDate()
     {
         string root = RepositoryRoot();
