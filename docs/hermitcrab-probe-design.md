@@ -88,12 +88,17 @@ allomorph pattern match / rule-not-applicable, allomorph environments, final `Is
 
 ## 2. The keys
 
-### `AnalysisStateKey` (pre-existing)
+### `AnalysisStateKey` (as it stood before #491)
 
 `(Shape, Stratum, SyntacticFeatureStruct, RealizationalFeatureStruct, NonHeadCount, per-rule
 un-application count multiset)`. Order-independent by design — no analysis-side rule reads trail
 order, which is the redundancy it collapses. The multiset is XOR-combined, not `*31`-rolled, so it
 hashes commutatively.
+
+This field list predates #491, which added `FinalTemplateState` to the key; #522 then removed
+`AnalysisStateKey` along with the analysis memo. Master's `AnalysisStratumRule.AnalysisMergeKey` carries the
+fields above plus `FinalTemplateState`. A rebuilt or narrowed key that omits `FinalTemplateState` merges states
+that #491's prune treats differently.
 
 **Freeze-on-read in the constructor is mandatory.** `AnalysisAffixTemplateRule.Apply` reassigns
 `SyntacticFeatureStruct` to a fresh unfrozen clone *after* the owning `Word` is frozen, and that
@@ -227,6 +232,9 @@ grammar and word keys symmetrically before comparing errors, signatures, timing,
 ---
 
 ## 4. Two durable engine facts, restated here so they survive independently
+
+Both facts concern the analysis memo that #522 removed from master. They apply to the archived branches and to
+any revival of the memo.
 
 **`Word.ReplayOnto` does not splice `_mrulesUnapplied`.** It splices `_mruleApps` and `_nonHeadApps`
 only. This is safe *solely* because `AnalysisStateKey` includes the count multiset, which guarantees
