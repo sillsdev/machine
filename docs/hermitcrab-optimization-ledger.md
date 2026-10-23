@@ -313,7 +313,9 @@ with the code: `docs/hermitcrab-perf-2026-09-counts.md` and one file per change 
   2025 `investigate_linear_traverse` branch. Both were tested. The prune was inert on every local corpus
   because each has a partial morpheme, and the traversal measured negative by counts (instances used 2.3x)
   because the current traverser already pools instances. Both implementations and their toggles were removed;
-  their rejected-lead records remain.
+  their rejected-lead records remain. The prune verdict was later superseded: measured with the partiality guard
+  lifted, the prune is 8-33x on Mbugwe and Sena with identical analysis sets, and PR #491 merged to master as
+  `b240b7b5` on 2026-09-28 (see the addendum in `rejected-optimizations/final-template-prune.md`).
 - **Wall time on the measurement machine moved 2x between windows with identical binaries** (a session
   transition in between). Every verdict in this ledger that rests on a wall-time delta under ~20% should
   be read with that in mind; the round's method note is to count steps on the sequential path.
