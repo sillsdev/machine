@@ -114,4 +114,43 @@ public sealed class DeadRuleAllowlistTests
             File.Delete(path);
         }
     }
+
+    private static WordsYaml WordsBlockedBy(params string[] labels)
+    {
+        var words = new WordsYaml { Language = "L" };
+        var word = new WordEntry { Word = "w", ExpectFail = true };
+        word.BlockedBy.AddRange(labels);
+        words.Words.Add(word);
+        return words;
+    }
+
+    [Test]
+    public void BlockedByLabelThatIsAGrammarRuleIdPasses()
+    {
+        var unknown = CoverageReport.FindUnknownBlockedBy("edge-cases/a", WordsBlockedBy("r1"), new[] { "r1", "r2" });
+
+        Assert.That(unknown, Is.Empty);
+    }
+
+    [Test]
+    public void BlockedByLabelThatIsNotAGrammarRuleIdFails()
+    {
+        var unknown = CoverageReport.FindUnknownBlockedBy(
+            "edge-cases/a",
+            WordsBlockedBy("r1", "bogus"),
+            new[] { "r1", "r2" }
+        );
+
+        Assert.That(unknown.Select(u => u.Label), Is.EqualTo(new[] { "bogus" }));
+        Assert.That(unknown[0].FixtureId, Is.EqualTo("edge-cases/a"));
+        Assert.That(unknown[0].Word, Is.EqualTo("w"));
+    }
+
+    [Test]
+    public void BlockedByLabelsAreComparedOrdinally()
+    {
+        var unknown = CoverageReport.FindUnknownBlockedBy("edge-cases/a", WordsBlockedBy("R1"), new[] { "r1" });
+
+        Assert.That(unknown, Has.Count.EqualTo(1));
+    }
 }

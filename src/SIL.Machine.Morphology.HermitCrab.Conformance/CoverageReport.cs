@@ -6,6 +6,16 @@ using System.Text;
 
 namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
+/// <summary>
+/// Coverage and dead-rule measurement over the fixtures.
+///
+/// <b><c>blocked_by</c> is asserted, not verified.</b> A rule named in an expect_fail word's
+/// <c>blocked_by</c> is credited as exercised, but nothing checks the trace to confirm that rule
+/// actually blocked the word. The only check is that every label is a rule id declared in that
+/// fixture's grammar (<see cref="FindUnknownBlockedBy"/>), which catches typos and stale ids, not
+/// a label naming a real rule that never ran. Verifying labels against the parse trace is tracked
+/// in sillsdev/machine#552.
+/// </summary>
 public static class CoverageReport
 {
     public class DeadRule
@@ -15,9 +25,19 @@ public static class CoverageReport
         public string RuleId = "";
     }
 
+    public class UnknownBlockedBy
+    {
+        public string FixtureId = "";
+        public string Word = "";
+        public string Label = "";
+    }
+
     public class CoverageResult
     {
         public List<DeadRule> DeadRules { get; } = new();
+
+        /// <summary><c>blocked_by</c> labels that are not a rule id in their fixture's grammar.</summary>
+        public List<UnknownBlockedBy> UnknownBlockedBy { get; } = new();
 
         /// <summary>Every construct string any word exercises (the distinct <c>construct</c> column
         /// of coverage.csv). Diffed against <c>constructs.txt</c> by the caller to report absolute
@@ -77,6 +97,38 @@ public static class CoverageReport
         return (unexpected, stale);
     }
 
+    /// <summary>Returns every <c>blocked_by</c> label, on an expect_fail or expect_skip word, that is not
+    /// in <paramref name="ruleIds"/> (the fixture grammar's declared rule ids). Ordinal comparison.</summary>
+    public static List<UnknownBlockedBy> FindUnknownBlockedBy(
+        string fixtureId,
+        WordsYaml words,
+        IReadOnlyCollection<string> ruleIds
+    )
+    {
+        var known = new HashSet<string>(ruleIds, StringComparer.Ordinal);
+        var unknown = new List<UnknownBlockedBy>();
+        foreach (WordEntry word in words.Words)
+        {
+            if (!word.ExpectFail && !word.ExpectSkip)
+                continue;
+            foreach (string label in word.BlockedBy)
+            {
+                if (!known.Contains(label))
+                {
+                    unknown.Add(
+                        new UnknownBlockedBy
+                        {
+                            FixtureId = fixtureId,
+                            Word = word.Word,
+                            Label = label,
+                        }
+                    );
+                }
+            }
+        }
+        return unknown;
+    }
+
     public static CoverageResult WriteCsvs(List<Fixture> fixtures, string coverageCsvPath, string rulesCsvPath)
     {
         var result = new CoverageResult();
@@ -87,6 +139,7 @@ public static class CoverageReport
         {
             string language = fixture.Words.Language;
             GrammarRuleIndex ruleIndex = GrammarRuleIndex.Load(fixture.GrammarPath);
+            result.UnknownBlockedBy.AddRange(FindUnknownBlockedBy(fixture.Id, fixture.Words, ruleIndex.AllRuleIds));
 
             // rule id -> exercising word tokens ("word" for a positive rules: hit, "!word" for a
             // blocked_by attribution on an expect_fail word).

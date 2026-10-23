@@ -193,7 +193,10 @@ gap needs selective, named interaction coverage instead, tracked as `conformance
 
 `constructs.txt` is the flat, cross-grammar checklist of grammar-model constructs every fixture's
 `exercises:` values are drawn from — the coverage report cross-references against it and flags both
-zero-coverage constructs and **dead rules** (a `grammar.xml` rule id no word exercises). `rules:`
+zero-coverage constructs and **dead rules** (a `grammar.xml` rule id no word exercises). A rule named
+in an `expect_fail` word's `blocked_by` counts as exercised, but `blocked_by` is **asserted, not
+verified**: the report fails when a label is not a rule id in that fixture's grammar, and does not
+check the parse trace to confirm the rule blocked the word (tracked in sillsdev/machine#552). `rules:`
 per parse is a verified dimension, not aspirational: self-check runs the oracle with tracing on and
 FAILs if the traced rule applications diverge from the declared list. Analyses with identical
 signatures are retained: self-check compares `(signature, rule-id set)` as a multiset, so two
