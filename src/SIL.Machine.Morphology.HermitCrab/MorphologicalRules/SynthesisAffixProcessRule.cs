@@ -142,12 +142,11 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 AffixProcessAllomorph allo = _rule.Allomorphs[i];
                 MprFeatureGroup group;
                 if (
-                    input.IsAllomorphApplicable(allo)
-                    && allo.RequiredMprFeatures.Count > 0
+                    allo.RequiredMprFeatures.Count > 0
                     && !allo.RequiredMprFeatures.IsMatchRequired(input.MprFeatures, out group)
                 )
                 {
-                    if (_morpher.TraceManager.IsTracing)
+                    if (_morpher.TraceManager.IsTracing && input.IsAllomorphApplicable(allo))
                     {
                         _morpher.TraceManager.MorphologicalRuleNotApplied(
                             _rule,
@@ -160,12 +159,11 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     continue;
                 }
                 if (
-                    input.IsAllomorphApplicable(allo)
-                    && allo.ExcludedMprFeatures.Count > 0
+                    allo.ExcludedMprFeatures.Count > 0
                     && !allo.ExcludedMprFeatures.IsMatchExcluded(input.MprFeatures, out group)
                 )
                 {
-                    if (_morpher.TraceManager.IsTracing)
+                    if (_morpher.TraceManager.IsTracing && input.IsAllomorphApplicable(allo))
                     {
                         _morpher.TraceManager.MorphologicalRuleNotApplied(
                             _rule,

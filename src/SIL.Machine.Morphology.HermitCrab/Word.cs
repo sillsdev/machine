@@ -456,7 +456,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     // Add new rules to alternative.
                     int m_start = Source == null ? 0 : Source._mruleApps.Count();
                     for (int i = m_start; i < _mruleApps.Count(); i++)
-                        alternative.MorphologicalRuleUnapplied(_mruleApps[i]);
+                        alternative.MorphologicalRuleUnapplied(_mruleApps[i], _allomorphApps[i]);
                     int nh_start = Source == null ? 0 : Source._nonHeadApps.Count();
                     for (int i = nh_start; i < _nonHeadApps.Count(); i++)
                         alternative.NonHeadUnapplied(_nonHeadApps[i]);
@@ -551,6 +551,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             code = code * 31 + _nonHeadAppIndex.GetHashCode();
             code = code * 31 + _stratum.GetHashCode();
             code = code * 31 + (_rootAllomorph == null ? 0 : _rootAllomorph.GetHashCode());
+            code = code * 31 + _allomorphApps.GetSequenceHashCode();
             code = code * 31 + _mruleApps.GetSequenceHashCode();
             code = code * 31 + _mruleAppIndex.GetHashCode();
             code = code * 31 + _isLastAppliedRuleFinal.GetHashCode();
@@ -575,6 +576,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 && _nonHeadAppIndex == other._nonHeadAppIndex
                 && _stratum == other._stratum
                 && _rootAllomorph == other._rootAllomorph
+                && _allomorphApps.SequenceEqual(other._allomorphApps)
                 && _mruleApps.SequenceEqual(other._mruleApps)
                 && _mruleAppIndex == other._mruleAppIndex
                 && _isLastAppliedRuleFinal == other._isLastAppliedRuleFinal
