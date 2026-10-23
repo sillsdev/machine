@@ -53,11 +53,13 @@ remains between here and the goal.
 **Open coverage debt is tracked by exact item and resolution** in `semantic-coverage-gap-baseline.tsv`.
 These are active gaps, not accepted parity exceptions or formalism exclusions. New or changed gaps
 require explicit review and fail the gate; a row is removed when evidence or a valid proof closes its
-item. The shared fixture corpus grew from 62 to 131 fixtures (67 graduated shared grammars and two
-rule-order variants), expanding the measured inventory from 367 to 389 items. The 22 new ordering
+item. The shared fixture corpus grew from 62 to 132 fixtures (67 graduated shared grammars, two
+rule-order variants and the partial-root probe), expanding the measured inventory from 367 to 389 items. The 22 new ordering
 items initially added 12 proof-resolved items and 10 unresolved items. Targeted C# measurements then
 found real word-level counterexamples for four of those ten; six remain unresolved. All 26 prior gaps
-remain, so the current exact debt is 32 items: 29 unresolved and three rejected proofs.
+remain, so the current exact debt is 33 items: 30 unresolved and three rejected proofs.
+The 33rd, `PhonologicalRule/multipleApplicationOrder/leftToRightIterative`, times out: its `simultaneous`
+mutant does not terminate on `quantified-alpha-bounded-ltr-left` within 180s.
 
 **Rule order is part of the contract, not an implementation detail.** A parse runs in two passes:
 the word is **torn down** to find candidate stems, then **built back up** to check the rebuild

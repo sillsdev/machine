@@ -34,7 +34,7 @@ public sealed class ConstructClaimCorroborationTests
             $"rows={rows.Count} confirmed={confirmed} contradicted={contradicted} unmapped={unmapped}"
         );
 
-        // Canonical exercise tags span all 131 fixtures, with 48 positive-parse tags across the
+        // Canonical exercise tags span all 132 fixtures, with 48 positive-parse tags across the
         // silent16.
         Assert.That(rows, Has.Count.EqualTo(1428));
         Assert.That(confirmed, Is.EqualTo(799));
