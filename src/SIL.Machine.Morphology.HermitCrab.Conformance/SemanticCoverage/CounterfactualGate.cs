@@ -214,7 +214,9 @@ public static class CounterfactualGate
         Action<string, long>? onTimed
     )
     {
-        string wordsPath = grammarPath + ".words";
+        // In the temp directory, not beside the grammar: a fixture's own grammar.xml is passed here, and
+        // the finally below does not run if this process is killed.
+        string wordsPath = Path.GetTempFileName();
         File.WriteAllLines(wordsPath, words);
         try
         {
