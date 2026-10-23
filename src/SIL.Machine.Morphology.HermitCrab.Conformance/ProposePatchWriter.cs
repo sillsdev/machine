@@ -16,7 +16,8 @@ public static class ProposePatchWriter
         TextWriter output,
         Fixture fixture,
         WordEntry word,
-        List<string> actualEntries
+        List<string> actualEntries,
+        bool wasSkipped
     )
     {
         output.WriteLine();
@@ -26,7 +27,8 @@ public static class ProposePatchWriter
         {
             output.WriteLine($"  - word: {word.Word}");
             output.WriteLine($"    note: {word.Note}");
-            output.WriteLine("    expect_fail: true");
+            // Self-check rejects expect_fail on a word the oracle skipped, so propose what it accepts.
+            output.WriteLine(wasSkipped ? "    expect_skip: true" : "    expect_fail: true");
         }
         else
         {
