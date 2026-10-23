@@ -54,4 +54,38 @@ public sealed class BatchCommandTests
             Directory.Delete(directory, recursive: true);
         }
     }
+
+    [TestCase("-1")]
+    [TestCase("x")]
+    [TestCase("+1")]
+    public void Run_WithAnInvalidStart_ReportsItWithoutThrowing(string start)
+    {
+        Fixture fixture = Fixture.DiscoverAll(Path.Combine(RepositoryRoot(), "conformance")).First();
+        var context = new HCContext(XmlLanguageLoader.Load(fixture.GrammarPath), TextWriter.Null);
+        context.Compile();
+        ConsoleCommand[] commands = [new BatchCommand(context)];
+        string directory = Path.Combine(Path.GetTempPath(), $"batch-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        string wordsPath = Path.Combine(directory, "words.txt");
+        File.WriteAllLines(wordsPath, ["a"]);
+        try
+        {
+            var console = new StringWriter();
+            int result = ConsoleCommandDispatcher.DispatchCommand(
+                commands,
+                ["batch", $"--start={start}", wordsPath, Path.Combine(directory, "out.tsv")],
+                console
+            );
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result, Is.Not.EqualTo(0));
+                Assert.That(console.ToString(), Does.Contain("--start must be a non-negative integer"));
+            });
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
 }

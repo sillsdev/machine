@@ -1,6 +1,8 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using ManyConsole;
+using Mono.Options;
 
 namespace SIL.Machine.Morphology.HermitCrab;
 
@@ -22,7 +24,15 @@ internal class BatchCommand : ConsoleCommand
         IsCommand("batch", "Parses every word in a word list, recording a result signature and timing per word");
         SkipsCommandSummaryBeforeRunning();
         HasAdditionalArguments(2, "<wordlist-file> <output-tsv>");
-        HasOption("start=", "0-based line index to resume at (for crash recovery)", v => _startIndex = int.Parse(v));
+        HasOption("start=", "0-based line index to resume at (for crash recovery)", v => _startIndex = ParseStart(v));
+    }
+
+    /// <summary>NumberStyles.None rejects a sign, so a negative index fails here rather than at words[i].</summary>
+    private static int ParseStart(string value)
+    {
+        if (!int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out int start))
+            throw new OptionException($"--start must be a non-negative integer, got '{value}'", "--start");
+        return start;
     }
 
     public override int Run(string[] remainingArguments)
