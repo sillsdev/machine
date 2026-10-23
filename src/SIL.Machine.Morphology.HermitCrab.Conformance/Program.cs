@@ -1487,8 +1487,8 @@ internal class Program
     private const string OutOfScopeConstruct = "Tracing (TraceType)";
 
     /// <summary>Writes coverage.csv and rules.csv, then returns 1 if an in-scope construct has no
-    /// coverage, a blocked_by label is not a grammar rule id, a rule no word exercises is missing from <c>dead-rules-allowed.tsv</c>, or an
-    /// allowed rule is no longer dead; 0 otherwise.</summary>
+    /// coverage, a blocked_by label is not a grammar rule id, a rule no word exercises is missing from
+    /// <c>dead-rules-allowed.tsv</c>, or an allowed rule is no longer dead; 0 otherwise.</summary>
     private static int RunCoverageReport(List<Fixture> fixtures, string fixturesRoot, string constructsPath)
     {
         bool failed = false;
