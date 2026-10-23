@@ -48,12 +48,19 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             if (!_morpher.RuleSelector(_rule))
                 return Enumerable.Empty<Word>();
 
-            if (
-                input.NonHeadCount + 1 >= _morpher.MaxStemCount
-                || input.GetUnapplicationCount(_rule) >= _rule.MaxApplicationCount
-                || !_outputFS.IsUnifiable(input.SyntacticFeatureStruct)
-            )
+            if (input.NonHeadCount + 1 >= _morpher.MaxStemCount)
             {
+                TraceFailure(-1, input, FailureReason.MaxStemCount, _morpher.MaxStemCount);
+                return Enumerable.Empty<Word>();
+            }
+            if (input.GetUnapplicationCount(_rule) >= _rule.MaxApplicationCount)
+            {
+                TraceFailure(-1, input, FailureReason.MaxApplicationCount, _rule.MaxApplicationCount);
+                return Enumerable.Empty<Word>();
+            }
+            if (!_outputFS.IsUnifiable(input.SyntacticFeatureStruct))
+            {
+                TraceFailure(-1, input, FailureReason.OutputSyntacticFeatureStruct, _outputFS);
                 return Enumerable.Empty<Word>();
             }
 
@@ -61,14 +68,18 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             for (int i = 0; i < _rules.Count; i++)
             {
                 var srOutput = new List<Word>();
+                bool matched = false;
                 foreach (Word outWord in _rules[i].Apply(input))
                 {
+                    matched = true;
+                    bool rootFound = false;
                     // for computational complexity reasons, we ensure that the non-head is a root, otherwise we assume it is not
                     // a valid analysis and throw it away
                     foreach (
                         RootAllomorph allo in _morpher.SearchRootAllomorphs(_rule.Stratum, outWord.CurrentNonHead.Shape)
                     )
                     {
+                        rootFound = true;
                         if (
                             !_rule.NonHeadRequiredSyntacticFeatureStruct.IsUnifiable(
                                 ((LexEntry)allo.Morpheme).SyntacticFeatureStruct,
@@ -76,6 +87,18 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                             )
                         )
                         {
+                            // A plain ITraceManager never receives this reason, so it should not pay for the clone.
+                            if (_morpher.TraceManager is IDetailedTraceManager && _morpher.TraceManager.IsTracing)
+                            {
+                                Word tempInput = outWord.Clone();
+                                tempInput.CurrentNonHead.RootAllomorph = allo;
+                                TraceFailure(
+                                    i,
+                                    tempInput,
+                                    FailureReason.NonHeadRequiredSyntacticFeatureStruct,
+                                    _rule.NonHeadRequiredSyntacticFeatureStruct
+                                );
+                            }
                             continue;
                         }
                         // make sure any productivity restrictions on the stem are in the set the member has
@@ -90,9 +113,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                                 Word tempInput = outWord.Clone();
                                 tempInput.CurrentNonHead.RootAllomorph = allo;
                                 tempInput.CurrentTrace = input.CurrentTrace;
-                                _morpher.TraceManager.CompoundingRuleNotUnapplied(
-                                    _rule,
-                                    -1,
+                                TraceFailure(
+                                    i,
                                     tempInput,
                                     FailureReason.NonHeadProdRestrictMprFeatures,
                                     ((LexEntry)allo.Morpheme).MprFeatures
@@ -128,6 +150,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                             srOutput.Add(newWord);
                         }
                     }
+                    if (!rootFound)
+                        TraceFailure(i, outWord, FailureReason.NonHeadLexicalLookup, null);
                 }
 
                 bool unapplied = false;
@@ -144,6 +168,12 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                             )
                         )
                         {
+                            TraceFailure(
+                                i,
+                                outWord,
+                                FailureReason.HeadRequiredSyntacticFeatureStruct,
+                                _rule.HeadRequiredSyntacticFeatureStruct
+                            );
                             continue;
                         }
                         outWord.SyntacticFeatureStruct = syntacticFS;
@@ -158,11 +188,28 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     unapplied = true;
                 }
 
-                if (_morpher.TraceManager.IsTracing && !unapplied)
-                    _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
+                if (_morpher.TraceManager.IsTracing)
+                {
+                    // ITraceManager implementations are told only that no word came out of the subrule
+                    if (_morpher.TraceManager is IDetailedTraceManager)
+                    {
+                        if (!matched)
+                            TraceFailure(i, input, FailureReason.Pattern, null);
+                    }
+                    else if (!unapplied)
+                    {
+                        _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
+                    }
+                }
             }
 
             return output;
+        }
+
+        private void TraceFailure(int index, Word input, FailureReason reason, object failureObj)
+        {
+            if (_morpher.TraceManager.IsTracing)
+                _morpher.TraceManager.CompoundingRuleRejected(_rule, index, input, reason, failureObj);
         }
     }
 }
