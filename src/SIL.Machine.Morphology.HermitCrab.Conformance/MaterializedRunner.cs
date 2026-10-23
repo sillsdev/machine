@@ -50,33 +50,15 @@ public static class MaterializedRunner
 
         foreach (MaterializedFixture fixture in fixtures)
         {
-            bool isPathological = fixture.Manifest.Category == "pathological";
             var result = new FixtureResult { FixtureId = fixture.Id };
-            if (fixture.Manifest.Pathological.HasValue && fixture.Manifest.Pathological.Value != isPathological)
-            {
-                result.Outcome = FixtureOutcome.Failed;
-                result.Reason =
-                    $"manifest error: pathological={fixture.Manifest.Pathological.Value.ToString().ToLowerInvariant()} "
-                    + $"disagrees with category '{fixture.Manifest.Category}'";
-                report.Results.Add(result);
-                continue;
-            }
-
-            if (isPathological && !includePathological)
+            if (IsExcludedPathological(fixture, includePathological))
             {
                 report.ExcludedPathologicalCount++;
                 continue;
             }
 
-            List<string> derivedRequires = RequiresDerivation.Derive(
-                fixture.GrammarPath,
-                fixture.RequiresMorpherSettings
-            );
-            if (
-                !new HashSet<string>(derivedRequires, StringComparer.Ordinal).SetEquals(
-                    new HashSet<string>(fixture.Manifest.Requires, StringComparer.Ordinal)
-                )
-            )
+            List<string> derivedRequires = DerivedRequires(fixture);
+            if (!RequiresMatchGrammar(fixture, derivedRequires))
             {
                 result.Outcome = FixtureOutcome.Failed;
                 result.Reason =
@@ -86,9 +68,7 @@ public static class MaterializedRunner
                 continue;
             }
 
-            List<string> missingCapabilities = fixture
-                .Manifest.Requires.Where(req => !engine.Capabilities.Contains(req))
-                .ToList();
+            List<string> missingCapabilities = MissingCapabilities(fixture, engine);
             if (missingCapabilities.Count > 0)
             {
                 result.Outcome = FixtureOutcome.Skipped;
@@ -168,8 +148,12 @@ diff.WordResults
                 {
                     // A nonzero exit is not evidence of a genuine crash: a misconfigured adapter
                     // exits nonzero on every fixture. Credit the match only once this engine also
-                    // completes an ordinary fixture from the same run.
-                    MaterializedFixture control = fixtures.FirstOrDefault(candidate => !candidate.Manifest.ExpectCrash);
+                    // completes an ordinary fixture from the same run. The control must be one this
+                    // run would itself execute, or an adapter lacking a capability the control needs
+                    // would have its genuine crash reported as a harness failure.
+                    MaterializedFixture control = fixtures.FirstOrDefault(candidate =>
+                        !candidate.Manifest.ExpectCrash && WouldRun(candidate, engine, includePathological)
+                    );
                     bool adapterIsFunctional = control == null || EngineCanRunControl(engine, control);
                     if (adapterIsFunctional)
                     {
@@ -248,6 +232,29 @@ diff.WordResults
             throw new TimeoutException("watchdog timed out waiting for engine.Run");
         return task.GetAwaiter().GetResult();
     }
+
+    private static bool IsExcludedPathological(MaterializedFixture fixture, bool includePathological) =>
+        !includePathological && string.Equals(fixture.Manifest.Category, "pathological", StringComparison.Ordinal);
+
+    private static List<string> DerivedRequires(MaterializedFixture fixture) =>
+        RequiresDerivation.Derive(fixture.GrammarPath, fixture.RequiresMorpherSettings);
+
+    private static bool RequiresMatchGrammar(MaterializedFixture fixture, List<string> derivedRequires) =>
+        new HashSet<string>(derivedRequires, StringComparer.Ordinal).SetEquals(
+            new HashSet<string>(fixture.Manifest.Requires, StringComparer.Ordinal)
+        );
+
+    private static List<string> MissingCapabilities(MaterializedFixture fixture, IEngine engine) =>
+        fixture.Manifest.Requires.Where(req => !engine.Capabilities.Contains(req)).ToList();
+
+    /// <summary>
+    /// Whether <see cref="Run"/> would execute this fixture rather than exclude it, report a manifest
+    /// error, or skip it for a missing capability.
+    /// </summary>
+    private static bool WouldRun(MaterializedFixture fixture, IEngine engine, bool includePathological) =>
+        !IsExcludedPathological(fixture, includePathological)
+        && RequiresMatchGrammar(fixture, DerivedRequires(fixture))
+        && MissingCapabilities(fixture, engine).Count == 0;
 
     /// <summary>
     /// Whether this exact engine can still complete an ordinary fixture, run fresh (not read back
