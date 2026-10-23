@@ -27,11 +27,6 @@ public class FixtureManifest
     [JsonPropertyName("requires")]
     public List<string> Requires { get; set; } = new();
 
-    // Nullable so Runner can distinguish "field absent" (bool default false would look identical
-    // to an explicit "false") from an explicit value to cross-check against Category above.
-    [JsonPropertyName("pathological")]
-    public bool? Pathological { get; set; }
-
     /// <summary>The fixture's <c>morpher:</c> block; an engine runs this fixture only if it declares
     /// <see cref="MorpherSettings.Capability"/>, and must apply every value.</summary>
     [JsonPropertyName("morpher")]

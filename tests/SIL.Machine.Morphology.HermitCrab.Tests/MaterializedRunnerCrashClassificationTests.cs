@@ -27,16 +27,30 @@ public sealed class MaterializedRunnerCrashClassificationTests
         }
     }
 
-    private static MaterializedFixture CreateFixture(string root, string id, bool expectCrash)
+    private static MaterializedFixture CreateFixture(
+        string root,
+        string id,
+        bool expectCrash,
+        bool requiresPhonology = false,
+        bool pathological = false
+    )
     {
         string directory = Path.Combine(root, id);
         Directory.CreateDirectory(directory);
-        // No PhonologicalRule/MetathesisRule, so RequiresDerivation.Derive matches the manifest's
-        // default empty Requires -- unrelated to crash classification.
-        File.WriteAllText(Path.Combine(directory, "grammar.xml"), "<Root/>");
+        // A PhonologicalRule is what RequiresDerivation.Derive reads as "phonology"; without one the
+        // manifest's empty Requires matches the grammar.
+        File.WriteAllText(
+            Path.Combine(directory, "grammar.xml"),
+            requiresPhonology ? "<Root><PhonologicalRule/></Root>" : "<Root/>"
+        );
         File.WriteAllText(Path.Combine(directory, "words.txt"), "w\n");
         File.WriteAllText(Path.Combine(directory, "expected.tsv"), "");
-        return new MaterializedFixture(directory, new FixtureManifest { Id = id, ExpectCrash = expectCrash });
+        var manifest = new FixtureManifest { Id = id, ExpectCrash = expectCrash };
+        if (requiresPhonology)
+            manifest.Requires.Add("phonology");
+        if (pathological)
+            manifest.Category = "pathological";
+        return new MaterializedFixture(directory, manifest);
     }
 
     private static MaterializedRunReport Run(string root, IEngine engine)
@@ -82,6 +96,37 @@ public sealed class MaterializedRunnerCrashClassificationTests
             FixtureResult result = report.Results.Single(r => r.FixtureId == "crash-fixture");
             Assert.That(result.Outcome, Is.EqualTo(FixtureOutcome.Failed), result.Reason);
             Assert.That(result.Reason, Does.Contain("control-fixture"));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestCase(true, false, TestName = "ExpectCrashSkipsAControlTheEngineLacksACapabilityFor")]
+    [TestCase(false, true, TestName = "ExpectCrashSkipsAControlExcludedAsPathological")]
+    public void ExpectCrashUsesOnlyAControlTheRunWouldExecute(bool requiresPhonology, bool pathological)
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"hc-crash-classification-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            // The stub declares no capabilities and fails the ineligible fixture, as an engine that
+            // cannot run it would. Only the eligible control says whether the adapter works.
+            var fixtures = new List<MaterializedFixture>
+            {
+                CreateFixture(root, "crash-fixture", expectCrash: true),
+                CreateFixture(root, "ineligible-control", expectCrash: false, requiresPhonology, pathological),
+                CreateFixture(root, "control-fixture", expectCrash: false),
+            };
+            MaterializedRunReport report = MaterializedRunner.Run(
+                fixtures,
+                new StubEngine("crash-fixture", "ineligible-control"),
+                includePathological: false
+            );
+
+            FixtureResult result = report.Results.Single(r => r.FixtureId == "crash-fixture");
+            Assert.That(result.Outcome, Is.EqualTo(FixtureOutcome.Passed), result.Reason);
         }
         finally
         {
