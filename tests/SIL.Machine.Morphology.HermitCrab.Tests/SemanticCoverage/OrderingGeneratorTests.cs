@@ -487,9 +487,9 @@ public sealed class OrderingGeneratorTests
         TestContext.Out.WriteLine(
             $"lists={totalLists} pairs={totalPairs} disjoint={disjoint} overlaps={overlaps} undetermined={undetermined}"
         );
-        Assert.That(totalLists, Is.EqualTo(68));
-        Assert.That(totalPairs, Is.EqualTo(201));
-        Assert.That(disjoint + overlaps + undetermined, Is.EqualTo(201));
+        Assert.That(totalLists, Is.EqualTo(69));
+        Assert.That(totalPairs, Is.EqualTo(202));
+        Assert.That(disjoint + overlaps + undetermined, Is.EqualTo(202));
     }
 
     [Test]
@@ -676,13 +676,13 @@ public sealed class OrderingGeneratorTests
         foreach (var kv in rows.GroupBy(r => r.Relation))
             TestContext.Out.WriteLine($"  {kv.Key}: {kv.Count()}");
 
-        Assert.That(rows, Has.Count.EqualTo(1901));
-        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(1660));
+        Assert.That(rows, Has.Count.EqualTo(1917));
+        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(1676));
         Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStage), Is.EqualTo(212));
         Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStratum), Is.EqualTo(29));
         Assert.That(rows.Count(r => r.Relation == DomainRelation.Disjoint), Is.EqualTo(32));
         Assert.That(rows.Count(r => r.Relation == DomainRelation.Overlaps), Is.EqualTo(162));
-        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(1707));
+        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(1723));
     }
 
     [Test]
