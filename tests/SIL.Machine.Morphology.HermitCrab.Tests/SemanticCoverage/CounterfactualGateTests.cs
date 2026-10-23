@@ -254,6 +254,24 @@ public sealed class CounterfactualGateTests
     }
 
     [Test]
+    public void AMutantChildsWordListIsNotWrittenBesideTheGrammar()
+    {
+        // The finally that deletes the word list does not run if the sweep is killed, so a file
+        // written beside a fixture's grammar.xml would be left in the checkout.
+        Directory.CreateDirectory(_scratchDirectory);
+        string grammarPath = Path.Combine(_scratchDirectory, "grammar.xml");
+        var created = new System.Collections.Concurrent.ConcurrentBag<string>();
+        using var watcher = new FileSystemWatcher(_scratchDirectory) { EnableRaisingEvents = true };
+        watcher.Created += (_, e) => created.Add(e.Name ?? "");
+
+        Assert.Throws<InvalidOperationException>(() => CounterfactualGate.EvaluateWithTimeout(grammarPath, ["a"]));
+        // Created events arrive asynchronously; give one written during the call time to land.
+        Thread.Sleep(500);
+
+        Assert.That(created, Is.Empty);
+    }
+
+    [Test]
     public void TheGateDoesNotMutateTheOriginalDocumentOnDisk()
     {
         Fixture fixture = ProbeFixture();
