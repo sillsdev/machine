@@ -262,9 +262,9 @@ Mbalantic,mrPfxA,pakolosa;!pakolola
 Mbalantic,mrPfxB,takolola;!takolosa
 Mbalantic,mrSfxA,pakolosa;!takolosa
 Mbalantic,mrSfxB,takolola;!pakolola
-TruncateRulesProbe,mruleTruncLead,ag;as;gas
-TruncateRulesProbe,mruleTruncOptIns,gbubibi;gas
-TruncateRulesProbe,mruleTruncTrail,sa
+TruncateRulesProbe,mruleTruncLead,ag;as;gas;a;ga
+TruncateRulesProbe,mruleTruncOptIns,gbubibi;gas;ga
+TruncateRulesProbe,mruleTruncTrail,sa;a;ga
 TwoMergesCascadeEnv,mrSfxA,teK;KTa
 TwoMergesCascadeEnv,prFront,teK;tek
 TwoMergesCascadeEnv,prMerge,teK;KT;KTa
