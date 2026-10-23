@@ -1,0 +1,31 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle machine-commit=18cf242f4b114b0eb9bac304b4b171ca2f499a39 verified-date=2026-10-08
+language: ReduplicationNoProposalRoute
+inspired_by: ["synthetic reduplicating realization (not modeling any real language)"]
+sources:
+  - "Direct HC-XML RealizationalRule with a repeated CopyFromInput"
+requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  This fixture uses reduplication in a RealizationalRule. HCLoader.cs:976-979 loads the
+  inflectional affix process as AffixProcessRule and leaves realizational affix process support
+  as a TODO, so FieldWorks cannot author this HC-XML shape.
+words:
+  - word: ta
+    note: Bare lexical root, with no realization.
+    parses:
+      - signature: "ROOT|ta"
+        rules: ["rr"]
+
+  - word: tata
+    note: The RealizationalRule copies the entire stem twice.
+    parses:
+      - signature: "ROOT+RED|tata"
+        rules: [rr]
+        exercises: ["AffixProcessRule: reduplication (ReduplicationHint)"]
+
+  - word: tat
+    note: Negative control; the realization produces two complete copies.
+    expect_fail: true

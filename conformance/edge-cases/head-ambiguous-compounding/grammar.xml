@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>HeadAmbiguousCompounding</Name>
+    <!-- Synthetic construct-shaped mimic (invented CVC/CVC roots, no natural-language lexemes; see
+         `conformance-staging/edge-cases/compounding-non-recursive` and `.../recursive-endocentric-
+         compounding` for sibling fixtures of the same construct family). Pins the compounding
+         discrimination `pg_parse::identity::AnalysisIdentity` makes load-bearing via `root_index`:
+         TWO analyses of the SAME surface word, with the SAME ordered morpheme sequence and the SAME
+         output category, differing ONLY in which morpheme is the compound's head/root.
+
+         Structural shape: two mirrored, POS-SYMMETRIC `CompoundingRuleDef`s over the same two parts
+         of speech, `posH` and `posN` -
+
+           crLeftHead:  headPartsOfSpeech="posH" nonHeadPartsOfSpeech="posN" outputPartOfSpeech="posH"
+                        MorphologicalOutput copies HEAD material first, then NON-HEAD material.
+           crRightHead: headPartsOfSpeech="posN" nonHeadPartsOfSpeech="posH" outputPartOfSpeech="posH"
+                        MorphologicalOutput copies NON-HEAD material first, then HEAD material.
+
+         With exactly one lexical entry per part of speech (`dak`:posH, `imo`:posN), both rules
+         instantiate to the SAME surface concatenation "dakimo" (crLeftHead: head=dak copied first,
+         nonhead=imo copied second; crRightHead: nonhead=dak copied first, head=imo copied second) -
+         deliberately, so BOTH fire on the one surface order. The two resulting analyses share the
+         identical ordered morpheme sequence [DAK, IMO] and the identical output category (posH), and
+         differ ONLY in `root_morpheme_index` (0 for crLeftHead's dak-headed reading, 1 for
+         crRightHead's imo-headed reading) - exactly the shape the flat `BatchCommand`-style
+         `morphs|surface` signature string (`pg_parse::result_signature`, joining bare `MorphemeId`s
+         with no root marker at all) CANNOT distinguish, which is why this fixture's headedness pin
+         lives in a dedicated Rust assertion over `AnalysisIdentity`/`WordAnalysis::
+         root_morpheme_index` rather than in `words.yaml`'s own `signature:` field - see this
+         directory's STAGING.md and `rust/crates/pg-foma/tests/cross_compiler_equivalence_gate.rs`'s
+         RED-2 test. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posH"><Name>head</Name></PartOfSpeech>
+      <PartOfSpeech id="posN"><Name>nonhead</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cd"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="ca"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="ck"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="ci"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cm"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="co"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="linear" morphologicalRules="crLeftHead crRightHead">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <CompoundingRule id="crLeftHead" headPartsOfSpeech="posH" nonHeadPartsOfSpeech="posN" outputPartOfSpeech="posH">
+            <Name>LeftHeadCompound</Name>
+            <CompoundingSubrules>
+              <CompoundingSubrule>
+                <HeadMorphologicalInput>
+                  <PhoneticSequence id="h0"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </HeadMorphologicalInput>
+                <NonHeadMorphologicalInput>
+                  <PhoneticSequence id="n0"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </NonHeadMorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="h0" />
+                  <CopyFromInput index="n0" />
+                </MorphologicalOutput>
+              </CompoundingSubrule>
+            </CompoundingSubrules>
+          </CompoundingRule>
+          <CompoundingRule id="crRightHead" headPartsOfSpeech="posN" nonHeadPartsOfSpeech="posH" outputPartOfSpeech="posH">
+            <Name>RightHeadCompound</Name>
+            <CompoundingSubrules>
+              <CompoundingSubrule>
+                <HeadMorphologicalInput>
+                  <PhoneticSequence id="h1"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </HeadMorphologicalInput>
+                <NonHeadMorphologicalInput>
+                  <PhoneticSequence id="n1"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </NonHeadMorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="n1" />
+                  <CopyFromInput index="h1" />
+                </MorphologicalOutput>
+              </CompoundingSubrule>
+            </CompoundingSubrules>
+          </CompoundingRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eDak" partOfSpeech="posH">
+            <Allomorphs><Allomorph id="aDak"><PhoneticShape>dak</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DAK</MorphemeId>
+            <Gloss>dak</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eImo" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aImo"><PhoneticShape>imo</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>IMO</MorphemeId>
+            <Gloss>imo</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

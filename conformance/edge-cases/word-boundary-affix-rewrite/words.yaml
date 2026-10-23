@@ -1,0 +1,66 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle machine-commit=18cf242f4b114b0eb9bac304b4b171ca2f499a39 verified-date=2026-10-09
+language: WordBoundaryAffixRewrite
+inspired_by: ["word-edge rewrite on affix and root material"]
+sources:
+  - "PanGloss boundary-prefix-rule implementation brief"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: ta
+    note: Word-edge anchor applies to a one-segment prefix and a root-initial target.
+    parses:
+      - signature: "PFX_R+ROOT_A|ta"
+        rules: [mrPrefixR, prInitial]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+      - signature: "ROOT_RA|ta"
+        rules: [prInitial]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: taa
+    note: Word-edge anchor applies to the first segment of a two-segment prefix.
+    parses:
+      - signature: "PFX_RA+ROOT_A|taa"
+        rules: [mrPrefixRA, prInitial]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: ara
+    note: The r internal to the two-segment ar prefix is not word-initial.
+    parses:
+      - signature: "PFX_AR+ROOT_A|ara"
+        rules: [mrPrefixAR]
+
+  - word: at
+    note: Mirror case for a suffix-final r with a right word-edge anchor.
+    parses:
+      - signature: "ROOT_A+SFX_R|at"
+        rules: [mrSuffixR, prFinal]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: a
+    note: Bare root control.
+    parses:
+      - signature: "ROOT_A|a"
+        rules: []
+
+  - word: ra
+    note: The unchanged one-segment prefix and root-initial forms are rejected.
+    expect_fail: true
+
+  - word: raa
+    note: The unchanged two-segment prefix form is rejected.
+    expect_fail: true
+
+  - word: ata
+    note: The internal r of the ar prefix must not be treated as word-initial.
+    expect_fail: true
+
+  - word: ar
+    note: The unchanged root-plus-suffix form is rejected.
+    expect_fail: true

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>CrossStemMaterialDetermination</Name>
+    <!-- Pins the backend-routing boundary where long-distance MATERIAL determination means a
+         suffix's FORM depends on which prefix was chosen, not merely whether the pair is
+         licensed. Picking one variant is the silent-undergeneration failure shape. This is NOT
+         mere agreement
+         licensing (a pairing either holds or is rejected): the suffix's own realized SHAPE
+         covaries with which prefix rule fired, via `MorphologicalOutput`/`MorphologicalInput`'s
+         MPRFeatures/requiredMPRFeatures mechanism (rule-assigned, not lexically pre-assigned like
+         `mpr-gated-exception`), carried across the intervening root: a genuinely cross-stem,
+         non-adjacent dependency. A proposer FST that factorizes prefix-side and suffix-side
+         chains independently cannot statically know, while emitting the suffix slot, which
+         prefix was chosen, so it MUST over-propose every suffix variant to
+         stay recall-safe: "pafooka"/"pafooko" and "bufooka"/"bufooko" would all be proposed, and
+         only confirm can reject the two that have no real derivation. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posRoot"><Name>root</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- No PhonologicalRule/MetathesisRule element at all - pure morphotactics, so requires: []
+         (mechanically derived, per the conformance-grammars skill's own note). -->
+    <!-- The two features are inflection classes in FieldWorks terms: a derivational prefix writes one
+         via ToInflectionClassRA (HCLoader.cs:954-955), and each suffix allomorph requires its own via
+         InflectionClassesRC (HCLoader.cs:1113-1123), grouped as HCLoader's inflClasses group. -->
+    <MorphologicalPhonologicalRuleFeatures>
+      <MorphologicalPhonologicalRuleFeature id="mprPfxA">PrefixAChosen</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprPfxB">PrefixBChosen</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeatureGroup matchType="any" outputType="overwrite" features="mprPfxA mprPfxB"><Name>inflClasses</Name></MorphologicalPhonologicalRuleFeatureGroup>
+    </MorphologicalPhonologicalRuleFeatures>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered"
+        morphologicalRules="mrPfxA mrPfxB">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- Prefix A: assigns mprPfxA on the derived word (MorphologicalOutput MPRFeatures). -->
+          <MorphologicalRule id="mrPfxA" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>pfxA</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPfxA">
+                <MorphologicalInput><PhoneticSequence id="stemPfxA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprPfxA">
+                  <InsertSegments><PhoneticShape>pa</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="stemPfxA" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PFXA</MorphemeId>
+          </MorphologicalRule>
+          <!-- Prefix B: assigns mprPfxB on the derived word; the opposite branch. -->
+          <MorphologicalRule id="mrPfxB" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>pfxB</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPfxB">
+                <MorphologicalInput><PhoneticSequence id="stemPfxB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprPfxB">
+                  <InsertSegments><PhoneticShape>bu</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="stemPfxB" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PFXB</MorphemeId>
+          </MorphologicalRule>
+          <!-- ONE inflectional suffix rule, TWO allomorphs, reached through the template slot below:
+               the suffix's FORM (not merely its licensing) covaries with which prefix fired.
+               subSfxKa requires mprPfxA (written only by mrPfxA) and realizes "-ka"; subSfxKo
+               requires mprPfxB and realizes "-ko". Neither can apply to a stem carrying the OTHER
+               prefix's feature, so the two cross-combinations have no valid derivation at all. -->
+          <MorphologicalRule id="mrSfx" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>sfx</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSfxKa">
+                <MorphologicalInput requiredMPRFeatures="mprPfxA"><PhoneticSequence id="stemSfxKa"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="stemSfxKa" />
+                  <InsertSegments><PhoneticShape>ka</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="subSfxKo">
+                <MorphologicalInput requiredMPRFeatures="mprPfxB"><PhoneticSequence id="stemSfxKo"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="stemSfxKo" />
+                  <InsertSegments><PhoneticShape>ko</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SFX</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <!-- Per-allomorph requiredMPRFeatures is only emitted for an inflectional affix, which
+             FieldWorks reaches through a template slot; the stratum rules above are derivational. -->
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posRoot">
+            <Name>sfxTemplate</Name>
+            <Slot optional="true" morphologicalRules="mrSfx"><Name>sfxSlot</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot" partOfSpeech="posRoot">
+            <Allomorphs><Allomorph id="aRoot"><PhoneticShape>tolu</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT</MorphemeId>
+            <Gloss>root</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

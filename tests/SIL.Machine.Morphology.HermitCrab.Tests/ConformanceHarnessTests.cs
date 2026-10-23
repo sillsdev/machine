@@ -61,6 +61,65 @@ public sealed class ConformanceHarnessTests
     }
 
     [Test]
+    public void CompareRuleTraceMultisets_SameSignatureWithDistinctTraces_PassesRegardlessOfOrder()
+    {
+        const string Signature = "DAK+IMO|dakimo";
+        var expected = new (string Signature, IEnumerable<string> RuleIds)[]
+        {
+            (Signature, new[] { "crLeftHead", "crShared" }),
+            (Signature, new[] { "crRightHead" }),
+        };
+        var actual = new (string Signature, IEnumerable<string> RuleIds)[]
+        {
+            (Signature, new[] { "crRightHead" }),
+            (Signature, new[] { "crShared", "crLeftHead" }),
+        };
+
+        Assert.That(Runner.CompareRuleTraceMultisets(expected, actual), Is.Empty);
+    }
+
+    [Test]
+    public void CompareRuleTraceMultisets_WrongTraceForSameSignature_Fails()
+    {
+        const string Signature = "DAK+IMO|dakimo";
+        var expected = new (string Signature, IEnumerable<string> RuleIds)[]
+        {
+            (Signature, new[] { "crLeftHead" }),
+        };
+        var actual = new (string Signature, IEnumerable<string> RuleIds)[]
+        {
+            (Signature, new[] { "crWrongHead" }),
+        };
+
+        List<string> details = Runner.CompareRuleTraceMultisets(expected, actual);
+
+        Assert.That(details, Has.Count.EqualTo(2));
+        Assert.That(details, Has.Some.Contains("declared rules [crLeftHead] count 1 != traced count 0"));
+        Assert.That(details, Has.Some.Contains("declared rules [crWrongHead] count 0 != traced count 1"));
+    }
+
+    [Test]
+    public void CompareRuleTraceMultisets_DuplicateTraceMultiplicityMustMatch()
+    {
+        const string Signature = "DAK+IMO|dakimo";
+        var expected = new (string Signature, IEnumerable<string> RuleIds)[]
+        {
+            (Signature, new[] { "crLeftHead" }),
+            (Signature, new[] { "crLeftHead" }),
+        };
+        var actual = new (string Signature, IEnumerable<string> RuleIds)[]
+        {
+            (Signature, new[] { "crLeftHead" }),
+            (Signature, new[] { "crRightHead" }),
+        };
+
+        List<string> details = Runner.CompareRuleTraceMultisets(expected, actual);
+
+        Assert.That(details, Has.Count.EqualTo(2));
+        Assert.That(details, Has.Some.Contains("declared rules [crLeftHead] count 2 != traced count 1"));
+        Assert.That(details, Has.Some.Contains("declared rules [crRightHead] count 0 != traced count 1"));
+    }
+    [Test]
     public void RunSelfCheck_ExpectCrashFixtureThatTimesOut_Fails()
     {
         FixtureResult result = RunSlowFixtureOverBudget("\nexpect_crash: true");

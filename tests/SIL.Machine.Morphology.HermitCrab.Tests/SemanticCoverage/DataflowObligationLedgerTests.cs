@@ -39,15 +39,16 @@ public sealed class DataflowObligationLedgerTests
                 + $"satisfied={satisfied} notSatisfied={notSatisfied} unknown={unknown}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(346));
+        // The 69 shared fixture additions contribute two new ConditionExtension obligation cells.
+        Assert.That(rows, Has.Count.EqualTo(348));
         Assert.That(mcDc, Is.EqualTo(160));
-        Assert.That(conditionExtension, Is.EqualTo(4));
+        Assert.That(conditionExtension, Is.EqualTo(6));
         Assert.That(mutator, Is.EqualTo(182));
         Assert.That(satisfied + notSatisfied + unknown, Is.EqualTo(rows.Count));
 
         Assert.That(satisfied, Is.EqualTo(9));
         Assert.That(notSatisfied, Is.EqualTo(120));
-        Assert.That(unknown, Is.EqualTo(217));
+        Assert.That(unknown, Is.EqualTo(219));
     }
 
     [Test]

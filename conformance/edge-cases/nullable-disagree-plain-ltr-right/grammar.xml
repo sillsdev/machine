@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>nullable-disagree-plain-ltr-right</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN">
+        <Name>n</Name>
+      </PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featBack">
+        <Name>back</Name>
+        <Symbols>
+          <Symbol id="bkPlus">+bk</Symbol>
+          <Symbol id="bkMinus">-bk</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featRound">
+        <Name>round</Name>
+        <Symbols>
+          <Symbol id="rdMinus">-rd</Symbol>
+          <Symbol id="rdPlus">+rd</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cI">
+          <Representations>
+            <Representation>i</Representation>
+          </Representations>
+          <FeatureValue feature="featBack" symbolValues="bkMinus" />
+          <FeatureValue feature="featRound" symbolValues="rdMinus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cY">
+          <Representations>
+            <Representation>y</Representation>
+          </Representations>
+          <FeatureValue feature="featBack" symbolValues="bkMinus" />
+          <FeatureValue feature="featRound" symbolValues="rdPlus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cA">
+          <Representations>
+            <Representation>a</Representation>
+          </Representations>
+          <FeatureValue feature="featBack" symbolValues="bkPlus" />
+          <FeatureValue feature="featRound" symbolValues="rdMinus" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cU">
+          <Representations>
+            <Representation>u</Representation>
+          </Representations>
+          <FeatureValue feature="featBack" symbolValues="bkPlus" />
+          <FeatureValue feature="featRound" symbolValues="rdPlus" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <SegmentNaturalClass id="ncVowel">
+        <Name>vowels</Name>
+        <Segment segment="cI" />
+        <Segment segment="cY" />
+        <Segment segment="cA" />
+        <Segment segment="cU" />
+      </SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prDoubleAlpha" multipleApplicationOrder="leftToRightIterative">
+        <Name>doubleAlphaFlip</Name>
+        <VariableFeatures>
+          <VariableFeature id="varBack" name="α" phonologicalFeature="featBack" />
+          <VariableFeature id="varRound" name="β" phonologicalFeature="featRound" />
+        </VariableFeatures>
+        <PhoneticInput>
+          <PhoneticSequence>
+            <SimpleContext naturalClass="ncVowel">
+              <AlphaVariables>
+                <AlphaVariable variableFeature="varBack" polarity="plus" />
+              </AlphaVariables>
+            </SimpleContext>
+            <SimpleContext naturalClass="ncVowel">
+              <AlphaVariables>
+                <AlphaVariable variableFeature="varRound" polarity="plus" />
+              </AlphaVariables>
+            </SimpleContext>
+          </PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <SimpleContext naturalClass="ncVowel">
+                  <AlphaVariables>
+                    <AlphaVariable variableFeature="varBack" polarity="minus" />
+                  </AlphaVariables>
+                </SimpleContext>
+                <SimpleContext naturalClass="ncVowel">
+                  <AlphaVariables>
+                    <AlphaVariable variableFeature="varRound" polarity="minus" />
+                  </AlphaVariables>
+                </SimpleContext>
+              </PhoneticSequence>
+            </PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" phonologicalRules="prDoubleAlpha">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eAu" partOfSpeech="posN">
+            <Allomorphs>
+              <Allomorph id="aAu">
+                <PhoneticShape>au</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <MorphemeId>AU</MorphemeId>
+            <Gloss>au</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

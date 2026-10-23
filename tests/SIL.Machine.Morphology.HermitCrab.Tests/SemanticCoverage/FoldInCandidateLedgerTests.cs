@@ -45,16 +45,16 @@ public sealed class FoldInCandidateLedgerTests
                 + $"surfacePresentElsewhere={surfacePresentElsewhere}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(83));
-        Assert.That(interfaceEdgeCaseOnly, Is.EqualTo(1));
+        // The 131-fixture corpus adds the non-head MPR candidate alongside compound output POS.
+        Assert.That(rows, Has.Count.EqualTo(84));
+        Assert.That(interfaceEdgeCaseOnly, Is.EqualTo(2));
         Assert.That(interfaceNeverWitnessed, Is.EqualTo(25));
         Assert.That(surfaceEdgeCaseOnly, Is.EqualTo(49));
         Assert.That(surfacePresentElsewhere, Is.EqualTo(8));
     }
 
-    // Was CompoundingRule.outputPartOfSpeech and MorphologicalInput.excludedMPRFeatures; now just the
-    // former -- see CheckedInLedgerHasTheMeasuredCategoryCounts's own comment on why the latter dropped
-    // out.
+    // The expanded corpus witnesses nonHeadPartsOfSpeech in compounding-non-recursive and
+    // outputPartOfSpeech in compounding-breadth.
     [Test]
     public void InterfaceFoldInCandidatesAreTheEdgeCaseOnlyMprAndCompoundOutput()
     {
@@ -66,10 +66,10 @@ public sealed class FoldInCandidateLedgerTests
             )
             .ToArray();
 
-        Assert.That(candidates, Has.Length.EqualTo(1));
+        Assert.That(candidates, Has.Length.EqualTo(2));
         Assert.That(
             candidates.Select(r => r.Obligation),
-            Is.EquivalentTo(new[] { "CompoundingRule.outputPartOfSpeech" })
+            Is.EquivalentTo(new[] { "CompoundingRule.nonHeadPartsOfSpeech", "CompoundingRule.outputPartOfSpeech" })
         );
     }
 

@@ -17,7 +17,7 @@ the payload IS present and the gated form IS blocked.
 
 **Satisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: paired witness: severing writer and reader both flip 'vokadan' from failed to successful parse in edge-cases/mpr-gated-exception (conformance/interface-witness.tsv)
+Ledger evidence: paired witness: severing writer and reader both flip 'vokadan' from failed to successful parse in edge-cases/deletion-reduplication-exception-composite (conformance/interface-witness.tsv)
 
 ## Fixture and word
 

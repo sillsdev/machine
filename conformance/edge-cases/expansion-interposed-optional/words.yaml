@@ -1,0 +1,28 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# C# oracle verified at Machine aab4c59819adb7b366915e09df2fb28c62b8c03a via hc-conformance.exe.
+# The positive's expected complete analysis identity is ROOT|ii; negative controls have no analyses.
+language: ExpansionInterposedOptional
+sources:
+  - "Machine tests/SIL.Machine.Morphology.HermitCrab.Tests/PhonologicalRules/RewriteRuleTests.cs::ExpandRuleUnappliesAcrossInterposedOptionalSegment (aab4c59819adb7b366915e09df2fb28c62b8c03a)"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: ii
+    note: "Forward derivation: ROOT/u -> prExpand/ii; prDelete is inert because no z occurs."
+    parses:
+      - signature: "ROOT|ii"
+        rules: [prExpand]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+  - word: u
+    note: "The underlying form is not a surface form because prExpand is obligatory."
+    expect_fail: true
+  - word: i
+    note: "A single i cannot match the expanded two-segment output."
+    expect_fail: true
+  - word: iz
+    note: "No lexical derivation produces a trailing z."
+    expect_fail: true

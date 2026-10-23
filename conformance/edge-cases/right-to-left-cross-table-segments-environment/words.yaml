@@ -1,0 +1,61 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# Verified against the C# founding oracle (hc.dll, via hc-conformance.exe self-check): signature
+# matches exactly; `rules:` transcribed from the oracle's own trace output.
+language: RightToLeftCrossTableSegmentsEnvironment
+inspired_by: ["synthetic cross-table right-to-left Segments environment probe"]
+sources:
+  - "openspec/changes/plan-construct-coverage-completion task 4.2"
+requires: [phonology]
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  PERMANENTLY KEEP-ENGINE-ONLY, not a temporary or deferred verdict (re-examined 2026-09-16): the effect
+  itself -- one spelling resolving to different segment identities depending on the table -- has no
+  single-table analog. HCLoader builds one table from PhonemeSetsOS[0] and reuses it for every
+  stratum, and inside that table a second phoneme sharing a grapheme is dropped as DuplicateGrapheme
+  (HCLoader.cs:2686-2689); several PhCodes per phoneme run the other way (many spellings, one
+  identity). Kept because each two-table fixture pins a distinct Rust seam (see STAGING.md).
+  Core premise (a cross-table Segments atom in an RTL rule's own environment) requires two distinct
+  CharacterDefinitionTables (t0/Foreign, t1/Owning) referenced by different Stratum elements, plus an
+  explicit Segments@characterDefinitionTable override to the non-owning table; HCLoader builds
+  exactly one table per grammar and reuses it for every stratum (HCLoader.cs:204,227-233,374,
+  2669-2742), so that override can never carry a meaningful value (interface-inventory row
+  Segments.characterDefinitionTable, producible=No) -- same gap as
+  edge-cases/cross-table-root-respelling.
+words:
+  - word: ey
+    note: ROOT1's obligatory rewritten surface; the foreign-table y constraint matches owning-table y by features.
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    parses:
+      - signature: "ROOT1|ey"
+        rules: [prRtlCrossTableSegments]
+        exercises:
+          - "RewriteRule direction (Dir): right-to-left"
+  - word: a
+    note: ROOT2 remains unchanged because no y follows.
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    parses:
+      - signature: "ROOT2|a"
+        rules: []
+        exercises:
+          - "RewriteRule direction (Dir): right-to-left"
+  - word: ay
+    note: ROOT1's raw form is invalid because the matching RTL rewrite is obligatory.
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: e
+    note: Rewritten a without the licensing y is invalid.
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: y
+    note: A bare environment segment is not a root.
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"
