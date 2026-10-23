@@ -34,7 +34,11 @@ public sealed class CoverageGapRatchetTests
         foreach (string raw in File.ReadAllLines(path))
         {
             string line = raw.Trim();
-            if (line.Length == 0 || line.StartsWith("#", StringComparison.Ordinal) || line.StartsWith("item_id\t", StringComparison.Ordinal))
+            if (
+                line.Length == 0
+                || line.StartsWith("#", StringComparison.Ordinal)
+                || line.StartsWith("item_id\t", StringComparison.Ordinal)
+            )
                 continue;
 
             string[] fields = line.Split('\t');
@@ -114,9 +118,15 @@ public sealed class CoverageGapRatchetTests
             .Items.Where(result => debtResolutions.Contains(result.Resolution))
             .OrderBy(result => result.ItemId, StringComparer.Ordinal)
             .ToArray();
-        var actualById = actualGaps.ToDictionary(result => result.ItemId, result => result.Resolution, StringComparer.Ordinal);
+        var actualById = actualGaps.ToDictionary(
+            result => result.ItemId,
+            result => result.Resolution,
+            StringComparer.Ordinal
+        );
         string[] unexpectedOrChanged = actualById
-            .Where(pair => !expectedGaps.TryGetValue(pair.Key, out CoverageResolution expected) || expected != pair.Value)
+            .Where(pair =>
+                !expectedGaps.TryGetValue(pair.Key, out CoverageResolution expected) || expected != pair.Value
+            )
             .Select(pair => $"{pair.Key}\t{pair.Value}")
             .ToArray();
         string[] resolvedOrChanged = expectedGaps
@@ -134,8 +144,12 @@ public sealed class CoverageGapRatchetTests
             $"open coverage debt: {actualGaps.Length} (Surface {surfaceGaps}, Ordering {orderingGaps}); "
                 + $"named item/resolution baseline {expectedGaps.Count}"
         );
-        TestContext.Out.WriteLine($"  unresolved: {actualGaps.Count(result => result.Resolution == CoverageResolution.Unresolved)}");
-        TestContext.Out.WriteLine($"  rejected: {actualGaps.Count(result => result.Resolution == CoverageResolution.Rejected)}");
+        TestContext.Out.WriteLine(
+            $"  unresolved: {actualGaps.Count(result => result.Resolution == CoverageResolution.Unresolved)}"
+        );
+        TestContext.Out.WriteLine(
+            $"  rejected: {actualGaps.Count(result => result.Resolution == CoverageResolution.Rejected)}"
+        );
         foreach (
             var group in completeness
                 .Items.Where(result => result.Resolution == CoverageResolution.Proven)

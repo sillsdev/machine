@@ -326,10 +326,11 @@ result.WordResults
         IEnumerable<(string Signature, IEnumerable<string> RuleIds)> actual
     )
     {
-        static string CanonicalRuleIds(IEnumerable<string> ruleIds) => string.Join(
-            '\u001f',
-            ruleIds.Distinct(StringComparer.Ordinal).OrderBy(ruleId => ruleId, StringComparer.Ordinal)
-        );
+        static string CanonicalRuleIds(IEnumerable<string> ruleIds) =>
+            string.Join(
+                '\u001f',
+                ruleIds.Distinct(StringComparer.Ordinal).OrderBy(ruleId => ruleId, StringComparer.Ordinal)
+            );
 
         static Dictionary<(string Signature, string RuleIds), int> CountTraces(
             IEnumerable<(string Signature, IEnumerable<string> RuleIds)> traces
