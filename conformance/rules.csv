@@ -111,6 +111,10 @@ FinalTemplatePartialDiscriminators,mrGate3Partial,nibgi
 FinalTemplatePartialDiscriminators,mrNonFinTagA,daknagafa
 FinalTemplatePartialDiscriminators,mrNonFinTagB,pilnbtbfb
 FinalTemplatePartialDiscriminators,mrZTagSlot,
+FinalTemplatePartialRoot,mrFinX,dakfa
+FinalTemplatePartialRoot,mrFinY,nibfb
+FinalTemplatePartialRoot,mrGateX,!dakfaga;pakga
+FinalTemplatePartialRoot,mrGateY,pibgb;!nibfbgb
 FreeFluctuatingAllomorphPair,ruleS,kits;!kots
 GeminateUnderMerge,prMerge,f
 GeminateUnderMerge,prShorten,f

@@ -8,6 +8,7 @@ dtd:enum/AllomorphCoOccurrenceRule/adjacency/adjacentToLeft	Unresolved
 dtd:enum/AllomorphCoOccurrenceRule/adjacency/adjacentToRight	Unresolved
 dtd:enum/AllomorphCoOccurrenceRule/adjacency/somewhereToLeft	Unresolved
 dtd:enum/AllomorphCoOccurrenceRule/adjacency/somewhereToRight	Unresolved
+dtd:enum/PhonologicalRule/multipleApplicationOrder/leftToRightIterative	Unresolved
 dtd:enum/Stratum/cyclicity/cyclic	Rejected
 dtd:enum/Stratum/phonologicalRuleOrder/simultaneous	Rejected
 ordering:edge-cases/compounding-breadth/morphologicalRules/crJoin~crNever	Unresolved

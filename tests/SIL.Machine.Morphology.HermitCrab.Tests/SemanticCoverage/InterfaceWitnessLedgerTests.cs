@@ -42,8 +42,8 @@ public sealed class InterfaceWitnessLedgerTests
                 + $"distinctInterfacesEvidenced={distinctInterfacesEverEvidenced}"
         );
 
-        // 131 fixtures now yield 1191 present interface/fixture pairs, 574 more than the prior 62-fixture set.
-        Assert.That(rows, Has.Count.EqualTo(1191));
+        // 132 fixtures now yield 1200 present interface/fixture pairs, 574 more than the prior 62-fixture set.
+        Assert.That(rows, Has.Count.EqualTo(1200));
         Assert.That(evidenced, Is.EqualTo(215));
         Assert.That(requiredByDtd, Is.EqualTo(643));
         Assert.That(requiredByLoader, Is.EqualTo(96));

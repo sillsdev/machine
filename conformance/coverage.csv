@@ -224,6 +224,8 @@ FeatureSystemBreadth,salk,,AffixProcessRule: prefix/suffix/circumfix/infix
 FeatureSystemBreadth,tal,,Element deactivation (isActive) across loader collections
 FinalTemplateMergeKey,sagdss,SAG+FINAL+TEMPLATE+NOM|sagdss,Affix template slots (obligatory/disjunctive/ordering)
 FinalTemplatePartialDiscriminators,dakfa,DAK+FINTAGA|dakfa,Affix template slots (obligatory/disjunctive/ordering)
+FinalTemplatePartialRoot,dakfa,DAK+FINX|dakfa,Affix template slots (obligatory/disjunctive/ordering)
+FinalTemplatePartialRoot,nibfb,NIB+FINY|nibfb,Affix template slots (obligatory/disjunctive/ordering)
 FreeFluctuatingAllomorphPair,pol,ALT|pol,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,pel,ALT|pel,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,kits,ORD+SSFX|kits,Disjunctive allomorphs / free-fluctuation

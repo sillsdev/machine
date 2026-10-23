@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>FinalTemplatePartialRoot</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posX"><Name>x</Name></PartOfSpeech>
+      <PartOfSpeech id="posY"><Name>y</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="sA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sF"><Representations><Representation>f</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sG"><Representations><Representation>g</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="sP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" isActive="yes">
+        <Name>Lower</Name>
+        <LexicalEntries>
+          <LexicalEntry id="ePak" partOfSpeech="posX" partial="true">
+            <Allomorphs>
+              <Allomorph id="aPak"><PhoneticShape>pak</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>PAK</MorphemeId>
+            <Gloss>pak</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered"
+               morphologicalRules="mrGateX mrGateY" isActive="yes">
+        <Name>Upper</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrFinX" requiredPartsOfSpeech="posX" outputPartOfSpeech="posX">
+            <Name>FinX</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subFinX">
+                <MorphologicalInput><PhoneticSequence id="stemFinX"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemFinX" /><InsertSegments><PhoneticShape>fa</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>FINX</MorphemeId>
+            <Gloss>finx</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrGateX" requiredPartsOfSpeech="posX" outputPartOfSpeech="posX">
+            <Name>GateX</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subGateX">
+                <MorphologicalInput><PhoneticSequence id="stemGateX"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemGateX" /><InsertSegments><PhoneticShape>ga</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>GATEX</MorphemeId>
+            <Gloss>gatex</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrFinY" requiredPartsOfSpeech="posY" outputPartOfSpeech="posY">
+            <Name>FinY</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subFinY">
+                <MorphologicalInput><PhoneticSequence id="stemFinY"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemFinY" /><InsertSegments><PhoneticShape>fb</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>FINY</MorphemeId>
+            <Gloss>finy</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrGateY" requiredPartsOfSpeech="posY" outputPartOfSpeech="posY">
+            <Name>GateY</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subGateY">
+                <MorphologicalInput><PhoneticSequence id="stemGateY"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemGateY" /><InsertSegments><PhoneticShape>gb</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>GATEY</MorphemeId>
+            <Gloss>gatey</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posX" final="true">
+            <Name>finalTemplateX</Name>
+            <Slot morphologicalRules="mrFinX"><Name>finSlotX</Name></Slot>
+          </AffixTemplate>
+          <AffixTemplate requiredPartsOfSpeech="posY" final="true">
+            <Name>finalTemplateY</Name>
+            <Slot morphologicalRules="mrFinY"><Name>finSlotY</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eDak" partOfSpeech="posX">
+            <Allomorphs>
+              <Allomorph id="aDak"><PhoneticShape>dak</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>DAK</MorphemeId>
+            <Gloss>dak</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="ePib" partOfSpeech="posY" partial="true">
+            <Allomorphs>
+              <Allomorph id="aPib"><PhoneticShape>pib</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>PIB</MorphemeId>
+            <Gloss>pib</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eNib" partOfSpeech="posY">
+            <Allomorphs>
+              <Allomorph id="aNib"><PhoneticShape>nib</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>NIB</MorphemeId>
+            <Gloss>nib</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
