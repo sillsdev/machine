@@ -65,8 +65,8 @@ public class AnalysisAffixTemplatesRuleTests : HermitCrabTestBase
                     Word[] actual = shared.Apply(input).ToArray();
                     Assert.That(actual, Is.EqualTo(expected).Using(FreezableEqualityComparer<Word>.Default), text);
                     Assert.That(
-                        actual.Select(AnalysisStateKey.PinAndKey),
-                        Is.EqualTo(expected.Select(AnalysisStateKey.PinAndKey)),
+                        actual.Select(w => new AnalysisStratumRule.AnalysisMergeKey(w)),
+                        Is.EqualTo(expected.Select(w => new AnalysisStratumRule.AnalysisMergeKey(w))),
                         text
                     );
                     compared += actual.Length;
