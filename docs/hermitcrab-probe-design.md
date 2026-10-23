@@ -179,7 +179,10 @@ disables the memo, so a traced run measures nothing.
 
 Parity is the gate and speed is only reported. Acceptance is **analysis-set equality on canonical
 morpheme-signature sets** (`MorpherTests.WordAnalysisSignature`, sorted) — never object or byte
-equality, because a replayed `Word` is legitimately not field-for-field identical.
+equality, because a replayed `Word` is legitimately not field-for-field identical. That signature joins
+`Morpheme.Id`, which is empty in every FLEx export used, so on Sena, Mbugwe and Amharic it compares morph counts
+only. A rebuilt gate for those grammars needs a gloss + allomorph-index + syntactic-feature-structure signature,
+compared as multisets (`hermitcrab-perf-2026-09-disposition.md`).
 
 Timing: **discard a warm-up rep per arm, then take min of N interleaved samples, and print the
 off-arm spread beside every speedup.** Refuse any speedup smaller than its own spread. Three
