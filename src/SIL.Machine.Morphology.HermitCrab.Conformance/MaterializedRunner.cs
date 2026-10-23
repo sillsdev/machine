@@ -146,11 +146,8 @@ diff.WordResults
 
                 if (fixture.Manifest.ExpectCrash)
                 {
-                    // A nonzero exit is not evidence of a genuine crash: a misconfigured adapter
-                    // exits nonzero on every fixture. Credit the match only once this engine also
-                    // completes an ordinary fixture from the same run. The control must be one this
-                    // run would itself execute, or an adapter lacking a capability the control needs
-                    // would have its genuine crash reported as a harness failure.
+                    // A misconfigured adapter exits nonzero on every fixture, so credit the crash only
+                    // if this engine also completes an ordinary fixture this run would execute.
                     MaterializedFixture control = fixtures.FirstOrDefault(candidate =>
                         !candidate.Manifest.ExpectCrash && WouldRun(candidate, engine, includePathological)
                     );
