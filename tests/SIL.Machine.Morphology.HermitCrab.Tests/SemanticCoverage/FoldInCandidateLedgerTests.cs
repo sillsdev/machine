@@ -45,7 +45,7 @@ public sealed class FoldInCandidateLedgerTests
                 + $"surfacePresentElsewhere={surfacePresentElsewhere}"
         );
 
-        // The 132-fixture corpus adds the non-head MPR candidate alongside compound output POS.
+        // The 135-fixture corpus adds the non-head MPR candidate alongside compound output POS.
         Assert.That(rows, Has.Count.EqualTo(85));
         Assert.That(interfaceEdgeCaseOnly, Is.EqualTo(2));
         Assert.That(interfaceNeverWitnessed, Is.EqualTo(25));

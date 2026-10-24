@@ -1370,6 +1370,35 @@ edge-cases/truncate-morphotactic	Interface	SimpleContext.naturalClass	required-b
 edge-cases/truncate-morphotactic	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/truncate-morphotactic	Construct	AffixProcessRule: subtraction/truncation	claimed-unmapped	17 claim(s)
+edge-cases/truncate-morphotactic-copy-u	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/truncate-morphotactic-copy-u	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/truncate-morphotactic-copy-u	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/truncate-morphotactic-copy-u	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/truncate-morphotactic-copy-u	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/truncate-morphotactic-copy-u	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/truncate-morphotactic-copy-u	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/truncate-morphotactic-copy-u	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/truncate-morphotactic-copy-u	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/truncate-morphotactic-identity	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/truncate-morphotactic-identity	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/truncate-morphotactic-identity	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/truncate-morphotactic-identity	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/truncate-morphotactic-identity	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/truncate-morphotactic-identity	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/truncate-morphotactic-identity	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/truncate-morphotactic-identity	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/truncate-morphotactic-identity	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/truncate-morphotactic-identity	Construct	AffixProcessRule: subtraction/truncation	claimed-unmapped	8 claim(s)
+edge-cases/truncate-morphotactic-subsumption	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/truncate-morphotactic-subsumption	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/truncate-morphotactic-subsumption	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/truncate-morphotactic-subsumption	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/truncate-morphotactic-subsumption	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/truncate-morphotactic-subsumption	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/truncate-morphotactic-subsumption	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/truncate-morphotactic-subsumption	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/truncate-morphotactic-subsumption	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/truncate-morphotactic-subsumption	Construct	AffixProcessRule: subtraction/truncation	claimed-unmapped	3 claim(s)
 edge-cases/two-merges-cascade-env	Interface	AlphaVariable.variableFeature	required-by-dtd	RequiredByDtd
 edge-cases/two-merges-cascade-env	Interface	BoundaryMarker.boundary	required-by-dtd	RequiredByDtd
 edge-cases/two-merges-cascade-env	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd

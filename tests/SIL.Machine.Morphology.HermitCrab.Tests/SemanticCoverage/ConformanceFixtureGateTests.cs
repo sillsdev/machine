@@ -145,6 +145,7 @@ public sealed class ConformanceFixtureGateTests
         var noExerciseByDesign = new HashSet<string>(StringComparer.Ordinal)
         {
             "edge-cases/simultaneous-epenthesis-cascade",
+            "edge-cases/truncate-morphotactic-copy-u",
         };
 
         List<Fixture> fixtures = Discover();
