@@ -196,20 +196,23 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     outWord.MorphologicalRuleApplied(_rule, appliedAllomorphIndices);
                     appliedAllomorphIndices.Add(i);
 
-                    if (_rule.Blockable && outWord.CheckBlocking(out Word newWord))
+                    if (input.IsAllomorphApplicable(allo))
                     {
-                        if (_morpher.TraceManager.IsTracing)
-                            _morpher.TraceManager.Blocked(_rule, newWord);
-                        outWord = newWord;
-                    }
-                    else
-                    {
-                        outWord.Freeze();
-                    }
+                        if (_rule.Blockable && outWord.CheckBlocking(out Word newWord))
+                        {
+                            if (_morpher.TraceManager.IsTracing)
+                                _morpher.TraceManager.Blocked(_rule, newWord);
+                            outWord = newWord;
+                        }
+                        else
+                        {
+                            outWord.Freeze();
+                        }
 
-                    if (_morpher.TraceManager.IsTracing)
-                        _morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
-                    output.Add(outWord);
+                        if (_morpher.TraceManager.IsTracing)
+                            _morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
+                        output.Add(outWord);
+                    }
 
                     // return all word syntheses that match subrules that are constrained by environments,
                     // HC violates the disjunctive property of allomorphs here because it cannot check the
