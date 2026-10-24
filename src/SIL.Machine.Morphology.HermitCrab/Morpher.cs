@@ -413,13 +413,18 @@ namespace SIL.Machine.Morphology.HermitCrab
             return matches.Distinct(FreezableEqualityComparer<Word>.Default);
         }
 
+        internal IEnumerable<Word> SynthesizeWord(Word input)
+        {
+            return _synthesisRule.Apply(input).Where(IsWordValid);
+        }
+
         internal IEnumerable<RootAllomorph> SearchRootAllomorphs(Stratum stratum, Shape shape)
         {
             RootAllomorphTrie alloSearcher = _allomorphTries[stratum];
             return alloSearcher.Search(shape).Distinct();
         }
 
-        private IEnumerable<Word> LexicalLookup(Word input)
+        internal IEnumerable<Word> LexicalLookup(Word input)
         {
             if (_traceManager.IsTracing)
                 _traceManager.LexicalLookup(input.Stratum, input);

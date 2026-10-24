@@ -2031,4 +2031,61 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("katibɯd"), "49 PER.ACT");
     }
+
+    [Test]
+    public void IsAllomorphApplicable()
+    {
+        FeatureStruct any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var sSuffix = new AffixProcessRule
+        {
+            Name = "s_suffix",
+            Gloss = "3SG",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            OutSyntacticFeatureStruct = FeatureStruct
+                .New(Language.SyntacticFeatureSystem)
+                .Feature(Head)
+                .EqualTo(head => head.Feature("pers").EqualTo("3"))
+                .Value,
+        };
+        var allomorph1 = new AffixProcessAllomorph
+        {
+            Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+            Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "s") },
+        };
+        var allomorph2 = new AffixProcessAllomorph
+        {
+            Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+            Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "z") },
+        };
+        sSuffix.Allomorphs.Add(allomorph1);
+        sSuffix.Allomorphs.Add(allomorph2);
+        Morphophonemic.MorphologicalRules.Add(sSuffix);
+        var morpher = new Morpher(TraceManager, Language) { MergeEquivalentAnalyses = true };
+
+        Shape shape = Morphophonemic.CharacterDefinitionTable.Segment("sag");
+        var input = new Word(Morphophonemic, shape);
+        input.MorphologicalRuleUnapplied(sSuffix);
+        input.Freeze();
+        Word word = morpher.LexicalLookup(input).First();
+        IEnumerable<Word> output = morpher.SynthesizeWord(word);
+        Assert.That(output.Count(), Is.EqualTo(2));
+
+        shape = Morphophonemic.CharacterDefinitionTable.Segment("sag");
+        input = new Word(Morphophonemic, shape);
+        input.MorphologicalRuleUnapplied(sSuffix, allomorph1);
+        input.Freeze();
+        word = morpher.LexicalLookup(input).First();
+        output = morpher.SynthesizeWord(word);
+        Assert.That(output.Count(), Is.EqualTo(1));
+        Assert.That(output.First().ToString(), Is.EqualTo("sags"));
+
+        shape = Morphophonemic.CharacterDefinitionTable.Segment("sag");
+        input = new Word(Morphophonemic, shape);
+        input.MorphologicalRuleUnapplied(sSuffix, allomorph2);
+        input.Freeze();
+        word = morpher.LexicalLookup(input).First();
+        output = morpher.SynthesizeWord(word);
+        Assert.That(output.Count(), Is.EqualTo(1));
+        Assert.That(output.First().ToString(), Is.EqualTo("sagz"));
+    }
 }

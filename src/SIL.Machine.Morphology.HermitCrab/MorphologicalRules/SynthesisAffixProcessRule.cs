@@ -146,7 +146,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     && !allo.RequiredMprFeatures.IsMatchRequired(input.MprFeatures, out group)
                 )
                 {
-                    if (_morpher.TraceManager.IsTracing && input.IsAllomorphApplicable(allo))
+                    if (_morpher.TraceManager.IsTracing)
                     {
                         _morpher.TraceManager.MorphologicalRuleNotApplied(
                             _rule,
@@ -163,7 +163,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     && !allo.ExcludedMprFeatures.IsMatchExcluded(input.MprFeatures, out group)
                 )
                 {
-                    if (_morpher.TraceManager.IsTracing && input.IsAllomorphApplicable(allo))
+                    if (_morpher.TraceManager.IsTracing)
                     {
                         _morpher.TraceManager.MorphologicalRuleNotApplied(
                             _rule,
