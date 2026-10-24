@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>CompoundingNonRecursive</Name>
+    <!-- Synthetic construct-shaped mimic (invented CVCV/CVC roots). Pins a single, non-recursive
+         CompoundingRule with license-gated head/non-head lexicon subsets, in the shape HCLoader
+         emits: headProdRestrictionsMprFeatures from the head MSA's productivity restrictions
+         (HCLoader.cs:1854-1857,1888) tested by flat overlap (group-unaware), nonHeadPartsOfSpeech
+         from the non-head MSA, and the features in an exceptionFeatures-shaped group. The former
+         SUBRULE-level requiredMPRFeatures gate and append-policy groups were removed 2026-09-16 as
+         unproducible (HCLoader.cs:168-192, 1898-1910); upstream fusional-realizational-morphology
+         pins the subrule gate. See STAGING.md. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posHead"><Name>head</Name></PartOfSpeech>
+      <PartOfSpeech id="posOther"><Name>other</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <MorphologicalPhonologicalRuleFeatures>
+      <MorphologicalPhonologicalRuleFeature id="mpr1">M1</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mpr2">M2</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeatureGroup matchType="all" outputType="overwrite" features="mpr1 mpr2"><Name>exceptionFeatures</Name></MorphologicalPhonologicalRuleFeatureGroup>
+    </MorphologicalPhonologicalRuleFeatures>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="ca"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cb"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="ce"><Representations><Representation>e</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cf"><Representations><Representation>f</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="ci"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="ck"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cl"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cm"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cn"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="co"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cs"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="ct"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cu"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cz"><Representations><Representation>z</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="cr1">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <CompoundingRule id="cr1" headProdRestrictionsMprFeatures="mpr1 mpr2" nonHeadPartsOfSpeech="posHead">
+            <Name>Compound</Name>
+            <CompoundingSubrules>
+              <CompoundingSubrule>
+                <HeadMorphologicalInput>
+                  <PhoneticSequence id="h0"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </HeadMorphologicalInput>
+                <NonHeadMorphologicalInput>
+                  <PhoneticSequence id="n0"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </NonHeadMorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="h0" />
+                  <CopyFromInput index="n0" />
+                </MorphologicalOutput>
+              </CompoundingSubrule>
+            </CompoundingSubrules>
+          </CompoundingRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <!-- headA: carries only mpr1 of the {mpr1,mpr2} all-group; the rule-level gate's flat
+               overlap admits it, which an all-type group reading would wrongly refuse. -->
+          <LexicalEntry id="eHeadA" partOfSpeech="posHead" ruleFeatures="mpr1">
+            <Allomorphs><Allomorph id="aHeadA"><PhoneticShape>fasu</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>HEADA</MorphemeId>
+            <Gloss>headA</Gloss>
+          </LexicalEntry>
+          <!-- headB: carries only the OTHER member, mpr2, so the flat overlap is pinned on both
+               members rather than on one lucky feature. -->
+          <LexicalEntry id="eHeadB" partOfSpeech="posHead" ruleFeatures="mpr2">
+            <Allomorphs><Allomorph id="aHeadB"><PhoneticShape>tiku</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>HEADB</MorphemeId>
+            <Gloss>headB</Gloss>
+          </LexicalEntry>
+          <!-- headC: rule-level negative control - no mpr features at all, so the non-empty
+               headProdRestrictionsMprFeatures gate has nothing to overlap and rejects it. -->
+          <LexicalEntry id="eHeadC" partOfSpeech="posHead">
+            <Allomorphs><Allomorph id="aHeadC"><PhoneticShape>numo</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>HEADC</MorphemeId>
+            <Gloss>headC</Gloss>
+          </LexicalEntry>
+          <!-- nonHeadOk: posHead - unifies with cr1's own nonHeadPartsOfSpeech="posHead". -->
+          <LexicalEntry id="eNonHeadOk" partOfSpeech="posHead">
+            <Allomorphs><Allomorph id="aNonHeadOk"><PhoneticShape>bel</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>NONHEADOK</MorphemeId>
+            <Gloss>nonHeadOk</Gloss>
+          </LexicalEntry>
+          <!-- nonHeadBadPos: posOther - MPR-licensed (non_head_prod_restrictions_mpr is empty/
+               vacuous), but disagrees with nonHeadPartsOfSpeech="posHead" at confirm - left to
+               confirm, design.md D3. -->
+          <LexicalEntry id="eNonHeadBadPos" partOfSpeech="posOther">
+            <Allomorphs><Allomorph id="aNonHeadBadPos"><PhoneticShape>zon</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>NONHEADBADPOS</MorphemeId>
+            <Gloss>nonHeadBadPos</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

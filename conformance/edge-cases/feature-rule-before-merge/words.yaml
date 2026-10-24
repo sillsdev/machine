@@ -1,0 +1,40 @@
+# oracle-provenance: founding-oracle
+# Signatures verified against the C# founding oracle (hc-conformance self-check) built from
+# sillsdev/machine 18cf242f (the integrate-conformance-framework head, PR #480). Ported from the
+# PanGloss conformance-staging fixture of the same name (branch exp/narrow-union-v1, 54497a01),
+# re-verified here rather than transcribed.
+#
+# Pins a FEATURE rule ordered before a MERGE (narrowing, 2 -> 1) rule in synthesis. prFeature rounds
+# the unrounded front vowel i to y; prMerge then fuses two adjacent rounded vowels into t after u:
+# buiibuii -> buyybuyy -> butbut. Analysis runs the rules in reverse: it must first recover "y y"
+# behind each "t" and then unapply the feature rule ON THOSE RECOVERED NODES. Feature-rule analysis
+# targets require an unmodified node (FeatureAnalysisRewriteRuleSpec adds Modified=Clean to its
+# target), so an engine that marks the nodes a merge recovers as modified (sillsdev/machine PR #539
+# head) can never reach the lexical root and loses the only parse.
+
+language: FeatureRuleBeforeMerge
+inspired_by: ["synthetic rounding-feeds-vowel-fusion probe (not modeling any real language)"]
+sources:
+  - "sillsdev/machine#539 (narrowing-rule unapplication); PanGloss exp/narrow-union-v1 54497a01 T2"
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/NarrowAnalysisRewriteRuleSpec.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/FeatureAnalysisRewriteRuleSpec.cs"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: butbut
+    note: >-
+      The root's i -> y change feeds the following yy -> t merge at both sites. Analysis must undo
+      the merge first and then let the feature rule unapply on the recovered nodes; this is the
+      witness, and the parse is lost if the recovered nodes are treated as modified.
+    provenance: "sillsdev/machine#539 (T2: feature rule before merge loses the parse at the PR head)"
+    parses:
+      - signature: "ROOT|butbut"
+        gloss: root
+        rules: [prFeature, prMerge]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+  - word: buiibuii
+    note: >-
+      Negative control: both synthesis rules are obligatory, so the unmodified lexical form is not
+      a surface word.
+    expect_fail: true

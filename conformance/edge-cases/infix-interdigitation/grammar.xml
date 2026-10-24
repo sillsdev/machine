@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>Gezmara</Name>
+    <!-- templatic-Semitic pathology mimic (docs/conformance-staging-plan.md's pathology catalog):
+         (1) "infix interdigitation rules (InsertSegments around a root Copy)" - mrPfv/mrConv
+         below, two independent infixes inserted after the root's first consonant, mirroring
+         templatic perfective/converb marking (-pfv-/-conv-plausible) exactly like
+         austronesian-phase's mrInfixUm (CopyFromInput C1 + InsertSegments + CopyFromInput rest).
+         (2) "a merged letter-series (two unifiable CharDefs sharing a phoneme - the U+1338/U+134A
+         render-variant trap)": cSTz's SegmentDefinition below carries TWO <Representation>
+         strings for the SAME segment id, one Unicode codepoint each, mimicking two distinct
+         Ethiopic graphemes that a font/keyboard-variant reduces to one phoneme (the general
+         "two spellings, one segment" class real Ethiopic orthography exhibits) - no existing
+         `machine/conformance` fixture declares more than one <Representation> per
+         SegmentDefinition, so this is new coverage, not a duplicate of edge-cases/strrep-identity
+         (which is about single-representation StrRep IDENTITY as a matching dimension, a related
+         but distinct concept). Invented lexemes only (KTB/TSU), no real corpus content. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posInfix"><Name>vInfix</Name></PartOfSpeech>
+      <PartOfSpeech id="posGlyph"><Name>vGlyph</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- No PhonologicalFeatureSystem/PhonologicalRuleDefinitions - pure morphotactics + a
+         character-table-only construct, so requires: [] (mechanically derived). -->
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cF"><Representations><Representation>f</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cC"><Representations><Representation>c</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cV"><Representations><Representation>v</Representation></Representations></SegmentDefinition>
+        <!-- The merged letter-series: ONE segment, TWO orthographic representations. Either
+             spelling below must tokenize to this same segment id. -->
+        <SegmentDefinition id="cSTz"><Representations><Representation>ጸ</Representation><Representation>ፀ</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered"
+        morphologicalRules="mrPfv mrConv mrGlyphSuf">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- Infix interdigitation #1: perfective marker "pf" inserted after the root's first
+               consonant (InsertSegments around a root Copy, exactly austronesian-phase's
+               mrInfixUm shape). -->
+          <MorphologicalRule id="mrPfv" requiredPartsOfSpeech="posInfix" outputPartOfSpeech="posInfix">
+            <Name>pfv</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPfv">
+                <MorphologicalInput>
+                  <PhoneticSequence id="pfvC1"><SimpleContext naturalClass="ncAny" /></PhoneticSequence>
+                  <PhoneticSequence id="pfvRest"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="pfvC1" />
+                  <InsertSegments><PhoneticShape>pf</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="pfvRest" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PFV</MorphemeId>
+          </MorphologicalRule>
+          <!-- Infix interdigitation #2: converb marker "cv", independent of mrPfv (same root,
+               disjoint slot - neither rule's own MorphologicalInput/Output references the
+               other), so a root can take either infix but the two never co-apply to the same
+               derivation because both are gated to consume the WHOLE bare root shape (the
+               single-infix-per-derivation grammar this fixture pins). -->
+          <MorphologicalRule id="mrConv" requiredPartsOfSpeech="posInfix" outputPartOfSpeech="posInfix">
+            <Name>conv</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subConv">
+                <MorphologicalInput>
+                  <PhoneticSequence id="convC1"><SimpleContext naturalClass="ncAny" /></PhoneticSequence>
+                  <PhoneticSequence id="convRest"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="convC1" />
+                  <InsertSegments><PhoneticShape>cv</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="convRest" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>CONV</MorphemeId>
+          </MorphologicalRule>
+          <!-- Merged-letter-series demo: an ordinary suffix on the cSTz-bearing root, so the
+               construct is exercised inside real morphology, not just a bare-root tokenization
+               check. -->
+          <MorphologicalRule id="mrGlyphSuf" requiredPartsOfSpeech="posGlyph" outputPartOfSpeech="posGlyph">
+            <Name>glyphSuf</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subGlyphSuf">
+                <MorphologicalInput><PhoneticSequence id="stemGlyph"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemGlyph" /><InsertSegments><PhoneticShape>n</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>GLYPHSUF</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eKotab" partOfSpeech="posInfix">
+            <Allomorphs><Allomorph id="aKotab"><PhoneticShape>kotab</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>KTB</MorphemeId>
+            <Gloss>write</Gloss>
+          </LexicalEntry>
+          <!-- Written with ONE of the two representations (ጸ); words.yaml tests parsing the SAME
+               underlying segment sequence spelled with the OTHER representation (ፀ) as well. -->
+          <LexicalEntry id="eTsu" partOfSpeech="posGlyph">
+            <Allomorphs><Allomorph id="aTsu"><PhoneticShape>ጸa</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TSU</MorphemeId>
+            <Gloss>cut</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

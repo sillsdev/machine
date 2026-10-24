@@ -1,0 +1,105 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# hc.dll, Machine 18cf242f4b114b0eb9bac304b4b171ca2f499a39.
+language: quantified-alpha-bounded-zero-left
+inspired_by: ["synthetic zero-count repeated feature agreement"]
+sources: ["HCLoader.cs:2338-2344,2745-2770"]
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: a
+    note: "Negative control for quantified alpha bounded zero left: 'a' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: e
+    note: "Positive witness for quantified alpha bounded zero left: 'e' must retain the declared analysis."
+    parses:
+      - signature: "ZERO|e"
+        rules: ["prRtlBq"]
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: ca
+    note: "Negative control for quantified alpha bounded zero left: 'ca' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: ce
+    note: "Positive witness for quantified alpha bounded zero left: 'ce' must retain the declared analysis."
+    parses:
+      - signature: "ONE|ce"
+        rules: ["prRtlBq"]
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tca
+    note: "Positive witness for quantified alpha bounded zero left: 'tca' must retain the declared analysis."
+    parses:
+      - signature: "MIXEDONE|tca"
+        rules: []
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tce
+    note: "Negative control for quantified alpha bounded zero left: 'tce' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: ta
+    note: "Negative control for quantified alpha bounded zero left: 'ta' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: te
+    note: "Positive witness for quantified alpha bounded zero left: 'te' must retain the declared analysis."
+    parses:
+      - signature: "TRIG|te"
+        rules: ["prRtlBq"]
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: ttca
+    note: "Positive witness for quantified alpha bounded zero left: 'ttca' must retain the declared analysis."
+    parses:
+      - signature: "MIXED|ttca"
+        rules: []
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: ttce
+    note: "Negative control for quantified alpha bounded zero left: 'ttce' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tcca
+    note: "Positive witness for quantified alpha bounded zero left: 'tcca' must retain the declared analysis."
+    parses:
+      - signature: "ROOT2|tcca"
+        rules: []
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tcce
+    note: "Negative control for quantified alpha bounded zero left: 'tcce' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tccca
+    note: "Positive witness for quantified alpha bounded zero left: 'tccca' must retain the declared analysis."
+    parses:
+      - signature: "ROOT3|tccca"
+        rules: []
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tccce
+    note: "Negative control for quantified alpha bounded zero left: 'tccce' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: taca
+    note: "Negative control for quantified alpha bounded zero left: 'taca' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tace
+    note: "Negative control for quantified alpha bounded zero left: 'tace' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"

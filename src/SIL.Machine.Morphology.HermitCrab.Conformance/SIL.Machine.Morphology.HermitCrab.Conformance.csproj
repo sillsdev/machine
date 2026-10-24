@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<RootNamespace>SIL.Machine.Morphology.HermitCrab.Conformance</RootNamespace>
+		<AssemblyName>hc-conformance</AssemblyName>
+		<Description>Engine-agnostic conformance test harness for the HermitCrab grammar model (see conformance/PROTOCOL.md).</Description>
+		<PackageId>SIL.Machine.Morphology.HermitCrab.Conformance</PackageId>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
+	</PropertyGroup>
+
+	<Import Project="../AssemblyInfo.props" />
+	<Import Project="../../eng/HcRoslynCompilerReferences.props" />
+
+	<ItemGroup>
+		<ProjectReference Include="..\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj" />
+		<ProjectReference Include="..\SIL.Machine.Morphology.HermitCrab.Tool\SIL.Machine.Morphology.HermitCrab.Tool.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+        <!-- Fixture model (conformance/languages, conformance/edge-cases): words.yaml is parsed
+		     with YamlDotNet, a dependency scoped to this project only since no other project
+		     needs it. -->
+		<PackageReference Include="JsonSchema.Net" Version="9.4.0" />
+		<PackageReference Include="YamlDotNet" Version="16.3.0" />
+	</ItemGroup>
+
+</Project>

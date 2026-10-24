@@ -1,0 +1,101 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle machine-commit=f150e2a005ce639f7d68ef17fb0db25b2f6aaa3c verified-date=2026-09-16
+# Synthetic construct-shaped mimic -- see STAGING.md and grammar.xml's own header comment.
+
+language: CompoundingNonRecursive
+inspired_by: ["synthetic compounding-construct probe (not modeling any real language)"]
+sources:
+  - "openspec/changes/cover-compounding/design.md (D2/D3/D4)"
+requires: []
+fieldworks_producible: true
+fieldworks_producible_notes: >-
+  The shape HCLoader emits for a compound rule: headProdRestrictionsMprFeatures from the head MSA's
+  productivity restrictions (HCLoader.cs:1854-1857,1888), nonHeadPartsOfSpeech from the non-head
+  MSA, the features in an exceptionFeatures-shaped group (matchType all, outputType overwrite,
+  HCLoader.cs:168-192), and an Unordered stratum (HCLoader.cs:227). Removed 2026-09-16 as
+  unproducible: the SUBRULE-level HeadMorphologicalInput requiredMPRFeatures gate (never set by
+  either compounding loader, HCLoader.cs:1898-1910/1959-1998; pinned upstream by
+  languages/fusional-realizational-morphology), the custom append-policy groups (pinned upstream by
+  edge-cases/mpr-overwrite-order-dependence), and morphologicalRuleOrder="linear".
+words:
+  - word: fasu
+    note: headA bare root, no compounding -- a plain control.
+    parses:
+      - signature: "HEADA|fasu"
+        rules: []
+
+  - word: bel
+    note: nonHeadOk bare root -- a plain control.
+    parses:
+      - signature: "NONHEADOK|bel"
+        rules: []
+
+  - word: zon
+    note: nonHeadBadPos bare root -- a plain control.
+    parses:
+      - signature: "NONHEADBADPOS|zon"
+        rules: []
+
+  - word: numo
+    note: headC bare root, no MPR features at all -- a plain control.
+    parses:
+      - signature: "HEADC|numo"
+        rules: []
+
+  - word: tiku
+    note: headB bare root -- a plain control.
+    parses:
+      - signature: "HEADB|tiku"
+        rules: []
+
+  - word: fasubel
+    exercises: ["CompoundingRule"]
+    note: >-
+      THE positive witness: headA (fasu) + nonHeadOk (bel) via cr1. headA carries only mpr1 of the
+      {mpr1,mpr2} all-type group cr1's own headProdRestrictionsMprFeatures names -- admitted because
+      the rule-level gate is a flat overlap (group-unaware, as C#'s CompoundMprFeaturesMatch is); a
+      group-aware reading of this RULE-level field would wrongly exclude it, the recall-loss bug
+      openspec/changes/cover-compounding design.md D4 names. nonHeadOk's own posHead unifies with
+      cr1's nonHeadPartsOfSpeech="posHead".
+    provenance: "openspec/changes/cover-compounding design.md D4: rule-level fields are group-unaware"
+    parses:
+      - signature: "HEADA+NONHEADOK|fasubel"
+        rules: [cr1]
+
+  - word: fasuzon
+    exercises: ["CompoundingRule"]
+    note: >-
+      Left-to-confirm witness (design.md D3): headA + nonHeadBadPos (zon, posOther). zon is
+      MPR-licensed as a non-head (non_head_prod_restrictions_mpr is empty/vacuous -- the FST
+      proposer's license gate never checks syntactic FS at all), but disagrees with cr1's own
+      nonHeadPartsOfSpeech="posHead" -- no valid derivation. An engine whose PROPOSER silently
+      narrowed by syntactic FS would never even offer this candidate to confirm; an engine whose
+      CONFIRM step ignored nonHeadPartsOfSpeech would wrongly accept it. Both must be honored.
+    provenance: "openspec/changes/cover-compounding design.md D3: left to confirm, deliberately"
+    expect_fail: true
+    blocked_by: [cr1]
+
+  - word: tikubel
+    exercises: ["CompoundingRule"]
+    note: >-
+      The second positive witness: headB (tiku) carries only mpr2, the OTHER member of the
+      {mpr1,mpr2} all-type group, so the flat overlap is pinned on both members rather than on one
+      lucky feature. Until 2026-09-16 this word was expect_fail through a SUBRULE-level
+      requiredMPRFeatures gate FieldWorks cannot build; that gate is pinned upstream by
+      languages/fusional-realizational-morphology (mitlav/ficlav) and was removed here.
+    provenance: "openspec/changes/cover-compounding design.md D4: rule-level fields are group-unaware"
+    parses:
+      - signature: "HEADB+NONHEADOK|tikubel"
+        rules: [cr1]
+
+  - word: numobel
+    exercises: ["CompoundingRule"]
+    note: >-
+      Rule-level negative control: headC (numo) carries no MPR features at all, so cr1's own
+      headProdRestrictionsMprFeatures="mpr1 mpr2" (non-empty) has nothing to overlap -- proving the
+      rule-level gate genuinely restricts something, not a vacuous always-admit. No valid derivation.
+    provenance: "openspec/changes/cover-compounding: rule-level headProdRestrictionsMprFeatures gate"
+    expect_fail: true
+    blocked_by: [cr1]

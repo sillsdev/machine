@@ -1,0 +1,39 @@
+# oracle-provenance: founding-oracle
+# Signatures verified against the C# founding oracle (hc-conformance self-check) built from
+# sillsdev/machine 18cf242f (the integrate-conformance-framework head, PR #480). Ported from the
+# PanGloss conformance-staging fixture of the same name (branch exp/narrow-union-v1, 54497a01),
+# re-verified here rather than transcribed.
+#
+# Pins analysis-side TERMINATION of a simultaneous one-to-two expansion rule. prExpand: u -> i i,
+# multipleApplicationOrder="simultaneous". Root "buiibuii" surfaces as "biiiibiiii"; analysis must
+# contract both "i i" sites back to "u" and recover ROOT. The founding oracle unapplies an expansion
+# simultaneously over every site in one pass. An engine that instead unapplies it through an
+# iterative, re-applying pattern-rule path (sillsdev/machine PR #539 head) never reaches a fixpoint
+# on this word: analysis does not terminate, so this fixture must be run with a timeout on such an
+# engine and the timeout counts as the failure.
+
+language: SimultaneousExpansionTerminates
+inspired_by: ["synthetic simultaneous vowel-breaking probe (not modeling any real language)"]
+sources:
+  - "sillsdev/machine#539 (narrowing-rule unapplication); PanGloss exp/narrow-union-v1 54497a01 T1"
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/AnalysisRewriteRule.cs"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: biiiibiiii
+    note: >-
+      Two simultaneous u -> ii expansion sites; both must be contracted in one analysis pass to
+      recover the lexical root. This is the witness: an engine whose expansion unapplication
+      re-applies iteratively hangs here instead of returning ROOT.
+    provenance: "sillsdev/machine#539 (T1: simultaneous expansion hangs at the PR head)"
+    parses:
+      - signature: "ROOT|biiiibiiii"
+        gloss: root
+        rules: [prExpand]
+        exercises:
+          - "RewriteRule Simultaneous"
+  - word: buiibuii
+    note: >-
+      Negative control: the expansion is obligatory, so the unexpanded lexical form is not a
+      surface word.
+    expect_fail: true

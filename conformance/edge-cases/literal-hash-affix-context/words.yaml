@@ -1,0 +1,66 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle machine-commit=18cf242f4b114b0eb9bac304b4b171ca2f499a39 verified-date=2026-10-09
+language: LiteralHashAffixContext
+inspired_by: ["synthetic prefix, suffix, and root-initial rewrite control"]
+sources:
+  - "PanGloss boundary-prefix-rule implementation brief"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: ta
+    note: "A literal # boundary marker in the left context is not a word-edge anchor."
+    expect_fail: true
+
+  - word: taa
+    note: The same literal-marker context must not rewrite a two-segment prefix either.
+    expect_fail: true
+
+  - word: ara
+    note: A prefix whose r is internal remains unchanged under the literal-marker rule.
+    parses:
+      - signature: "PFX_AR+ROOT_A|ara"
+        rules: [mrPrefixAR]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: ra
+    note: "The one-segment prefix and root-initial root remain unchanged because # is literal here."
+    parses:
+      - signature: "PFX_R+ROOT_A|ra"
+        rules: [mrPrefixR]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+      - signature: "ROOT_RA|ra"
+        rules: []
+
+  - word: raa
+    note: "The two-segment r prefix remains unchanged when the literal # is absent from the shape."
+    parses:
+      - signature: "PFX_RA+ROOT_A|raa"
+        rules: [mrPrefixRA]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: at
+    note: "A literal # boundary marker in the right context is not a word-edge anchor."
+    expect_fail: true
+
+  - word: a
+    note: Bare root control.
+    parses:
+      - signature: "ROOT_A|a"
+        rules: []
+
+  - word: ata
+    note: The internal r of the ar prefix remains literal under the left boundary context.
+    expect_fail: true
+
+  - word: ar
+    note: The root-plus-suffix parses without the right literal # boundary marker.
+    parses:
+      - signature: "ROOT_A+SFX_R|ar"
+        rules: [mrSuffixR]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"

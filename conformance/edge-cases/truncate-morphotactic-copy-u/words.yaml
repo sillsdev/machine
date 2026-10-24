@@ -1,0 +1,65 @@
+# oracle-provenance: founding-oracle combined Machine #500+#506 corrected C# oracle
+language: TruncateRulesProbeCopyU
+inspired_by: ["Machine #480 truncate-morphotactic with the retained-host copy-U discriminator"]
+sources:
+  - "Machine #480 truncate-morphotactic rules; A/B/C subtrees unchanged from the explicit-ID companion"
+  - "Combined C# oracle: Machine #556 d98d12a5d514ce589d7495c71d055830e061a418 plus Machine #500 ApplyRhs relocation at 157c031ef272d07c900db41b2d4a8852b13f64b0"
+requires: []
+fieldworks_producible: true
+words:
+  - word: gau
+    note: "Nine parses, including the A/B/C histories followed by U; preserve the duplicate ROOT+C+A+U identity with both application histories."
+    provenance: "Combined Machine #500+#506 C# complete identities and forward application orders"
+    parses:
+      - signature: "ROOT+A+C+B+U|gau"
+        gloss: "32-3SGA-3SGB-3SGC-U"
+        rules: [mruleTruncTrail, mruleTruncLead, mruleTruncOptIns, mrU]
+      - signature: "ROOT+B+C+A+U|gau"
+        gloss: "32-3SGB-3SGA-3SGC-U"
+        rules: [mruleTruncLead, mruleTruncTrail, mruleTruncOptIns, mrU]
+      - signature: "B+A+C+ROOT+U|gau"
+        gloss: "32-3SGB-3SGC-3SGA-U"
+        rules: [mruleTruncLead, mruleTruncOptIns, mruleTruncTrail, mrU]
+      - signature: "C+B+ROOT+A+U|gau"
+        gloss: "32-3SGA-3SGB-U-3SGC"
+        rules: [mruleTruncTrail, mruleTruncLead, mrU, mruleTruncOptIns]
+      - signature: "C+A+ROOT+B+U|gau"
+        gloss: "32-3SGB-3SGA-U-3SGC"
+        rules: [mruleTruncLead, mruleTruncTrail, mrU, mruleTruncOptIns]
+      - signature: "ROOT+U+C+A+B|gau"
+        gloss: "32-3SGA-U-3SGB-3SGC"
+        rules: [mruleTruncTrail, mrU, mruleTruncLead, mruleTruncOptIns]
+      - signature: "ROOT+C+A+U|gau"
+        gloss: "32-3SGA-3SGC-U"
+        rules: [mruleTruncTrail, mruleTruncOptIns, mrU]
+      - signature: "C+A+ROOT+U|gau"
+        gloss: "32-3SGC-3SGA-U"
+        rules: [mruleTruncOptIns, mruleTruncTrail, mrU]
+      - signature: "ROOT+C+A+U|gau"
+        gloss: "32-3SGA-U-3SGC"
+        rules: [mruleTruncTrail, mrU, mruleTruncOptIns]
+
+  - word: au
+    note: "Three parses; retain all distinct morph orders and histories."
+    provenance: "Combined Machine #500+#506 C# complete identities and forward application orders"
+    parses:
+      - signature: "B+ROOT+A+U|au"
+        gloss: "32-3SGA-3SGB-U"
+        rules: [mruleTruncTrail, mruleTruncLead, mrU]
+      - signature: "A+ROOT+B+U|au"
+        gloss: "32-3SGB-3SGA-U"
+        rules: [mruleTruncLead, mruleTruncTrail, mrU]
+      - signature: "ROOT+A+U+B|au"
+        gloss: "32-3SGA-U-3SGB"
+        rules: [mruleTruncTrail, mrU, mruleTruncLead]
+
+  - word: sagu
+    note: "Positive copy-U control."
+    parses:
+      - signature: "ROOT+U|sagu"
+        gloss: "32-U"
+        rules: [mrU]
+
+  - word: bau
+    note: "Impossible negative control."
+    expect_fail: true

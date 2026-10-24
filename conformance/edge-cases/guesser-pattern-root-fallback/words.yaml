@@ -1,0 +1,80 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: rust-only
+language: GuesserPatternRootFallback
+inspired_by: ["synthetic guesser probe (not modeling any real language)"]
+sources:
+  - "docs/hermitcrab-rust-port-audit.md (sec 2 'Partially ported', sec 3 item 1: Guesser API surface)"
+  - "docs/p11-guesser-api-design.md (guesser engine design + fixture plan sec 6)"
+requires: []
+fieldworks_producible: true
+words:
+  - word: kad
+    note: >-
+      Ordinary lexical root ("kad", MorphemeId KAD), trie-indexed normally -- the CONTROL proving
+      the guesser only ever fires on a genuine total miss of normal lexical lookup: this word
+      analyzes identically whether guessing is requested or not, and its analysis is never marked
+      guessed.
+    provenance: "control: ordinary lexical lookup, guesser must not fire"
+    parses:
+      - signature: "KAD|kad"
+        gloss: kad
+        rules: []
+        exercises:
+          - "Guesser/LexicalGuess"
+
+  - word: gag
+    note: >-
+      "gag" has no lexical entry of its own -- the grammar's only other lexical item is the
+      lexical PATTERN "[Any]*" (an empty-FS natural class, matching every segment), which
+      RootAllomorphDef::is_pattern partitions out of ordinary ROOT lookup entirely (P11 chunk 1/2:
+      it is never trie-indexed), so a normal parse (guessing off) finds nothing at all -- the
+      pre-existing/default-off behavior this fixture pins. With guessing on, the pattern
+      fabricates a concrete root from the rendered match ("gag" itself; no suffix applies since
+      there was nothing to unapply). Self-check only per PROTOCOL.md section 3 -- BatchCommand/the
+      plain adapter contract has no way to request guessing at all; this repo's own opt-in CLI flag
+      (`pangloss batch/parse --guess`) and FFI entry points (`hc_parse_word_opts`/
+      `hc_parse_batch_opts`) are the surface this fixture exists to pin, in place of an upstream
+      adapter flag.
+    provenance: "P11 guesser wire-up (docs/p11-guesser-api-design.md); ground truth captured by
+      running pg_parse::Morpher::parse_word_opts directly (see STAGING.md's Verification section)"
+    parses:
+      - signature: "gag|gag"
+        gloss: pattern
+        guess: true
+        rules: []
+        exercises:
+          - "Guesser/LexicalGuess"
+
+  - word: gagd
+    note: >-
+      Same missing-lexicon situation as "gag", but the surface additionally matches the
+      "past_suffix" rule's output shape (a "+d" affix), so analysis also unapplies that suffix,
+      leaving a residual "gag" stem for the guesser to fabricate a root from -- TWO guesses
+      coexist: the 2-morph guess (fabricated root "gag" + the real PAST suffix) and the 1-morph
+      guess (the whole surface "gagd" guessed as one bare root, from the un-unapplied analysis
+      candidate that never tried the suffix rule at all). The 2-morph guess's surface column shows
+      a residual "+?" boundary-optional marker ("gag+?d") rather than the literal surface "gagd"
+      -- a documented rendering quirk of this exact guess path (the affix rule's own inserted
+      boundary node survives display rendering even though the analysis genuinely denotes the
+      input word "gagd", confirmed structurally by the engine's own is_match gate). Mirrors the C#
+      founding oracle's own canonical Guesser unit test
+      (`MorpherTests.AnalyzeWord_CanGuess_ReturnsCorrectAnalysis`,
+      `docs/p11-guesser-api-design.md` sec 1.5): `AnalyzeWord("gagd", true)` yields the 2-morph
+      guess `[*gag ed_suffix]` before the 1-morph guess `[*gagd]`.
+    provenance: "P11 guesser wire-up (docs/p11-guesser-api-design.md); ground truth captured by
+      running pg_parse::Morpher::parse_word_opts directly (see STAGING.md's Verification section)"
+    parses:
+      - signature: "gag+PAST|gag+?d"
+        gloss: pattern-PAST
+        guess: true
+        rules: [mrPast]
+        exercises:
+          - "Guesser/LexicalGuess"
+      - signature: "gagd|gagd"
+        gloss: pattern
+        guess: true
+        rules: []
+        exercises:
+          - "Guesser/LexicalGuess"

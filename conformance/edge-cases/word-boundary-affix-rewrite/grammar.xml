@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>WordBoundaryAffixRewrite</Name>
+    <PartsOfSpeech><PartOfSpeech id="posDemo"><Name>demo</Name></PartOfSpeech></PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featFirst"><Name>first</Name><Symbols><Symbol id="symFirstPositive">positive</Symbol><Symbol id="symFirstNegative">negative</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featSecond"><Name>second</Name><Symbols><Symbol id="symSecondPositive">positive</Symbol><Symbol id="symSecondNegative">negative</Symbol></Symbols></SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cR"><Representations><Representation>r</Representation></Representations><FeatureValue feature="featFirst" symbolValues="symFirstPositive" /><FeatureValue feature="featSecond" symbolValues="symSecondPositive" /></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations><FeatureValue feature="featFirst" symbolValues="symFirstNegative" /><FeatureValue feature="featSecond" symbolValues="symSecondPositive" /></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations><FeatureValue feature="featFirst" symbolValues="symFirstPositive" /><FeatureValue feature="featSecond" symbolValues="symSecondNegative" /></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations><FeatureValue feature="featFirst" symbolValues="symFirstNegative" /><FeatureValue feature="featSecond" symbolValues="symSecondNegative" /></SegmentDefinition>
+      </SegmentDefinitions>
+      <BoundaryDefinitions>
+        <BoundaryDefinition id="cPlus"><Representations><Representation>+</Representation></Representations></BoundaryDefinition>
+      </BoundaryDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <SegmentNaturalClass id="ncV"><Name>Vowel</Name><Segment segment="cA" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prInitial">
+        <Name>r becomes t word-initially before a vowel</Name>
+        <PhoneticInput><PhoneticSequence><Segment segment="cR" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="cT" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <LeftEnvironment><PhoneticTemplate initialBoundaryCondition="true"><PhoneticSequence /></PhoneticTemplate></LeftEnvironment>
+              <RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncV" /></PhoneticSequence></PhoneticTemplate></RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <PhonologicalRule id="prFinal">
+        <Name>r becomes t word-finally after a vowel</Name>
+        <PhoneticInput><PhoneticSequence><Segment segment="cR" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="cT" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncV" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment>
+              <RightEnvironment><PhoneticTemplate finalBoundaryCondition="true"><PhoneticSequence /></PhoneticTemplate></RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrPrefixR mrPrefixRA mrPrefixAR mrSuffixR" phonologicalRules="prInitial prFinal">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrPrefixR" requiredPartsOfSpeech="posDemo" outputPartOfSpeech="posDemo">
+            <Name>prefixR</Name>
+            <MorphologicalSubrules><MorphologicalSubrule id="msPrefixR">
+              <MorphologicalInput><PhoneticSequence id="stemPrefixR"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+              <MorphologicalOutput><InsertSegments><PhoneticShape>r</PhoneticShape></InsertSegments><CopyFromInput index="stemPrefixR" /></MorphologicalOutput>
+            </MorphologicalSubrule></MorphologicalSubrules>
+            <MorphemeId>PFX_R</MorphemeId><Gloss>prefix-r</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrPrefixRA" requiredPartsOfSpeech="posDemo" outputPartOfSpeech="posDemo">
+            <Name>prefixRA</Name>
+            <MorphologicalSubrules><MorphologicalSubrule id="msPrefixRA">
+              <MorphologicalInput><PhoneticSequence id="stemPrefixRA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+              <MorphologicalOutput><InsertSegments><PhoneticShape>ra</PhoneticShape></InsertSegments><CopyFromInput index="stemPrefixRA" /></MorphologicalOutput>
+            </MorphologicalSubrule></MorphologicalSubrules>
+            <MorphemeId>PFX_RA</MorphemeId><Gloss>prefix-ra</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrPrefixAR" requiredPartsOfSpeech="posDemo" outputPartOfSpeech="posDemo">
+            <Name>prefixAR</Name>
+            <MorphologicalSubrules><MorphologicalSubrule id="msPrefixAR">
+              <MorphologicalInput><PhoneticSequence id="stemPrefixAR"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+              <MorphologicalOutput><InsertSegments><PhoneticShape>ar</PhoneticShape></InsertSegments><CopyFromInput index="stemPrefixAR" /></MorphologicalOutput>
+            </MorphologicalSubrule></MorphologicalSubrules>
+            <MorphemeId>PFX_AR</MorphemeId><Gloss>prefix-ar</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrSuffixR" requiredPartsOfSpeech="posDemo" outputPartOfSpeech="posDemo">
+            <Name>suffixR</Name>
+            <MorphologicalSubrules><MorphologicalSubrule id="msSuffixR">
+              <MorphologicalInput><PhoneticSequence id="stemSuffixR"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+              <MorphologicalOutput><CopyFromInput index="stemSuffixR" /><InsertSegments><PhoneticShape>r</PhoneticShape></InsertSegments></MorphologicalOutput>
+            </MorphologicalSubrule></MorphologicalSubrules>
+            <MorphemeId>SFX_R</MorphemeId><Gloss>suffix-r</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="leA" partOfSpeech="posDemo"><Allomorphs><Allomorph id="alloA"><PhoneticShape>a</PhoneticShape></Allomorph></Allomorphs><MorphemeId>ROOT_A</MorphemeId><Gloss>a</Gloss></LexicalEntry>
+          <LexicalEntry id="leRA" partOfSpeech="posDemo"><Allomorphs><Allomorph id="alloRA"><PhoneticShape>ra</PhoneticShape></Allomorph></Allomorphs><MorphemeId>ROOT_RA</MorphemeId><Gloss>ra</Gloss></LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

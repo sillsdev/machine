@@ -1,0 +1,94 @@
+# oracle-provenance: founding-oracle machine-commit=1836d23ccb86f1e9da123a43feb661ea76e85d0b verified-date=2026-10-22
+# HC engine is unchanged from PR #480 head 72dbd4f9; DOP 1, explicit ParseWord guessRoot.
+# Re-observed after reducing to the guessing and inflection strata: four guessed analyses,
+# a stable lexical NUNA control, and an invalid-shape SKIPPED control.
+language: GuessRootsSettings
+inspired_by:
+- synthetic lexical guessing followed by inflection; reduced from polysynthetic-stratal-derivation-chain
+sources:
+- conformance/languages/polysynthetic-stratal-derivation-chain
+- src/SIL.Machine.Morphology.HermitCrab/Morpher.cs
+requires:
+- morpher-settings
+fieldworks_producible: true
+morpher:
+  GuessRoots: true
+words:
+- word: takuvuq
+  parses:
+  - signature: taku+INFL|takuvuq
+    rules:
+    - mrInfl
+    guess: true
+    exercises:
+    - Guesser/LexicalGuess
+  - signature: taku+INFL|takuvuq
+    rules:
+    - mrInfl
+    guess: true
+    exercises:
+    - Guesser/LexicalGuess
+  - signature: takuvuq|takuvuq
+    rules: []
+    guess: true
+    exercises:
+    - Guesser/LexicalGuess
+  - signature: takuvuq|takuvuq
+    rules: []
+    guess: true
+    exercises:
+    - Guesser/LexicalGuess
+  note: C# oracle observation with GuessRoots = true.
+- word: nuna
+  parses:
+  - signature: NUNA|nuna
+    rules: []
+  note: C# oracle observation with GuessRoots = true.
+- word: '!'
+  expect_skip: true
+  note: C# oracle observation with GuessRoots = true.
+variants:
+- name: guess-off
+  morpher:
+    GuessRoots: false
+  words:
+  - word: takuvuq
+    expect_fail: true
+    note: C# oracle observation with GuessRoots = false.
+  - word: nuna
+    parses:
+    - signature: NUNA|nuna
+      rules: []
+    note: C# oracle observation with GuessRoots = false.
+  - word: '!'
+    expect_skip: true
+    note: C# oracle observation with GuessRoots = false.
+- name: guess-on
+  morpher:
+    GuessRoots: true
+  words:
+  - word: takuvuq
+    parses:
+    - signature: taku+INFL|takuvuq
+      rules:
+      - mrInfl
+      guess: true
+    - signature: taku+INFL|takuvuq
+      rules:
+      - mrInfl
+      guess: true
+    - signature: takuvuq|takuvuq
+      rules: []
+      guess: true
+    - signature: takuvuq|takuvuq
+      rules: []
+      guess: true
+    note: C# oracle observation with GuessRoots = true.
+  - word: nuna
+    parses:
+    - signature: NUNA|nuna
+      rules: []
+    note: C# oracle observation with GuessRoots = true.
+  - word: '!'
+    expect_skip: true
+    note: C# oracle observation with GuessRoots = true.

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>Autoseg</Name>
+    <!-- Autosegmental-tone-shaped pathology mimic (docs/fst-plan's NFD-combining-mark family -
+         see conformance-staging's own STAGING.md for the full write-up). A HIGH-tone mark is
+         modeled as its OWN standalone char-def (cHigh, sole representation U+0301 COMBINING ACUTE
+         ACCENT alone) rather than folded into a vowel's own segment the way an ordinary accented-
+         letter grammar authors a diacritic (ePah's root text below concatenates cA's "a" then
+         cHigh's own U+0301 - TWO DIFFERENT char-defs, not one char-def's NFD decomposition). Pure
+         morphotactics (requires: []): no PhonologicalRule/PhonologicalFeatureSystem needed. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>root</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+        <!-- Standalone combining-mark char-def: the autosegmental HIGH-tone grapheme. -->
+        <SegmentDefinition id="cHigh"><Representations><Representation>&#x0301;</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <!-- No Stratum-level morphologicalRules= - mrSuf is reachable only through its own
+           template's Slot (same convention as edge-cases/optional-template-composite's Stratum
+           comment; immaterial here with a single rule/template, kept for consistency). -->
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="linear">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrSuf" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>suf</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSuf">
+                <MorphologicalInput><PhoneticSequence id="stemSuf"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemSuf" /><InsertSegments><PhoneticShape>n</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SUF</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posN">
+            <Name>tmpl</Name>
+            <Slot optional="true" morphologicalRules="mrSuf"><Name>sfx</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="ePa" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aPa"><PhoneticShape>pa</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>PA</MorphemeId>
+            <Gloss>root.pa (no tone)</Gloss>
+          </LexicalEntry>
+          <!-- Same segmental shape as PA, distinguished ONLY by the standalone tone-mark char-def
+               concatenated after the vowel's own char-def within this root's own literal spelling
+               - the exact pathology this fixture pins (see STAGING.md). -->
+          <LexicalEntry id="ePah" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aPah"><PhoneticShape>pa&#x0301;</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>PAH</MorphemeId>
+            <Gloss>root.pa (High tone)</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

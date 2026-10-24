@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>RightToLeftBoundedQuantifierRewrite</Name>
+    <!-- Synthetic construct-shaped mimic (docs/conformance/representative-typology-basis.md
+         S1.2.2 - "Right-to-left rewrite: additional in-scope pattern shapes"). Invented VC(C)C
+         roots only, no natural-language lexemes. Representative typological pattern: directional
+         (right-to-left-scanned) phonological rule application, most commonly attested in
+         stress-assignment/syllabification systems (end-rule-right/iterative-right-to-left foot
+         construction is one of the two basic parameters in every metrical-stress typology, Hayes
+         1995 *Metrical Stress Theory*; WALS Ch. 15 "Weight-Sensitive Stress") and in right-to-left
+         iterative vowel harmony/deletion (a standard case study in directional rule-ordering; see
+         the research doc's own citations) - here combined with a BOUNDED (finite, max=2)
+         quantifier group in the rule's own environment, mirroring a bounded extrametricality/
+         lookahead window in a metrical-stress-style system.
+
+         Structural shape: one PhonRuleDef, multipleApplicationOrder="rightToLeftIterative", whose
+         subrule's own RightEnvironment contains a Quantifier node (`<OptionalSegmentSequence min=0
+         max=2>`, a BOUNDED optional-group, not the DTD's -1/unbounded sentinel) before a trigger
+         segment.
+
+         CORRECTION TO THE RESEARCH DOC'S OWN PREMISE (discovered while authoring this fixture):
+         S1.2.2 assumed a Quantifier node anywhere in an RTL rule's own LHS/RHS/environment is still
+         an excluded shape. That holds for NEITHER bound: `crate::replace::pattern_slots`
+         (rust/crates/pg-foma/src/replace.rs) accepts a well-formed alpha-free quantifier whether it
+         is genuinely UNBOUNDED (min=1 max=-1 in the rule's own LHS, the shape
+         `rust/crates/pg-foma/src/capability.rs`'s own
+         `right_to_left_predicate_confirm_only_for_unbounded_quantifier_shaped_rule` unit test
+         probes) or BOUNDED in the rule's own environment, as built here (per
+         `compile-bounded-fst-quantifiers`'s own `Slot::Repeat` support), so this
+         rule's own `RightToLeftRewriteDetail::reversal_construction_attempted` characterizes `true`
+         and `RightToLeftRewriteFaithfulReversalPredicate` returns `ConfirmOnly`, not `Refuse` (see
+         the paired rust/crates/pg-foma/tests/cover_right_to_left_bounded_quantifier_rewrite.rs
+         regression test, and this directory's STAGING.md for the full account). This fixture is
+         therefore NOT one of the three honestly-refused shapes this task's other three fixtures
+         pin - its job is to pin the ALREADY-CORRECT ConfirmOnly verdict plus the oracle's
+         (pg_parse::Morpher) own correct, direction- and bound-aware analysis of every word below. -->
+    <!-- G2a discipline (`conformance-staging/edge-cases/mpr-gated-exception`'s own authoring note,
+         re-confirmed empirically while authoring THIS fixture): every segment needs a feature
+         bundle that FULLY and UNIQUELY distinguishes it from every other segment, or a
+         phonological-subrule reversal collapses feature-identical segments into a bracketed
+         alternates class (e.g. "[aect]") instead of the literal input string. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>N</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="fConsPlus">+</Symbol><Symbol id="fConsMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featVoice"><Name>voice</Name><Symbols><Symbol id="fVoicePlus">+</Symbol><Symbol id="fVoiceMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featHigh"><Name>high</Name><Symbols><Symbol id="fHighLow">low</Symbol><Symbol id="fHighMid">mid</Symbol><Symbol id="fHighNA">na</Symbol></Symbols></SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="t1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="ca"><Representations><Representation>a</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featHigh" symbolValues="fHighLow" />
+        </SegmentDefinition>
+        <SegmentDefinition id="ce"><Representations><Representation>e</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featHigh" symbolValues="fHighMid" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cc"><Representations><Representation>c</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featHigh" symbolValues="fHighNA" />
+        </SegmentDefinition>
+        <SegmentDefinition id="ct"><Representations><Representation>t</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoice" symbolValues="fVoiceMinus" /><FeatureValue feature="featHigh" symbolValues="fHighNA" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <SegmentNaturalClass id="ncVowel"><Name>Vowel</Name><Segment segment="ca" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncCons"><Name>Cons</Name><Segment segment="cc" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncTrig"><Name>Trigger</Name><Segment segment="ct" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prRtlBq" multipleApplicationOrder="rightToLeftIterative">
+        <Name>rtlBoundedQuantifierDemo</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncVowel" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="ce" /></PhoneticSequence></PhoneticOutput>
+            <Environment><RightEnvironment><PhoneticTemplate><PhoneticSequence>
+              <OptionalSegmentSequence min="0" max="2"><SimpleContext naturalClass="ncCons" /></OptionalSegmentSequence>
+              <SimpleContext naturalClass="ncTrig" />
+            </PhoneticSequence></PhoneticTemplate></RightEnvironment></Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="t1" phonologicalRules="prRtlBq">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot1">
+            <Allomorphs><Allomorph id="aRoot1"><PhoneticShape>acat</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT1</MorphemeId>
+            <Gloss>root1</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eRoot2">
+            <Allomorphs><Allomorph id="aRoot2"><PhoneticShape>acct</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT2</MorphemeId>
+            <Gloss>root2</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eRoot3">
+            <Allomorphs><Allomorph id="aRoot3"><PhoneticShape>accct</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT3</MorphemeId>
+            <Gloss>root3</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

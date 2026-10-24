@@ -1,0 +1,63 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# hc.dll, Machine 18cf242f4b114b0eb9bac304b4b171ca2f499a39.
+language: overridden-alpha-plain-ltr-left
+inspired_by: ["synthetic vowel neutralization with alpha environment"]
+sources: ["HCLoader.cs:2033-2067,2338-2344,2745-2770,2799-2808"]
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: ii
+    note: "Positive witness for overridden alpha plain ltr left: 'ii' must retain the declared analysis."
+    parses:
+      - signature: "IU|ii"
+        rules: ["prDoubleAlpha"]
+        exercises:
+          - "Alpha-variable phonological environments (VariableFeature/AlphaVariables)"
+  - word: iy
+    note: "Negative control for overridden alpha plain ltr left: 'iy' must complete with no analysis."
+    expect_fail: true
+  - word: ia
+    note: "Negative control for overridden alpha plain ltr left: 'ia' must complete with no analysis."
+    expect_fail: true
+  - word: iu
+    note: "Negative control for overridden alpha plain ltr left: 'iu' must complete with no analysis."
+    expect_fail: true
+  - word: yi
+    note: "Negative control for overridden alpha plain ltr left: 'yi' must complete with no analysis."
+    expect_fail: true
+  - word: yy
+    note: "Negative control for overridden alpha plain ltr left: 'yy' must complete with no analysis."
+    expect_fail: true
+  - word: ya
+    note: "Negative control for overridden alpha plain ltr left: 'ya' must complete with no analysis."
+    expect_fail: true
+  - word: yu
+    note: "Negative control for overridden alpha plain ltr left: 'yu' must complete with no analysis."
+    expect_fail: true
+  - word: ai
+    note: "Negative control for overridden alpha plain ltr left: 'ai' must complete with no analysis."
+    expect_fail: true
+  - word: ay
+    note: "Negative control for overridden alpha plain ltr left: 'ay' must complete with no analysis."
+    expect_fail: true
+  - word: aa
+    note: "Negative control for overridden alpha plain ltr left: 'aa' must complete with no analysis."
+    expect_fail: true
+  - word: au
+    note: "Negative control for overridden alpha plain ltr left: 'au' must complete with no analysis."
+    expect_fail: true
+  - word: ui
+    note: "Negative control for overridden alpha plain ltr left: 'ui' must complete with no analysis."
+    expect_fail: true
+  - word: uy
+    note: "Negative control for overridden alpha plain ltr left: 'uy' must complete with no analysis."
+    expect_fail: true
+  - word: ua
+    note: "Negative control for overridden alpha plain ltr left: 'ua' must complete with no analysis."
+    expect_fail: true
+  - word: uu
+    note: "Negative control for overridden alpha plain ltr left: 'uu' must complete with no analysis."
+    expect_fail: true

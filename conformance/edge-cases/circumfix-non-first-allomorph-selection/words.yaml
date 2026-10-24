@@ -1,0 +1,52 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle machine-commit=caa4ddde8782557c6fb58cac57e4761ffcafc2a6 verified-date=2026-08-31
+# RECONCILED 2026-08-31: rust/tools/oracle-conformance.ps1's hc-conformance.exe self-check PASSED
+# against every word below (signature AND traced rules: both matched). Any older "NOT the C#
+# founding oracle" / "Oracle: pangloss" sentence elsewhere in this file's own header describes how
+# it was originally authored, not its current verification status -- superseded by the marker above.
+# Synthetic construct-shaped mimic -- see STAGING.md and grammar.xml's own header comment. Oracle:
+# pangloss (`pg_parse::Morpher`, driven directly -- see STAGING.md's "Verification" section), NOT the
+# C# founding oracle -- authored and verified against this repo's own Rust engine only. Signatures
+# below are transcribed verbatim from that run, not hand-derived.
+
+language: NonFirstAllomorphCircumfixSelection
+inspired_by: ["synthetic non-first-allomorph circumfix probe (not modeling any real language)"]
+sources:
+  - "docs/conformance/circumfix-structural-composite-census.md (census C1)"
+requires: []
+fieldworks_producible: true
+words:
+  - word: mit
+    note: ROOT bare, no mrMixed applied -- a plain control.
+    parses:
+      - signature: "ROOT|mit"
+        rules: []
+
+  - word: mits
+    note: >-
+      ROOT + mrMixed's allomorph 0 (subSuffix, an ORDINARY suffix). Alone, this allomorph would
+      classify Role::Suffix -- exercised here to prove the ordinary allomorph still rides along
+      once the rule is admitted (over-inclusion is safe, census's own "opposite order is safe"
+      observation, just mirrored for the reverse declaration order).
+    provenance: "docs/conformance/circumfix-structural-composite-census.md (census C1)"
+    parses:
+      - signature: "ROOT+MIXED|mits"
+        rules: [mrMixed]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: kemitan
+    note: >-
+      ROOT + mrMixed's allomorph 1 (subCircum, the CIRCUMFIX -- "ke-...-an" wrapping the root on
+      both sides). Declared SECOND in grammar.xml: before census C1's fix, `rule_role`'s
+      first-allomorph-only classification never saw this shape at all, so `is_structural_rule`
+      never routed mrMixed through `build_structural_composites` and this exact surface was
+      unreachable from the proposer -- an honest, fail-closed recall gap, not a wrong compile.
+    provenance: "docs/conformance/circumfix-structural-composite-census.md (census C1)"
+    parses:
+      - signature: "MIXED+ROOT|kemitan"
+        rules: [mrMixed]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>CircumfixInTemplateSlot</Name>
+    <!-- Pins a former containment gap that no existing fixture exercised: a MorphologicalRule
+         no existing fixture exercises: a MorphologicalRule whose subrule output is
+         [InsertSegments, CopyFromInput, InsertSegments] (classifies Role::CircumfixPrefix per
+         `crate::emit::rule_role`/`classify_affix`), referenced FROM an <AffixTemplate> <Slot>,
+         not applied loose at the Stratum level. `suffixing-vowel-harmony` keeps its own circumfix
+         off-template on a different POS, and `fusional-realizational-morphology`'s mrCircumfixGeT
+         is loose/unordered, so neither reaches this shape.
+
+         The regression asserts that template-slot emission preserves both circumfix insertions.
+         It also protects a mixed-allomorph rule where an ordinary affix is declared before a
+         circumfix: structural classification must inspect every allomorph, not only the first.
+
+         mrCircum and mrOrdPfx are deliberately reachable ONLY through their own AffixTemplate's
+         Slot; neither is listed in the Stratum's own `morphologicalRules=` attribute, per
+         `template-category-sharing`'s own proven finding that Slot membership alone does not
+         create exclusivity: omitting the Stratum-level listing is what actually does. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posRoot"><Name>root</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- No PhonologicalRule/MetathesisRule element at all - pure morphotactics, so requires: []
+         (mechanically derived, per the conformance-grammars skill's own note). -->
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cE"><Representations><Representation>e</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <!-- Deliberately NO morphologicalRules= attribute: mrCircum/mrOrdPfx are reachable ONLY
+           through templateMain's Slot, never as free-standing Stratum rules; see the Language
+           comment above. -->
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- CIRCUMFIX allomorph: leading InsertSegments, one CopyFromInput, trailing
+               InsertSegments; classifies Role::CircumfixPrefix. This is the shape no existing
+               template-referencing fixture has. -->
+          <MorphologicalRule id="mrCircum" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>circum</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subCircum">
+                <MorphologicalInput><PhoneticSequence id="stemCircum"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments><PhoneticShape>ta</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="stemCircum" />
+                  <InsertSegments><PhoneticShape>en</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>CIRCUM</MorphemeId>
+          </MorphologicalRule>
+          <!-- ORDINARY prefix allomorph in the SAME slot; classifies Role::Prefix, not a
+               circumfix. Control that templateMain itself works fine on the tuned backend when the
+               occupying rule is an ordinary (non-discontinuous) affix. -->
+          <MorphologicalRule id="mrOrdPfx" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>ordPfx</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subOrdPfx">
+                <MorphologicalInput><PhoneticSequence id="stemOrdPfx"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments><PhoneticShape>mu</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="stemOrdPfx" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>ORDPFX</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <!-- ONE slot, TWO alternative rules (mrCircum | mrOrdPfx): the DTD's own comment on
+               Slot.morphologicalRules ("refers to one or more ... IDs; these are ordered") is
+               exactly this: alternative occupants of one affix position, not a sequence. -->
+          <AffixTemplate requiredPartsOfSpeech="posRoot">
+            <Name>templateMain</Name>
+            <Slot optional="true" morphologicalRules="mrCircum mrOrdPfx"><Name>slotMain</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot" partOfSpeech="posRoot">
+            <Allomorphs><Allomorph id="aRoot"><PhoneticShape>lodi</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT</MorphemeId>
+            <Gloss>root</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

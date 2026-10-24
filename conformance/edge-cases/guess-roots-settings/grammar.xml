@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Lexical guessing plus inflection, reduced from polysynthetic-stratal-derivation-chain. -->
+<HermitCrabInput>
+  <Language>
+    <Name>GuessRootsSettings</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN">
+        <Name>n</Name>
+      </PartOfSpeech>
+      <PartOfSpeech id="posV">
+        <Name>v</Name>
+      </PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons">
+        <Name>cons</Name>
+        <Symbols>
+          <Symbol id="fConsPlus">+</Symbol>
+          <Symbol id="fConsMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featVoc">
+        <Name>voc</Name>
+        <Symbols>
+          <Symbol id="fVocPlus">+</Symbol>
+          <Symbol id="fVocMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featHigh">
+        <Name>high</Name>
+        <Symbols>
+          <Symbol id="fHighPlus">+</Symbol>
+          <Symbol id="fHighMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featLow">
+        <Name>low</Name>
+        <Symbols>
+          <Symbol id="fLowPlus">+</Symbol>
+          <Symbol id="fLowMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featBack">
+        <Name>back</Name>
+        <Symbols>
+          <Symbol id="fBackPlus">+</Symbol>
+          <Symbol id="fBackMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featRound">
+        <Name>round</Name>
+        <Symbols>
+          <Symbol id="fRoundPlus">+</Symbol>
+          <Symbol id="fRoundMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featVoice">
+        <Name>voice</Name>
+        <Symbols>
+          <Symbol id="fVoicePlus">+</Symbol>
+          <Symbol id="fVoiceMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featPlace">
+        <Name>place</Name>
+        <Symbols>
+          <Symbol id="fPlaceBilabial">bilabial</Symbol>
+          <Symbol id="fPlaceLabioDental">labiodental</Symbol>
+          <Symbol id="fPlaceAlveolar">alveolar</Symbol>
+          <Symbol id="fPlaceSibilant">sibilant</Symbol>
+          <Symbol id="fPlaceLateral">lateral</Symbol>
+          <Symbol id="fPlaceVelar">velar</Symbol>
+          <Symbol id="fPlaceUvular">uvular</Symbol>
+          <Symbol id="fPlaceNasalLab">nasalLab</Symbol>
+          <Symbol id="fPlaceNasalAlv">nasalAlv</Symbol>
+          <Symbol id="fPlaceVocalic">vocalic</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <HeadFeatures />
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cA">
+          <Representations>
+            <Representation>a</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" />
+          <FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" />
+          <FeatureValue feature="featLow" symbolValues="fLowPlus" />
+          <FeatureValue feature="featBack" symbolValues="fBackPlus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cI">
+          <Representations>
+            <Representation>i</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" />
+          <FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighPlus" />
+          <FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cU">
+          <Representations>
+            <Representation>u</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" />
+          <FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighPlus" />
+          <FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackPlus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundPlus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cP">
+          <Representations>
+            <Representation>p</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" />
+          <FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" />
+          <FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoiceMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceBilabial" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cB">
+          <Representations>
+            <Representation>b</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" />
+          <FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" />
+          <FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceBilabial" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cM">
+          <Representations>
+            <Representation>m</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" />
+          <FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" />
+          <FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceNasalLab" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cV">
+          <Representations>
+            <Representation>v</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" />
+          <FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" />
+          <FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceLabioDental" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cT">
+          <Representations>
+            <Representation>t</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" />
+          <FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" />
+          <FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoiceMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceAlveolar" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cS">
+          <Representations>
+            <Representation>s</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" />
+          <FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" />
+          <FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoiceMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceSibilant" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cL">
+          <Representations>
+            <Representation>l</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" />
+          <FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" />
+          <FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceLateral" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cN">
+          <Representations>
+            <Representation>n</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" />
+          <FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" />
+          <FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceNasalAlv" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cK">
+          <Representations>
+            <Representation>k</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" />
+          <FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" />
+          <FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoiceMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceVelar" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cQ">
+          <Representations>
+            <Representation>q</Representation>
+          </Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" />
+          <FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" />
+          <FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoiceMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceUvular" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+      <BoundaryDefinitions>
+        <BoundaryDefinition id="cBnd">
+          <Representations>
+            <Representation>+</Representation>
+          </Representations>
+        </BoundaryDefinition>
+      </BoundaryDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny">
+        <Name>Any</Name>
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncHighVowel">
+        <Name>HighVowel</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsMinus" />
+        <FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+        <FeatureValue feature="featHigh" symbolValues="fHighPlus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncHfuVowel">
+        <Name>HFUVowel</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsMinus" />
+        <FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+        <FeatureValue feature="featHigh" symbolValues="fHighPlus" />
+        <FeatureValue feature="featBack" symbolValues="fBackMinus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncVowelU">
+        <Name>VowelU</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsMinus" />
+        <FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+        <FeatureValue feature="featHigh" symbolValues="fHighPlus" />
+        <FeatureValue feature="featLow" symbolValues="fLowMinus" />
+        <FeatureValue feature="featBack" symbolValues="fBackPlus" />
+        <FeatureValue feature="featRound" symbolValues="fRoundPlus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncBackRndVowel">
+        <Name>BackRndVowel</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsMinus" />
+        <FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+        <FeatureValue feature="featBack" symbolValues="fBackPlus" />
+        <FeatureValue feature="featRound" symbolValues="fRoundPlus" />
+      </FeatureNaturalClass>
+      <SegmentNaturalClass id="ncTseg">
+        <Name>TSeg</Name>
+        <Segment segment="cT" />
+      </SegmentNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered">
+        <Name>Derivation</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eGuessPat" partOfSpeech="posV">
+            <Allomorphs>
+              <Allomorph id="aGuessPat">
+                <PhoneticShape>[Any]*</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+          </LexicalEntry>
+          <LexicalEntry id="eNuna" partOfSpeech="posN">
+            <Allomorphs>
+              <Allomorph id="aNuna">
+                <PhoneticShape>nuna</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <MorphemeId>NUNA</MorphemeId>
+            <Gloss>land</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrInfl">
+        <Name>Inflection</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrInfl" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>indic3sg</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subInfl">
+                <MorphologicalInput>
+                  <PhoneticSequence id="inflStem">
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="ncAny" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="inflStem" />
+                  <InsertSegments>
+                    <PhoneticShape>vuq</PhoneticShape>
+                  </InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>INFL</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
