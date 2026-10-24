@@ -63,6 +63,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             _morphemes = new ReadOnlyObservableCollection<Morpheme>(morphemes);
             IsPartial = GetPartialMorphemes().Count() > 0;
+            HasPartialRules = GetPartialMorphemes().Any(morpheme => !(morpheme is LexEntry));
         }
 
         public IEnumerable<Morpheme> GetPartialMorphemes()
@@ -101,6 +102,14 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// A Morpher is partial if any of the elements are partial.
         /// </summary>
         public bool IsPartial { get; }
+
+        /// <summary>
+        /// True if any rule is partial, ignoring lexical entries. Analysis may prune a final template that follows
+        /// a non-template rule only when this is false. A partial lexical entry does not matter here:
+        /// SynthesisAffixTemplatesRule applies no template to a word whose root is partial, so a
+        /// derivation that unapplies a final template can never end at a partial root.
+        /// </summary>
+        public bool HasPartialRules { get; }
 
         /// <summary>
         /// Enforce final templates even if some of the morphemes were partial.
