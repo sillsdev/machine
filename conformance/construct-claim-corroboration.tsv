@@ -1164,6 +1164,17 @@ edge-cases/truncate-morphotactic	gbubibi	+|gbubibi	AffixProcessRule: subtraction
 edge-cases/truncate-morphotactic	sa	+|sa	AffixProcessRule: subtraction/truncation	Unmapped	-
 edge-cases/truncate-morphotactic	sag	|sag	AffixProcessRule: subtraction/truncation	Unmapped	-
 edge-cases/truncate-morphotactic	sas	|sas	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic-identity	a	ROOT+A+B|a	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic-identity	a	ROOT+B+A|a	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic-identity	bag	-	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic-identity	ga	C+B+ROOT+A|ga	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic-identity	ga	C+ROOT+A|ga	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic-identity	ga	ROOT+A+C+B|ga	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic-identity	ga	ROOT+B+C+A|ga	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic-identity	ga	ROOT+C+A|ga	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic-subsumption	ag	ROOTAG+X+B|ag	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic-subsumption	gag	X+C+ROOTAG+B|gag	AffixProcessRule: subtraction/truncation	Unmapped	-
+edge-cases/truncate-morphotactic-subsumption	gag	X+C+ROOTAG|gag	AffixProcessRule: subtraction/truncation	Unmapped	-
 edge-cases/two-merges-cascade-env	teK	TAK+SFX|teK	Alpha-variable phonological environments (VariableFeature/AlphaVariables)	Confirmed	AlphaVariables,VariableFeature,variableFeature
 edge-cases/two-merges-cascade-env	teK	TAK+SFX|teK	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/two-merges-cascade-env	teK	TAK+SFX|teK	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-

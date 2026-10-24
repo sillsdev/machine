@@ -1156,6 +1156,17 @@ TruncateRulesProbe,ga,+++|ga,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,ga,++|ga,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,ga,++|ga,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,bag,,AffixProcessRule: subtraction/truncation
+TruncateRulesProbeIdentity,a,ROOT+B+A|a,AffixProcessRule: subtraction/truncation
+TruncateRulesProbeIdentity,a,ROOT+A+B|a,AffixProcessRule: subtraction/truncation
+TruncateRulesProbeIdentity,ga,ROOT+B+C+A|ga,AffixProcessRule: subtraction/truncation
+TruncateRulesProbeIdentity,ga,ROOT+A+C+B|ga,AffixProcessRule: subtraction/truncation
+TruncateRulesProbeIdentity,ga,C+B+ROOT+A|ga,AffixProcessRule: subtraction/truncation
+TruncateRulesProbeIdentity,ga,ROOT+C+A|ga,AffixProcessRule: subtraction/truncation
+TruncateRulesProbeIdentity,ga,C+ROOT+A|ga,AffixProcessRule: subtraction/truncation
+TruncateRulesProbeIdentity,bag,,AffixProcessRule: subtraction/truncation
+TruncateSubsumptionProbe,ag,ROOTAG+X+B|ag,AffixProcessRule: subtraction/truncation
+TruncateSubsumptionProbe,gag,X+C+ROOTAG|gag,AffixProcessRule: subtraction/truncation
+TruncateSubsumptionProbe,gag,X+C+ROOTAG+B|gag,AffixProcessRule: subtraction/truncation
 TwoMergesCascadeEnv,teK,TAK+SFX|teK,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 TwoMergesCascadeEnv,teK,TAK+SFX|teK,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
 TwoMergesCascadeEnv,teK,TAK+SFX|teK,Boundary markers (CharacterDefinitionTable)
