@@ -97,6 +97,53 @@ comments alone claim: those comments do not say which oracle produced the "measu
 signature finding, and this session's reproduction confirms it holds under the C# founding oracle
 specifically, not only under `pg_parse`.
 
+## Machine #480 truncation identity companions: #556-only measurement (historical)
+
+The first three-companion measurement used the corrected Machine #556 library
+(`SIL.Machine.dll` SHA-256
+`b265a40a44292614f51f7a65afc445ae34dde685cb40ce8c2d2de5521a0c299d`) and the #480 C# HermitCrab
+component. Each checked-in grammar declares `morphologicalRuleOrder="unordered"`; the scratch copy
+changed that value to `linear`, leaving `words.yaml` unchanged, then ran the same C# self-check with
+`--propose --include-pathological` against the isolated fixture.
+
+| Fixture | Unordered baseline | Linear copy | Finding |
+|---|---|---|---|
+| `edge-cases/truncate-morphotactic-identity` | `a`: `A+ROOT+B|a`, `B+ROOT+A|a`; `ga`: five signatures | `a`: only `B+ROOT+A|a`; `ga`: only `A+C+ROOT|ga`, `B+ROOT+C+A|ga` | 1 `a` and 3 `ga` analyses lost |
+| `edge-cases/truncate-morphotactic-subsumption` | `ag`: 2 signatures; `gag`: 4 signatures | `ag`: only `ROOTAG|ag`; `gag`: only `C+ROOTAG|gag` | 1 `ag` and 3 `gag` analyses lost |
+| `edge-cases/truncate-morphotactic-copy-u` | `gau`: 9 analyses; `au`: 3 analyses | `gau`: only `A+C+ROOT+U|gau` and `B+ROOT+C+A+U|gau`; `au`: only `A+B+ROOT+U|au` | 7 `gau` and 2 `au` analyses lost |
+
+These #556-only observations are preserved as historical proof of unordered-to-linear sensitivity;
+they are not the identity oracle for the current fixture rows. The #500 `ApplyRhs` relocation changes
+the observed full signatures while preserving the counts, so the current oracle and order measurement
+are recorded separately below.
+
+## Combined #500+#506 remeasurement
+
+The current fixture expectations and this order measurement use the combined C# source state: #556
+commit `d98d12a5d514ce589d7495c71d055830e061a418` plus the #500 `ApplyRhs` relocation from
+`157c031ef272d07c900db41b2d4a8852b13f64b0`. The combined HermitCrab assembly SHA-256 is
+`4cd980453f51fd3cf29cf38a99f342f542e631eb23be6ba87b9433aab6c3d57f`; the shared Machine assembly
+remains `b265a40a44292614f51f7a65afc445ae34dde685cb40ce8c2d2de5521a0c299d`. Copies of each current
+fixture changed only `morphologicalRuleOrder="unordered"` to `"linear"`; their current combined
+`words.yaml` expectations were the unchanged comparison baseline. The command was
+`dotnet /tmp/m506-combined-500-506-engine/hc-conformance.dll --fixtures
+/tmp/m506-combined-order-audit-v2/conformance --propose --include-pathological`. It exited 1 for
+the expected divergences, with 0/3 fixture runs passing and 0 skipped; full output is
+`/tmp/m506-combined-order-audit-v2.log`.
+
+| Fixture | Combined unordered baseline | Linear copy | Finding |
+|---|---|---|---|
+| `edge-cases/truncate-morphotactic-identity` | `a`: `ROOT+A+B|a`, `ROOT+B+A|a`; `ga`: five combined signatures | `a`: only `ROOT+A+B|a`; `ga`: only `ROOT+A+C+B|ga`, `ROOT+C+A|ga` | 1 `a` and 3 `ga` analyses lost |
+| `edge-cases/truncate-morphotactic-subsumption` | `ag`: 2 signatures; `gag`: 4, including `X+C+ROOTAG+B|gag` twice | `ag`: only `ROOTAG|ag`; `gag`: only `C+ROOTAG|gag` | 1 `ag` and 3 `gag` analyses lost |
+| `edge-cases/truncate-morphotactic-copy-u` | `gau`: 9 signatures; `au`: 3 | `gau`: only `ROOT+A+C+B+U|gau` and `ROOT+C+A+U|gau`; `au`: only `B+ROOT+A+U|au` | 7 `gau` and 2 `au` analyses lost |
+
+The full baseline signature rows and ordered application histories are listed in `conformance/README.md`.
+The checked-in grammars still declare `unordered`, which HCLoader hardcodes for every stratum, so
+the fixtures remain FieldWorks-producible. `fieldworks_producible` describes whether HCLoader can
+emit the constructs, not whether invented lexemes resemble a natural language. The subsumption
+fixture's earlier `false` note cited only its synthetic status; that is not an unsupported construct,
+so the corrected metadata remains `true`.
+
 ## What this does NOT mean for the other fixtures marked `false`
 
 `edge-cases/mpr-group-overwrite-without-realizational`, `languages/fusional-realizational-morphology`,

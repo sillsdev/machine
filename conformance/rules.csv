@@ -265,6 +265,16 @@ Mbalantic,mrSfxB,takolola;!pakolola
 TruncateRulesProbe,mruleTruncLead,ag;as;gas;a;ga
 TruncateRulesProbe,mruleTruncOptIns,gbubibi;gas;ga
 TruncateRulesProbe,mruleTruncTrail,sa;a;ga
+TruncateRulesProbeCopyU,mrU,gau;au;sagu
+TruncateRulesProbeCopyU,mruleTruncLead,gau;au
+TruncateRulesProbeCopyU,mruleTruncOptIns,gau
+TruncateRulesProbeCopyU,mruleTruncTrail,gau;au
+TruncateRulesProbeIdentity,mruleTruncLead,a;ga
+TruncateRulesProbeIdentity,mruleTruncOptIns,ga
+TruncateRulesProbeIdentity,mruleTruncTrail,a;ga
+TruncateSubsumptionProbe,mrulePrefixX,ag;sag;gag
+TruncateSubsumptionProbe,mruleTruncLead,ag;gag
+TruncateSubsumptionProbe,mruleTruncOptIns,gag
 TwoMergesCascadeEnv,mrSfxA,teK;KTa
 TwoMergesCascadeEnv,prFront,teK;tek
 TwoMergesCascadeEnv,prMerge,teK;KT;KTa
