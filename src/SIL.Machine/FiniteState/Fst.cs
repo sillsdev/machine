@@ -413,7 +413,7 @@ namespace SIL.Machine.FiniteState
             return true;
         }
 
-        private int ResultCompare(FstResult<TData, TOffset> x, FstResult<TData, TOffset> y)
+        internal int ResultCompare(FstResult<TData, TOffset> x, FstResult<TData, TOffset> y)
         {
             int compare = x.Priority.CompareTo(y.Priority);
             if (compare != 0)
@@ -424,7 +424,12 @@ namespace SIL.Machine.FiniteState
                 compare = -compare;
             if (IsDeterministic)
             {
-                compare = x.IsLazy ? -compare : compare;
+                if (x.IsLazy && y.IsLazy)
+                    // prefer the shorter one
+                    compare = -compare;
+                else if (x.IsLazy || y.IsLazy)
+                    // prefer the lazy one, regardless of direction
+                    compare = x.IsLazy ? -1 : 1;
             }
             else if (compare == 0)
             {
