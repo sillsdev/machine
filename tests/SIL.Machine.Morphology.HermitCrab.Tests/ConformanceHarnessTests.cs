@@ -88,8 +88,8 @@ public sealed class ConformanceHarnessTests
         List<string> details = Runner.CompareRuleTraceMultisets(expected, actual);
 
         Assert.That(details, Has.Count.EqualTo(2));
-        Assert.That(details, Has.Some.Contains("declared rules [crLeftHead] count 1 != traced count 0"));
-        Assert.That(details, Has.Some.Contains("declared rules [crWrongHead] count 0 != traced count 1"));
+        Assert.That(details, Has.Some.Contains("rules [crLeftHead]: declared 1, traced 0"));
+        Assert.That(details, Has.Some.Contains("rules [crWrongHead]: declared 0, traced 1"));
     }
 
     [Test]
@@ -110,8 +110,8 @@ public sealed class ConformanceHarnessTests
         List<string> details = Runner.CompareRuleTraceMultisets(expected, actual);
 
         Assert.That(details, Has.Count.EqualTo(2));
-        Assert.That(details, Has.Some.Contains("declared rules [crLeftHead] count 2 != traced count 1"));
-        Assert.That(details, Has.Some.Contains("declared rules [crRightHead] count 0 != traced count 1"));
+        Assert.That(details, Has.Some.Contains("rules [crLeftHead]: declared 2, traced 1"));
+        Assert.That(details, Has.Some.Contains("rules [crRightHead]: declared 0, traced 1"));
     }
 
     [Test]

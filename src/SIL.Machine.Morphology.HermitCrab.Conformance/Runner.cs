@@ -365,8 +365,8 @@ result.WordResults
                 key.RuleIds.Length == 0 ? Array.Empty<string>() : key.RuleIds.Split('\u001f')
             );
             details.Add(
-                $"parse '{key.Signature}': declared rules [{declaredRuleIds}] count {declaredCount} "
-                    + $"!= traced count {tracedCount}"
+                $"parse '{key.Signature}': rules [{declaredRuleIds}]: declared {declaredCount}, "
+                    + $"traced {tracedCount}"
             );
         }
 
