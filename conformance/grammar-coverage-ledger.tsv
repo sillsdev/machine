@@ -245,9 +245,39 @@ edge-cases/class-deletion-reinsertion-strrep	Interface	Stratum.characterDefiniti
 edge-cases/class-deletion-reinsertion-strrep	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/class-deletion-reinsertion-strrep	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/class-deletion-reinsertion-strrep	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	9 claim(s)
+edge-cases/clitic-enclitic-and-proclitic	Surface	dtd:enum/AffixTemplate/final/true	witnessed	Evidenced
+edge-cases/clitic-enclitic-and-proclitic	Surface	dtd:enum/Stratum/morphologicalRuleOrder/unordered	witnessed	Evidenced
+edge-cases/clitic-enclitic-and-proclitic	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/clitic-enclitic-and-proclitic	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/clitic-enclitic-and-proclitic	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/clitic-enclitic-and-proclitic	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/clitic-enclitic-and-proclitic	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
+edge-cases/clitic-enclitic-and-proclitic	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/clitic-enclitic-and-proclitic	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/clitic-enclitic-and-proclitic	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	1 claim(s)
+edge-cases/clitic-enclitic-and-proclitic	Construct	Clitics stratum: clitic designation by stratum name alone	claimed-unmapped	4 claim(s)
+edge-cases/clitic-flex-layout-blocking-morphology	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/clitic-flex-layout-blocking-morphology	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/clitic-flex-layout-blocking-morphology	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/clitic-flex-layout-blocking-morphology	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/clitic-flex-layout-blocking-morphology	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/clitic-flex-layout-blocking-morphology	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
+edge-cases/clitic-flex-layout-blocking-morphology	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/clitic-flex-layout-blocking-morphology	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/clitic-flex-layout-blocking-morphology	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/clitic-flex-layout-blocking-morphology	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	1 claim(s)
+edge-cases/clitic-flex-layout-blocking-morphology	Construct	Clitic rules (isCliticRule / Clitics stratum) after a final template	claimed-confirmed	3 claim(s)
+edge-cases/clitic-proclitic-after-final-template	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/clitic-proclitic-after-final-template	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/clitic-proclitic-after-final-template	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/clitic-proclitic-after-final-template	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/clitic-proclitic-after-final-template	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
+edge-cases/clitic-proclitic-after-final-template	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/clitic-proclitic-after-final-template	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/clitic-proclitic-after-final-template	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	2 claim(s)
+edge-cases/clitic-proclitic-after-final-template	Construct	Clitics stratum: clitic designation by stratum name alone	claimed-unmapped	2 claim(s)
 edge-cases/clitic-rule-designation	Surface	dtd:enum/MorphologicalRule/isCliticRule/false	witnessed	Evidenced
 edge-cases/clitic-rule-designation	Surface	dtd:enum/MorphologicalRule/isCliticRule/true	witnessed	Evidenced
-edge-cases/clitic-rule-designation	Surface	dtd:enum/Stratum/morphologicalRuleOrder/unordered	witnessed	Evidenced
 edge-cases/clitic-rule-designation	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/clitic-rule-designation	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/clitic-rule-designation	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
@@ -258,6 +288,15 @@ edge-cases/clitic-rule-designation	Interface	Stratum.characterDefinitionTable	re
 edge-cases/clitic-rule-designation	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/clitic-rule-designation	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	3 claim(s)
 edge-cases/clitic-rule-designation	Construct	Clitic rules (isCliticRule / Clitics stratum) after a final template	claimed-confirmed	5 claim(s)
+edge-cases/clitic-stem-entry	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/clitic-stem-entry	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/clitic-stem-entry	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/clitic-stem-entry	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/clitic-stem-entry	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
+edge-cases/clitic-stem-entry	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/clitic-stem-entry	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/clitic-stem-entry	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	1 claim(s)
+edge-cases/clitic-stem-entry	Construct	Clitics stratum: clitic designation by stratum name alone	claimed-unmapped	2 claim(s)
 edge-cases/compounding-breadth	Surface	dtd:element/AssignedFootFeatures	witnessed	Evidenced
 edge-cases/compounding-breadth	Surface	dtd:element/AssignedHeadFeatures	witnessed	Evidenced
 edge-cases/compounding-breadth	Surface	dtd:element/CompoundingRule	required-by-dtd	RequiredByDtd
@@ -504,7 +543,6 @@ edge-cases/final-template-merge-key	Interface	Slot.morphologicalRules	required-b
 edge-cases/final-template-merge-key	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/final-template-merge-key	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/final-template-merge-key	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	1 claim(s)
-edge-cases/final-template-partial-discriminators	Surface	dtd:enum/AffixTemplate/final/true	witnessed	Evidenced
 edge-cases/final-template-partial-discriminators	Surface	dtd:enum/MorphologicalRule/partial/true	witnessed	Evidenced
 edge-cases/final-template-partial-discriminators	Surface	dtd:enum/Stratum/isActive/yes	witnessed	Evidenced
 edge-cases/final-template-partial-discriminators	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
@@ -825,6 +863,15 @@ edge-cases/multi-table-metathesis-shared-representation	Interface	Stratum.charac
 edge-cases/multi-table-metathesis-shared-representation	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/multi-table-metathesis-shared-representation	Construct	CharacterDefinitionTable: more than one table, one per stratum	claimed-confirmed	3 claim(s)
 edge-cases/multi-table-metathesis-shared-representation	Construct	MetathesisRule	claimed-confirmed	4 claim(s)
+edge-cases/non-clitic-after-final-template-layout	Interface	AffixTemplate.requiredPartsOfSpeech	witnessed	Evidenced
+edge-cases/non-clitic-after-final-template-layout	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/non-clitic-after-final-template-layout	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
+edge-cases/non-clitic-after-final-template-layout	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/non-clitic-after-final-template-layout	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
+edge-cases/non-clitic-after-final-template-layout	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/non-clitic-after-final-template-layout	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/non-clitic-after-final-template-layout	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	1 claim(s)
+edge-cases/non-clitic-after-final-template-layout	Construct	Clitic rules (isCliticRule / Clitics stratum) after a final template	claimed-confirmed	7 claim(s)
 edge-cases/nullable-disagree-bounded-ltr-left	Interface	AlphaVariable.variableFeature	required-by-dtd	RequiredByDtd
 edge-cases/nullable-disagree-bounded-ltr-left	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/nullable-disagree-bounded-ltr-left	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
@@ -1364,7 +1411,7 @@ edge-cases/truncate-morphotactic	Interface	CopyFromInput.index	required-by-dtd	R
 edge-cases/truncate-morphotactic	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
 edge-cases/truncate-morphotactic	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
-edge-cases/truncate-morphotactic	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/truncate-morphotactic	Interface	MorphologicalRule.requiredPartsOfSpeech	witnessed	Evidenced
 edge-cases/truncate-morphotactic	Interface	Segment.segment	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
@@ -1373,8 +1420,8 @@ edge-cases/truncate-morphotactic	Construct	AffixProcessRule: subtraction/truncat
 edge-cases/truncate-morphotactic-copy-u	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic-copy-u	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic-copy-u	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
-edge-cases/truncate-morphotactic-copy-u	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
-edge-cases/truncate-morphotactic-copy-u	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/truncate-morphotactic-copy-u	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
+edge-cases/truncate-morphotactic-copy-u	Interface	MorphologicalRule.requiredPartsOfSpeech	witnessed	Evidenced
 edge-cases/truncate-morphotactic-copy-u	Interface	Segment.segment	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic-copy-u	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic-copy-u	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
@@ -1382,8 +1429,8 @@ edge-cases/truncate-morphotactic-copy-u	Interface	Stratum.morphologicalRules	wit
 edge-cases/truncate-morphotactic-identity	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic-identity	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic-identity	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
-edge-cases/truncate-morphotactic-identity	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
-edge-cases/truncate-morphotactic-identity	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/truncate-morphotactic-identity	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
+edge-cases/truncate-morphotactic-identity	Interface	MorphologicalRule.requiredPartsOfSpeech	witnessed	Evidenced
 edge-cases/truncate-morphotactic-identity	Interface	Segment.segment	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic-identity	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic-identity	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd

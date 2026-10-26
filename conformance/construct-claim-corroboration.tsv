@@ -118,6 +118,19 @@ edge-cases/class-deletion-reinsertion-strrep	amuma	AM+UMPA|amuma	RewriteRule Ite
 edge-cases/class-deletion-reinsertion-strrep	uma	UMA|uma	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/class-deletion-reinsertion-strrep	uma	UMPA|uma	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/class-deletion-reinsertion-strrep	umuma	UMBUMPA|umuma	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/clitic-enclitic-and-proclitic	sagd	SAG+PAST|sagd	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/clitic-enclitic-and-proclitic	sagds	SAG+PAST+ENC|sagds	Clitics stratum: clitic designation by stratum name alone	Unmapped	-
+edge-cases/clitic-enclitic-and-proclitic	zsagd	PROC+SAG+PAST|zsagd	Clitics stratum: clitic designation by stratum name alone	Unmapped	-
+edge-cases/clitic-enclitic-and-proclitic	zsagds	PROC+SAG+PAST+ENC|zsagds	Clitics stratum: clitic designation by stratum name alone	Unmapped	-
+edge-cases/clitic-enclitic-and-proclitic	zsagds	PROC+SAG+PAST+ENC|zsagds	Clitics stratum: clitic designation by stratum name alone	Unmapped	-
+edge-cases/clitic-flex-layout-blocking-morphology	sagdi	SAG+PAST|sagdi	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/clitic-flex-layout-blocking-morphology	sagdis	SAG+PAST+ENC|sagdis	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
+edge-cases/clitic-flex-layout-blocking-morphology	sagdit	SAG+PAST+NOTCL|sagdit	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
+edge-cases/clitic-flex-layout-blocking-morphology	sagdk	-	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
+edge-cases/clitic-proclitic-after-final-template	kpsag	-	Clitics stratum: clitic designation by stratum name alone	Unmapped	-
+edge-cases/clitic-proclitic-after-final-template	pksag	PRE+PLAINPRE+SAG|pksag	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/clitic-proclitic-after-final-template	psag	PRE+SAG|psag	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/clitic-proclitic-after-final-template	zpsag	PROC+PRE+SAG|zpsag	Clitics stratum: clitic designation by stratum name alone	Unmapped	-
 edge-cases/clitic-rule-designation	kolpu	KOL+NF|kolpu	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/clitic-rule-designation	kolpuli	KOL+NF+PL|kolpuli	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/clitic-rule-designation	sagd	SAG+PAST|sagd	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
@@ -126,6 +139,9 @@ edge-cases/clitic-rule-designation	sagds	SAG+PAST+ENC|sagds	Clitic rules (isClit
 edge-cases/clitic-rule-designation	sagdsz	SAG+PAST+ENC+DEFCL|sagdsz	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
 edge-cases/clitic-rule-designation	sagdt	-	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
 edge-cases/clitic-rule-designation	sagdz	SAG+PAST+DEFCL|sagdz	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
+edge-cases/clitic-stem-entry	ka	KA|ka	Clitics stratum: clitic designation by stratum name alone	Unmapped	-
+edge-cases/clitic-stem-entry	kaz	KA+ENC|kaz	Clitics stratum: clitic designation by stratum name alone	Unmapped	-
+edge-cases/clitic-stem-entry	sagd	SAG+PAST|sagd	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/compounding-breadth	ka	KA|ka	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
 edge-cases/compounding-breadth	kaki	-	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
 edge-cases/compounding-breadth	kamtu	-	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
@@ -348,6 +364,14 @@ edge-cases/multi-table-metathesis-shared-representation	xm	ROOT1|xm	MetathesisRu
 edge-cases/multi-table-metathesis-shared-representation	xw	ROOT2|xw	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/multi-table-metathesis-shared-representation	xw	ROOT2|xw	MetathesisRule	Confirmed	MetathesisRule
 edge-cases/multi-table-metathesis-shared-representation	z	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/non-clitic-after-final-template-layout	kolk	KOL+DERIV|kolk	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
+edge-cases/non-clitic-after-final-template-layout	koll	KOL+SURF|koll	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
+edge-cases/non-clitic-after-final-template-layout	kolt	KOL+NOTCL|kolt	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
+edge-cases/non-clitic-after-final-template-layout	sagd	SAG+PAST|sagd	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
+edge-cases/non-clitic-after-final-template-layout	sagdk	-	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
+edge-cases/non-clitic-after-final-template-layout	sagdl	-	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
+edge-cases/non-clitic-after-final-template-layout	sagds	SAG+PAST+ENC|sagds	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
+edge-cases/non-clitic-after-final-template-layout	sagdt	-	Clitic rules (isCliticRule / Clitics stratum) after a final template	Confirmed	isCliticRule
 edge-cases/nullable-disagree-bounded-ltr-left	aa	-	CharacterDefinitionTable pattern shapes: optional group / Kleene star	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/nullable-disagree-bounded-ltr-left	ai	-	CharacterDefinitionTable pattern shapes: optional group / Kleene star	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/nullable-disagree-bounded-ltr-left	au	-	CharacterDefinitionTable pattern shapes: optional group / Kleene star	Confirmed	CharacterDefinitionTable,characterDefinitionTable

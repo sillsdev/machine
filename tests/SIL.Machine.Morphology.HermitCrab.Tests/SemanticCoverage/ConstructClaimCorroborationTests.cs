@@ -35,10 +35,10 @@ public sealed class ConstructClaimCorroborationTests
         );
 
         // Pins the ledger row count and its confirmed/contradicted/unmapped split.
-        Assert.That(rows, Has.Count.EqualTo(1448));
-        Assert.That(confirmed, Is.EqualTo(799));
+        Assert.That(rows, Has.Count.EqualTo(1472));
+        Assert.That(confirmed, Is.EqualTo(809));
         Assert.That(contradicted, Is.EqualTo(12));
-        Assert.That(unmapped, Is.EqualTo(637));
+        Assert.That(unmapped, Is.EqualTo(651));
     }
 
     [Test]
