@@ -227,10 +227,47 @@ namespace SIL.Machine.Annotations
             if (Find(offset, dir, out result))
                 return true;
 
-            if (!result.IsLeaf && result.Range.Contains(offset, dir))
-                return result.Children.FindDepthFirst(offset, dir, out result);
+            // Several containers can share the same range while only one of them owns the children that lead to the
+            // offset, so every one of them has to be tried, not just the one Find happened to return.
+            Annotation<TOffset> candidate = result;
+            foreach (Annotation<TOffset> tied in GetSameRange(candidate))
+            {
+                if (
+                    !tied.IsLeaf
+                    && tied.Range.Contains(offset, dir)
+                    && tied.Children.FindDepthFirst(offset, dir, out Annotation<TOffset> inner)
+                )
+                {
+                    result = inner;
+                    return true;
+                }
+            }
+
+            if (!candidate.IsLeaf && candidate.Range.Contains(offset, dir))
+                return candidate.Children.FindDepthFirst(offset, dir, out result);
 
             return false;
+        }
+
+        private IEnumerable<Annotation<TOffset>> GetSameRange(Annotation<TOffset> ann)
+        {
+            yield return ann;
+            if (ann == Begin || ann == End)
+                yield break;
+
+            for (
+                Annotation<TOffset> cur = ann.Prev;
+                cur != Begin && cur.Range.CompareTo(ann.Range) == 0;
+                cur = cur.Prev
+            )
+            {
+                yield return cur;
+            }
+
+            for (Annotation<TOffset> cur = ann.Next; cur != End && cur.Range.CompareTo(ann.Range) == 0; cur = cur.Next)
+            {
+                yield return cur;
+            }
         }
 
         public IEnumerable<Annotation<TOffset>> GetNodes(TOffset start, TOffset end)
