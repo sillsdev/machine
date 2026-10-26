@@ -110,6 +110,19 @@ ClassDeletionReinsertionStrrep,amuma,AM+PUMA|amuma,RewriteRule Iterative (epenth
 ClassDeletionReinsertionStrrep,amuma,AM+UMA|amuma,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 ClassDeletionReinsertionStrrep,amuma,AM+UMPA|amuma,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 ClassDeletionReinsertionStrrep,umuma,UMBUMPA|umuma,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+CliticEncliticAndProclitic,sagd,SAG+PAST|sagd,Affix template slots (obligatory/disjunctive/ordering)
+CliticEncliticAndProclitic,zsagd,PROC+SAG+PAST|zsagd,Clitics stratum: clitic designation by stratum name alone
+CliticEncliticAndProclitic,sagds,SAG+PAST+ENC|sagds,Clitics stratum: clitic designation by stratum name alone
+CliticEncliticAndProclitic,zsagds,PROC+SAG+PAST+ENC|zsagds,Clitics stratum: clitic designation by stratum name alone
+CliticEncliticAndProclitic,zsagds,PROC+SAG+PAST+ENC|zsagds,Clitics stratum: clitic designation by stratum name alone
+CliticFlexLayoutBlockingMorphology,sagdi,SAG+PAST|sagdi,Affix template slots (obligatory/disjunctive/ordering)
+CliticFlexLayoutBlockingMorphology,sagdis,SAG+PAST+ENC|sagdis,Clitic rules (isCliticRule / Clitics stratum) after a final template
+CliticFlexLayoutBlockingMorphology,sagdit,SAG+PAST+NOTCL|sagdit,Clitic rules (isCliticRule / Clitics stratum) after a final template
+CliticFlexLayoutBlockingMorphology,sagdk,,Clitic rules (isCliticRule / Clitics stratum) after a final template
+CliticProcliticAfterFinalTemplate,psag,PRE+SAG|psag,Affix template slots (obligatory/disjunctive/ordering)
+CliticProcliticAfterFinalTemplate,zpsag,PROC+PRE+SAG|zpsag,Clitics stratum: clitic designation by stratum name alone
+CliticProcliticAfterFinalTemplate,kpsag,,Clitics stratum: clitic designation by stratum name alone
+CliticProcliticAfterFinalTemplate,pksag,PRE+PLAINPRE+SAG|pksag,Affix template slots (obligatory/disjunctive/ordering)
 CliticRuleDesignation,sagd,SAG+PAST|sagd,Affix template slots (obligatory/disjunctive/ordering)
 CliticRuleDesignation,sagds,SAG+PAST+ENC|sagds,Clitic rules (isCliticRule / Clitics stratum) after a final template
 CliticRuleDesignation,sagdk,,Clitic rules (isCliticRule / Clitics stratum) after a final template
@@ -118,6 +131,9 @@ CliticRuleDesignation,sagdz,SAG+PAST+DEFCL|sagdz,Clitic rules (isCliticRule / Cl
 CliticRuleDesignation,sagdsz,SAG+PAST+ENC+DEFCL|sagdsz,Clitic rules (isCliticRule / Clitics stratum) after a final template
 CliticRuleDesignation,kolpu,KOL+NF|kolpu,Affix template slots (obligatory/disjunctive/ordering)
 CliticRuleDesignation,kolpuli,KOL+NF+PL|kolpuli,Affix template slots (obligatory/disjunctive/ordering)
+CliticStemEntry,sagd,SAG+PAST|sagd,Affix template slots (obligatory/disjunctive/ordering)
+CliticStemEntry,ka,KA|ka,Clitics stratum: clitic designation by stratum name alone
+CliticStemEntry,kaz,KA+ENC|kaz,Clitics stratum: clitic designation by stratum name alone
 CompoundingBreadth,ka,KA|ka,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,tu,TU|tu,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,katu,KA+TU|katu,CompoundingRule
@@ -340,6 +356,14 @@ MultiTableMetathesisSharedRepresentation,xm,ROOT1|xm,MetathesisRule
 MultiTableMetathesisSharedRepresentation,xm,ROOT1|xm,"CharacterDefinitionTable: more than one table, one per stratum"
 MultiTableMetathesisSharedRepresentation,mx,,MetathesisRule
 MultiTableMetathesisSharedRepresentation,z,,"CharacterDefinitionTable: more than one table, one per stratum"
+NonCliticAfterFinalTemplateLayout,sagd,SAG+PAST|sagd,Affix template slots (obligatory/disjunctive/ordering)
+NonCliticAfterFinalTemplateLayout,sagds,SAG+PAST+ENC|sagds,Clitic rules (isCliticRule / Clitics stratum) after a final template
+NonCliticAfterFinalTemplateLayout,sagdk,,Clitic rules (isCliticRule / Clitics stratum) after a final template
+NonCliticAfterFinalTemplateLayout,sagdt,,Clitic rules (isCliticRule / Clitics stratum) after a final template
+NonCliticAfterFinalTemplateLayout,sagdl,,Clitic rules (isCliticRule / Clitics stratum) after a final template
+NonCliticAfterFinalTemplateLayout,kolk,KOL+DERIV|kolk,Clitic rules (isCliticRule / Clitics stratum) after a final template
+NonCliticAfterFinalTemplateLayout,kolt,KOL+NOTCL|kolt,Clitic rules (isCliticRule / Clitics stratum) after a final template
+NonCliticAfterFinalTemplateLayout,koll,KOL+SURF|koll,Clitic rules (isCliticRule / Clitics stratum) after a final template
 nullable-disagree-bounded-ltr-left,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
 nullable-disagree-bounded-ltr-left,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
 nullable-disagree-bounded-ltr-left,ia,AU|ia,CharacterDefinitionTable pattern shapes: optional group / Kleene star

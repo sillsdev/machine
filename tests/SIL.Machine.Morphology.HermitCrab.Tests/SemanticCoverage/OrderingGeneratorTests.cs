@@ -10,7 +10,7 @@ namespace SIL.Machine.Morphology.HermitCrab;
 public sealed class OrderingGeneratorTests
 {
     // Number of fixtures in the measured corpus; the generator tests assert against this total.
-    private const int MeasuredCorpusFixtureCount = 135;
+    private const int MeasuredCorpusFixtureCount = 140;
 
     private static string RepositoryRoot()
     {
@@ -487,12 +487,12 @@ public sealed class OrderingGeneratorTests
         TestContext.Out.WriteLine(
             $"lists={totalLists} pairs={totalPairs} disjoint={disjoint} overlaps={overlaps} undetermined={undetermined}"
         );
-        Assert.That(totalLists, Is.EqualTo(72));
-        Assert.That(totalPairs, Is.EqualTo(209));
+        Assert.That(totalLists, Is.EqualTo(78));
+        Assert.That(totalPairs, Is.EqualTo(215));
         Assert.That(disjoint, Is.EqualTo(8));
         Assert.That(overlaps, Is.EqualTo(29));
-        Assert.That(undetermined, Is.EqualTo(172));
-        Assert.That(disjoint + overlaps + undetermined, Is.EqualTo(209));
+        Assert.That(undetermined, Is.EqualTo(178));
+        Assert.That(disjoint + overlaps + undetermined, Is.EqualTo(215));
     }
 
     [Test]
@@ -679,13 +679,13 @@ public sealed class OrderingGeneratorTests
         foreach (var kv in rows.GroupBy(r => r.Relation))
             TestContext.Out.WriteLine($"  {kv.Key}: {kv.Count()}");
 
-        Assert.That(rows, Has.Count.EqualTo(1951));
-        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(1710));
-        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStage), Is.EqualTo(212));
-        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStratum), Is.EqualTo(29));
-        Assert.That(rows.Count(r => r.Relation == DomainRelation.Disjoint), Is.EqualTo(32));
+        Assert.That(rows, Has.Count.EqualTo(2007));
+        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(1761));
+        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStage), Is.EqualTo(215));
+        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStratum), Is.EqualTo(31));
+        Assert.That(rows.Count(r => r.Relation == DomainRelation.Disjoint), Is.EqualTo(33));
         Assert.That(rows.Count(r => r.Relation == DomainRelation.Overlaps), Is.EqualTo(162));
-        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(1757));
+        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(1812));
     }
 
     [Test]
