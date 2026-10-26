@@ -42,23 +42,21 @@ namespace SIL.Machine.Corpora
             var elements = block.Elements.ToList();
 
             // Nothing to do if there are no markers to place or no alignment to use
-            if (!block.Metadata.TryGetValue(PlaceMarkersAlignmentInfo.MetadataKey, out object alignmentObject))
-            {
+            if (!elements.Any(e => e.IsPlaceable(UpdateUsfmMarkerBehavior.Preserve, UpdateUsfmMarkerBehavior.Preserve)))
                 return block;
-            }
-            if (!(alignmentObject is PlaceMarkersAlignmentInfo alignmentInfo))
-            {
+
+            List<PlaceMarkersAlignmentInfo> rowAlignmentInfos = GetRowAlignmentInfos(block);
+            if (rowAlignmentInfos == null)
                 return block;
-            }
-            if (
-                elements.Count == 0
-                || alignmentInfo.Alignment.RowCount == 0
-                || alignmentInfo.Alignment.ColumnCount == 0
-                || !elements.Any(e => e.IsPlaceable(alignmentInfo.ParagraphBehavior, alignmentInfo.StyleBehavior))
-            )
-            {
+
+            // The same behaviors as the merged alignment info, which takes them from the first row
+            UpdateUsfmMarkerBehavior paragraphBehavior = rowAlignmentInfos[0].ParagraphBehavior;
+            UpdateUsfmMarkerBehavior styleBehavior = rowAlignmentInfos[0].StyleBehavior;
+            if (!elements.Any(e => e.IsPlaceable(paragraphBehavior, styleBehavior)))
                 return block;
-            }
+
+            // The alignment is checked only now, so that a block with nothing to place can't fail on it
+            PlaceMarkersAlignmentInfo alignmentInfo = GetBlockAlignmentInfo(block, rowAlignmentInfos);
 
             // Paragraph markers at the end of the block should stay there
             // Section headers should be ignored but re-inserted in the same position relative to other paragraph markers
@@ -183,6 +181,7 @@ namespace SIL.Machine.Corpora
             }
 
             var toInsert = new List<(int Index, UsfmUpdateBlockElement Element)>();
+            var openStyleTargetTokensByMarker = new Dictionary<string, List<int>>();
             foreach (
                 (UsfmUpdateBlockElement element, int adjacentSourceToken) in toPlace
                     .Zip(adjacentSourceTokens)
@@ -203,12 +202,41 @@ namespace SIL.Machine.Corpora
                         targetTokens
                     );
                 }
+                bool isEndStyle =
+                    element.Type == UsfmUpdateBlockElementType.Style
+                    && element.Tokens[0].Marker[element.Tokens[0].Marker.Length - 1] == '*';
+                if (element.Type == UsfmUpdateBlockElementType.Style)
+                {
+                    string marker = element.Tokens[0].Marker;
+                    if (isEndStyle)
+                    {
+                        if (
+                            openStyleTargetTokensByMarker.TryGetValue(
+                                marker.Substring(0, marker.Length - 1),
+                                out List<int> openingTargetTokens
+                            )
+                            && openingTargetTokens.Count > 0
+                        )
+                        {
+                            // Reordered words can predict a closing marker before its opening one
+                            int openingTargetToken = openingTargetTokens[openingTargetTokens.Count - 1];
+                            openingTargetTokens.RemoveAt(openingTargetTokens.Count - 1);
+                            adjacentTargetToken = Math.Max(adjacentTargetToken, openingTargetToken + 1);
+                        }
+                    }
+                    else
+                    {
+                        if (!openStyleTargetTokensByMarker.TryGetValue(marker, out List<int> openTokens))
+                        {
+                            openTokens = new List<int>();
+                            openStyleTargetTokensByMarker[marker] = openTokens;
+                        }
+                        openTokens.Add(adjacentTargetToken);
+                    }
+                }
+
                 int targetStringIndex;
-                if (
-                    adjacentSourceToken > 0
-                    && element.Type == UsfmUpdateBlockElementType.Style
-                    && element.Tokens[0].Marker[element.Tokens[0].Marker.Length - 1] == '*'
-                )
+                if (isEndStyle && adjacentTargetToken > 0 && adjacentTargetToken <= targetTokens.Count)
                 {
                     targetStringIndex =
                         targetTokenStarts[adjacentTargetToken - 1] + targetTokens[adjacentTargetToken - 1].Length;
@@ -282,11 +310,82 @@ namespace SIL.Machine.Corpora
                 headerElements.RemoveAt(0);
             }
 
-            var processedBlock = new UsfmUpdateBlock(
-                refs: block.Refs,
-                elements: placedElements.Concat(ignoredElements)
+            return new UsfmUpdateBlock(block.Refs, placedElements.Concat(ignoredElements), block.Rows);
+        }
+
+        internal static List<PlaceMarkersAlignmentInfo> GetRowAlignmentInfos(UsfmUpdateBlock block)
+        {
+            var infos = new List<PlaceMarkersAlignmentInfo>();
+            foreach (UsfmUpdateBlockRow row in block.Rows)
+            {
+                // Rows that contributed no text, such as the later verses of a verse range, have nothing to align
+                if (row.Text.Trim().Length == 0)
+                    continue;
+                if (
+                    !row.Metadata.TryGetValue(PlaceMarkersAlignmentInfo.MetadataKey, out object infoObject)
+                    || !(infoObject is PlaceMarkersAlignmentInfo info)
+                    || info.TranslationTokens.Count == 0
+                )
+                {
+                    return null;
+                }
+                infos.Add(info);
+            }
+            return infos.Count > 0 ? infos : null;
+        }
+
+        internal static PlaceMarkersAlignmentInfo GetBlockAlignmentInfo(
+            UsfmUpdateBlock block,
+            IReadOnlyList<PlaceMarkersAlignmentInfo> rowAlignmentInfos
+        )
+        {
+            // Checked before merging, which would shift a pair outside a row's tokens into the next row's tokens
+            foreach (PlaceMarkersAlignmentInfo info in rowAlignmentInfos)
+                CheckAlignedWordPairs(block, info);
+            return rowAlignmentInfos.Count == 1 ? rowAlignmentInfos[0] : MergeAlignmentInfos(rowAlignmentInfos);
+        }
+
+        private static void CheckAlignedWordPairs(UsfmUpdateBlock block, PlaceMarkersAlignmentInfo info)
+        {
+            foreach (AlignedWordPair pair in info.Alignment.ToAlignedWordPairs())
+            {
+                if (pair.SourceIndex >= info.SourceTokens.Count || pair.TargetIndex >= info.TranslationTokens.Count)
+                {
+                    throw new UsfmUpdateBlockHandlerException(
+                        $"Aligned word pair {pair.SourceIndex}-{pair.TargetIndex} is outside the tokens of its row for {FormatRefs(block)}.",
+                        block
+                    );
+                }
+            }
+        }
+
+        private static PlaceMarkersAlignmentInfo MergeAlignmentInfos(IReadOnlyList<PlaceMarkersAlignmentInfo> infos)
+        {
+            var sourceTokens = new List<string>();
+            var translationTokens = new List<string>();
+            var wordPairs = new List<(int, int)>();
+            foreach (PlaceMarkersAlignmentInfo info in infos)
+            {
+                // Offset by token counts, not matrix size, since a matrix may omit unaligned trailing tokens
+                foreach (AlignedWordPair pair in info.Alignment.ToAlignedWordPairs())
+                {
+                    wordPairs.Add((sourceTokens.Count + pair.SourceIndex, translationTokens.Count + pair.TargetIndex));
+                }
+                sourceTokens.AddRange(info.SourceTokens);
+                translationTokens.AddRange(info.TranslationTokens);
+            }
+            return new PlaceMarkersAlignmentInfo(
+                sourceTokens,
+                translationTokens,
+                new WordAlignmentMatrix(sourceTokens.Count, translationTokens.Count, wordPairs),
+                infos[0].ParagraphBehavior,
+                infos[0].StyleBehavior
             );
-            return processedBlock;
+        }
+
+        private static string FormatRefs(UsfmUpdateBlock block)
+        {
+            return string.Join(", ", block.Refs.Select(r => r.ToString()));
         }
 
         private int PredictMarkerLocation(
