@@ -142,8 +142,8 @@ public static class EngineGateInventoryLedger
         // XmlLanguageLoader.cs's Allomorph loader reads Allomorph.isBound directly onto RootAllomorph.IsBound.
         ["BoundRoot"] = "Allomorph.isBound",
 
-        // Both template gates skip a clitic rule (SynthesisAffixProcessRule.cs: !_rule.GetIsCliticRule()), and
-        // XmlLanguageLoader.cs:865 reads MorphologicalRule.isCliticRule onto it, so that attribute feeds them too.
+        // Both template gates skip a clitic rule (GetIsCliticRule), and XmlLanguageLoader.cs:865 reads
+        // MorphologicalRule.isCliticRule onto it, so that attribute feeds them too.
         ["NonPartialRuleProhibitedAfterFinalTemplate"] =
             "AffixTemplate.final;MorphologicalRule.partial;MorphologicalRule.isCliticRule",
         ["NonPartialRuleRequiredAfterNonFinalTemplate"] =
