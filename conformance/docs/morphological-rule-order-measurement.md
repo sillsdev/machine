@@ -125,11 +125,18 @@ commit `d98d12a5d514ce589d7495c71d055830e061a418` plus the #500 `ApplyRhs` reloc
 `4cd980453f51fd3cf29cf38a99f342f542e631eb23be6ba87b9433aab6c3d57f`; the shared Machine assembly
 remains `b265a40a44292614f51f7a65afc445ae34dde685cb40ce8c2d2de5521a0c299d`. Copies of each current
 fixture changed only `morphologicalRuleOrder="unordered"` to `"linear"`; their current combined
-`words.yaml` expectations were the unchanged comparison baseline. The command was
-`dotnet /tmp/m506-combined-500-506-engine/hc-conformance.dll --fixtures
-/tmp/m506-combined-order-audit-v2/conformance --propose --include-pathological`. It exited 1 for
-the expected divergences, with 0/3 fixture runs passing and 0 skipped; full output is
-`/tmp/m506-combined-order-audit-v2.log`.
+`words.yaml` expectations were the unchanged comparison baseline. The measurement ran the C#
+self-check (`--propose --include-pathological`) against those three `linear` copies. It exited 1 for
+the expected divergences, with 0/3 fixture runs passing and 0 skipped.
+
+Reproducibility: the combined engine build, the `linear` fixture copies and the full run log were
+kept in a scratch directory that was not preserved, so this table cannot be regenerated from the
+repository as checked in. What is recorded here is the result of that one run, not a script. To
+check it independently, build a HermitCrab engine from the two source states named above (#556
+commit `d98d12a5` with the #500 relocation `157c031e`), copy each of the three fixtures with only
+the `morphologicalRuleOrder` value changed to `linear`, run the self-check on the copies, and
+compare each fixture's reported parses with the table. The assembly hashes above identify the
+binaries that produced it.
 
 | Fixture | Combined unordered baseline | Linear copy | Finding |
 |---|---|---|---|
