@@ -132,9 +132,9 @@ word list, and the rulestats HTML report so they cannot be staged by accident.
    `Morpher.IsPartial`, is still grammar-wide and still counts partial lexical entries.
 2. Classify the unclassified affixes in the FLEx projects (Mbugwe 1, Amharic 1, Sena 6); that turns #491's default
    prune on for Mbugwe and Amharic. Sena stays partial because of its 25 partial lexical entries, so classifying
-   its affixes does not enable the prune there. Whether a narrower guard could safely ignore partial lexical
-   entries is an open question, tracked in sillsdev/machine#551: a partial root makes the word partial, and
-   synthesis then permits a non-partial rule after a final template, so ignoring lexical entries may not be safe.
+   its affixes alone does not enable the prune there. PR sillsdev/machine#553 shows that ignoring partial lexical
+   entries is safe and makes the guard ignore them, so once #553 merges, Sena gets the prune without reclassifying
+   its entries (tracked in sillsdev/machine#551).
    Add the finding to the grammar advisor.
 3. ~~Open the prefilter PR from `perf/hc-edge-prefilter`~~ — that branch and its own archive tag are both
    deleted; a PR now starts from the mechanism preserved on branch
