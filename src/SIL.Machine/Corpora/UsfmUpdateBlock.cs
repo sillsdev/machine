@@ -1,8 +1,36 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
+    public class UsfmUpdateBlockRow
+    {
+        public string Text { get; }
+        public IReadOnlyDictionary<string, object> Metadata { get; }
+
+        public UsfmUpdateBlockRow(string text, IReadOnlyDictionary<string, object> metadata = null)
+        {
+            Text = text;
+            Metadata = metadata ?? new Dictionary<string, object>();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is UsfmUpdateBlockRow other))
+                return false;
+
+            return string.Equals(Text, other.Text, StringComparison.Ordinal)
+                && Metadata.Count == other.Metadata.Count
+                && !Metadata.Except(other.Metadata).Any();
+        }
+
+        public override int GetHashCode()
+        {
+            return Text?.GetHashCode() ?? 0;
+        }
+    }
+
     public class UsfmUpdateBlock
     {
         public IReadOnlyList<ScriptureRef> Refs
@@ -13,86 +41,26 @@ namespace SIL.Machine.Corpora
         {
             get => _elements;
         }
-        public IReadOnlyDictionary<string, object> Metadata
+
+        // Several rows can match a verse range, and this block's text is their texts concatenated in order
+        public IReadOnlyList<UsfmUpdateBlockRow> Rows
         {
-            get => _metadata;
+            get => _rows;
         }
 
         private readonly List<ScriptureRef> _refs;
         private readonly List<UsfmUpdateBlockElement> _elements;
-        private readonly Dictionary<string, object> _metadata;
+        private readonly List<UsfmUpdateBlockRow> _rows;
 
         public UsfmUpdateBlock(
             IEnumerable<ScriptureRef> refs = null,
             IEnumerable<UsfmUpdateBlockElement> elements = null,
-            Dictionary<string, object> metadata = null
+            IEnumerable<UsfmUpdateBlockRow> rows = null
         )
         {
             _refs = refs?.ToList() ?? new List<ScriptureRef>();
             _elements = elements?.ToList() ?? new List<UsfmUpdateBlockElement>();
-            _metadata = metadata ?? new Dictionary<string, object>();
-        }
-
-        public void AddText(IEnumerable<UsfmToken> tokens)
-        {
-            _elements.Add(new UsfmUpdateBlockElement(UsfmUpdateBlockElementType.Text, tokens.ToList()));
-        }
-
-        public void AddToken(UsfmToken token, bool markedForRemoval = false)
-        {
-            UsfmUpdateBlockElementType type;
-            switch (token.Type)
-            {
-                case UsfmTokenType.Text:
-                    type = UsfmUpdateBlockElementType.Text;
-                    break;
-                case UsfmTokenType.Paragraph:
-                    type = UsfmUpdateBlockElementType.Paragraph;
-                    break;
-                case UsfmTokenType.Character:
-                case UsfmTokenType.End:
-                    type = UsfmUpdateBlockElementType.Style;
-                    break;
-                default:
-                    type = UsfmUpdateBlockElementType.Other;
-                    break;
-            }
-            _elements.Add(new UsfmUpdateBlockElement(type, new List<UsfmToken> { token }, markedForRemoval));
-        }
-
-        public void AddEmbed(IEnumerable<UsfmToken> tokens, bool markedForRemoval = false)
-        {
-            _elements.Add(
-                new UsfmUpdateBlockElement(UsfmUpdateBlockElementType.Embed, tokens.ToList(), markedForRemoval)
-            );
-        }
-
-        public void ExtendLastElement(IEnumerable<UsfmToken> tokens)
-        {
-            _elements.Last().Tokens.AddRange(tokens);
-        }
-
-        public void UpdateRefs(IEnumerable<ScriptureRef> refs)
-        {
-            _refs.Clear();
-            _refs.AddRange(refs);
-        }
-
-        public UsfmUpdateBlockElement GetLastParagraph()
-        {
-            foreach (UsfmUpdateBlockElement element in Enumerable.Reverse(_elements))
-            {
-                if (element.Type == UsfmUpdateBlockElementType.Paragraph)
-                    return element;
-            }
-            return null;
-        }
-
-        public UsfmUpdateBlockElement Pop()
-        {
-            UsfmUpdateBlockElement element = _elements.Last();
-            _elements.RemoveAt(_elements.Count - 1);
-            return element;
+            _rows = rows?.ToList() ?? new List<UsfmUpdateBlockRow>();
         }
 
         public List<UsfmToken> GetTokens()
@@ -109,8 +77,7 @@ namespace SIL.Machine.Corpora
 
             return _refs.SequenceEqual(other._refs)
                 && _elements.SequenceEqual(other._elements)
-                && _metadata.Count == other.Metadata.Count
-                && !_metadata.Except(other.Metadata).Any();
+                && _rows.SequenceEqual(other._rows);
         }
 
         public override int GetHashCode()
@@ -123,7 +90,7 @@ namespace SIL.Machine.Corpora
 
         public UsfmUpdateBlock Clone()
         {
-            return new UsfmUpdateBlock(_refs, _elements);
+            return new UsfmUpdateBlock(_refs, _elements, _rows);
         }
     }
 }
