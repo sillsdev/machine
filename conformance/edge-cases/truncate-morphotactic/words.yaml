@@ -40,8 +40,8 @@
 # which is C# throughout).
 #
 # ORACLE PROVENANCE FOR `a` AND `ga`: these complete parse multisets are independently derived by
-# forward application and are not copied from the unpatched C# oracle. At this #480 head
-# (fa8d9b2540962981add315d06203e928a11c1853), C# can lose zero-width morph annotations while
+# forward application and are not copied from the unpatched C# oracle. Until #506 is
+# fixed, C# can lose zero-width morph annotations while
 # copying the word, so its output for these two words is nondeterministic. This fixture deliberately
 # exposes that #506 defect: it may fail before the directional tie fix and may pass by chance. Do
 # not replace these entries with whichever incomplete C# output a run happens to produce. The
