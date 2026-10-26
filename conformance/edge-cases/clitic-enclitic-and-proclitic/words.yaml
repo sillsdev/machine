@@ -1,0 +1,56 @@
+# oracle-provenance: founding-oracle machine-commit=ed5cf05d verified-date=2026-10-26
+# Expected parses are derived from the HC clitic and final-template rules (Machine #529); the engine run only confirms them.
+language: CliticEncliticAndProclitic
+inspired_by: ["synthetic enclitic-plus-proclitic probe, not a model of a real language"]
+sources:
+  - "https://github.com/sillsdev/machine/pull/529"
+  - "src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/SynthesisAffixProcessRule.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/Morpher.cs: IsBlockingStratum"
+requires: []
+fieldworks_producible: true
+words:
+  - word: sagd
+    note: >-
+      The final verb template applied on its own.
+    parses:
+      - signature: "SAG+PAST|sagd"
+        rules: [mrPast]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
+
+  - word: zsagd
+    note: >-
+      A proclitic alone attaches outside the final template.
+    parses:
+      - signature: "PROC+SAG+PAST|zsagd"
+        rules: [mrPast, mrProc]
+        exercises: ["Clitics stratum: clitic designation by stratum name alone"]
+
+  - word: sagds
+    note: >-
+      An enclitic alone attaches outside the final template.
+    parses:
+      - signature: "SAG+PAST+ENC|sagds"
+        rules: [mrPast, mrEnc]
+        exercises: ["Clitics stratum: clitic designation by stratum name alone"]
+
+  - word: zsagds
+    note: >-
+      Proclitic and enclitic on the same word, both outside the final template. The unordered
+      Clitics stratum yields one parse per application order, with the same signature.
+    parses:
+      - signature: "PROC+SAG+PAST+ENC|zsagds"
+        rules: [mrPast, mrProc, mrEnc]
+        exercises: ["Clitics stratum: clitic designation by stratum name alone"]
+      - signature: "PROC+SAG+PAST+ENC|zsagds"
+        rules: [mrPast, mrEnc, mrProc]
+        exercises: ["Clitics stratum: clitic designation by stratum name alone"]
+
+  - word: zsag
+    note: >-
+      Neither clitic can stand in for the template's obligatory slot.
+    expect_fail: true
+
+  - word: sags
+    note: >-
+      The enclitic cannot stand in for the template's obligatory slot either.
+    expect_fail: true

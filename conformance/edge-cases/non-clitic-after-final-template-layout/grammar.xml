@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>NonCliticAfterFinalTemplateLayout</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>V</Name></PartOfSpeech>
+      <PartOfSpeech id="posN"><Name>N</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cG"><Representations><Representation>g</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cZ"><Representations><Representation>z</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <!-- No phonological rules and not the last stratum, so Morphology and Clitics are non-blocking: the final-template state carries through to Surface. -->
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrPast mrDeriv">
+        <Name>Morphology</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrPast">
+            <Name>Past suffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPast">
+                <MorphologicalInput><PhoneticSequence id="stemPast"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemPast" /><InsertSegments><PhoneticShape>d</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PAST</MorphemeId>
+          </MorphologicalRule>
+          <!-- Ordinary, non-partial, no isCliticRule: refused after the final template. -->
+          <MorphologicalRule id="mrDeriv">
+            <Name>Derivational suffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subDeriv">
+                <MorphologicalInput><PhoneticSequence id="stemDeriv"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemDeriv" /><InsertSegments><PhoneticShape>k</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>DERIV</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posV" final="true">
+            <Name>verbTemplate</Name>
+            <Slot morphologicalRules="mrPast"><Name>pastSlot</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eSag" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aSag"><PhoneticShape>sag</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SAG</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eKol" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aKol"><PhoneticShape>kol</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>KOL</MorphemeId>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrEnc mrNotClitic">
+        <Name>Clitics</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrEnc">
+            <Name>Enclitic</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subEnc">
+                <MorphologicalInput><PhoneticSequence id="stemEnc"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemEnc" /><InsertSegments><PhoneticShape>s</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>ENC</MorphemeId>
+          </MorphologicalRule>
+          <!-- isCliticRule=false overrides the Clitics stratum's default. -->
+          <MorphologicalRule id="mrNotClitic" isCliticRule="false">
+            <Name>Non-clitic suffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subNotClitic">
+                <MorphologicalInput><PhoneticSequence id="stemNotClitic"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemNotClitic" /><InsertSegments><PhoneticShape>t</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>NOTCL</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+      </Stratum>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrSurf">
+        <Name>Surface</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- An ordinary rule in the last stratum, which is blocking but entered with the final-template state still set. -->
+          <MorphologicalRule id="mrSurf">
+            <Name>Surface suffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSurf">
+                <MorphologicalInput><PhoneticSequence id="stemSurf"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemSurf" /><InsertSegments><PhoneticShape>l</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SURF</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
