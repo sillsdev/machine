@@ -34,7 +34,7 @@ public sealed class ConstructClaimCorroborationTests
             $"rows={rows.Count} confirmed={confirmed} contradicted={contradicted} unmapped={unmapped}"
         );
 
-        // Canonical exercise tags span 133 fixtures, with 48 positive-parse tags across the silent16.
+        // Pins the ledger row count and its confirmed/contradicted/unmapped split.
         Assert.That(rows, Has.Count.EqualTo(1448));
         Assert.That(confirmed, Is.EqualTo(799));
         Assert.That(contradicted, Is.EqualTo(12));
