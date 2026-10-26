@@ -35,7 +35,7 @@ public sealed class GrammarCoverageLedgerTests
             $"rows={rows.Count} fixtures={distinctFixtures} surface={surface} interface={@interface} construct={construct}"
         );
 
-        // Canonical tags cover all 135 fixtures, including the 16 formerly silent fixtures.
+        // Pins the ledger row count, the number of distinct fixtures it covers, and the row count per kind.
         Assert.That(rows, Has.Count.EqualTo(1633));
         Assert.That(distinctFixtures, Is.EqualTo(135));
         Assert.That(surface, Is.EqualTo(181));

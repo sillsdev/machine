@@ -9,7 +9,7 @@ namespace SIL.Machine.Morphology.HermitCrab;
 [TestFixture]
 public sealed class OrderingGeneratorTests
 {
-    // 62 baseline fixtures, 70 measurement additions and three truncation identity companions.
+    // Number of fixtures in the measured corpus; the generator tests assert against this total.
     private const int MeasuredCorpusFixtureCount = 135;
 
     private static string RepositoryRoot()
