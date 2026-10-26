@@ -1,0 +1,79 @@
+# oracle-provenance: founding-oracle machine-commit=ed5cf05d verified-date=2026-10-26
+# Expected parses are derived from the HC clitic and final-template rules (Machine #529); the engine run only confirms them.
+language: NonCliticAfterFinalTemplateLayout
+inspired_by: ["synthetic FieldWorks-layout non-blocking-stratum probe, not a model of a real language"]
+sources:
+  - "https://github.com/sillsdev/machine/pull/529"
+  - "src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/SynthesisAffixProcessRule.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/Morpher.cs: IsBlockingStratum"
+requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  MorphologicalRule@isCliticRule: HCLoader never sets IsCliticRule, so mrNotClitic
+  (isCliticRule=false) cannot be produced, and HCLoader places no morphological rule in the
+  Surface stratum, so mrSurf cannot be either. The Morphology, Clitics, Surface layout otherwise
+  follows HCLoader.
+words:
+  - word: sagd
+    note: >-
+      The final verb template applied on its own.
+    parses:
+      - signature: "SAG+PAST|sagd"
+        rules: [mrPast]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
+
+  - word: sagds
+    note: >-
+      Control: the enclitic is a clitic by stratum name and may follow the final template.
+    parses:
+      - signature: "SAG+PAST+ENC|sagds"
+        rules: [mrPast, mrEnc]
+        exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+
+  - word: sagdk
+    note: >-
+      mrDeriv is non-clitic and non-partial, so NonPartialRuleProhibitedAfterFinalTemplate refuses
+      it after the final template.
+    expect_fail: true
+    blocked_by: [mrDeriv]
+    exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+
+  - word: sagdt
+    note: >-
+      isCliticRule=false makes mrNotClitic ordinary, and the non-blocking Morphology stratum has not
+      reset the final-template state.
+    expect_fail: true
+    blocked_by: [mrNotClitic]
+    exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+
+  - word: sagdl
+    note: >-
+      The state also survives the non-blocking Clitics stratum, so the ordinary Surface-stratum rule
+      mrSurf is refused.
+    expect_fail: true
+    blocked_by: [mrSurf]
+    exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+
+  - word: kolk
+    note: >-
+      Control: nouns have no template, so no final template has applied and mrDeriv attaches.
+    parses:
+      - signature: "KOL+DERIV|kolk"
+        rules: [mrDeriv]
+        exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+
+  - word: kolt
+    note: >-
+      Control: with no final template applied, mrNotClitic attaches.
+    parses:
+      - signature: "KOL+NOTCL|kolt"
+        rules: [mrNotClitic]
+        exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+
+  - word: koll
+    note: >-
+      Control: with no final template applied, mrSurf attaches.
+    parses:
+      - signature: "KOL+SURF|koll"
+        rules: [mrSurf]
+        exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]

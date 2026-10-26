@@ -1,0 +1,53 @@
+# oracle-provenance: founding-oracle machine-commit=ed5cf05d verified-date=2026-10-26
+# Expected parses are derived from the HC clitic and final-template rules (Machine #529); the engine run only confirms them.
+language: CliticProcliticAfterFinalTemplate
+inspired_by: ["synthetic proclitic-outside-final-template probe, not a model of a real language"]
+sources:
+  - "https://github.com/sillsdev/machine/pull/529"
+  - "src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/SynthesisAffixProcessRule.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/Morpher.cs: IsBlockingStratum"
+requires: []
+fieldworks_producible: true
+words:
+  - word: sag
+    note: >-
+      The final template's only slot is obligatory, so the bare root is not a word.
+    expect_fail: true
+
+  - word: psag
+    note: >-
+      The final verb template applied on its own.
+    parses:
+      - signature: "PRE+SAG|psag"
+        rules: [mrPre]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
+
+  - word: zpsag
+    note: >-
+      The proclitic attaches outside the final template: the Clitics stratum is later and the clitic
+      is exempt from the final-template gate.
+    parses:
+      - signature: "PROC+PRE+SAG|zpsag"
+        rules: [mrPre, mrProc]
+        exercises: ["Clitics stratum: clitic designation by stratum name alone"]
+
+  - word: kpsag
+    note: >-
+      Control: mrPlainPre is not a clitic, so it may not follow the final template.
+    expect_fail: true
+    blocked_by: [mrPlainPre]
+    exercises: ["Clitics stratum: clitic designation by stratum name alone"]
+
+  - word: pksag
+    note: >-
+      Control: the same ordinary prefix applies before the template, where no final template has
+      applied yet.
+    parses:
+      - signature: "PRE+PLAINPRE+SAG|pksag"
+        rules: [mrPlainPre, mrPre]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
+
+  - word: zsag
+    note: >-
+      The proclitic cannot stand in for the template's obligatory slot.
+    expect_fail: true

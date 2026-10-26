@@ -31,6 +31,7 @@ RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
 MetathesisRule
 Affix template slots (obligatory/disjunctive/ordering)
 Clitic rules (isCliticRule / Clitics stratum) after a final template
+Clitics stratum: clitic designation by stratum name alone
 NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 Boundary markers (CharacterDefinitionTable)
 CharacterDefinitionTable: more than one table, one per stratum

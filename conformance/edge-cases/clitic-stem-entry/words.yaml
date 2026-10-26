@@ -1,0 +1,46 @@
+# oracle-provenance: founding-oracle machine-commit=ed5cf05d verified-date=2026-10-26
+# Expected parses are derived from the HC clitic and final-template rules (Machine #529); the engine run only confirms them.
+language: CliticStemEntry
+inspired_by: ["synthetic clitic-stem probe, not a model of a real language"]
+sources:
+  - "https://github.com/sillsdev/machine/pull/529"
+  - "src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/SynthesisAffixProcessRule.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/Morpher.cs: IsBlockingStratum"
+requires: []
+fieldworks_producible: true
+words:
+  - word: sag
+    note: >-
+      The Morphology stratum's final template has an obligatory slot, so the bare verb root is not a
+      word.
+    expect_fail: true
+
+  - word: sagd
+    note: >-
+      The verb root with its template.
+    parses:
+      - signature: "SAG+PAST|sagd"
+        rules: [mrPast]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
+
+  - word: ka
+    note: >-
+      The clitic stem is rooted in the later Clitics stratum, so the Morphology template never
+      applies to it and needs no slot.
+    parses:
+      - signature: "KA|ka"
+        rules: []
+        exercises: ["Clitics stratum: clitic designation by stratum name alone"]
+
+  - word: kaz
+    note: >-
+      A Clitics-stratum rule attaches to the clitic stem.
+    parses:
+      - signature: "KA+ENC|kaz"
+        rules: [mrEnc]
+        exercises: ["Clitics stratum: clitic designation by stratum name alone"]
+
+  - word: kad
+    note: >-
+      A Morphology-stratum rule cannot apply to a root of the later Clitics stratum.
+    expect_fail: true

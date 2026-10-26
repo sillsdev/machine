@@ -1,0 +1,54 @@
+# oracle-provenance: founding-oracle machine-commit=ed5cf05d verified-date=2026-10-26
+# Expected parses are derived from the HC clitic and final-template rules (Machine #529); the engine run only confirms them.
+language: CliticFlexLayoutBlockingMorphology
+inspired_by: ["synthetic FieldWorks-layout blocking-stratum probe, not a model of a real language"]
+sources:
+  - "https://github.com/sillsdev/machine/pull/529"
+  - "src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/SynthesisAffixProcessRule.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/Morpher.cs: IsBlockingStratum"
+requires: [phonology]
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  MorphologicalRule@isCliticRule: HCLoader never sets IsCliticRule, so mrNotClitic
+  (isCliticRule=false) in the Clitics stratum cannot be produced. The Morphology, Clitics, Surface
+  layout and the Morphology-stratum phonological rule otherwise follow HCLoader.
+words:
+  - word: sagdi
+    note: >-
+      The final template, then the Morphology stratum's obligatory epenthesis after word-final d.
+    parses:
+      - signature: "SAG+PAST|sagdi"
+        rules: [mrPast, prEpenthesis]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
+
+  - word: sagd
+    note: >-
+      The epenthesis is obligatory at word-final d, so the unepenthesised form has no analysis.
+    expect_fail: true
+
+  - word: sagdis
+    note: >-
+      The enclitic attaches to the phonologically derived form, so phonology in one stratum feeds
+      the next stratum's clitic.
+    parses:
+      - signature: "SAG+PAST+ENC|sagdis"
+        rules: [mrPast, prEpenthesis, mrEnc]
+        exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+
+  - word: sagdit
+    note: >-
+      The ordinary rule isCliticRule=false follows the template because Morphology is a blocking
+      stratum, which resets the final-template state when it ends; fixture non-clitic-after-final-
+      template-layout shows the same rule refused when the stratum is non-blocking.
+    parses:
+      - signature: "SAG+PAST+NOTCL|sagdit"
+        rules: [mrPast, prEpenthesis, mrNotClitic]
+        exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+
+  - word: sagdk
+    note: >-
+      Control: within the blocking Morphology stratum itself the final-template gate still applies,
+      so the ordinary rule mrPlain is refused.
+    expect_fail: true
+    blocked_by: [mrPlain]
+    exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
