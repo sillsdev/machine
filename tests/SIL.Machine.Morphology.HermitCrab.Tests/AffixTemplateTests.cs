@@ -531,39 +531,47 @@ public class AffixTemplateTests : HermitCrabTestBase
         Morphophonemic.AffixTemplates.Add(verbTemplate);
         var nominalizer = CreateSuffix("nominalizer", "NOM", "v");
         Morphophonemic.MorphologicalRules.Add(nominalizer);
-        AddEntry("partial_root", verb.Clone(), Morphophonemic, "sab").IsPartial = true;
+        var partialRoot = AddEntry("partial_root", verb.Clone(), Morphophonemic, "sab");
+        partialRoot.IsPartial = true;
+        try
+        {
+            // The test grammar already has a partial entry, so only the rules decide the prune.
+            var morpher = new Morpher(TraceManager, Language);
+            Assert.That(morpher.IsPartial, Is.True);
+            Assert.That(morpher.HasPartialRules, Is.False);
+            Assert.That(morpher.AlwaysEnforceFinalTemplates, Is.False);
+            TraceManager.IsTracing = true;
+            AssertMorphsEqual(morpher.ParseWord("sagdv", out object trace));
+            Assert.That(
+                GetFailureDepth((Trace)trace, FailureReason.NonPartialRuleProhibitedAfterFinalTemplate),
+                Is.EqualTo(2)
+            );
+            TraceManager.IsTracing = false;
+            AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
 
-        // The test grammar already has a partial entry, so only the rules decide the prune.
-        var morpher = new Morpher(TraceManager, Language);
-        Assert.That(morpher.IsPartial, Is.True);
-        Assert.That(morpher.HasPartialRules, Is.False);
-        Assert.That(morpher.AlwaysEnforceFinalTemplates, Is.False);
-        TraceManager.IsTracing = true;
-        AssertMorphsEqual(morpher.ParseWord("sagdv", out object trace));
-        Assert.That(
-            GetFailureDepth((Trace)trace, FailureReason.NonPartialRuleProhibitedAfterFinalTemplate),
-            Is.EqualTo(2)
-        );
-        TraceManager.IsTracing = false;
-        AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
+            // No template applies to a partial root, so pruning loses nothing for it.
+            AssertMorphsEqual(morpher.ParseWord("sab"), "partial_root");
+            AssertMorphsEqual(morpher.ParseWord("sabd"));
+            AssertMorphsEqual(morpher.ParseWord("sabdv"));
+            AssertMorphsEqual(morpher.ParseWord("sabv"), "partial_root NOM");
 
-        // No template applies to a partial root, so pruning loses nothing for it.
-        AssertMorphsEqual(morpher.ParseWord("sab"), "partial_root");
-        AssertMorphsEqual(morpher.ParseWord("sabd"));
-        AssertMorphsEqual(morpher.ParseWord("sabdv"));
-        AssertMorphsEqual(morpher.ParseWord("sabv"), "partial_root NOM");
-
-        // A partial rule still turns the prune off, and what it licenses after a final template survives.
-        nominalizer.IsPartial = true;
-        morpher = new Morpher(TraceManager, Language);
-        Assert.That(morpher.HasPartialRules, Is.True);
-        TraceManager.IsTracing = true;
-        AssertMorphsEqual(morpher.ParseWord("sagdv", out trace), "32 PAST NOM");
-        Assert.That(
-            GetFailureDepth((Trace)trace, FailureReason.NonPartialRuleProhibitedAfterFinalTemplate),
-            Is.EqualTo(0)
-        );
-        TraceManager.IsTracing = false;
+            // A partial rule still turns the prune off, and what it licenses after a final template survives.
+            nominalizer.IsPartial = true;
+            morpher = new Morpher(TraceManager, Language);
+            Assert.That(morpher.HasPartialRules, Is.True);
+            TraceManager.IsTracing = true;
+            AssertMorphsEqual(morpher.ParseWord("sagdv", out trace), "32 PAST NOM");
+            Assert.That(
+                GetFailureDepth((Trace)trace, FailureReason.NonPartialRuleProhibitedAfterFinalTemplate),
+                Is.EqualTo(0)
+            );
+            TraceManager.IsTracing = false;
+        }
+        finally
+        {
+            Morphophonemic.Entries.Remove(partialRoot);
+            Entries.Remove("partial_root");
+        }
     }
 
     private static int GetFailureDepth(Trace trace, FailureReason reason)
