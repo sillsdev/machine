@@ -213,6 +213,16 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                             _morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
                         output.Add(outWord);
                     }
+                    else if (_morpher.TraceManager.IsTracing)
+                    {
+                        _morpher.TraceManager.MorphologicalRuleNotApplied(
+                            _rule,
+                            i,
+                            input,
+                            FailureReason.AllomorphNotApplicable,
+                            null
+                        );
+                    }
 
                     // return all word syntheses that match subrules that are constrained by environments,
                     // HC violates the disjunctive property of allomorphs here because it cannot check the
