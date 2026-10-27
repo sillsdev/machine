@@ -1,5 +1,5 @@
 version: 1
-base_sha256: c75d8e8877a3b5bb4125c141cbe5cb7dac76c0fa1ecafc4fd07f62d8d810c2b9
+base_sha256: 8b4ed71d8b525b6d04651d1b1b63dda7c203455ca857d5999dcd4b10e763b2a2
 cases:
   - id: empty-phoneme-inventory
     operations:
@@ -12,7 +12,7 @@ cases:
   - id: remove-k-only
     operations:
       - remove_phoneme:
-          guid: 46fbfc78-6e09-4421-8781-ae99a0013c97
+          guid: 60686024-8f17-4fe8-af06-cc22fabbc534
           assert_representations: [k]
           require_unreferenced: true
     expect:
