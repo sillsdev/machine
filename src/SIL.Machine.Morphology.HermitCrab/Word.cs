@@ -235,6 +235,10 @@ namespace SIL.Machine.Morphology.HermitCrab
             get { return _mruleApps; }
         }
 
+        internal IReadOnlyList<IMorphologicalRule> MorphologicalRuleApplications => _mruleApps;
+
+        internal IReadOnlyList<Allomorph> AllomorphApplications => _allomorphApps;
+
         internal int MorphologicalRuleApplicationCount => _mruleAppCount;
 
         internal bool IsAllMorphologicalRulesApplied

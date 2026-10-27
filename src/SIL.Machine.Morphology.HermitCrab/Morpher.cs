@@ -25,6 +25,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly ITraceManager _traceManager;
         private readonly ReadOnlyObservableCollection<Morpheme> _morphemes;
         private readonly IList<RootAllomorph> _lexicalPatterns = new List<RootAllomorph>();
+        private readonly LookupReplay _lookupReplay;
 
         public Morpher(ITraceManager traceManager, Language lang, int maxDegreeOfParallelism = 0)
         {
@@ -54,6 +55,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
             _analysisRule = lang.CompileAnalysisRule(this);
             _synthesisRule = lang.CompileSynthesisRule(this);
+            _lookupReplay = new LookupReplay(lang);
             MaxStemCount = 2;
             MaxAlternatives = 0;
             MergeEquivalentAnalyses = true;
@@ -113,6 +115,22 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// survive synthesis, so this removes only doomed analyses. On by default, including while tracing.
         /// </summary>
         public bool PruneDisagreeingCopies { get; set; }
+
+        internal LookupReplayMode LookupReplayMode { get; set; } = LookupReplayMode.On;
+
+        /// <summary>Called with each alternative the replay judged, and whether it is feasible.</summary>
+        internal Action<Word, bool> LookupReplayVerdict { get; set; }
+
+        internal long LookupReplayWork => _lookupReplay.Work;
+
+        private bool IsPrunedByLookupReplay(Word alternative)
+        {
+            if (LookupReplayMode == LookupReplayMode.Off)
+                return false;
+            bool feasible = _lookupReplay.IsFeasible(alternative);
+            LookupReplayVerdict?.Invoke(alternative, feasible);
+            return !feasible && LookupReplayMode == LookupReplayMode.On;
+        }
 
         /// <summary>
         /// Caps concurrency within a parse or generation, including the analysis cascade, affix-template
@@ -355,6 +373,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                         alternativeCount++;
                         if (MaxAlternatives > 0 && alternativeCount > MaxAlternatives)
                             throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
+                        if (IsPrunedByLookupReplay(alternative))
+                            continue;
                         foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
                         {
                             if (IsMatch(word, validWord))
@@ -392,6 +412,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                                     {
                                         throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
                                     }
+                                    if (IsPrunedByLookupReplay(alternative))
+                                        continue;
                                     foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
                                     {
                                         if (IsMatch(word, validWord))
