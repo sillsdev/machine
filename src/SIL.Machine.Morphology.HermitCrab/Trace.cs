@@ -135,6 +135,38 @@ namespace SIL.Machine.Morphology.HermitCrab
             SubruleIndex = -1;
         }
 
+        private string _inputText;
+        private string _outputText;
+
+        internal void SetTexts(string inputText, string outputText)
+        {
+            _inputText = inputText;
+            _outputText = outputText;
+        }
+
+        private string FormatText(Word word)
+        {
+            return word?.GetTraceText(IsAnalysis(_type));
+        }
+
+        internal static bool IsAnalysis(TraceType type)
+        {
+            switch (type)
+            {
+                case TraceType.WordAnalysis:
+                case TraceType.LexicalLookup:
+                case TraceType.StratumAnalysisInput:
+                case TraceType.StratumAnalysisOutput:
+                case TraceType.TemplateAnalysisInput:
+                case TraceType.TemplateAnalysisOutput:
+                case TraceType.MorphologicalRuleAnalysis:
+                case TraceType.PhonologicalRuleAnalysis:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         public TraceType Type
         {
             get { return _type; }
@@ -147,9 +179,32 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public int SubruleIndex { get; internal set; }
 
+        /// <summary>
+        /// Gets the word this step started from. It is <c>null</c> when the node has no input, and always
+        /// <c>null</c> when <see cref="TraceManager.RetainWords"/> is <c>false</c>, because a retained word keeps
+        /// its whole shape alive for as long as the trace lives. Use <see cref="InputText"/> in both modes.
+        /// </summary>
         public Word Input { get; internal set; }
 
+        /// <summary>
+        /// Gets the word this step produced. It is <c>null</c> when the node has no output, and always
+        /// <c>null</c> when <see cref="TraceManager.RetainWords"/> is <c>false</c>. Use <see cref="OutputText"/>
+        /// in both modes.
+        /// </summary>
         public Word Output { get; internal set; }
+
+        /// <summary>
+        /// Gets the shape text of the input in its display form: the regular-expression form for analysis node
+        /// types and the plain form otherwise. It is <c>null</c> when the node has no input. With retained words
+        /// it is computed from <see cref="Input"/> on each read.
+        /// </summary>
+        public string InputText => _inputText ?? FormatText(Input);
+
+        /// <summary>
+        /// Gets the shape text of the output, in the same form as <see cref="InputText"/>. It is <c>null</c> when
+        /// the node has no output.
+        /// </summary>
+        public string OutputText => _outputText ?? FormatText(Output);
 
         public FailureReason FailureReason { get; internal set; }
     }

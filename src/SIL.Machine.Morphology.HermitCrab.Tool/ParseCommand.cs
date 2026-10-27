@@ -74,28 +74,19 @@ internal class ParseCommand : ConsoleCommand
                 _context.Out.Write("{0}: {1}", ruleLabel, trace.Source.Name);
             first = false;
         }
-        bool analysis = IsAnalysis(trace.Type);
-        if (trace.Input != null)
+        if (trace.InputText != null)
         {
             if (!first)
                 _context.Out.Write(", ");
             first = false;
-            CharacterDefinitionTable table = trace.Input.Stratum.CharacterDefinitionTable;
-            _context.Out.Write(
-                "Input: {0}",
-                analysis ? trace.Input.Shape.ToRegexString(table, true) : trace.Input.Shape.ToString(table, true)
-            );
+            _context.Out.Write("Input: {0}", trace.InputText);
         }
-        if (trace.Output != null)
+        if (trace.OutputText != null)
         {
             if (!first)
                 _context.Out.Write(", ");
             first = false;
-            CharacterDefinitionTable table = trace.Output.Stratum.CharacterDefinitionTable;
-            _context.Out.Write(
-                "Output: {0}",
-                analysis ? trace.Output.Shape.ToRegexString(table, true) : trace.Output.Shape.ToString(table, true)
-            );
+            _context.Out.Write("Output: {0}", trace.OutputText);
         }
         if (trace.FailureReason != FailureReason.None)
         {
@@ -128,36 +119,6 @@ internal class ParseCommand : ConsoleCommand
     {
         for (int i = 0; i < indent; i++)
             _context.Out.Write(lineIndices.Contains(i) ? "|" : " ");
-    }
-
-    private static bool IsAnalysis(TraceType type)
-    {
-        switch (type)
-        {
-            case TraceType.WordAnalysis:
-            case TraceType.LexicalLookup:
-            case TraceType.StratumAnalysisInput:
-            case TraceType.StratumAnalysisOutput:
-            case TraceType.TemplateAnalysisInput:
-            case TraceType.TemplateAnalysisOutput:
-            case TraceType.MorphologicalRuleAnalysis:
-            case TraceType.PhonologicalRuleAnalysis:
-                return true;
-
-            case TraceType.WordSynthesis:
-            case TraceType.Successful:
-            case TraceType.Failed:
-            case TraceType.Blocked:
-            case TraceType.StratumSynthesisInput:
-            case TraceType.StratumSynthesisOutput:
-            case TraceType.TemplateSynthesisInput:
-            case TraceType.TemplateSynthesisOutput:
-            case TraceType.MorphologicalRuleSynthesis:
-            case TraceType.PhonologicalRuleSynthesis:
-                return false;
-        }
-
-        return false;
     }
 
     private static string GetRuleLabelString(IHCRule rule)

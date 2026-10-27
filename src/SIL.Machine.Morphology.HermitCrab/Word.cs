@@ -220,6 +220,32 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public object CurrentTrace { get; set; }
 
+        // Display text for traces, kept only on frozen words and never copied by the copy constructor.
+        private string _traceTextRegex;
+        private string _traceTextPlain;
+
+        internal string GetTraceText(bool analysis)
+        {
+            // Unsynchronised on purpose: a racing writer stores an equal string.
+            if (!IsFrozen)
+                return FormatTraceText(analysis);
+            if (analysis)
+            {
+                if (_traceTextRegex == null)
+                    _traceTextRegex = FormatTraceText(true);
+                return _traceTextRegex;
+            }
+            if (_traceTextPlain == null)
+                _traceTextPlain = FormatTraceText(false);
+            return _traceTextPlain;
+        }
+
+        private string FormatTraceText(bool analysis)
+        {
+            CharacterDefinitionTable table = Stratum.CharacterDefinitionTable;
+            return analysis ? Shape.ToRegexString(table, true) : Shape.ToString(table, true);
+        }
+
         public bool IsPartial
         {
             get { return _isPartial; }
