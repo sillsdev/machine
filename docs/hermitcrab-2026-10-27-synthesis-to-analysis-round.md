@@ -525,7 +525,7 @@ four `truncate-morphotactic*` conformance fixtures are nondeterministic on maste
 |---|---|---|
 | E1 allomorph-loop cutoff | `perf/hc-allomorph-loop-cutoff` @ `d21af37e` | **KEEP.** Candidate for its own PR |
 | E2 MPR and stem-name trail replay | `perf/hc-trail-mpr-replay` @ `4fbbfb14` (product `84f76cdf`) | **KEEP.** Candidate PR, to combine with E3: both use the same post-lookup hook |
-| E3 template replay | `perf/hc-template-replay` @ `6edc4375` | **KEEP pending memoisation.** See E3 |
+| E3 template replay | `perf/hc-template-replay` @ `6edc4375` | **KEEP, without memoisation.** See E3 |
 | E4 excluded co-occurrence | `perf/hc-excluded-cooccurrence` @ `02873608` (product `b07fc4d6`) | **PARK** |
 | E5 required-environment prefilter | `perf/hc-env-input-prefilter` @ `9d55dade` (product `1af79e20`) | **DEAD END** as specified |
 | E6 intermediate-shape check | none | Not run (research only) |
@@ -589,7 +589,7 @@ Replay checks are set operations, a different unit from synthesis steps (a step 
 so they are reported beside the savings and not netted. The Aweti and Mbugwe gain comes from required
 and excluded gates (Mbugwe 41 excluded, Aweti 26 excluded).
 
-### E3. Template replay: KEEP pending memoisation
+### E3. Template replay: KEEP, without memoisation
 
 `TemplateReplay` and `Morpher.PruneByTemplateReplay` (default on) walk the stratum, template and rule
 control flow over abstract states (trail pointer, partial, final), assuming every pattern match
@@ -617,9 +617,11 @@ The brief's blow-up kill rule says to kill if walk states exceed steps saved, an
 corpus (Mbugwe 133,606 states against 15,814 steps saved; Aweti 22,308 against 10,828). The result
 file therefore said PARK. The owner overrode the literal rule: a replay state is an integer set
 operation and a saved step is a pattern match, so the two are different units and cannot be compared
-by count. **Decision: KEEP pending memoisation.** Next step: memoise verdicts by root entry and trail,
-then re-measure the replay cost in units comparable to a step. The result file also suggests skipping
-the walk when the grammar has no required slots.
+by count. **Decision: KEEP, without memoisation.** Memoising verdicts by root entry and trail is
+ruled out: the owner will not accept a memory footprint above a few MB, and earlier memo rows (18, 28,
+29) show how such tables grow. Next step: cost the replay walk in units comparable to a step, then cut
+the walk itself without a cache, for example by skipping it when the grammar has no required slots or
+by stopping at the first violated constraint.
 
 ### E4. Excluded co-occurrence during analysis: PARK
 
@@ -710,7 +712,7 @@ where the grammar has the constraint; the question is which constraints real gra
 ## Open questions
 
 - The candidate-level dead-step census (E3 phase 0) was run: shape-free dead steps are 73.4% on Aweti
-  and 40.0% on Mbugwe. What is left is the cost of the replay in comparable units (E3 memoisation).
+  and 40.0% on Mbugwe. What is left is the cost of the replay in comparable units, cut without a memo (E3).
 - Which analysis-side constraints real grammars carry, and whether they can be checked before a
   candidate is expanded. This is the next round's target.
 - Whether synthesis phonological deletion removes morph annotations. E4's zero-width restriction may
