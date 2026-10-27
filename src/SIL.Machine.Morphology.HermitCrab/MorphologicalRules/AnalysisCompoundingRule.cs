@@ -124,6 +124,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         if (add)
                         {
                             Word newWord = outWord.Clone();
+                            newWord.Source = outWord.Source; // Needed for ExpandAlternatives.
                             newWord.CurrentNonHead.RootAllomorph = allo;
                             srOutput.Add(newWord);
                         }
