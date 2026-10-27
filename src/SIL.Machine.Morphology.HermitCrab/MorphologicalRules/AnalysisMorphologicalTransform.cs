@@ -178,6 +178,35 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 AddPartNodes(part, match, shape);
         }
 
+        /// <summary>
+        /// The number of segments of the match's input before the first part the output copies, or -1 if it
+        /// copies none.
+        /// </summary>
+        protected int CopiedWindowStart(IList<Pattern<Word, ShapeNode>> lhs, Match<Word, ShapeNode> match)
+        {
+            foreach (Pattern<Word, ShapeNode> part in lhs)
+            {
+                if (!_capturedParts.TryGetValue(part.Name, out int count))
+                    continue;
+                for (int i = 0; i < count; i++)
+                {
+                    GroupCapture<ShapeNode> group = match.GroupCaptures[GetGroupName(part.Name, i)];
+                    if (!group.Success)
+                        continue;
+                    int segments = 0;
+                    foreach (ShapeNode node in match.Input.Shape)
+                    {
+                        if (node == group.Range.Start)
+                            return segments;
+                        if (node.Type() == HCFeatureSystem.Segment)
+                            segments++;
+                    }
+                    return -1;
+                }
+            }
+            return -1;
+        }
+
         private void AddPartNodes(Pattern<Word, ShapeNode> part, Match<Word, ShapeNode> match, Shape output)
         {
             int count;

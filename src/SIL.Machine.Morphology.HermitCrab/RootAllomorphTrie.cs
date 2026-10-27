@@ -13,6 +13,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly Fst<Shape, ShapeNode> _fsa;
         private readonly Func<Annotation<ShapeNode>, bool> _filter;
         private int _shapeCount;
+        private bool _hasEmptyAllomorph;
+        private readonly Dictionary<string, int> _rootLengths = new Dictionary<string, int>();
         private readonly Dictionary<string, RootAllomorph> _allomorphs;
 
         public RootAllomorphTrie(Func<Annotation<ShapeNode>, bool> filter)
@@ -26,11 +28,17 @@ namespace SIL.Machine.Morphology.HermitCrab
         public void Add(RootAllomorph allomorph)
         {
             _allomorphs[allomorph.ID] = allomorph;
+            _rootLengths[allomorph.ID] = allomorph.Segments.Shape.Count(n => _filter(n.Annotation));
             ShapeNode first = allomorph.Segments.Shape.GetFirst(n => _filter(n.Annotation));
             if (first == allomorph.Segments.Shape.End)
+            {
+                _hasEmptyAllomorph = true;
                 _fsa.StartState.Arcs.Add(_fsa.CreateAcceptingState(allomorph.ID, (s, match) => true, _shapeCount));
+            }
             else
+            {
                 AddNode(first, _fsa.StartState, allomorph.ID);
+            }
             _shapeCount++;
         }
 
@@ -65,6 +73,44 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             if (nextNode != node.List.End)
                 AddNode(nextNode, nextState, id);
+        }
+
+        public bool IsEmpty => _allomorphs.Count == 0;
+
+        /// <summary>
+        /// Whether any root occurs as a contiguous run of the shape's segments, starting anywhere and ending
+        /// anywhere. Stops at the first accepting path.
+        /// </summary>
+        public bool ContainsRootSubstring(Shape shape)
+        {
+            if (_hasEmptyAllomorph)
+                return true;
+            Annotation<ShapeNode> startAnn = shape.Annotations.GetFirst(_filter);
+            return _fsa.Transduce(shape, startAnn, null, false, false, false, out FstResult<Shape, ShapeNode> _);
+        }
+
+        /// <summary>
+        /// Finds the first root run by trying each start segment in turn, which costs the same arcs as
+        /// <see cref="ContainsRootSubstring"/> and also says where the run is, in segment indices.
+        /// </summary>
+        public bool TryFindRootRun(Shape shape, out RootRun run)
+        {
+            run = null;
+            if (_hasEmptyAllomorph)
+                return true;
+            int index = 0;
+            foreach (Annotation<ShapeNode> ann in shape.Annotations)
+            {
+                if (!_filter(ann))
+                    continue;
+                if (_fsa.Transduce(shape, ann, null, true, false, false, out FstResult<Shape, ShapeNode> result))
+                {
+                    run = new RootRun(index, index + _rootLengths[result.ID]);
+                    return true;
+                }
+                index++;
+            }
+            return false;
         }
 
         public IEnumerable<RootAllomorph> Search(Shape shape)

@@ -25,6 +25,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         {
             Word output = match.Input.Clone();
             GenerateShape(_subrule.HeadLhs, output.Shape, match);
+            if (PruningMorpher != null && PruningMorpher.RootSubstringPruneActive(output.Stratum))
+                output.RootWindowStart = CopiedWindowStart(_subrule.HeadLhs, match);
             var nonHeadShape = new Shape(begin => new ShapeNode(
                 begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor
             ));

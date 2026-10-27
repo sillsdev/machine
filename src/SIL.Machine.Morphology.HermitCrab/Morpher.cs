@@ -25,6 +25,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly ITraceManager _traceManager;
         private readonly ReadOnlyObservableCollection<Morpheme> _morphemes;
         private readonly IList<RootAllomorph> _lexicalPatterns = new List<RootAllomorph>();
+        private readonly Dictionary<Stratum, RootSubstringPruneStratum> _rootSubstringPrune;
 
         public Morpher(ITraceManager traceManager, Language lang, int maxDegreeOfParallelism = 0)
         {
@@ -52,6 +53,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 morphemes.AddRange(stratum.MorphologicalRules.OfType<AffixProcessRule>());
                 morphemes.AddRange(stratum.AffixTemplates.SelectMany(t => t.Slots).SelectMany(s => s.Rules).Distinct());
             }
+            _rootSubstringPrune = RootSubstringPruneStratum.Compute(lang, _allomorphTries, _lexicalPatterns.Count > 0);
             _analysisRule = lang.CompileAnalysisRule(this);
             _synthesisRule = lang.CompileSynthesisRule(this);
             MaxStemCount = 2;
@@ -422,6 +424,113 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             RootAllomorphTrie alloSearcher = _allomorphTries[stratum];
             return alloSearcher.Search(shape).Distinct();
+        }
+
+        /// <summary>
+        /// Controls the root-substring prune of <see cref="MayContainRoot"/>. Shadow evaluates the predicate and
+        /// reports through <see cref="RootSubstringShadow"/> without pruning.
+        /// </summary>
+        internal RootSubstringPruneMode RootSubstringPrune { get; set; } = RootSubstringPruneMode.On;
+
+        /// <summary>Called in shadow mode with the rule output and the rule type that would have been pruned.</summary>
+        internal Action<Word, string> RootSubstringShadow { get; set; }
+
+        /// <summary>
+        /// Diagnostic hook, called once per trie transduction. Null in production, so the hot path keeps no shared
+        /// counter.
+        /// </summary>
+        internal Action RootSubstringProbed { get; set; }
+
+        internal IReadOnlyDictionary<Stratum, RootSubstringPruneStratum> RootSubstringPruneStrata =>
+            _rootSubstringPrune;
+
+        /// <summary>
+        /// Whether an analysis rule output may still lead to a lexical hit. False only when the prune is on for
+        /// the output's stratum and no root occurs as a contiguous run of its segments. The probe is skipped when
+        /// the output kept at least as many segments as its input in the same stratum: the rule then removed no
+        /// segment-bearing material, so under the flag's copy conditions every root run of the input is still a
+        /// run of the output. Skipping only ever keeps a word, so it cannot lose a parse.
+        /// </summary>
+        internal bool MayContainRoot(Word input, Word word, string site)
+        {
+            if (
+                RootSubstringPrune == RootSubstringPruneMode.Off
+                || word.Stratum == null
+                || !_rootSubstringPrune.TryGetValue(word.Stratum, out RootSubstringPruneStratum info)
+                || !info.Enabled
+            )
+            {
+                return true;
+            }
+
+            bool sameStratum = input.Stratum == word.Stratum;
+            int outputSegments = SegmentCount(word);
+            if (sameStratum && outputSegments >= SegmentCount(input))
+            {
+                if (word.RootWindowStart == 0)
+                    word.RootWitness = input.RootWitness;
+                return true;
+            }
+
+            // Under the flag's copy conditions the output is a run of the input's segments starting at
+            // RootWindowStart, so a root run of the input inside that window is a root run of the output.
+            if (sameStratum && word.RootWindowStart >= 0)
+            {
+                RootRun witness = input.RootWitness;
+                if (witness == null)
+                {
+                    TryFindRootRun(info, input, out RootRun found);
+                    witness = input.RootWitness = found ?? RootRun.None;
+                }
+                int start = word.RootWindowStart;
+                if (witness.Start >= start && witness.End <= start + outputSegments)
+                {
+                    word.RootWitness = new RootRun(witness.Start - start, witness.End - start);
+                    return true;
+                }
+            }
+
+            if (TryFindRootRun(info, word, out RootRun run))
+            {
+                word.RootWitness = run ?? RootRun.None;
+                return true;
+            }
+
+            if (RootSubstringPrune == RootSubstringPruneMode.Shadow)
+            {
+                RootSubstringShadow?.Invoke(word, site);
+                return true;
+            }
+            return false;
+        }
+
+        internal bool RootSubstringPruneActive(Stratum stratum) =>
+            RootSubstringPrune != RootSubstringPruneMode.Off
+            && stratum != null
+            && _rootSubstringPrune.TryGetValue(stratum, out RootSubstringPruneStratum info)
+            && info.Enabled;
+
+        private bool TryFindRootRun(RootSubstringPruneStratum info, Word word, out RootRun run)
+        {
+            foreach (RootAllomorphTrie trie in info.Tries)
+            {
+                RootSubstringProbed?.Invoke();
+                if (trie.TryFindRootRun(word.Shape, out run))
+                    return true;
+            }
+            run = null;
+            return false;
+        }
+
+        private static int SegmentCount(Word word)
+        {
+            int count = 0;
+            foreach (ShapeNode node in word.Shape)
+            {
+                if (node.Type() == HCFeatureSystem.Segment)
+                    count++;
+            }
+            return count;
         }
 
         internal IEnumerable<Word> LexicalLookup(Word input)

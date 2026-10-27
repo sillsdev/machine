@@ -75,6 +75,15 @@ namespace SIL.Machine.Morphology.HermitCrab
             _disjunctiveAllomorphIndices = new Dictionary<string, HashSet<int>>();
         }
 
+        /// <summary>
+        /// Where the shape lies in the segments of the word an analysis rule unapplied (or -1), and a root run
+        /// found in it. Both only let <see cref="Morpher.MayContainRoot"/> skip a probe, so a stale value can
+        /// keep a word but never drop one; they are not copied by Clone.
+        /// </summary>
+        internal int RootWindowStart { get; set; } = -1;
+
+        internal RootRun RootWitness { get; set; }
+
         protected Word(Word word)
         {
             _allomorphs = new Dictionary<string, Allomorph>(word._allomorphs);

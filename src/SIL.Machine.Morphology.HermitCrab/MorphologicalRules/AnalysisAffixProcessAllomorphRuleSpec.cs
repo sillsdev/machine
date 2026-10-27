@@ -20,6 +20,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         {
             Word output = match.Input.Clone();
             GenerateShape(_allomorph.Lhs, output.Shape, match);
+            if (PruningMorpher != null && PruningMorpher.RootSubstringPruneActive(output.Stratum))
+                output.RootWindowStart = CopiedWindowStart(_allomorph.Lhs, match);
             return output;
         }
     }
