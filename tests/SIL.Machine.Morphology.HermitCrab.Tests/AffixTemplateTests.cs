@@ -473,7 +473,7 @@ public class AffixTemplateTests : HermitCrabTestBase
 
         // Verify early pruning of final template.
         var morpher = new Morpher(TraceManager, Language);
-        Assert.That(morpher.IsPartial, Is.True);
+        Assert.That(morpher.GetPartialMorphemes(), Is.Not.Empty);
         morpher.AlwaysEnforceFinalTemplates = true;
         TraceManager.IsTracing = true;
         AssertMorphsEqual(morpher.ParseWord("sagdv", out object trace));
@@ -537,7 +537,7 @@ public class AffixTemplateTests : HermitCrabTestBase
         {
             // The test grammar already has a partial entry, so only the rules decide the prune.
             var morpher = new Morpher(TraceManager, Language);
-            Assert.That(morpher.IsPartial, Is.True);
+            Assert.That(morpher.GetPartialMorphemes(), Is.Not.Empty);
             Assert.That(morpher.HasPartialRules, Is.False);
             Assert.That(morpher.AlwaysEnforceFinalTemplates, Is.False);
             TraceManager.IsTracing = true;
