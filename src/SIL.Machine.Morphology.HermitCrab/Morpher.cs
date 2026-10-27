@@ -18,6 +18,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 {
     public class Morpher : IMorphologicalAnalyzer, IMorphologicalGenerator
     {
+        internal bool EdgePrefilterEnabled { get; set; } = true;
+        internal Action EdgePrefilterRejected { get; set; }
+
         private readonly Language _lang;
         private readonly IRule<Word, ShapeNode> _analysisRule;
         private readonly IRule<Word, ShapeNode> _synthesisRule;
