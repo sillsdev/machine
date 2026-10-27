@@ -346,6 +346,31 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>
+        /// Reverts the most recent morphological rule application and updates related state.
+        /// </summary>
+        internal void PopUnapplied()
+        {
+            CheckFrozen();
+            if (_mruleAppIndex < 0)
+                throw new ArgumentOutOfRangeException("_mruleAppIndex");
+            IMorphologicalRule mrule = _mruleApps[_mruleAppIndex];
+            if (mrule != null)
+            {
+                _mrulesUnapplied.UpdateValue(mrule, () => 0, count => count - 1);
+                if (_mrulesUnapplied[mrule] == 0)
+                    _mrulesUnapplied.Remove(mrule);
+            }
+            _mruleApps.RemoveAt(_mruleAppIndex);
+            _allomorphApps.RemoveAt(_mruleAppIndex);
+            _mruleAppIndex--;
+        }
+
+        internal int MorphologicalRuleUnapplicationCount
+        {
+            get { return _mruleAppIndex + 1; }
+        }
+
+        /// <summary>
         /// Gets the number of times the specified morphological rule has been unapplied.
         /// </summary>
         /// <param name="mrule">The morphological rule.</param>
@@ -437,15 +462,20 @@ namespace SIL.Machine.Morphology.HermitCrab
             get { return _alternatives; }
         }
 
-        internal IList<Word> ExpandAlternatives()
+        internal HashSet<Word> ExpandAlternatives()
         {
-            IList<Word> alternatives = new List<Word>();
-            IList<Word> originals = Source?.ExpandAlternatives();
+            var alternatives = new HashSet<Word>();
+            HashSet<Word> originals = Source?.ExpandAlternatives();
             // Update the alternatives of Source with any changes made since Source.
-            if (originals == null || originals.Count < 2)
+            if (originals == null)
             {
-                // Special case.
+                // We have bottomed out.
                 alternatives.Add(this);
+            }
+            else if (Source.MorphologicalRuleUnapplicationCount > MorphologicalRuleUnapplicationCount)
+            {
+                // This word is a simplification of Source, and so it should be skipped.
+                alternatives.AddRange(originals);
             }
             else
             {
