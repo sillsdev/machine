@@ -59,7 +59,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     outWord.Freeze();
                     if (_morpher.TraceManager.IsTracing)
                         _morpher.TraceManager.MorphologicalRuleUnapplied(_rule, i, input, outWord);
-                    output.Add(outWord);
+                    if (_morpher.MayContainRoot(input, outWord, nameof(AnalysisRealizationalAffixProcessRule)))
+                        output.Add(outWord);
                     unapplied = true;
                 }
 

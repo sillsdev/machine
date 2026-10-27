@@ -13,6 +13,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly Fst<Shape, ShapeNode> _fsa;
         private readonly Func<Annotation<ShapeNode>, bool> _filter;
         private int _shapeCount;
+        private bool _hasEmptyAllomorph;
         private readonly Dictionary<string, RootAllomorph> _allomorphs;
 
         public RootAllomorphTrie(Func<Annotation<ShapeNode>, bool> filter)
@@ -28,9 +29,14 @@ namespace SIL.Machine.Morphology.HermitCrab
             _allomorphs[allomorph.ID] = allomorph;
             ShapeNode first = allomorph.Segments.Shape.GetFirst(n => _filter(n.Annotation));
             if (first == allomorph.Segments.Shape.End)
+            {
+                _hasEmptyAllomorph = true;
                 _fsa.StartState.Arcs.Add(_fsa.CreateAcceptingState(allomorph.ID, (s, match) => true, _shapeCount));
+            }
             else
+            {
                 AddNode(first, _fsa.StartState, allomorph.ID);
+            }
             _shapeCount++;
         }
 
@@ -65,6 +71,20 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             if (nextNode != node.List.End)
                 AddNode(nextNode, nextState, id);
+        }
+
+        public bool IsEmpty => _allomorphs.Count == 0;
+
+        /// <summary>
+        /// Whether any root occurs as a contiguous run of the shape's segments, starting anywhere and ending
+        /// anywhere. Stops at the first accepting path.
+        /// </summary>
+        public bool ContainsRootSubstring(Shape shape)
+        {
+            if (_hasEmptyAllomorph)
+                return true;
+            Annotation<ShapeNode> startAnn = shape.Annotations.GetFirst(_filter);
+            return _fsa.Transduce(shape, startAnn, null, false, false, false, out FstResult<Shape, ShapeNode> _);
         }
 
         public IEnumerable<RootAllomorph> Search(Shape shape)

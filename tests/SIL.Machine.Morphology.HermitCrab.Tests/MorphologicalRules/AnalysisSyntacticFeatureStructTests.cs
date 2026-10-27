@@ -28,7 +28,10 @@ public class AnalysisSyntacticFeatureStructTests : HermitCrabTestBase
         AffixProcessRule v2n = MakeSuffixRule("v2n", v, n, Table3, "i");
         AffixProcessRule third = MakeSuffixRule("third", n, v, Table3, "a");
 
-        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
+        {
+            RootSubstringPrune = RootSubstringPruneMode.Off,
+        };
         var analysisV2N = new AnalysisAffixProcessRule(morpher, v2n);
         var analysisN2V = new AnalysisAffixProcessRule(morpher, n2v);
         var analysisThird = new AnalysisAffixProcessRule(morpher, third);

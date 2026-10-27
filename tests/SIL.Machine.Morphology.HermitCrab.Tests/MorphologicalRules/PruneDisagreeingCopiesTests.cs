@@ -548,7 +548,11 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
 
     private Morpher CreateMorpher(bool pruneCopies, int maxDegreeOfParallelism = 0)
     {
-        return new Morpher(TraceManager, Language, maxDegreeOfParallelism) { PruneDisagreeingCopies = pruneCopies };
+        return new Morpher(TraceManager, Language, maxDegreeOfParallelism)
+        {
+            PruneDisagreeingCopies = pruneCopies,
+            RootSubstringPrune = RootSubstringPruneMode.Off,
+        };
     }
 
     private static string[] ParseGlosses(Morpher morpher, string word)
