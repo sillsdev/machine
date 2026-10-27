@@ -228,7 +228,11 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
         string[] Parse(bool pruneCopies, string word)
         {
             Morpher morpher = CreateMorpher(pruneCopies);
-            Assert.That(morpher.IsPartial, Is.True, "entry 54 has an empty syntactic feature structure");
+            Assert.That(
+                morpher.GetPartialMorphemes(),
+                Is.Not.Empty,
+                "entry 54 has an empty syntactic feature structure"
+            );
             morpher.AlwaysEnforceFinalTemplates = alwaysEnforceFinalTemplates;
             return ParseGlosses(morpher, word);
         }
