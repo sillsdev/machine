@@ -1,13 +1,60 @@
 # HermitCrab synthesis-to-analysis pruning, 2026-10-27 round
 
-**Disposition: planned, not built.** This round answers John Maxwell's question about which
-synthesis tests could move into analysis. It records a failure-reason census, gives a direct answer
-for each of his four candidates, and ranks six experiments. No product code has changed. Every
-expected saving below is either a ceiling taken from the census or a worst-case argument. None is a
-measured result.
+**Disposition: round finished; no product code is proposed for this PR.** This round answers John
+Maxwell's question about which synthesis tests could move into analysis. It records a failure-reason
+census, gives a direct answer for each of his four candidates, and ranks six experiments. Five were
+built and measured on throwaway branches (none pushed); E6 stays research-only. The results are in
+[Results of the round](#results-of-the-round). Measurements are in steps, never time.
 
 This record follows the [optimization ledger](hermitcrab-optimization-ledger.md). Ledger rows 31-37
 point here.
+
+## Answer to John Maxwell's questions
+
+**Failure-reason statistics.** They exist now (census below, harness `research/failure-reason-stats`
+@ `af97348b`). On the five real grammars, pooled, 71.8% of failed synthesis branches and 43.5% of
+synthesis steps end in `PartialParse / ApplicableTemplatesNotApplied`, and 25.6% of steps end in
+`SurfaceFormMismatch`. Your four reasons together are 0.1% of failed branches and 0.1% of steps.
+Caveats from the method section that bind every number: the counts come from traced parses (tracing
+turns merging off, so more analyses are explored); a step is a count, and `RequiredMprFeatures`
+events are mostly allomorph selection, not failure; branch outcomes are not candidate outcomes; 22.1%
+of steps have no terminal event and are unattributed; the samples are strides of five grammars, with
+heavy words dropped by the per-word budget; and the census counts synthesis steps only, so it does
+not see analysis work.
+
+**Excluded co-occurrence (E4): sound, cheap, effective only where exclusions are dense.** The check
+is sound: parses are identical on every corpus, and the zero-width "other" trap you might expect does
+not occur for affix-process allomorphs. It is the only experiment of the round that removes analysis
+events. On the five real grammars it removes 0% (none has an affix-only exclude rule), on the
+conformance suite 0.23% of total work. On the brief's own stress fixture it gives 3.2%, and on two
+deliberately dense synthetic grammars 31.3% (Athabaskan-style prefix complex) and 19.8%
+(Bantu-style extension chain). Verdict PARK: land it, if at all, as a cheap safety net for grammars
+with many ad hoc co-prohibitions.
+
+**DisjunctiveAllomorph: already mostly early; no experiment.** The environment-free `break` in the
+synthesis allomorph loop already stops later allomorphs, and what remains needs the surface form.
+Disjunctions conditioned by MPR features are covered by E2, and the loop itself is shortened by E1.
+Real-grammar terminal share is 0.0%.
+
+**Environments (E5, the input-word prefilter): dead end as specified.** The soundness scan has to
+disable the prefilter on 5 of 5 real grammars (four have ambiguous digraph segmentation, one has
+non-uniform feature sets) and on 145 of 150 conformance runs. Forced on against that scan it is net
+negative on two of three stress fixtures once matcher invocations are counted, and about neutral on
+Aweti (net -0.4%). See E5 below for what would have to change.
+
+**ExcludedMprFeatures (covered by E2, the MPR and stem-name trail replay): sound; worth keeping,
+but small in total work.** Excluded MPR features are replayed with the required ones at lexical
+lookup. The prune is sound (a shadow census found no successful candidate that it rejects), and it
+saves 56.9% of synthesis steps on Aweti and 11.4% on Mbugwe. Those are shares of synthesis, which is
+a small part of the whole parse (next paragraph).
+
+**What the data says matters instead.** Synthesis steps are a small fraction of total work, which is
+analysis events plus synthesis steps. On the Aweti sample synthesis is 1.0% of the total (15,940 of
+1,560,180). On the Mbugwe sample it is 9.0% (130,647 of 1,449,301). E1, E2 and E3 save synthesis
+steps only, so their "% less work" is a share of synthesis. In total work they save at most 1.1% on a
+real grammar (table below). The dominant cost is analysis. The next round should target analysis: for
+example, extending E4-style monotone checks earlier, and the `ApplicableTemplatesNotApplied` analysis
+paths that the census ranks first.
 
 ## The question
 
@@ -464,10 +511,208 @@ fails it on any corpus.
 - **Moving constraints into the analysis merge key**: ledger row 15. Every synthesis rejection depends
   on the root, so H4, not the analysis key, is the place.
 
+## Results of the round
+
+Five experiments were built, each on its own unpushed branch from `origin/master` `c2454760`, with the
+harness commit `af97348b`. Every result is steps only. "Synth" is synthesis steps, "total" is
+analysis events plus synthesis steps for the same words in the same arm pair, and "% less work" is
+the relative drop. Parses were identical per word in every arm pair on every corpus, except that the
+four `truncate-morphotactic*` conformance fixtures are nondeterministic on master (see Open problems).
+
+### Decisions
+
+| Experiment | Branch @ SHA | Decision |
+|---|---|---|
+| E1 allomorph-loop cutoff | `perf/hc-allomorph-loop-cutoff` @ `d21af37e` | **KEEP.** Candidate for its own PR |
+| E2 MPR and stem-name trail replay | `perf/hc-trail-mpr-replay` @ `4fbbfb14` (product `84f76cdf`) | **KEEP.** Candidate PR, to combine with E3: both use the same post-lookup hook |
+| E3 template replay | `perf/hc-template-replay` @ `6edc4375` | **KEEP pending memoisation.** See E3 |
+| E4 excluded co-occurrence | `perf/hc-excluded-cooccurrence` @ `02873608` (product `b07fc4d6`) | **PARK** |
+| E5 required-environment prefilter | `perf/hc-env-input-prefilter` @ `9d55dade` (product `1af79e20`) | **DEAD END** as specified |
+| E6 intermediate-shape check | none | Not run (research only) |
+
+None of the branches is pushed. A branch name and SHA is the citation.
+
+### Synthesis share of total work
+
+Synthesis steps and analysis events for the identical words, switch off:
+
+| Corpus | Synth | Analysis events | Synth share of total |
+|---|---:|---:|---:|
+| Aweti stride 2 | 15,940 | 1,544,240 | 1.0% |
+| Mbugwe stride 40 (E2-E4 word set) | 130,647 | 1,318,654 | 9.0% |
+| Sena stride 100 | 1,908 | 103,277 | 1.8% |
+| Amharic limit 28 | 1,277 | 7,403 | 14.7% |
+| Indonesian | 677 | 6,552 | 9.4% |
+| Conformance | 8,246 | 27,765 | 22.9% |
+
+The E1 run used a Mbugwe word set with 3,451,016 analysis events (a different drop set), which is
+why its Mbugwe row differs below. Analysis events never changed in E1, E2, E3 and E5-off arms.
+
+### E1. Allomorph-loop cutoff: KEEP
+
+`SynthesisAffixProcessRule.Apply` now stops after the recorded allomorph (`Morpher.CutAllomorphLoopAtRecorded`,
+default on). Kill criterion not met. The soundness argument held: no parse changed.
+
+| Corpus | Synth off to on | % less synth | % less total work |
+|---|---|---:|---:|
+| Mbugwe stride 40 | 151,505 to 138,737 | 8.43% | 0.35% |
+| Sena stride 100 | 1,908 to 1,772 | 7.13% | 0.13% |
+| Aweti stride 2 | 15,940 to 15,831 | 0.68% | 0.007% |
+| Amharic limit 28 | 1,277 to 1,271 | 0.47% | 0.07% |
+| Conformance (minus 4 flaky) | 8,150 to 8,109 | 0.50% | 0.12% |
+| Indonesian | 677 to 677 | 0% | 0% |
+| `stress-allomorph-list-density` (Turkic-style) | 566 to 337 | 40.46% | 8.45% |
+| `stress-prefix-class-density` (Bantu-style) | 341 to 190 | 44.28% | 9.49% |
+
+Cost not in the counters: one `IndexOf` over the rule's allomorphs per rule application. Unaffected:
+analysis events and candidates (equal in both arms).
+
+### E2. MPR and stem-name trail replay: KEEP
+
+`TrailMprReplay` and `Morpher.PruneByTrailReplay` (default on) drop a candidate at lexical lookup
+when its trail cannot satisfy required or excluded MPR features or the stem name. Two refinements to
+the brief's predicate: the excluded test is disabled only when an `Overwrite` group is reachable from
+a rule output, and the stem-name check stops after a compounding entry. Family roots are never
+pruned. The shadow census agreed exactly with the on arm and found no successful terminal under a
+rejected candidate anywhere. Kill criterion not met.
+
+| Corpus | Synth off to on | % less synth | % less total work | Replay checks |
+|---|---|---:|---:|---:|
+| Aweti stride 2 | 15,940 to 6,873 | 56.9% | 0.58% | 14,064 |
+| Mbugwe stride 40 | 130,647 to 115,747 | 11.4% | 1.03% | 26,299 |
+| Conformance | 8,246 to 8,218 | 0.3% | 0.08% | 251 |
+| Sena, Amharic, Indonesian | unchanged | 0% | 0% | 0 |
+| `stress-mpr-inflection-classes` (IE declensions) | 494 to 278 | 43.7% | 6.45% | 180 |
+| `stress-mpr-bantu-concord` (three gated slots) | 3,376 to 382 | 88.7% | 31.85% | 652 |
+
+Replay checks are set operations, a different unit from synthesis steps (a step is a pattern match),
+so they are reported beside the savings and not netted. The Aweti and Mbugwe gain comes from required
+and excluded gates (Mbugwe 41 excluded, Aweti 26 excluded).
+
+### E3. Template replay: KEEP pending memoisation
+
+`TemplateReplay` and `Morpher.PruneByTemplateReplay` (default on) walk the stratum, template and rule
+control flow over abstract states (trail pointer, partial, final), assuming every pattern match
+succeeds. It bails out on family roots, non-affix-process rules on the trail, any realizational rule
+in the grammar and a null stratum. The shadow census found no successful terminal under a rejected
+candidate. Phase 0 census (steps in candidates with no success and shape-free): Mbugwe 40.0%, Aweti
+73.4%, so the kill rule for the census was not met.
+
+| Corpus | Synth off to on | % less synth | % less total work | Replay states |
+|---|---|---:|---:|---:|
+| Aweti stride 2 | 15,940 to 5,112 | 67.9% | 0.69% | 22,308 |
+| Mbugwe stride 40 | 130,647 to 114,833 | 12.1% | 1.09% | 133,606 |
+| Amharic limit 28 | 1,277 to 532 | 58.3% | 8.58% | 718 |
+| Sena stride 100 | 1,908 to 1,790 | 6.2% | 0.11% | 4,166 |
+| Conformance | 8,246 to 8,181 | 0.8% | 0.18% | 10,622 |
+| Indonesian | 677 to 667 | 1.5% | 0.14% | 389 |
+| `stress-derivation-chain-homophone-roots` (Turkic-like) | 300 to 176 | 41.3% | unmeasured | 948 |
+| `stress-bantu-extension-required-slot` | 279 to 225 | 19.4% | unmeasured | 763 |
+| `stress-required-template-slot` (control) | 155 to 155 | 0% | 0% | 329 |
+
+The three stress rows do not give analysis event counts in the result files, so their total-work
+share is unmeasured. The control has no gain because dead candidates there cost 0 steps.
+
+The brief's blow-up kill rule says to kill if walk states exceed steps saved, and it fired on every
+corpus (Mbugwe 133,606 states against 15,814 steps saved; Aweti 22,308 against 10,828). The result
+file therefore said PARK. The owner overrode the literal rule: a replay state is an integer set
+operation and a saved step is a pattern match, so the two are different units and cannot be compared
+by count. **Decision: KEEP pending memoisation.** Next step: memoise verdicts by root entry and trail,
+then re-measure the replay cost in units comparable to a step. The result file also suggests skipping
+the walk when the grammar has no required slots.
+
+### E4. Excluded co-occurrence during analysis: PARK
+
+`ExcludedCoOccurrencePruner` indexes active `Exclude` + `Anywhere` morpheme and allomorph
+co-occurrence rules at `Morpher` construction. Rules that name only affixes are checked in analysis,
+right after unapplying (H1). Rules that name a root are checked per alternative after lookup (H4).
+It is sound and it is the only experiment that cuts analysis events.
+
+| Corpus | Analysis events off to on | Synth off to on | % less total work |
+|---|---|---|---:|
+| Aweti, Mbugwe, Sena, Amharic, Indonesian | unchanged | unchanged | 0% |
+| Conformance (1,492 words) | 27,765 to 27,705 | 8,246 to 8,223 | 0.23% |
+| `stress-excluded-cooccurrence` (brief's fixture) | 4,690 to 4,605 | 326 to 250 | 3.2% |
+| `stress-athabaskan-prefix-complex` | 8,937 to 6,347 | 891 to 404 | 31.3% |
+| `stress-bantu-extension-chain` | 10,552 to 8,548 | 515 to 332 | 19.8% |
+
+The brief's kill criterion (under 25% on its own fixture) fires on 3.2%. The two dense fixtures were
+added at the owner's request. **Decision: PARK.** Land it only as a cheap safety net for
+co-occurrence-heavy grammars. Findings that affect any landing: the "zero-width other is invisible"
+trap does not occur for affix-process allomorphs (synthesis marks the morph on the last output node);
+merged analyses must be filtered per alternative, not on the canonical word; with pruning on,
+`MaxAlternatives` counts fewer candidates, so its exception can stop firing; and the rule index is
+read at construction, so a rule added later is not pruned early.
+
+### E5. Required-environment input prefilter: DEAD END as specified
+
+The code is recoverable at `1af79e20`. The sound static scan disables the prefilter on 5 of 5 real
+grammars (four with ambiguous digraph segmentation, one with non-uniform feature sets) and on 145 of
+150 conformance runs, so it gives 0% on every real grammar. Forced on, with the scan bypassed (an
+unsound licence), Sena saves 4.0% of synthesis steps and 7.3% of analysis events (net 5.7% after
+counting matcher invocations) and Aweti is net -0.4%.
+
+| Fixture | Synth | Analysis | Gross % less total | Net % less work (matcher calls counted) |
+|---|---|---|---:|---:|
+| `stress-env-zero-allomorphs` | 87.4% less | 74.1% less | not given | 65.2% |
+| `stress-env-bantu-concord` | 1,344 to 732 | 2,036 to 1,207 | 42.6% | -3.8% |
+| `stress-env-austronesian-nasal-prefix` | 936 to 883 | 2,206 to 1,471 | 25.1% | -37.4% |
+
+Forced on, it is net negative on two of the three fixtures. Soundness findings: the brief's
+counterexample direction (an archiphoneme `[+cons]` against a `[+voice]` context) does not hold under
+subsumption. The real unsound case is a synthesized node more specific than the input character
+definition (test word "atpa": `D` against `t`); forcing the prefilter on loses that parse, and the
+static scan is what prevents it.
+
+**What would have to change to revive it.** (1) A scan that stops rejecting digraph grammars, which
+needs a segmentation of the input that is unambiguous per grammar, or a prefilter that tests all
+segmentations. (2) A treatment of non-uniform feature sets and of synthesized nodes more specific
+than the input segment definitions. (3) A prefilter cost small enough that matcher invocations do not
+cancel the saving, since two of three fixtures go net negative. (4) Optionally, root allomorph
+environments (67 in Sena) prefiltered at lookup, which was not built. Absent (1) and (2) the
+eligible set on real grammars is empty (indonesian 0 of 13, aweti 47 of 394, amharic 0 of 93, mbugwe
+0 of 415, sena 5 of 117).
+
+### E6. Intermediate-shape check: not run
+
+No soundness argument yet; `SurfaceFormMismatch` (25.6% of real synthesis steps) is still untouched.
+
+### Conclusion
+
+Each of E1-E3 is sound on every corpus and cuts synthesis steps by a large amount on grammars that
+lean on the feature (inflection classes, ordered allomorph lists, template slots). But synthesis is
+1.0% of total work on Aweti and 9.0% on the Mbugwe sample, so on real grammars each removes about 1% or less of
+total work (E2: 0.58% Aweti, 1.03% Mbugwe; E3: 0.69% and 1.09%; E1: 0.007% and 0.35%). E2 and E3 overlap
+and were not measured together. **The dominant cost is analysis-side.** The next round should
+target analysis, for example by extending E4-style monotone checks earlier, and the
+`ApplicableTemplatesNotApplied` analysis paths. E4 shows an analysis check can cut work, but only
+where the grammar has the constraint; the question is which constraints real grammars have.
+
+### Open problems found at baseline
+
+1. The four `truncate-morphotactic*` conformance fixtures (`truncate-morphotactic`, `-copy-u`,
+   `-identity`, `-subsumption`) are nondeterministic on master: their output varies run to run with no
+   change. They fail in both arms of every experiment, and `EveryConformanceFixturePassesSelfCheck`
+   fails on them.
+2. `FieldworksProducibilityLedgerTests.CoversExactlyEveryFailureReasonAndEveryInterfaceAttributeInThisRepo`
+   fails on master because PR #548 added `AllomorphNotApplicable` without updating that ledger.
+3. The stress fixtures live under `tests/SIL.Machine.Morphology.HermitCrab.Tests/Research/stress-fixtures/`,
+   not under `conformance/`, because registering a fixture needs ledger and coverage regeneration
+   (a full test cycle takes 34 to 53 minutes under load). E5's branch registered three fixtures and
+   broke 8 pinned ledger tests (row totals, fixture count, layer counts, interaction and inventory
+   ledgers, real-corpus pair counts); E2's registration attempt broke 7. Moving the fixtures is a
+   ledger-regeneration job.
+4. Full-suite evidence: E3's run finished at 215 of 217 passing; the two failures are the truncate
+   flake and a SIGTERM under load. E4's run was 723 of 725, with the truncate flake and the ledger
+   failure of item 2. `local_check.sh --agent-strict` could not finish on these machines because the
+   SentencePiece step needs `cmake`; comment hygiene and formatting passed.
+
 ## Open questions
 
-- A candidate-level dead-step census (E3 phase 0) is the most useful single measurement left. It
-  turns this round's branch-level ceilings into candidate-level ones.
+- The candidate-level dead-step census (E3 phase 0) was run: shape-free dead steps are 73.4% on Aweti
+  and 40.0% on Mbugwe. What is left is the cost of the replay in comparable units (E3 memoisation).
+- Which analysis-side constraints real grammars carry, and whether they can be checked before a
+  candidate is expanded. This is the next round's target.
 - Whether synthesis phonological deletion removes morph annotations. E4's zero-width restriction may
   need to cover deleted morphs too. The E4 brief requires a test.
 - Whether `ChooseInflectionalStem` families occur in FLEx exports at all. None of the five samples has
