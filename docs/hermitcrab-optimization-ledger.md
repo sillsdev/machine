@@ -138,6 +138,25 @@ Rows 24 and 25 are **HC-Rust port bugs: C# was already exact, and no C# change f
 by running the port on the oracle's own grammar export and comparing lookup counts. Do that before
 optimizing the algorithm.
 
+## 2026-10-27 synthesis-to-analysis round (planned)
+
+Full record: [hermitcrab-2026-10-27-synthesis-to-analysis-round.md](hermitcrab-2026-10-27-synthesis-to-analysis-round.md).
+It answers John Maxwell's question about which synthesis tests can move into analysis. The unit is
+C# synthesis steps (rule-level trace events) and analysis events, counted by the test-only harness
+on `research/failure-reason-stats` @ `af97348b`, never ms. Rows 32-37 are **planned and unmeasured**.
+Ranking covers every grammar type HermitCrab can represent, not only the five samples, and each
+experiment carries a synthetic stress fixture.
+
+| # | Optimization | Expected | Outcome | Number |
+| --- | --- | --- | --- | --- |
+| 31 | **Failure-reason census** (measurement, not a change) | Maxwell's four candidates (excluded co-occurrence, disjunctive allomorph, environments, excluded MPR) would be where synthesis work dies | **MEASURED; the samples refute it.** On the five samples they are almost never terminal. The work dies on template paths and surface mismatches | Real grammars: ApplicableTemplatesNotApplied **43.5%** of synthesis steps, SurfaceFormMismatch **25.6%**, unattributed 22.1%, Maxwell's four **<0.1%**. `RequiredMprFeatures` is 41.4% of rule events but is mostly allomorph selection. Traced, so merging is off; analysis work is outside the step total |
+| 32 | **E1: stop the synthesis allomorph loop after the recorded allomorph** | Allomorphs past the one analysis recorded are applied and then discarded | PLANNED | Ceiling: `AllomorphNotApplicable` with `i > r`, at most 11.6% of real synthesis steps |
+| 33 | **E2: replay MPR features and stem names along the trail at lookup** (covers excluded MPR) | Inflection-class gates decided before synthesis | PLANNED; shadow census first | Samples near 0 terminal; target is IE and Bantu inflection classes |
+| 34 | **E3: replay the template and final-state outcome at lookup** | Shape-free template-path deaths decided before synthesis | PLANNED; candidate-level dead-step census first | Branch ceiling 48.4% of real steps (Mbugwe 46.3% plus unattributed). Row 19's 0-6% on Sena and Amharic is the counterweight |
+| 35 | **E4: excluded co-occurrence during analysis** (Maxwell) | Anti-monotone; prunes analysis subtrees | PLANNED | Samples about 0; conformance 0.2%. Zero-width "others" are invisible to the synthesis check and must not count |
+| 36 | **E5: required-environment prefilter on the input word** (Maxwell) | Linear left-then-right scan per allomorph | PLANNED | Samples 0.0%. Sound only without underspecified surface segments, and with boundaries matching empty |
+| 37 | **E6: intermediate-shape check against SurfaceFormMismatch** | Stop a candidate at the first stratum boundary where it diverges | RESEARCH ONLY; no soundness argument yet | SurfaceFormMismatch is 25.6% of real steps. Census only, killed by any success that fails it |
+
 ---
 
 ## The lesson that generalises
