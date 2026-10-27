@@ -12,6 +12,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         private readonly Morpher _morpher;
         private readonly AffixProcessRule _rule;
         private readonly List<PatternRule<Word, ShapeNode>> _rules;
+        private readonly List<AnalysisAffixProcessAllomorphRuleSpec> _ruleSpecs;
         private readonly FeatureStruct _outputFS;
 
         public AnalysisAffixProcessRule(Morpher morpher, AffixProcessRule rule)
@@ -26,11 +27,14 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             _outputFS.Freeze();
 
             _rules = new List<PatternRule<Word, ShapeNode>>();
+            _ruleSpecs = new List<AnalysisAffixProcessAllomorphRuleSpec>();
             foreach (AffixProcessAllomorph allo in rule.Allomorphs)
             {
+                var spec = new AnalysisAffixProcessAllomorphRuleSpec(allo) { PruningMorpher = morpher };
+                _ruleSpecs.Add(spec);
                 _rules.Add(
                     new MultiplePatternRule<Word, ShapeNode>(
-                        new AnalysisAffixProcessAllomorphRuleSpec(allo) { PruningMorpher = morpher },
+                        spec,
                         new MatcherSettings<ShapeNode>
                         {
                             Filter = ann => ann.Type() == HCFeatureSystem.Segment,
@@ -43,6 +47,22 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 );
             }
         }
+
+        private static ShapeNode FindEdge(Shape shape, bool first)
+        {
+            ShapeNode node = first ? shape.First : shape.Last;
+            ShapeNode end = first ? shape.End : shape.Begin;
+            while (node != null && node != end && node.Type() != HCFeatureSystem.Segment)
+                node = first ? node.Next : node.Prev;
+            return node == end ? null : node;
+        }
+
+        // The matcher can skip optional annotations, so only a mandatory edge can reject a match.
+        private static bool EdgePasses(FeatureStruct constraint, ShapeNode node) =>
+            constraint == null
+            || node == null
+            || node.Annotation.Optional
+            || node.Annotation.FeatureStruct.IsUnifiable(constraint, false, null);
 
         public IEnumerable<Word> Apply(Word input)
         {
@@ -57,9 +77,24 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 return Enumerable.Empty<Word>();
             }
 
+            ShapeNode first = _morpher.EdgePrefilterEnabled ? FindEdge(input.Shape, true) : null;
+            ShapeNode last = _morpher.EdgePrefilterEnabled ? FindEdge(input.Shape, false) : null;
             var output = new List<Word>();
             for (int i = 0; i < _rules.Count; i++)
             {
+                if (
+                    _morpher.EdgePrefilterEnabled
+                    && (
+                        !EdgePasses(_ruleSpecs[i].LeftEdgeConstraint, first)
+                        || !EdgePasses(_ruleSpecs[i].RightEdgeConstraint, last)
+                    )
+                )
+                {
+                    _morpher.EdgePrefilterRejected?.Invoke();
+                    if (_morpher.TraceManager.IsTracing)
+                        _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
+                    continue;
+                }
                 bool unapplied = false;
                 foreach (Word outWord in _rules[i].Apply(input).RemoveDuplicates())
                 {
