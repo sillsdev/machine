@@ -396,6 +396,40 @@ description
     }
 
     [Test]
+    public void GetRows_VerseZeroWithNoParagraph()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\h
+\mt
+\c 1
+\v 0 Verse zero.
+\s
+\p \v 1 Verse one.
+"
+        );
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(rows, Has.Length.EqualTo(2));
+
+            Assert.That(
+                rows[0].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:0")),
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
+            );
+            Assert.That(rows[0].Text, Is.EqualTo("Verse zero."), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+
+            Assert.That(
+                rows[1].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:1")),
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
+            );
+            Assert.That(rows[1].Text, Is.EqualTo("Verse one."), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+        }
+    }
+
+    [Test]
     public void GetRows_PrivateUseMarker()
     {
         TextRow[] rows = GetRows(

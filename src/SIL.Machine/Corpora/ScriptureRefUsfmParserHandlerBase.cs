@@ -72,7 +72,14 @@ namespace SIL.Machine.Corpora
 
             if (state.ChapterHasVerseZero && state.VerseRef.VerseNum == 0)
             {
-                // Fall through for the special case of verse 0 being specified in the USFM
+                // If there is no text or paragraph marker preceding verse 0, start the verse text
+                if (CurrentTextType == ScriptureTextType.None)
+                {
+                    StartVerseText(state);
+                    return;
+                }
+
+                // Otherwise, fall through for the special case of verse 0 being specified in the USFM
             }
             else if (state.VerseRef.Equals(_curVerseRef) && !DuplicateVerse)
             {
