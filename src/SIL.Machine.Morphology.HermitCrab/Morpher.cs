@@ -83,6 +83,26 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public int DeletionReapplications { get; set; }
 
+        /// <summary>
+        /// Whether affix template walks drop partials in which a required slot can no longer unapply because
+        /// the material it inserts is absent. See <see cref="RequiredSlotMaterial"/>.
+        /// </summary>
+        internal RequiredSlotLookaheadMode RequiredSlotLookahead { get; set; } = RequiredSlotLookaheadMode.On;
+
+        /// <summary>
+        /// Called in <see cref="RequiredSlotLookaheadMode.Shadow"/> with a kind and the template and slot it is about:
+        /// "fired" (the test is true for a required slot), "violated" (a rule of a fired slot then unapplied under
+        /// that partial) and "completed-under-fired" (the template walk completed with a fired slot on its path).
+        /// Any "violated" or "completed-under-fired" is a soundness failure.
+        /// </summary>
+        internal Action<string, AffixTemplate, int> RequiredSlotShadow { get; set; }
+
+        /// <summary>
+        /// Called after each required-slot check that unified, with the number of unifications it performed.
+        /// Null unless a diagnostic sets it; it may be called from several threads.
+        /// </summary>
+        internal Action<long> RequiredSlotCheckObserver { get; set; }
+
         public int MaxStemCount { get; set; }
 
         /// <summary>
