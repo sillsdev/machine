@@ -21,6 +21,7 @@ The test fixture is `[Explicit]` and `[Category("Stress")]`, so a plain `dotnet 
 |---|---|---|
 | `bantu-tam-templates` | Bantu slot templates with required slots (subject, object, extension, TAM, final vowel); 12 of 60 words have no parse | #575, #576 (required-slot look-ahead) |
 | `bantu-tam-templates-shared` | the same words with three trailing slots shared across templates | #575, #576 (required-slot look-ahead) |
+| `bantu-tam-fusion` | the same Bantu slot templates, but each object and subject rule has a plain and a vowel-fusion allomorph (synthetic, not a real language; 28 of 60 words have no parse) | the impure-slot look-ahead, stacked on #576 |
 | `early-lexicon-agglutinative` | agglutinative words whose root is found early; root-substring and edge-segment prunes | #572, #574 (root-substring prune, edge-segment prefilter) |
 | `bantu-extension-chain` | chained verbal extensions | excluded co-occurrence check (parked; #490 ledger) |
 | `bantu-extension-required-slot` | extension chain with a required slot | template replay at lookup (dead end; #490 ledger) |
