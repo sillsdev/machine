@@ -83,8 +83,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             return output;
         }
 
-        // Testing runs from the next slot to unapply and stops after an impure slot, which makes the test
-        // for any slot behind it unsound. Shadow mode prunes nothing and carries the fired slots in fired.
+        // Testing runs from the next slot to unapply and stops after a slot whose written-back segments cannot be
+        // bounded. Shadow mode prunes nothing and carries the fired slots in fired.
         private bool RequiredSlotCannotUnapply(Word word, int lastSlot, ref int[] fired)
         {
             RequiredSlotLookaheadMode mode = _morpher.RequiredSlotLookahead;
@@ -111,7 +111,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     _morpher.RequiredSlotShadow?.Invoke("fired", _template, j);
                 }
                 _lookahead.Advance(j, ref walk);
-                if (!_lookahead.IsPure(j))
+                if (!_lookahead.CanWalkPast(j))
                     break;
             }
             if (unifications != 0)
