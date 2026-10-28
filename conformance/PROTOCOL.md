@@ -199,6 +199,11 @@ these rules:
    already sorts them, but a hand-edited or alternate-engine `expected.tsv` reordering is tolerated
    defensively), but a genuine difference in the entries themselves, or in how many times a given
    entry appears, **is** a failure.
+   Within an entry's shape, the members of each bracketed class `[...]` (and `[^...]`) are compared as a
+   **set**, so `|b[ae]t` equals `|b[ea]t`. HermitCrab renders class members in character-definition-table
+   insertion order, and FieldWorks fills that table from an unordered collection, so the order carries no
+   meaning (sillsdev/machine#573). Write expected signatures in the order your engine renders; a harness
+   comparing against a differently-ordered engine still passes.
 4. A `status` mismatch (`ok` vs `SKIPPED`) is always a failure.
 5. A missing or extra `word` row (present in one file, absent in the other) is a failure for that
    word.

@@ -149,7 +149,9 @@ in the protocol. `words.yaml` is the single ground truth: front matter (`languag
 `blocked_by` (well-formed input, zero valid analyses), or `expect_skip` (the oracle throws
 `InvalidShapeException`, e.g. an undeclared segment — status "SKIPPED", not "ok"). Optional fields:
 `provenance` (bug/PR reference), `guess` (a `LexicalGuess` parse),
-`budget_ms`/`expect_crash` (edge-cases only). Signatures are authored-and-verified, never blindly
+`budget_ms`/`expect_crash` (edge-cases only). Signature comparison treats the members of each bracketed
+class `[...]` as a set (`|b[ae]t` equals `|b[ea]t`; PROTOCOL.md section 4, sillsdev/machine#573).
+Signatures are authored-and-verified, never blindly
 regenerated — self-check FAILs on mismatch; `--propose` prints a patch for a human to accept, never
 writes. Full schema: `schema/words.schema.json`.
 

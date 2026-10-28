@@ -97,7 +97,7 @@ public static class Diff
     // rows (usually just one) so occurrence order/duplication is handled as a multiset.
     private static List<string> Canonicalize(List<TsvRow> rows)
     {
-        return rows.Select(r => r.Status + "|" + string.Join(";", SignatureTsv.SplitSignature(r.Signature)))
+        return rows.Select(r => r.Status + "|" + string.Join(";", SignatureTsv.SplitComparableSignature(r.Signature)))
             .OrderBy(s => s, StringComparer.Ordinal)
             .ToList();
     }

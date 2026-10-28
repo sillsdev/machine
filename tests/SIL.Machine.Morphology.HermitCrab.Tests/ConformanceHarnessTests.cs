@@ -60,6 +60,31 @@ public sealed class ConformanceHarnessTests
         }
     }
 
+    private static List<TsvRow> OneRow(string signature) => [new TsvRow(0, "bat", 0, "ok", signature)];
+
+    [Test]
+    public void Diff_ClassMembersInDifferentOrder_Passes()
+    {
+        FixtureDiff diff = Diff.Compare(OneRow("|b[ae]t"), OneRow("|b[ea]t"));
+
+        Assert.That(diff.AllPassed, Is.True);
+    }
+
+    [Test]
+    public void Diff_DifferentClassMembers_Fails()
+    {
+        FixtureDiff diff = Diff.Compare(OneRow("|b[ae]t"), OneRow("|b[ao]t"));
+
+        Assert.That(diff.AllPassed, Is.False);
+    }
+
+    [Test]
+    public void Diff_NegatedClassMembersInDifferentOrder_PassesButNegationStillMatters()
+    {
+        Assert.That(Diff.Compare(OneRow("|b[^ae]t"), OneRow("|b[^ea]t")).AllPassed, Is.True);
+        Assert.That(Diff.Compare(OneRow("|b[^ae]t"), OneRow("|b[ae]t")).AllPassed, Is.False);
+    }
+
     [Test]
     public void CompareRuleTraceMultisets_SameSignatureWithDistinctTraces_PassesRegardlessOfOrder()
     {

@@ -242,7 +242,9 @@ result.WordResults
             List<string> actualEntries = SignatureTsv.SplitSignature(actualSignature);
             List<string> expectedEntries = SignatureTsv.SplitSignature(expectedSignature);
 
-            bool signatureMatches = actualEntries.SequenceEqual(expectedEntries, StringComparer.Ordinal);
+            bool signatureMatches = SignatureTsv
+                .SplitComparableSignature(actualSignature)
+                .SequenceEqual(SignatureTsv.SplitComparableSignature(expectedSignature), StringComparer.Ordinal);
             if (!signatureMatches)
             {
                 wordResults.Add(

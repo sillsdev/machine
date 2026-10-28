@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
@@ -56,4 +57,22 @@ public static class SignatureTsv
             return new List<string>();
         return signature.Split(';').OrderBy(s => s, StringComparer.Ordinal).ToList();
     }
+
+    private static readonly Regex BracketClass = new(@"\[(\^?)([^\[\]]*)\]", RegexOptions.Compiled);
+
+    /// <summary>
+    /// <see cref="SplitSignature"/> with the members of every bracketed class sorted, so "[ea]" equals "[ae]".
+    /// HermitCrab renders class members in character-table insertion order, which FieldWorks fills from an
+    /// unordered collection (sillsdev/machine#573).
+    /// </summary>
+    public static List<string> SplitComparableSignature(string signature) =>
+        SplitSignature(signature)
+            .Select(entry =>
+                BracketClass.Replace(
+                    entry,
+                    m => "[" + m.Groups[1].Value + new string(m.Groups[2].Value.OrderBy(c => c).ToArray()) + "]"
+                )
+            )
+            .OrderBy(s => s, StringComparer.Ordinal)
+            .ToList();
 }
