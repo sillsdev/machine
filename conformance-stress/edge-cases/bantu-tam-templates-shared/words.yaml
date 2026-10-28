@@ -1,0 +1,284 @@
+# kind: stress (timing and optimization parity fixture, not conformance; see conformance-stress/README.md)
+language: StressBantuTamTemplatesShared
+sources: []
+requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: "research stress fixture; not authored through FieldWorks"
+budget_ms: 60000
+words:
+  - word: horayeedagola
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_6_ho+obj_ra+tam_jee+dag+ext_6_ol+fv_6|horayeedagola"
+        rules: [ext_6_ol, fv_6, obj_ra, subj_6_ho, tam_jee]
+  - word: sorotanaa
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_2_so+rot+tam_ana+fv_2|sorotanaa"
+        rules: [fv_2, subj_2_so, tam_ana]
+  - word: noarekesut
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_no+tam_are+kes+ext_7_ut|noarekesut"
+        rules: [ext_7_ut, subj_sh_no, tam_are]
+  - word: yoyeenema
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_6_yo+tam_jee+nem+fv_6|yoyeenema"
+        rules: [fv_6, subj_6_yo, tam_jee]
+  - word: bunidagiyeisa
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_0_bu+obj_ni+dag+tam_iye+ext_0_is+fv_0|bunidagiyeisa"
+        rules: [ext_0_is, fv_0, obj_ni, subj_0_bu, tam_iye]
+  - word: howaarekumutani
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_ho+obj_wa+tam_are+kum+ext_7_ut+fv_sh+pl_sh|howaarekumutani"
+        rules: [ext_7_ut, fv_sh, obj_wa, pl_sh, subj_sh_ho, tam_are]
+  - word: pokaalenni
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_po+tam_kaa+len+pl_sh|pokaalenni"
+        rules: [pl_sh, subj_sh_po, tam_kaa]
+  - word: goyeehitola
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_6_go+tam_jee+hit+ext_6_ol+fv_6|goyeehitola"
+        rules: [ext_6_ol, fv_6, subj_6_go, tam_jee]
+  - word: dupaarebalani
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_du+obj_pa+tam_are+bal+fv_sh+pl_sh|dupaarebalani"
+        rules: [fv_sh, obj_pa, pl_sh, subj_sh_du, tam_are]
+  - word: todiyeetaga
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_6_to+obj_di+tam_jee+tag+fv_6|todiyeetaga"
+        rules: [fv_6, obj_di, subj_6_to, tam_jee]
+  - word: sogumileilni
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_so+gum+tam_ile+ext_1_il+pl_sh|sogumileilni"
+        rules: [ext_1_il, pl_sh, subj_sh_so, tam_ile]
+  - word: bumukaagora
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_bu+obj_mu+tam_kaa+gor+fv_sh|bumukaagora"
+        rules: [fv_sh, obj_mu, subj_sh_bu, tam_kaa]
+  - word: hohagoranaan
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_2_ho+obj_ha+gor+tam_ana+ext_2_an|hohagoranaan"
+        rules: [ext_2_an, obj_ha, subj_2_ho, tam_ana]
+  - word: bugakaadipeka
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_bu+obj_ga+tam_kaa+dip+ext_5_ek+fv_sh|bugakaadipeka"
+        rules: [ext_5_ek, fv_sh, obj_ga, subj_sh_bu, tam_kaa]
+  - word: kowayeebal
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_6_ko+obj_wa+tam_jee+bal|kowayeebal"
+        rules: [obj_wa, subj_6_ko, tam_jee]
+  - word: hodikumileni
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_ho+obj_di+kum+tam_ile+pl_sh|hodikumileni"
+        rules: [obj_di, pl_sh, subj_sh_ho, tam_ile]
+  - word: yowakaamosekni
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_yo+obj_wa+tam_kaa+mos+ext_5_ek+pl_sh|yowakaamosekni"
+        rules: [ext_5_ek, obj_wa, pl_sh, subj_sh_yo, tam_kaa]
+  - word: torotileila
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_to+rot+tam_ile+ext_1_il+fv_sh|torotileila"
+        rules: [ext_1_il, fv_sh, subj_sh_to, tam_ile]
+  - word: sotakesanaan
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_2_so+obj_ta+kes+tam_ana+ext_2_an|sotakesanaan"
+        rules: [ext_2_an, obj_ta, subj_2_so, tam_ana]
+  - word: moaretulut
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_mo+tam_are+tul+ext_7_ut|moaretulut"
+        rules: [ext_7_ut, subj_sh_mo, tam_are]
+  - word: sowadagileila
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_so+obj_wa+dag+tam_ile+ext_1_il+fv_sh|sowadagileila"
+        rules: [ext_1_il, fv_sh, obj_wa, subj_sh_so, tam_ile]
+  - word: popayeelenol
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_6_po+obj_pa+tam_jee+len+ext_6_ol|popayeelenol"
+        rules: [ext_6_ol, obj_pa, subj_6_po, tam_jee]
+  - word: yobisanaan
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_2_yo+bis+tam_ana+ext_2_an|yobisanaan"
+        rules: [ext_2_an, subj_2_yo, tam_ana]
+  - word: kohaaregoruta
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_ko+obj_ha+tam_are+gor+ext_7_ut+fv_sh|kohaaregoruta"
+        rules: [ext_7_ut, fv_sh, obj_ha, subj_sh_ko, tam_are]
+  - word: sotimosekaa
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_so+obj_ti+mos+tam_eka+fv_sh|sotimosekaa"
+        rules: [fv_sh, obj_ti, subj_sh_so, tam_eka]
+  - word: womeehita
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_8_wo+tam_mee+hit+fv_8|womeehita"
+        rules: [fv_8, subj_8_wo, tam_mee]
+  - word: wotuudagem
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_wo+tam_tuu+dag+ext_9_em|wotuudagem"
+        rules: [ext_9_em, subj_sh_wo, tam_tuu]
+  - word: yotuunemani
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_yo+tam_tuu+nem+fv_sh+pl_sh|yotuunemani"
+        rules: [fv_sh, pl_sh, subj_sh_yo, tam_tuu]
+  - word: komeesaba
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_8_ko+tam_mee+sab+fv_8|komeesaba"
+        rules: [fv_8, subj_8_ko, tam_mee]
+  - word: pobalokauma
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_4_po+bal+tam_oka+ext_4_um+fv_4|pobalokauma"
+        rules: [ext_4_um, fv_4, subj_4_po, tam_oka]
+  - word: tokesoka
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_4_to+kes+tam_oka|tokesoka"
+        rules: [subj_4_to, tam_oka]
+  - word: nomeedola
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_8_no+tam_mee+dol+fv_8|nomeedola"
+        rules: [fv_8, subj_8_no, tam_mee]
+  - word: nogagumokauma
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_4_no+obj_ga+gum+tam_oka+ext_4_um+fv_4|nogagumokauma"
+        rules: [ext_4_um, fv_4, obj_ga, subj_4_no, tam_oka]
+  - word: yogoogumipa
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_10_yo+tam_goo+gum+ext_10_ip+fv_10|yogoogumipa"
+        rules: [ext_10_ip, fv_10, subj_10_yo, tam_goo]
+  - word: kokagooguma
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_10_ko+obj_ka+tam_goo+gum+fv_10|kokagooguma"
+        rules: [fv_10, obj_ka, subj_10_ko, tam_goo]
+  - word: toragoogor
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_10_to+obj_ra+tam_goo+gor|toragoogor"
+        rules: [obj_ra, subj_10_to, tam_goo]
+  - word: sobeloka
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_4_so+bel+tam_oka|sobeloka"
+        rules: [subj_4_so, tam_oka]
+  - word: loremokaum
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_4_lo+rem+tam_oka+ext_4_um|loremokaum"
+        rules: [ext_4_um, subj_4_lo, tam_oka]
+  - word: gogoopat
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_10_go+tam_goo+pat|gogoopat"
+        rules: [subj_10_go, tam_goo]
+  - word: dumeepatad
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_8_du+tam_mee+pat+ext_8_ad|dumeepatad"
+        rules: [ext_8_ad, subj_8_du, tam_mee]
+  - word: yogoohitip
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_10_yo+tam_goo+hit+ext_10_ip|yogoohitip"
+        rules: [ext_10_ip, subj_10_yo, tam_goo]
+  - word: wogaremoka
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_4_wo+obj_ga+rem+tam_oka|wogaremoka"
+        rules: [obj_ga, subj_4_wo, tam_oka]
+  - word: lohalubokaa
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_4_lo+obj_ha+lub+tam_oka+fv_4|lohalubokaa"
+        rules: [fv_4, obj_ha, subj_4_lo, tam_oka]
+  - word: nowenokaum
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_4_no+wen+tam_oka+ext_4_um|nowenokaum"
+        rules: [ext_4_um, subj_4_no, tam_oka]
+  - word: kohanokaa
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_4_ko+han+tam_oka+fv_4|kohanokaa"
+        rules: [fv_4, subj_4_ko, tam_oka]
+  - word: nomeebisada
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_8_no+tam_mee+bis+ext_8_ad+fv_8|nomeebisada"
+        rules: [ext_8_ad, fv_8, subj_8_no, tam_mee]
+  - word: sohagoolubip
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_10_so+obj_ha+tam_goo+lub+ext_10_ip|sohagoolubip"
+        rules: [ext_10_ip, obj_ha, subj_10_so, tam_goo]
+  - word: podituulenem
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    parses:
+      - signature: "subj_sh_po+obj_di+tam_tuu+len+ext_9_em|podituulenem"
+        rules: [ext_9_em, obj_di, subj_sh_po, tam_tuu]
+  - word: loyeebam
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    expect_fail: true
+  - word: wabiye
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    expect_fail: true
+  - word: dugipana
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    expect_fail: true
+  - word: dagiye
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    expect_fail: true
+  - word: goyeehul
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    expect_fail: true
+  - word: dipiye
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    expect_fail: true
+  - word: rotuuhul
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    expect_fail: true
+  - word: tuurot
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    expect_fail: true
+  - word: rogipeka
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    expect_fail: true
+  - word: kaadagiye
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    expect_fail: true
+  - word: mokaahuliye
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    expect_fail: true
+  - word: meehit
+    note: "Bantu slot-template stress, variant whose trailing three slots are shared across templates; expected parses are the master engine's."
+    expect_fail: true

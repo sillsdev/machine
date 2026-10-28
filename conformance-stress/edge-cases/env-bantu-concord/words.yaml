@@ -1,0 +1,298 @@
+# kind: stress (timing and optimization parity fixture, not conformance; see conformance-stress/README.md)
+language: BantuConcordAllomorphy
+inspired_by: ["Synthetic Bantu-style noun-class concord and tense allomorphy (not modeling one real language): a concord prefix with four place-conditioned allomorphs plus a fallback, a negative prefix, and a tense suffix with a zero allomorph; conditioned allomorphs precede the fallback so synthesis tries them."]
+sources: []
+requires: []
+# Stress fixture for the required-environment prefilter. Expected parses follow the allomorph and disjunction
+# rules by hand; the zero allomorphs' environments are read at an engine-defined position, so words with a
+# zero-allomorph parse take the engine's verdict with the prefilter switched off.
+budget_ms: 60000
+words:
+  - word: papa
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    exercises:
+      - "AffixProcessRule: prefix/suffix/circumfix/infix"
+    parses:
+      - signature: "R00|papa"
+        gloss: parse
+        rules: []
+  - word: bipu
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R01|bipu"
+        gloss: parse
+        rules: []
+  - word: pubi
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R02|pubi"
+        gloss: parse
+        rules: []
+  - word: bapi
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R03|bapi"
+        gloss: parse
+        rules: []
+  - word: tada
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R04|tada"
+        gloss: parse
+        rules: []
+  - word: didu
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R05|didu"
+        gloss: parse
+        rules: []
+  - word: tuda
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R06|tuda"
+        gloss: parse
+        rules: []
+  - word: kaki
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R07|kaki"
+        gloss: parse
+        rules: []
+  - word: gugu
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R08|gugu"
+        gloss: parse
+        rules: []
+  - word: kagi
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R09|kagi"
+        gloss: parse
+        rules: []
+  - word: mama
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R10|mama"
+        gloss: parse
+        rules: []
+      - signature: "R10+TAM|mama"
+        gloss: parse
+        rules: [mrTAM]
+  - word: nina
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R11|nina"
+        gloss: parse
+        rules: []
+      - signature: "R11+TAM|nina"
+        gloss: parse
+        rules: [mrTAM]
+  - word: mumi
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R12|mumi"
+        gloss: parse
+        rules: []
+      - signature: "R12+TAM|mumi"
+        gloss: parse
+        rules: [mrTAM]
+  - word: apa
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R13|apa"
+        gloss: parse
+        rules: []
+  - word: tauki
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "NEG+CONC+R15|tauki"
+        gloss: parse
+        rules: [mrNEG, mrCONC]
+  - word: mpubi
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "CONC+R02|mpubi"
+        gloss: parse
+        rules: [mrCONC]
+  - word: tikugugu
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "NEG+CONC+R08|tikugugu"
+        gloss: parse
+        rules: [mrNEG, mrCONC]
+  - word: apani
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R13+TAM|apani"
+        gloss: parse
+        rules: [mrTAM]
+  - word: diduna
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R05+TAM|diduna"
+        gloss: parse
+        rules: [mrTAM]
+  - word: kakina
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R07+TAM|kakina"
+        gloss: parse
+        rules: [mrTAM]
+  - word: tididu
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "NEG+R05|tididu"
+        gloss: parse
+        rules: [mrNEG]
+  - word: auki
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "CONC+R15|auki"
+        gloss: parse
+        rules: [mrCONC]
+  - word: tukina
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "NEG+R15+TAM|tukina"
+        gloss: parse
+        rules: [mrNEG, mrTAM]
+      - signature: "NEG+R15+TAM|tukina"
+        gloss: parse
+        rules: [mrTAM, mrNEG]
+  - word: ntigugu
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "CONC+NEG+R08|ntigugu"
+        gloss: parse
+        rules: [mrCONC, mrNEG]
+      - signature: "CONC+TAM+NEG+R08|ntigugu"
+        gloss: parse
+        rules: [mrCONC, mrNEG, mrTAM]
+  - word: aibuna
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "CONC+R14+TAM|aibuna"
+        gloss: parse
+        rules: [mrCONC, mrTAM]
+      - signature: "CONC+R14+TAM|aibuna"
+        gloss: parse
+        rules: [mrTAM, mrCONC]
+  - word: ibuna
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R14+TAM|ibuna"
+        gloss: parse
+        rules: [mrTAM]
+  - word: timumina
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "CONC+NEG+R12+TAM|timumina"
+        gloss: parse
+        rules: [mrNEG, mrCONC, mrTAM]
+      - signature: "CONC+NEG+R12+TAM|timumina"
+        gloss: parse
+        rules: [mrTAM, mrNEG, mrCONC]
+      - signature: "NEG+R12+TAM|timumina"
+        gloss: parse
+        rules: [mrNEG, mrTAM]
+      - signature: "NEG+R12+TAM|timumina"
+        gloss: parse
+        rules: [mrTAM, mrNEG]
+  - word: timbipu
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "NEG+CONC+R01|timbipu"
+        gloss: parse
+        rules: [mrNEG, mrCONC]
+  - word: bipuna
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R01+TAM|bipuna"
+        gloss: parse
+        rules: [mrTAM]
+  - word: ntipubi
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "CONC+NEG+R02|ntipubi"
+        gloss: parse
+        rules: [mrCONC, mrNEG]
+      - signature: "CONC+TAM+NEG+R02|ntipubi"
+        gloss: parse
+        rules: [mrCONC, mrNEG, mrTAM]
+  - word: kagina
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R09+TAM|kagina"
+        gloss: parse
+        rules: [mrTAM]
+  - word: timpapa
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "NEG+CONC+R00|timpapa"
+        gloss: parse
+        rules: [mrNEG, mrCONC]
+  - word: atadani
+    note: >-
+      Rejection: no allomorph choice satisfies every Required environment and disjunctive block for this surface.
+    expect_fail: true
+  - word: timkagi
+    note: >-
+      Rejection: no allomorph choice satisfies every Required environment and disjunctive block for this surface.
+    expect_fail: true
+  - word: kakini
+    note: >-
+      Rejection: no allomorph choice satisfies every Required environment and disjunctive block for this surface.
+    expect_fail: true
+  - word: kutodu
+    note: >-
+      Rejection: no allomorph choice satisfies every Required environment and disjunctive block for this surface.
+    expect_fail: true
+  - word: tkumumi
+    note: >-
+      Rejection: no allomorph choice satisfies every Required environment and disjunctive block for this surface.
+    expect_fail: true
+  - word: tkukagi
+    note: >-
+      Rejection: no allomorph choice satisfies every Required environment and disjunctive block for this surface.
+    expect_fail: true
+  - word: tingugu
+    note: >-
+      Rejection: no allomorph choice satisfies every Required environment and disjunctive block for this surface.
+    expect_fail: true
+  - word: atatu
+    note: >-
+      Rejection: no allomorph choice satisfies every Required environment and disjunctive block for this surface.
+    expect_fail: true
