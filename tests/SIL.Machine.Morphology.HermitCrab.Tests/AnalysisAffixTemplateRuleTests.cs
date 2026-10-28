@@ -280,10 +280,12 @@ public class AnalysisAffixTemplateRuleTests : HermitCrabTestBase
         });
     }
 
-    // The input lacks the inner slot's "ti"; a pure outer rule permits pruning before it is tried.
+    // An optional slot inserting "z"; the word lacks the inner slot's segments, so a pure rule prunes at entry.
+    // An impure rule does not if it can restore them: those cases use the one segment it may restore.
     private (WalkResult Off, WalkResult On) WalkWithOptionalSlot(
         Pattern<Word, ShapeNode>[] lhs,
-        MorphologicalOutputAction[] rhs
+        MorphologicalOutputAction[] rhs,
+        string inner = "ti"
     )
     {
         var rule = new AffixProcessRule
@@ -301,7 +303,7 @@ public class AnalysisAffixTemplateRuleTests : HermitCrabTestBase
             allomorph.Rhs.Add(action);
         allomorph.Rhs.Add(new InsertSegments(Table3, "z"));
         rule.Allomorphs.Add(allomorph);
-        AffixTemplate template = TemplateOf(Slot(false, SuffixRule("ti", "ti")), Slot(true, rule));
+        AffixTemplate template = TemplateOf(Slot(false, SuffixRule(inner, inner)), Slot(true, rule));
         return WalkBoth(template, "sagz");
     }
 
@@ -310,7 +312,8 @@ public class AnalysisAffixTemplateRuleTests : HermitCrabTestBase
     {
         (WalkResult off, WalkResult on) = WalkWithOptionalSlot(
             new[] { Pattern<Word, ShapeNode>.New("1").Annotation(Any).Optional.Value },
-            new MorphologicalOutputAction[] { new CopyFromInput("1") }
+            new MorphologicalOutputAction[] { new CopyFromInput("1") },
+            "i"
         );
 
         Assert.That(on.RuleAttempts, Is.GreaterThan(0), "the optional rule is still tried at entry");
@@ -369,7 +372,8 @@ public class AnalysisAffixTemplateRuleTests : HermitCrabTestBase
                     .Optional.Or.Annotation(Character(Table3, "u"))
                     .Value,
             },
-            new MorphologicalOutputAction[] { new CopyFromInput("1"), new CopyFromInput("2") }
+            new MorphologicalOutputAction[] { new CopyFromInput("1"), new CopyFromInput("2") },
+            "i"
         );
 
         Assert.That(on.RuleAttempts, Is.GreaterThan(0), "the optional rule is still tried at entry");
@@ -510,7 +514,7 @@ public class AnalysisAffixTemplateRuleTests : HermitCrabTestBase
         var summary = new RequiredSlotMaterial(TemplateOf(Slot(false, rule)));
         var walk = SlotWalk.Start();
         long unifications = 0;
-        Assert.That(summary.IsPure(0), Is.False);
+        Assert.That(summary.CanWalkPast(0), Is.False);
         Assert.That(summary.CannotUnapply(0, Input("sag").Shape, ref walk, ref unifications), Is.False);
     }
 
