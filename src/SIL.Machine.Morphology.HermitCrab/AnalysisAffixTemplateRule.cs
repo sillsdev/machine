@@ -93,12 +93,13 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             long unifications = 0;
             bool cannot = false;
+            SlotWalk walk = SlotWalk.Start();
             for (int j = lastSlot; j >= 0; j--)
             {
                 if (
                     !_template.Slots[j].Optional
                     && !IsFired(fired, j)
-                    && _lookahead.CannotUnapply(j, word.Shape, ref unifications)
+                    && _lookahead.CannotUnapply(j, word.Shape, ref walk, ref unifications)
                 )
                 {
                     if (mode == RequiredSlotLookaheadMode.On)
@@ -109,6 +110,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     fired = fired == null ? new[] { j } : fired.Append(j).ToArray();
                     _morpher.RequiredSlotShadow?.Invoke("fired", _template, j);
                 }
+                _lookahead.Advance(j, ref walk);
                 if (!_lookahead.IsPure(j))
                     break;
             }
