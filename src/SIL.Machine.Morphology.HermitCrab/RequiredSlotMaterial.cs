@@ -72,7 +72,8 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// <see cref="InsertSimpleContext.GenerateAnalysisLhs"/>), and the rule can only unapply if the constraints
     /// unify with segment nodes of the shape in that order, each node used once. A rule is pure when every
     /// right-hand side action copies an input part or inserts material, and every left-hand part is copied by a
-    /// <see cref="CopyFromInput"/> that must capture a segment, or has no segment to restore. Then
+    /// <see cref="CopyFromInput"/> that must capture a segment, or restores no segment when it captures nothing
+    /// (<see cref="AnalysisMorphologicalTransform"/> writes nothing back for an unbounded quantifier). Then
     /// <see cref="AnalysisMorphologicalTransform.GenerateShape"/> only copies input nodes and never untruncates a
     /// segment. Unification can only narrow the feature structure of a copied node, so a constraint that unifies
     /// with no node of the shape unifies with no node of the shape after any number of pure unapplications. Inside
@@ -429,6 +430,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 if (!HasSegmentConstraint(part))
                     continue;
+                if (RestoredSegments(part) == 0)
+                    continue;
                 if (!copied.Contains(part.Name) || MinSegments(part) == 0)
                     return false;
             }
@@ -458,6 +461,23 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (node is Constraint<Word, ShapeNode> constraint)
                 return constraint.Type() == HCFeatureSystem.Segment;
             return node.Children.Any(HasSegmentConstraint);
+        }
+
+        // The segment nodes that AnalysisMorphologicalTransform.Untruncate writes for a part that was not
+        // captured. An unbounded quantifier writes none, as in Mbugwe's vowel-fusion slots.
+        private static int RestoredSegments(PatternNode<Word, ShapeNode> node)
+        {
+            int total = 0;
+            foreach (PatternNode<Word, ShapeNode> child in node.Children)
+            {
+                if (child is Constraint<Word, ShapeNode> constraint && constraint.Type() == HCFeatureSystem.Segment)
+                    total++;
+                else if (child is Quantifier<Word, ShapeNode> quantifier)
+                    total += Math.Max(0, quantifier.MaxOccur) * RestoredSegments(quantifier);
+                else
+                    total += RestoredSegments(child);
+            }
+            return total;
         }
 
         // The fewest segments a successful match of the node must consume. A part matching none is captured
