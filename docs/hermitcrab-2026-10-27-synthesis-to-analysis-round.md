@@ -7,7 +7,8 @@ built and measured on throwaway branches (none pushed); E6 stays research-only. 
 [Results of the round](#results-of-the-round). Measurements are in steps, never time.
 
 This record follows the [optimization ledger](hermitcrab-optimization-ledger.md). Ledger rows 31-37
-point here.
+point here. The analysis-side round that followed is
+[hermitcrab-2026-10-27-analysis-round.md](hermitcrab-2026-10-27-analysis-round.md); it records that E3 was dropped on cost.
 
 ## Answer to John Maxwell's questions
 
