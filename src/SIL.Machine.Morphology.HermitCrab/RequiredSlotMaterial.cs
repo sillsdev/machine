@@ -47,6 +47,11 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <summary>False once a slot walked so far can reorder the nodes it copies.</summary>
         public bool Ordered;
 
+        /// <summary>
+        /// The slots walked so far that can write segments the shape does not hold, as a bit mask of slot indexes.
+        /// </summary>
+        public int Suppliers;
+
         public static SlotWalk Start()
         {
             return new SlotWalk
@@ -94,20 +99,28 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// </remarks>
     internal class RequiredSlotMaterial
     {
+        // Slots at or above this index cannot be recorded in SlotWalk.Suppliers.
+        private const int MaxSupplierSlots = 31;
+
         private readonly SlotSummary[] _slots;
 
         public RequiredSlotMaterial(AffixTemplate template)
         {
             _slots = template.Slots.Select(Summarize).ToArray();
+            for (int i = 0; i < _slots.Length; i++)
+            {
+                foreach (AllomorphSummary allomorph in _slots[i].Allomorphs)
+                    allomorph.Cover = CoverMasks(allomorph, i);
+            }
         }
 
         /// <summary>
-        /// Whether every rule of the slot is pure, so that unapplying the slot leaves the segments needed by
-        /// slots before it no easier to find.
+        /// Whether the walk may go on past the slot: it is pure, or the segments it can write are bounded, so that
+        /// the slots before it are tested with those segments allowed to be missing from the shape.
         /// </summary>
-        public bool IsPure(int slot)
+        public bool CanWalkPast(int slot)
         {
-            return _slots[slot].IsPure;
+            return _slots[slot].IsPure || (_slots[slot].Suppliable && slot < MaxSupplierSlots);
         }
 
         /// <summary>
@@ -117,6 +130,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         public void Advance(int slot, ref SlotWalk walk)
         {
             SlotSummary summary = _slots[slot];
+            if (!summary.IsPure && summary.Suppliable && slot < MaxSupplierSlots)
+                walk.Suppliers |= 1 << slot;
             if (!walk.Ordered || !summary.IsOrdered)
             {
                 walk.Ordered = false;
@@ -132,7 +147,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         /// <summary>
         /// True if no allomorph of the slot can unapply to a word with this shape, provided that every slot
-        /// walked between this word and the slot is pure. When the slot can unapply and is ordered, narrows the
+        /// walked between this word and the slot is pure or has its written-back segments bounded and counted
+        /// in the walk. When the slot can unapply and is ordered, narrows the
         /// window of the walk for the slots before it.
         /// </summary>
         /// <param name="slot">The slot to test.</param>
@@ -157,7 +173,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 int suffixStart = int.MaxValue;
                 bool found = walk.Ordered
                     ? Embeds(allomorph, shape, ref walk, ref unifications, out prefixEnd, out suffixStart)
-                    : AllPresent(allomorph, shape, ref unifications);
+                    : AllPresent(allomorph, shape, walk.Suppliers, ref unifications);
                 if (!found)
                     continue;
 
@@ -254,12 +270,15 @@ namespace SIL.Machine.Morphology.HermitCrab
             return taken == allomorph.Post;
         }
 
-        // Once a slot that can reorder nodes has been walked the order of the shape says nothing about the order of
-        // the shape the slot unapplies to, so each constraint is only looked for on its own.
-        private static bool AllPresent(AllomorphSummary allomorph, Shape shape, ref long unifications)
+        // The order of the shape says nothing once a reordering slot is walked, so each constraint is looked for
+        // alone. One with no node may be met by a segment a walked supplier writes, once each.
+        private bool AllPresent(AllomorphSummary allomorph, Shape shape, int suppliers, ref long unifications)
         {
-            foreach (FeatureStruct required in allomorph.Sequence)
+            int missing = 0;
+            int covering = 0;
+            for (int i = 0; i < allomorph.Sequence.Length; i++)
             {
+                FeatureStruct required = allomorph.Sequence[i];
                 if (required == null)
                     continue;
 
@@ -272,10 +291,46 @@ namespace SIL.Machine.Morphology.HermitCrab
                         break;
                     }
                 }
-                if (!found)
+                if (found)
+                    continue;
+
+                int coverable = allomorph.Cover[i] & suppliers;
+                if (coverable == 0)
                     return false;
+                missing++;
+                covering |= coverable;
             }
-            return true;
+            if (missing == 0)
+                return true;
+
+            int budget = 0;
+            for (int slot = 0; covering != 0; slot++, covering >>= 1)
+            {
+                if ((covering & 1) != 0)
+                    budget += _slots[slot].Budget;
+            }
+            return missing <= budget;
+        }
+
+        // For each constraint, the slots that can write a segment it unifies with.
+        private int[] CoverMasks(AllomorphSummary allomorph, int own)
+        {
+            var masks = new int[allomorph.Sequence.Length];
+            for (int i = 0; i < masks.Length; i++)
+            {
+                FeatureStruct required = allomorph.Sequence[i];
+                if (required == null)
+                    continue;
+
+                for (int slot = 0; slot < _slots.Length && slot < MaxSupplierSlots; slot++)
+                {
+                    if (slot == own || !_slots[slot].Suppliable || _slots[slot].IsPure)
+                        continue;
+                    if (_slots[slot].Supply.Any(fs => fs == null || fs.IsUnifiable(required, false, null)))
+                        masks[i] |= 1 << slot;
+                }
+            }
+            return masks;
         }
 
         private static bool IsUnifiable(ShapeNode node, FeatureStruct required, ref long unifications)
@@ -288,6 +343,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             var summary = new SlotSummary();
             var allomorphs = new List<AllomorphSummary>();
+            var supply = new List<FeatureStruct>();
             foreach (MorphemicMorphologicalRule rule in slot.Rules)
             {
                 IList<AffixProcessAllomorph> ruleAllomorphs;
@@ -302,6 +358,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     default:
                         summary.MayAlwaysUnapply = true;
                         summary.IsPure = false;
+                        summary.Suppliable = false;
                         summary.IsOrdered = false;
                         summary.ReachLeft = SlotWalk.Unbounded;
                         summary.ReachRight = SlotWalk.Unbounded;
@@ -313,6 +370,11 @@ namespace SIL.Machine.Morphology.HermitCrab
                     bool pure = IsPure(allomorph);
                     if (!pure)
                         summary.IsPure = false;
+                    int restored = Restored(allomorph, supply);
+                    if (restored < 0)
+                        summary.Suppliable = false;
+                    else
+                        summary.Budget = Math.Max(summary.Budget, restored);
                     if (!pure || !IsOrdered(allomorph))
                         summary.IsOrdered = false;
 
@@ -326,6 +388,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 }
             }
             summary.Allomorphs = allomorphs.ToArray();
+            summary.Supply = supply.ToArray();
             return summary;
         }
 
@@ -438,6 +501,53 @@ namespace SIL.Machine.Morphology.HermitCrab
             return true;
         }
 
+        // The most segments the allomorph writes back, their constraints added to supply (null with variables).
+        // -1 if it does more than copy and insert, as a modified node can change any feature of any node.
+        private static int Restored(AffixProcessAllomorph allomorph, List<FeatureStruct> supply)
+        {
+            var copied = new HashSet<string>();
+            foreach (MorphologicalOutputAction action in allomorph.Rhs)
+            {
+                if (action is CopyFromInput)
+                    copied.Add(action.PartName);
+                else if (!IsInsertion(action))
+                    return -1;
+            }
+
+            int total = 0;
+            foreach (Pattern<Word, ShapeNode> part in allomorph.Lhs)
+            {
+                if (!HasSegmentConstraint(part) || RestoredSegments(part) == 0)
+                    continue;
+                if (copied.Contains(part.Name) && MinSegments(part) > 0)
+                    continue;
+                total += RestoredSegments(part);
+                AddRestoredConstraints(part, supply);
+            }
+            return total;
+        }
+
+        private static void AddRestoredConstraints(PatternNode<Word, ShapeNode> node, List<FeatureStruct> supply)
+        {
+            foreach (PatternNode<Word, ShapeNode> child in node.Children)
+            {
+                if (child is Constraint<Word, ShapeNode> constraint && constraint.Type() == HCFeatureSystem.Segment)
+                {
+                    FeatureStruct copy = null;
+                    if (!constraint.FeatureStruct.HasVariables)
+                    {
+                        copy = constraint.FeatureStruct.Clone();
+                        copy.Freeze();
+                    }
+                    supply.Add(copy);
+                }
+                else if (!(child is Quantifier<Word, ShapeNode> quantifier) || quantifier.MaxOccur > 0)
+                {
+                    AddRestoredConstraints(child, supply);
+                }
+            }
+        }
+
         // GenerateShape writes parts in left-hand order, so copying them in another order, or one twice, can
         // reorder or repeat nodes.
         private static bool IsOrdered(AffixProcessAllomorph allomorph)
@@ -500,6 +610,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private class AllomorphSummary
         {
             public FeatureStruct[] Sequence;
+            public int[] Cover;
             public int Pre;
             public int Post;
             public int ReachLeft;
@@ -511,6 +622,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             public bool IsPure = true;
             public bool IsOrdered = true;
             public bool MayAlwaysUnapply;
+            public bool Suppliable = true;
+            public int Budget;
+            public FeatureStruct[] Supply;
             public int ReachLeft;
             public int ReachRight;
             public AllomorphSummary[] Allomorphs;
