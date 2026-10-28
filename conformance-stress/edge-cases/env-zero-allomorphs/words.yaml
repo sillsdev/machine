@@ -1,0 +1,317 @@
+# kind: stress (timing and optimization parity fixture, not conformance; see conformance-stress/README.md)
+language: StressEnvZeroAllomorphs
+inspired_by: ["synthetic Bantu/Austronesian zero-allomorph prefix and suffix probe (not modeling any real language)"]
+sources: []
+requires: []
+# Research stress fixture for the required-environment prefilter, not registered in the conformance ledgers.
+# The zero allomorphs (indexes 0) carry a Required left environment on a rare segment class and are placed
+# first so synthesis tries them; no word here validates them.
+budget_ms: 60000
+words:
+  - word: batu
+    note: >-
+      Bare root batu; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    exercises:
+      - "AffixProcessRule: prefix/suffix/circumfix/infix"
+    parses:
+      - signature: "R00|batu"
+        gloss: R00
+        rules: []
+  - word: kida
+    note: >-
+      Bare root kida; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    parses:
+      - signature: "R01|kida"
+        gloss: R01
+        rules: []
+  - word: gupi
+    note: >-
+      Bare root gupi; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    parses:
+      - signature: "R02|gupi"
+        gloss: R02
+        rules: []
+  - word: tabi
+    note: >-
+      Bare root tabi; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    parses:
+      - signature: "R03|tabi"
+        gloss: R03
+        rules: []
+  - word: dupa
+    note: >-
+      Bare root dupa; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    parses:
+      - signature: "R04|dupa"
+        gloss: R04
+        rules: []
+  - word: kipa
+    note: >-
+      Bare root kipa; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    parses:
+      - signature: "R05|kipa"
+        gloss: R05
+        rules: []
+  - word: gita
+    note: >-
+      Bare root gita; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    parses:
+      - signature: "R06|gita"
+        gloss: R06
+        rules: []
+  - word: bida
+    note: >-
+      Bare root bida; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    parses:
+      - signature: "R07|bida"
+        gloss: R07
+        rules: []
+  - word: pudi
+    note: >-
+      Bare root pudi; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    parses:
+      - signature: "R08|pudi"
+        gloss: R08
+        rules: []
+  - word: kabu
+    note: >-
+      Bare root kabu; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    parses:
+      - signature: "R09|kabu"
+        gloss: R09
+        rules: []
+  - word: tuka
+    note: >-
+      Bare root tuka; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    parses:
+      - signature: "R10|tuka"
+        gloss: R10
+        rules: []
+  - word: gabi
+    note: >-
+      Bare root gabi; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    parses:
+      - signature: "R11|gabi"
+        gloss: R11
+        rules: []
+  - word: kukida
+    note: >-
+      Hand derivation: root R01 'kida' with prefixes P1 applied inner to outer; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "P1+R01|kukida"
+        gloss: R01
+        rules: [mrP1]
+  - word: kagupi
+    note: >-
+      Hand derivation: root R02 'gupi' with prefixes P1 applied inner to outer; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "P1+R02|kagupi"
+        gloss: R02
+        rules: [mrP1]
+  - word: titabi
+    note: >-
+      Hand derivation: root R03 'tabi' with prefixes P2 applied inner to outer; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "P2+R03|titabi"
+        gloss: R03
+        rules: [mrP2]
+  - word: dupapa
+    note: >-
+      Hand derivation: root R04 'dupa' and suffix S1; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "R04+S1|dupapa"
+        gloss: R04
+        rules: [mrS1]
+  - word: kipapi
+    note: >-
+      Hand derivation: root R05 'kipa' and suffix S1; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "R05+S1|kipapi"
+        gloss: R05
+        rules: [mrS1]
+  - word: kugitapa
+    note: >-
+      Hand derivation: root R06 'gita' with prefixes P1 applied inner to outer and suffix S1; 2 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "P1+R06+S1|kugitapa"
+        gloss: R06
+        rules: [mrS1, mrP1]
+      - signature: "P1+R06+S1|kugitapa"
+        gloss: R06
+        rules: [mrP1, mrS1]
+  - word: tibidapi
+    note: >-
+      Hand derivation: root R07 'bida' with prefixes P2 applied inner to outer and suffix S1; 2 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "P2+R07+S1|tibidapi"
+        gloss: R07
+        rules: [mrS1, mrP2]
+      - signature: "P2+R07+S1|tibidapi"
+        gloss: R07
+        rules: [mrP2, mrS1]
+  - word: katipudi
+    note: >-
+      Hand derivation: root R08 'pudi' with prefixes P2+P1 applied inner to outer; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "P1+P2+R08|katipudi"
+        gloss: R08
+        rules: [mrP2, mrP1]
+  - word: tikukabupa
+    note: >-
+      Hand derivation: root R09 'kabu' with prefixes P1+P2 applied inner to outer and suffix S1; 3 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "P2+P1+R09+S1|tikukabupa"
+        gloss: R09
+        rules: [mrS1, mrP1, mrP2]
+      - signature: "P2+P1+R09+S1|tikukabupa"
+        gloss: R09
+        rules: [mrP1, mrS1, mrP2]
+      - signature: "P2+P1+R09+S1|tikukabupa"
+        gloss: R09
+        rules: [mrP1, mrP2, mrS1]
+  - word: mapu
+    note: >-
+      Bare root mapu; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    parses:
+      - signature: "R15|mapu"
+        gloss: R15
+        rules: []
+  - word: kanu
+    note: >-
+      Bare root kanu; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    parses:
+      - signature: "R16|kanu"
+        gloss: R16
+        rules: []
+      - signature: "R16+P1|kanu"
+        gloss: R16
+        rules: [mrP1]
+      - signature: "R16+S1|kanu"
+        gloss: R16
+        rules: [mrS1]
+  - word: tabun
+    note: >-
+      Bare root tabun; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    parses:
+      - signature: "R17|tabun"
+        gloss: R17
+        rules: []
+  - word: gisam
+    note: >-
+      Bare root gisam; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    parses:
+      - signature: "R18|gisam"
+        gloss: R18
+        rules: []
+  - word: pikas
+    note: >-
+      Bare root pikas; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+    parses:
+      - signature: "R19|pikas"
+        gloss: R19
+        rules: []
+  - word: kumapu
+    note: >-
+      Hand derivation: root R15 'mapu' with prefixes P1 applied inner to outer; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "P1+R15|kumapu"
+        gloss: R15
+        rules: [mrP1]
+  - word: mapupa
+    note: >-
+      Hand derivation: root R15 'mapu' and suffix S1; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "R15+S1|mapupa"
+        gloss: R15
+        rules: [mrS1]
+  - word: kanupi
+    note: >-
+      Hand derivation: root R16 'kanu' and suffix S1; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "R16+S1|kanupi"
+        gloss: R16
+        rules: [mrS1]
+  - word: kukanupa
+    note: >-
+      Hand derivation: root R16 'kanu' with prefixes P1 applied inner to outer and suffix S1; 2 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "P1+R16+S1|kukanupa"
+        gloss: R16
+        rules: [mrS1, mrP1]
+      - signature: "P1+R16+S1|kukanupa"
+        gloss: R16
+        rules: [mrP1, mrS1]
+  - word: tipikas
+    note: >-
+      Hand derivation: root R19 'pikas' with prefixes P2 applied inner to outer; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "P2+R19|tipikas"
+        gloss: R19
+        rules: [mrP2]
+  - word: katabun
+    note: >-
+      Hand derivation: root R17 'tabun' with prefixes P1 applied inner to outer; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "P1+R17|katabun"
+        gloss: R17
+        rules: [mrP1]
+  - word: tigisampa
+    note: >-
+      Discriminating rejection: the suffix pa follows m, so the zero allomorph S1z (Required left environment on nasals) holds there, and the earlier, more specific zero allomorph disjunctively blocks the overt pa. The zero allomorph cannot itself produce this surface.
+    expect_fail: true
+    blocked_by: [mrS1]
+  - word: kadika
+    note: >-
+      Hand derivation: root R12 'dika' with prefixes P1 applied inner to outer; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "P1+R12|kadika"
+        gloss: R12
+        rules: [mrP1]
+  - word: tipagupa
+    note: >-
+      Hand derivation: root R13 'pagu' with prefixes P2 applied inner to outer and suffix S1; 2 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "P2+R13+S1|tipagupa"
+        gloss: R13
+        rules: [mrS1, mrP2]
+      - signature: "P2+R13+S1|tipagupa"
+        gloss: R13
+        rules: [mrP2, mrS1]
+  - word: bukitpi
+    note: >-
+      Hand derivation: root R14 'bukit' and suffix S1; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "R14+S1|bukitpi"
+        gloss: R14
+        rules: [mrS1]
+  - word: kupagu
+    note: >-
+      Hand derivation: root R13 'pagu' with prefixes P1 applied inner to outer; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "P1+R13|kupagu"
+        gloss: R13
+        rules: [mrP1]
+  - word: tibatu
+    note: >-
+      Hand derivation: root R00 'batu' with prefixes P2 applied inner to outer; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "P2+R00|tibatu"
+        gloss: R00
+        rules: [mrP2]
+  - word: gupipa
+    note: >-
+      Hand derivation: root R02 'gupi' and suffix S1; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "R02+S1|gupipa"
+        gloss: R02
+        rules: [mrS1]
+  - word: katukapi
+    note: >-
+      Hand derivation: root R10 'tuka' with prefixes P1 applied inner to outer and suffix S1; 2 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+    parses:
+      - signature: "P1+R10+S1|katukapi"
+        gloss: R10
+        rules: [mrS1, mrP1]
+      - signature: "P1+R10+S1|katukapi"
+        gloss: R10
+        rules: [mrP1, mrS1]

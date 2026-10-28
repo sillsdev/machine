@@ -1,0 +1,138 @@
+# kind: stress (timing and optimization parity fixture, not conformance; see conformance-stress/README.md)
+# Stress fixture for trail MPR replay, Bantu style: six noun-class features in one MPR group gate three
+# agreement slots (subject concord, object concord, final vowel), each with one allomorph per class and
+# homophonous shapes across classes. The object concord has one allomorph gated by excludedMPRFeatures.
+# Expected parses were derived by hand from the concord tables in grammar.xml and confirmed against the engine.
+language: StressMprBantuConcord
+inspired_by: ["Bantu noun-class agreement (Swahili, Shona style); synthetic, not modeling a real language"]
+sources:
+  - "research stress fixture; no external source"
+requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: "research stress fixture; not authored through FieldWorks"
+budget_ms: 15000
+words:
+  - word: atuma
+    note: "atuma"
+    parses:
+      - signature: "SM+V_tum+FV|atuma"
+        rules: [mrFv, mrSm]
+  - word: autuma
+    note: "autuma"
+    parses:
+      - signature: "SM+OM+V_tum+FV|autuma"
+        rules: [mrFv, mrOm, mrSm]
+  - word: alima
+    note: "alima"
+    parses:
+      - signature: "SM+V_lim+FV|alima"
+        rules: [mrFv, mrSm]
+  - word: aulima
+    note: "aulima"
+    parses:
+      - signature: "SM+OM+V_lim+FV|aulima"
+        rules: [mrFv, mrOm, mrSm]
+  - word: utumai
+    note: "utumai"
+    parses:
+      - signature: "SM+V_tuma+FV|utumai"
+        rules: [mrFv, mrSm]
+  - word: uatumai
+    note: "uatumai"
+    parses:
+      - signature: "SM+OM+V_tuma+FV|uatumai"
+        rules: [mrFv, mrOm, mrSm]
+  - word: ulimai
+    note: "ulimai"
+    parses:
+      - signature: "SM+V_lima+FV|ulimai"
+        rules: [mrFv, mrSm]
+  - word: ualimai
+    note: "ualimai"
+    parses:
+      - signature: "SM+OM+V_lima+FV|ualimai"
+        rules: [mrFv, mrOm, mrSm]
+  - word: ikala
+    note: "ikala"
+    parses:
+      - signature: "SM+V_kal+FV|ikala"
+        rules: [mrFv, mrSm]
+  - word: iikala
+    note: "iikala"
+    parses:
+      - signature: "OM+SM+V_kal+FV|iikala"
+        rules: [mrFv, mrOm, mrSm]
+      - signature: "SM+OM+V_kal+FV|iikala"
+        rules: [mrFv, mrOm, mrSm]
+  - word: ipaka
+    note: "ipaka"
+    parses:
+      - signature: "SM+V_pak+FV|ipaka"
+        rules: [mrFv, mrSm]
+  - word: iipaka
+    note: "iipaka"
+    parses:
+      - signature: "OM+SM+V_pak+FV|iipaka"
+        rules: [mrFv, mrOm, mrSm]
+      - signature: "SM+OM+V_pak+FV|iipaka"
+        rules: [mrFv, mrOm, mrSm]
+  - word: akalai
+    note: "akalai"
+    parses:
+      - signature: "SM+V_kala+FV|akalai"
+        rules: [mrFv, mrSm]
+  - word: aikalai
+    note: "aikalai"
+    parses:
+      - signature: "SM+OM+V_kala+FV|aikalai"
+        rules: [mrFv, mrOm, mrSm]
+  - word: apakai
+    note: "apakai"
+    parses:
+      - signature: "SM+V_paka+FV|apakai"
+        rules: [mrFv, mrSm]
+  - word: aipakai
+    note: "aipakai"
+    parses:
+      - signature: "SM+OM+V_paka+FV|aipakai"
+        rules: [mrFv, mrOm, mrSm]
+  - word: uduma
+    note: "uduma"
+    parses:
+      - signature: "SM+V_dum+FV|uduma"
+        rules: [mrFv, mrSm]
+  - word: uaduma
+    note: "uaduma"
+    parses:
+      - signature: "SM+OM+V_dum+FV|uaduma"
+        rules: [mrFv, mrOm, mrSm]
+  - word: umala
+    note: "umala"
+    parses:
+      - signature: "SM+V_mal+FV|umala"
+        rules: [mrFv, mrSm]
+  - word: uamala
+    note: "uamala"
+    parses:
+      - signature: "SM+OM+V_mal+FV|uamala"
+        rules: [mrFv, mrOm, mrSm]
+  - word: idumai
+    note: "idumai"
+    parses:
+      - signature: "SM+V_duma+FV|idumai"
+        rules: [mrFv, mrSm]
+  - word: iudumai
+    note: "iudumai"
+    parses:
+      - signature: "SM+OM+V_duma+FV|iudumai"
+        rules: [mrFv, mrOm, mrSm]
+  - word: imalai
+    note: "imalai"
+    parses:
+      - signature: "SM+V_mala+FV|imalai"
+        rules: [mrFv, mrSm]
+  - word: iumalai
+    note: "iumalai"
+    parses:
+      - signature: "SM+OM+V_mala+FV|iumalai"
+        rules: [mrFv, mrOm, mrSm]

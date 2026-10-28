@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Synthetic stress fixture for the required-environment prefilter: three affixes (two prefixes, one
+     suffix), each with overt allomorphs and a zero allomorph conditioned by a left environment on a rare
+     segment class. Every segment is fully specified (one id feature each), so the prefilter's grammar
+     scan passes. Words mostly lack the nasals and the sibilant. -->
+<HermitCrabInput>
+  <Language>
+    <Name>StressEnvZeroAllomorphs</Name>
+    <PartsOfSpeech><PartOfSpeech id="posX"><Name>x</Name></PartOfSpeech></PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featId"><Name>id</Name><Symbols><Symbol id="sA">a</Symbol><Symbol id="sI">i</Symbol><Symbol id="sU">u</Symbol><Symbol id="sP">p</Symbol><Symbol id="sB">b</Symbol><Symbol id="sT">t</Symbol><Symbol id="sK">k</Symbol><Symbol id="sD">d</Symbol><Symbol id="sG">g</Symbol><Symbol id="sS">s</Symbol><Symbol id="sM">m</Symbol><Symbol id="sN">n</Symbol></Symbols></SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations><FeatureValue feature="featId" symbolValues="sA" /></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations><FeatureValue feature="featId" symbolValues="sI" /></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations><FeatureValue feature="featId" symbolValues="sU" /></SegmentDefinition>
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations><FeatureValue feature="featId" symbolValues="sP" /></SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations><FeatureValue feature="featId" symbolValues="sB" /></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations><FeatureValue feature="featId" symbolValues="sT" /></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations><FeatureValue feature="featId" symbolValues="sK" /></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations><FeatureValue feature="featId" symbolValues="sD" /></SegmentDefinition>
+        <SegmentDefinition id="cG"><Representations><Representation>g</Representation></Representations><FeatureValue feature="featId" symbolValues="sG" /></SegmentDefinition>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations><FeatureValue feature="featId" symbolValues="sS" /></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations><FeatureValue feature="featId" symbolValues="sM" /></SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations><FeatureValue feature="featId" symbolValues="sN" /></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <SegmentNaturalClass id="ncNas"><Name>Nas</Name><Segment segment="cM" /><Segment segment="cN" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncSib"><Name>Sib</Name><Segment segment="cS" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrP1 mrP2 mrS1">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+<MorphologicalRule id="mrP1" requiredPartsOfSpeech="posX" outputPartOfSpeech="posX"><Name>classPrefix</Name><MorphologicalSubrules><MorphologicalSubrule id="subP1z"><MorphologicalInput><PhoneticSequence id="stP1z"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput><MorphologicalOutput><CopyFromInput index="stP1z" /></MorphologicalOutput><RequiredEnvironments><Environment><LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncNas" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment></Environment></RequiredEnvironments></MorphologicalSubrule><MorphologicalSubrule id="subP1a"><MorphologicalInput><PhoneticSequence id="stP1a"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput><MorphologicalOutput><InsertSegments><PhoneticShape>ku</PhoneticShape></InsertSegments><CopyFromInput index="stP1a" /></MorphologicalOutput></MorphologicalSubrule><MorphologicalSubrule id="subP1b"><MorphologicalInput><PhoneticSequence id="stP1b"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput><MorphologicalOutput><InsertSegments><PhoneticShape>ka</PhoneticShape></InsertSegments><CopyFromInput index="stP1b" /></MorphologicalOutput></MorphologicalSubrule></MorphologicalSubrules><MorphemeId>P1</MorphemeId></MorphologicalRule>
+<MorphologicalRule id="mrP2" requiredPartsOfSpeech="posX" outputPartOfSpeech="posX"><Name>personPrefix</Name><MorphologicalSubrules><MorphologicalSubrule id="subP2z"><MorphologicalInput><PhoneticSequence id="stP2z"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput><MorphologicalOutput><CopyFromInput index="stP2z" /></MorphologicalOutput><RequiredEnvironments><Environment><LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncSib" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment></Environment></RequiredEnvironments></MorphologicalSubrule><MorphologicalSubrule id="subP2a"><MorphologicalInput><PhoneticSequence id="stP2a"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput><MorphologicalOutput><InsertSegments><PhoneticShape>ti</PhoneticShape></InsertSegments><CopyFromInput index="stP2a" /></MorphologicalOutput></MorphologicalSubrule></MorphologicalSubrules><MorphemeId>P2</MorphemeId></MorphologicalRule>
+<MorphologicalRule id="mrS1" requiredPartsOfSpeech="posX" outputPartOfSpeech="posX"><Name>suffix</Name><MorphologicalSubrules><MorphologicalSubrule id="subS1z"><MorphologicalInput><PhoneticSequence id="stS1z"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput><MorphologicalOutput><CopyFromInput index="stS1z" /></MorphologicalOutput><RequiredEnvironments><Environment><LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncNas" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment></Environment></RequiredEnvironments></MorphologicalSubrule><MorphologicalSubrule id="subS1a"><MorphologicalInput><PhoneticSequence id="stS1a"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput><MorphologicalOutput><CopyFromInput index="stS1a" /><InsertSegments><PhoneticShape>pa</PhoneticShape></InsertSegments></MorphologicalOutput></MorphologicalSubrule><MorphologicalSubrule id="subS1b"><MorphologicalInput><PhoneticSequence id="stS1b"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput><MorphologicalOutput><CopyFromInput index="stS1b" /><InsertSegments><PhoneticShape>pi</PhoneticShape></InsertSegments></MorphologicalOutput></MorphologicalSubrule></MorphologicalSubrules><MorphemeId>S1</MorphemeId></MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="e0" partOfSpeech="posX"><Allomorphs><Allomorph id="a0"><PhoneticShape>batu</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R00</MorphemeId><Gloss>root0</Gloss></LexicalEntry>
+          <LexicalEntry id="e1" partOfSpeech="posX"><Allomorphs><Allomorph id="a1"><PhoneticShape>kida</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R01</MorphemeId><Gloss>root1</Gloss></LexicalEntry>
+          <LexicalEntry id="e2" partOfSpeech="posX"><Allomorphs><Allomorph id="a2"><PhoneticShape>gupi</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R02</MorphemeId><Gloss>root2</Gloss></LexicalEntry>
+          <LexicalEntry id="e3" partOfSpeech="posX"><Allomorphs><Allomorph id="a3"><PhoneticShape>tabi</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R03</MorphemeId><Gloss>root3</Gloss></LexicalEntry>
+          <LexicalEntry id="e4" partOfSpeech="posX"><Allomorphs><Allomorph id="a4"><PhoneticShape>dupa</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R04</MorphemeId><Gloss>root4</Gloss></LexicalEntry>
+          <LexicalEntry id="e5" partOfSpeech="posX"><Allomorphs><Allomorph id="a5"><PhoneticShape>kipa</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R05</MorphemeId><Gloss>root5</Gloss></LexicalEntry>
+          <LexicalEntry id="e6" partOfSpeech="posX"><Allomorphs><Allomorph id="a6"><PhoneticShape>gita</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R06</MorphemeId><Gloss>root6</Gloss></LexicalEntry>
+          <LexicalEntry id="e7" partOfSpeech="posX"><Allomorphs><Allomorph id="a7"><PhoneticShape>bida</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R07</MorphemeId><Gloss>root7</Gloss></LexicalEntry>
+          <LexicalEntry id="e8" partOfSpeech="posX"><Allomorphs><Allomorph id="a8"><PhoneticShape>pudi</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R08</MorphemeId><Gloss>root8</Gloss></LexicalEntry>
+          <LexicalEntry id="e9" partOfSpeech="posX"><Allomorphs><Allomorph id="a9"><PhoneticShape>kabu</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R09</MorphemeId><Gloss>root9</Gloss></LexicalEntry>
+          <LexicalEntry id="e10" partOfSpeech="posX"><Allomorphs><Allomorph id="a10"><PhoneticShape>tuka</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R10</MorphemeId><Gloss>root10</Gloss></LexicalEntry>
+          <LexicalEntry id="e11" partOfSpeech="posX"><Allomorphs><Allomorph id="a11"><PhoneticShape>gabi</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R11</MorphemeId><Gloss>root11</Gloss></LexicalEntry>
+          <LexicalEntry id="e12" partOfSpeech="posX"><Allomorphs><Allomorph id="a12"><PhoneticShape>dika</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R12</MorphemeId><Gloss>root12</Gloss></LexicalEntry>
+          <LexicalEntry id="e13" partOfSpeech="posX"><Allomorphs><Allomorph id="a13"><PhoneticShape>pagu</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R13</MorphemeId><Gloss>root13</Gloss></LexicalEntry>
+          <LexicalEntry id="e14" partOfSpeech="posX"><Allomorphs><Allomorph id="a14"><PhoneticShape>bukit</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R14</MorphemeId><Gloss>root14</Gloss></LexicalEntry>
+          <LexicalEntry id="e15" partOfSpeech="posX"><Allomorphs><Allomorph id="a15"><PhoneticShape>mapu</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R15</MorphemeId><Gloss>root15</Gloss></LexicalEntry>
+          <LexicalEntry id="e16" partOfSpeech="posX"><Allomorphs><Allomorph id="a16"><PhoneticShape>kanu</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R16</MorphemeId><Gloss>root16</Gloss></LexicalEntry>
+          <LexicalEntry id="e17" partOfSpeech="posX"><Allomorphs><Allomorph id="a17"><PhoneticShape>tabun</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R17</MorphemeId><Gloss>root17</Gloss></LexicalEntry>
+          <LexicalEntry id="e18" partOfSpeech="posX"><Allomorphs><Allomorph id="a18"><PhoneticShape>gisam</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R18</MorphemeId><Gloss>root18</Gloss></LexicalEntry>
+          <LexicalEntry id="e19" partOfSpeech="posX"><Allomorphs><Allomorph id="a19"><PhoneticShape>pikas</PhoneticShape></Allomorph></Allomorphs><MorphemeId>R19</MorphemeId><Gloss>root19</Gloss></LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
