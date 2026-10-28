@@ -307,10 +307,10 @@ public class AnalysisAffixTemplateRuleTests : HermitCrabTestBase
     }
 
     [Test]
-    public void Apply_CopiedPartThatMayMatchNothing_MakesTheSlotImpure()
+    public void Apply_CopiedPartCappedAtOneThatMayMatchNothing_MakesTheSlotImpure()
     {
         (WalkResult off, WalkResult on) = WalkWithOptionalSlot(
-            new[] { Pattern<Word, ShapeNode>.New("1").Annotation(Any).ZeroOrMore.Value },
+            new[] { Pattern<Word, ShapeNode>.New("1").Annotation(Any).Optional.Value },
             new MorphologicalOutputAction[] { new CopyFromInput("1") }
         );
 
