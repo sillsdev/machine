@@ -1,0 +1,235 @@
+# kind: stress (timing and optimization parity fixture, not conformance; see conformance-stress/README.md)
+language: StressEarlyLexiconAgglutinative
+sources: []
+requires: [phonology]
+fieldworks_producible: false
+fieldworks_producible_notes: "research stress fixture; not authored through FieldWorks"
+budget_ms: 60000
+words:
+  - word: polsi
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "pol+P3|polsi"
+        rules: [mr_P3]
+  - word: subissime
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: bille
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "bil+INST|bille"
+        rules: [mr_INST, prule1]
+  - word: katn
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "kat+PASS|katn"
+        rules: [mr_PASS]
+  - word: metkegeyiundanbla
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: lolisninseinkide
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: mekdeseum
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "mek+LOC+COND+P1|mekdeseum"
+        rules: [mr_COND, mr_LOC, mr_P1, prule1]
+  - word: dayblaabilsidenkiun
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: pokkiummisninebildi
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: nagunmisse
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: tigesekuminlede
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: negkemissinkiin
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: katgisin
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "kat+DESID+IMP|katgisin"
+        rules: [mr_DESID, mr_IMP]
+      - signature: "kat+DESID+P3+PASS|katgisin"
+        rules: [mr_DESID, mr_P3, mr_PASS]
+  - word: didtiyimesi
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: dukgiiebilun
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: darga
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "dar+EQU|darga"
+        rules: [mr_EQU]
+  - word: bibiebildedenis
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: rugniilmissinble
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: mekge
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "mek+EQU|mekge"
+        rules: [mr_EQU, prule1]
+  - word: yermisesekni
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: gundimis
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "gun+PAST+EVID|gundimis"
+        rules: [mr_EVID, mr_PAST]
+  - word: kelsin
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "kel+IMP|kelsin"
+        rules: [mr_IMP]
+      - signature: "kel+P3+PASS|kelsin"
+        rules: [mr_P3, mr_PASS]
+  - word: tatisesekinimissin
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: lapsinkemisti
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: piyikiebil
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: denkeebildeblege
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: yatabiltirilinge
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: gatagalarumsigi
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: yupdadiille
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: kelgiun
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "kel+DESID+P2|kelgiun"
+        rules: [mr_DESID, mr_P2]
+  - word: sekdiunblala
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: yimseleum
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: kelninmis
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "kel+ACC+PASS+EVID|kelninmis"
+        rules: [mr_ACC, mr_EVID, mr_PASS]
+      - signature: "kel+GEN+EVID|kelninmis"
+        rules: [mr_EVID, mr_GEN]
+      - signature: "kel+PASS+REFL+EVID|kelninmis"
+        rules: [mr_EVID, mr_PASS, mr_REFL]
+  - word: tipinleble
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "tip+P3+PASS+INST+COM|tipinleble"
+        rules: [mr_COM, mr_INST, mr_P3, mr_PASS, prule1]
+      - signature: "tip+REFL+INST+COM|tipinleble"
+        rules: [mr_COM, mr_INST, mr_REFL, prule1]
+  - word: darun
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "dar+P2|darun"
+        rules: [mr_P2]
+  - word: kumninesekis
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: gidnininesekniki
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: likkikese
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: lagblaisgeninsin
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: pabnigelededennin
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: boksingeble
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: randasinkegi
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: bobkamislergime
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: demgiselelermis
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: seltirsimediin
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: kidingibleninse
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: toksin
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "tok+IMP|toksin"
+        rules: [mr_IMP]
+      - signature: "tok+P3+PASS|toksin"
+        rules: [mr_P3, mr_PASS]
+  - word: riggebleleris
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: rasilmisis
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: sutblalar
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "sut+COM+PL|sutblalar"
+        rules: [mr_COM, mr_PL]
+  - word: gittirler
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "git+CAUS+PL|gittirler"
+        rules: [mr_CAUS, mr_PL, prule1]
+  - word: tipisunbla
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "tip+RECIP+P2+COM|tipisunbla"
+        rules: [mr_COM, mr_P2, mr_RECIP]
+  - word: pirkisium
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "pir+AGENT+P3+P1|pirkisium"
+        rules: [mr_AGENT, mr_P1, mr_P3]
+  - word: darasakmis
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    parses:
+      - signature: "dar+FUT+EVID|darasakmis"
+        rules: [mr_EVID, mr_FUT]
+  - word: nurlarinninuntiris
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: kegisinkileede
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: kosasinninumgagi
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: nemungiebilkidesin
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true
+  - word: lodundakiinsingi
+    note: "Agglutinative stress with root material found early in the word, so root-substring and edge-segment prunes apply; expected parses are the master engine's."
+    expect_fail: true

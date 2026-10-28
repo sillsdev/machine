@@ -1,0 +1,373 @@
+# kind: stress (timing and optimization parity fixture, not conformance; see conformance-stress/README.md)
+# HAND DERIVATION. Every suffix is a rule with several allomorphs, each with a RequiredEnvironments on the
+# stem's left context (grammar.xml). The environments of one rule are mutually exclusive, so exactly one
+# allomorph is valid for a given stem and no disjunctive re-check rejects. Rules: nouns take PL, POSS, CASE
+# in that slot order (all optional); verbs take PAST then EVID.
+#   PL    last vowel a -> lar, o/u -> lor, e/i -> ler, y -> lyr.
+#   POSS  last vowel selects ana, ono, unu, ene, ini, yny (a, o, u, e, i, y).
+#   CASE  vowel class of the last vowel x stem-final vowel (V) or consonant (C): a ka/nka, o/u ko/nko, e/i ke/nke, y ky/nky.
+#   PAST  vowel class x stem-final voicing (voiced l r n d m -> d; voiceless k t s -> t): da ta, do to, de te, dy ty.
+#   EVID  vowel class: mas, mos, mes, mys.
+# "Last vowel" means the last vowel of the stem built so far, including earlier suffixes.
+# Allomorph lists are ordered differently per rule, so recorded indices spread over 0..A-1; this is the point
+# of the fixture (E1, the synthesis allomorph loop cutoff). Expected parses below were derived by applying
+# these rules and enumerating every root and slot choice that produces each surface form, so ambiguous
+# surfaces list every analysis. They were then confirmed against the engine with the cutoff off.
+language: StressAllomorphListDensity
+inspired_by: ["synthetic Turkic/Uralic vowel harmony written as separate environment-conditioned allomorphs"]
+sources:
+  - "E1 stress fixture, hermitcrab-2026-10-27-synthesis-to-analysis-round"
+requires: []
+fieldworks_producible: true
+budget_ms: 60000
+words:
+  - word: katlarananka
+    note: >-
+      kat + PL + POSS + CASE: PL -> lar (allomorph 1); POSS -> ana (allomorph 1); CASE -> nka (allomorph 7). Surface katlarananka.
+    parses:
+      - signature: "KAT+PL+POSS+CASE|katlarananka"
+        gloss: kat-PL-POSS-CASE
+        rules: [rPl, rPoss, rCase]
+        exercises: []
+  - word: katlarka
+    note: >-
+      kat + PL + CASE: PL -> lar (allomorph 1); CASE -> ka (allomorph 2). Surface katlarka.
+    parses:
+      - signature: "KAT+PL+CASE|katlarka"
+        gloss: kat-PL-CASE
+        rules: [rPl, rCase]
+        exercises: []
+  - word: kotlorononko
+    note: >-
+      kot + PL + POSS + CASE: PL -> lor (allomorph 0); POSS -> ono (allomorph 4); CASE -> nko (allomorph 1). Surface kotlorononko.
+    parses:
+      - signature: "KOT+PL+POSS+CASE|kotlorononko"
+        gloss: kot-PL-POSS-CASE
+        rules: [rPl, rPoss, rCase]
+        exercises: []
+  - word: kotononko
+    note: >-
+      kot + POSS + CASE: POSS -> ono (allomorph 4); CASE -> nko (allomorph 1). Surface kotononko.
+    parses:
+      - signature: "KOT+POSS+CASE|kotononko"
+        gloss: kot-POSS-CASE
+        rules: [rPoss, rCase]
+        exercises: []
+  - word: kullorononko
+    note: >-
+      kul + PL + POSS + CASE: PL -> lor (allomorph 0); POSS -> ono (allomorph 4); CASE -> nko (allomorph 1). Surface kullorononko.
+    parses:
+      - signature: "KUL+PL+POSS+CASE|kullorononko"
+        gloss: kul-PL-POSS-CASE
+        rules: [rPl, rPoss, rCase]
+        exercises: []
+  - word: kullorono
+    note: >-
+      kul + PL + POSS: PL -> lor (allomorph 0); POSS -> ono (allomorph 4). Surface kullorono.
+    parses:
+      - signature: "KUL+PL+POSS|kullorono"
+        gloss: kul-PL-POSS
+        rules: [rPl, rPoss]
+        exercises: []
+  - word: kellerenenke
+    note: >-
+      kel + PL + POSS + CASE: PL -> ler (allomorph 3); POSS -> ene (allomorph 3); CASE -> nke (allomorph 5). Surface kellerenenke.
+    parses:
+      - signature: "KEL+PL+POSS+CASE|kellerenenke"
+        gloss: kel-PL-POSS-CASE
+        rules: [rPl, rPoss, rCase]
+        exercises: []
+  - word: kellerke
+    note: >-
+      kel + PL + CASE: PL -> ler (allomorph 3); CASE -> ke (allomorph 0). Surface kellerke.
+    parses:
+      - signature: "KEL+PL+CASE|kellerke"
+        gloss: kel-PL-CASE
+        rules: [rPl, rCase]
+        exercises: []
+  - word: killerenenke
+    note: >-
+      kil + PL + POSS + CASE: PL -> ler (allomorph 3); POSS -> ene (allomorph 3); CASE -> nke (allomorph 5). Surface killerenenke.
+    parses:
+      - signature: "KIL+PL+POSS+CASE|killerenenke"
+        gloss: kil-PL-POSS-CASE
+        rules: [rPl, rPoss, rCase]
+        exercises: []
+  - word: kilininke
+    note: >-
+      kil + POSS + CASE: POSS -> ini (allomorph 0); CASE -> nke (allomorph 5). Surface kilininke.
+    parses:
+      - signature: "KIL+POSS+CASE|kilininke"
+        gloss: kil-POSS-CASE
+        rules: [rPoss, rCase]
+        exercises: []
+  - word: kyllyrynynky
+    note: >-
+      kyl + PL + POSS + CASE: PL -> lyr (allomorph 2); POSS -> yny (allomorph 2); CASE -> nky (allomorph 3). Surface kyllyrynynky.
+    parses:
+      - signature: "KYL+PL+POSS+CASE|kyllyrynynky"
+        gloss: kyl-PL-POSS-CASE
+        rules: [rPl, rPoss, rCase]
+        exercises: []
+  - word: kyllyryny
+    note: >-
+      kyl + PL + POSS: PL -> lyr (allomorph 2); POSS -> yny (allomorph 2). Surface kyllyryny.
+    parses:
+      - signature: "KYL+PL+POSS|kyllyryny"
+        gloss: kyl-PL-POSS
+        rules: [rPl, rPoss]
+        exercises: []
+  - word: salanlarananka
+    note: >-
+      salan + PL + POSS + CASE: PL -> lar (allomorph 1); POSS -> ana (allomorph 1); CASE -> nka (allomorph 7). Surface salanlarananka.
+    parses:
+      - signature: "SALAN+PL+POSS+CASE|salanlarananka"
+        gloss: salan-PL-POSS-CASE
+        rules: [rPl, rPoss, rCase]
+        exercises: []
+  - word: salanlarka
+    note: >-
+      salan + PL + CASE: PL -> lar (allomorph 1); CASE -> ka (allomorph 2). Surface salanlarka.
+    parses:
+      - signature: "SALAN+PL+CASE|salanlarka"
+        gloss: salan-PL-CASE
+        rules: [rPl, rCase]
+        exercises: []
+  - word: morutlorononko
+    note: >-
+      morut + PL + POSS + CASE: PL -> lor (allomorph 0); POSS -> ono (allomorph 4); CASE -> nko (allomorph 1). Surface morutlorononko.
+    parses:
+      - signature: "MORUT+PL+POSS+CASE|morutlorononko"
+        gloss: morut-PL-POSS-CASE
+        rules: [rPl, rPoss, rCase]
+        exercises: []
+  - word: morutununko
+    note: >-
+      morut + POSS + CASE: POSS -> unu (allomorph 5); CASE -> nko (allomorph 1). Surface morutununko.
+    parses:
+      - signature: "MORUT+POSS+CASE|morutununko"
+        gloss: morut-POSS-CASE
+        rules: [rPoss, rCase]
+        exercises: []
+  - word: tilemlerenenke
+    note: >-
+      tilem + PL + POSS + CASE: PL -> ler (allomorph 3); POSS -> ene (allomorph 3); CASE -> nke (allomorph 5). Surface tilemlerenenke.
+    parses:
+      - signature: "TILEM+PL+POSS+CASE|tilemlerenenke"
+        gloss: tilem-PL-POSS-CASE
+        rules: [rPl, rPoss, rCase]
+        exercises: []
+  - word: tilemlerene
+    note: >-
+      tilem + PL + POSS: PL -> ler (allomorph 3); POSS -> ene (allomorph 3). Surface tilemlerene.
+    parses:
+      - signature: "TILEM+PL+POSS|tilemlerene"
+        gloss: tilem-PL-POSS
+        rules: [rPl, rPoss]
+        exercises: []
+  - word: nytselerenenke
+    note: >-
+      nytse + PL + POSS + CASE: PL -> ler (allomorph 3); POSS -> ene (allomorph 3); CASE -> nke (allomorph 5). Surface nytselerenenke.
+    parses:
+      - signature: "NYTSE+PL+POSS+CASE|nytselerenenke"
+        gloss: nytse-PL-POSS-CASE
+        rules: [rPl, rPoss, rCase]
+        exercises: []
+  - word: nytselerke
+    note: >-
+      nytse + PL + CASE: PL -> ler (allomorph 3); CASE -> ke (allomorph 0). Surface nytselerke.
+    parses:
+      - signature: "NYTSE+PL+CASE|nytselerke"
+        gloss: nytse-PL-CASE
+        rules: [rPl, rCase]
+        exercises: []
+  - word: masalarananka
+    note: >-
+      masa + PL + POSS + CASE: PL -> lar (allomorph 1); POSS -> ana (allomorph 1); CASE -> nka (allomorph 7). Surface masalarananka.
+    parses:
+      - signature: "MASA+PL+POSS+CASE|masalarananka"
+        gloss: masa-PL-POSS-CASE
+        rules: [rPl, rPoss, rCase]
+        exercises: []
+  - word: masaananka
+    note: >-
+      masa + POSS + CASE: POSS -> ana (allomorph 1); CASE -> nka (allomorph 7). Surface masaananka.
+    parses:
+      - signature: "MASA+POSS+CASE|masaananka"
+        gloss: masa-POSS-CASE
+        rules: [rPoss, rCase]
+        exercises: []
+  - word: konelerenenke
+    note: >-
+      kone + PL + POSS + CASE: PL -> ler (allomorph 3); POSS -> ene (allomorph 3); CASE -> nke (allomorph 5). Surface konelerenenke.
+    parses:
+      - signature: "KONE+PL+POSS+CASE|konelerenenke"
+        gloss: kone-PL-POSS-CASE
+        rules: [rPl, rPoss, rCase]
+        exercises: []
+  - word: konelerene
+    note: >-
+      kone + PL + POSS: PL -> ler (allomorph 3); POSS -> ene (allomorph 3). Surface konelerene.
+    parses:
+      - signature: "KONE+PL+POSS|konelerene"
+        gloss: kone-PL-POSS
+        rules: [rPl, rPoss]
+        exercises: []
+  - word: sardamas
+    note: >-
+      sar + PAST + EVID: PAST -> da (allomorph 1); EVID -> mas (allomorph 2). Surface sardamas.
+    parses:
+      - signature: "SAR+PAST+EVID|sardamas"
+        gloss: sar-PAST-EVID
+        rules: [rPast, rEvid]
+        exercises: []
+  - word: sarda
+    note: >-
+      sar + PAST: PAST -> da (allomorph 1). Surface sarda.
+    parses:
+      - signature: "SAR+PAST|sarda"
+        gloss: sar-PAST
+        rules: [rPast]
+        exercises: []
+  - word: toldomos
+    note: >-
+      tol + PAST + EVID: PAST -> do (allomorph 3); EVID -> mos (allomorph 3). Surface toldomos.
+    parses:
+      - signature: "TOL+PAST+EVID|toldomos"
+        gloss: tol-PAST-EVID
+        rules: [rPast, rEvid]
+        exercises: []
+  - word: toldo
+    note: >-
+      tol + PAST: PAST -> do (allomorph 3). Surface toldo.
+    parses:
+      - signature: "TOL+PAST|toldo"
+        gloss: tol-PAST
+        rules: [rPast]
+        exercises: []
+  - word: murdomos
+    note: >-
+      mur + PAST + EVID: PAST -> do (allomorph 3); EVID -> mos (allomorph 3). Surface murdomos.
+    parses:
+      - signature: "MUR+PAST+EVID|murdomos"
+        gloss: mur-PAST-EVID
+        rules: [rPast, rEvid]
+        exercises: []
+  - word: murdo
+    note: >-
+      mur + PAST: PAST -> do (allomorph 3). Surface murdo.
+    parses:
+      - signature: "MUR+PAST|murdo"
+        gloss: mur-PAST
+        rules: [rPast]
+        exercises: []
+  - word: kerdemes
+    note: >-
+      ker + PAST + EVID: PAST -> de (allomorph 4); EVID -> mes (allomorph 1). Surface kerdemes.
+    parses:
+      - signature: "KER+PAST+EVID|kerdemes"
+        gloss: ker-PAST-EVID
+        rules: [rPast, rEvid]
+        exercises: []
+  - word: kerde
+    note: >-
+      ker + PAST: PAST -> de (allomorph 4). Surface kerde.
+    parses:
+      - signature: "KER+PAST|kerde"
+        gloss: ker-PAST
+        rules: [rPast]
+        exercises: []
+  - word: sindemes
+    note: >-
+      sin + PAST + EVID: PAST -> de (allomorph 4); EVID -> mes (allomorph 1). Surface sindemes.
+    parses:
+      - signature: "SIN+PAST+EVID|sindemes"
+        gloss: sin-PAST-EVID
+        rules: [rPast, rEvid]
+        exercises: []
+  - word: sinde
+    note: >-
+      sin + PAST: PAST -> de (allomorph 4). Surface sinde.
+    parses:
+      - signature: "SIN+PAST|sinde"
+        gloss: sin-PAST
+        rules: [rPast]
+        exercises: []
+  - word: myddymys
+    note: >-
+      myd + PAST + EVID: PAST -> dy (allomorph 7); EVID -> mys (allomorph 0). Surface myddymys.
+    parses:
+      - signature: "MYD+PAST+EVID|myddymys"
+        gloss: myd-PAST-EVID
+        rules: [rPast, rEvid]
+        exercises: []
+  - word: myddy
+    note: >-
+      myd + PAST: PAST -> dy (allomorph 7). Surface myddy.
+    parses:
+      - signature: "MYD+PAST|myddy"
+        gloss: myd-PAST
+        rules: [rPast]
+        exercises: []
+  - word: tarktamas
+    note: >-
+      tark + PAST + EVID: PAST -> ta (allomorph 5); EVID -> mas (allomorph 2). Surface tarktamas.
+    parses:
+      - signature: "TARK+PAST+EVID|tarktamas"
+        gloss: tark-PAST-EVID
+        rules: [rPast, rEvid]
+        exercises: []
+  - word: delstemes
+    note: >-
+      dels + PAST + EVID: PAST -> te (allomorph 0); EVID -> mes (allomorph 1). Surface delstemes.
+    parses:
+      - signature: "DELS+PAST+EVID|delstemes"
+        gloss: dels-PAST-EVID
+        rules: [rPast, rEvid]
+        exercises: []
+  - word: nuktomos
+    note: >-
+      nuk + PAST + EVID: PAST -> to (allomorph 6); EVID -> mos (allomorph 3). Surface nuktomos.
+    parses:
+      - signature: "NUK+PAST+EVID|nuktomos"
+        gloss: nuk-PAST-EVID
+        rules: [rPast, rEvid]
+        exercises: []
+  - word: kyttymys
+    note: >-
+      kyt + PAST + EVID: PAST -> ty (allomorph 2); EVID -> mys (allomorph 0). Surface kyttymys.
+    parses:
+      - signature: "KYT+PAST+EVID|kyttymys"
+        gloss: kyt-PAST-EVID
+        rules: [rPast, rEvid]
+        exercises: []
+  - word: kotlar
+    note: >-
+      Harmony violation: no allomorph's environment holds for the stem, so no analysis survives.
+    expect_fail: true
+    exercises: []
+  - word: kalyr
+    note: >-
+      Harmony violation: no allomorph's environment holds for the stem, so no analysis survives.
+    expect_fail: true
+    exercises: []
+  - word: sarte
+    note: >-
+      Harmony violation: no allomorph's environment holds for the stem, so no analysis survives.
+    expect_fail: true
+    exercises: []
+  - word: tolmes
+    note: >-
+      Harmony violation: no allomorph's environment holds for the stem, so no analysis survives.
+    expect_fail: true
+    exercises: []
+  - word: kylnka
+    note: >-
+      Harmony violation: no allomorph's environment holds for the stem, so no analysis survives.
+    expect_fail: true
+    exercises: []
+  - word: kotanaka
+    note: >-
+      Harmony violation: no allomorph's environment holds for the stem, so no analysis survives.
+    expect_fail: true
+    exercises: []

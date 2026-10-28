@@ -1,0 +1,462 @@
+# kind: stress (timing and optimization parity fixture, not conformance; see conformance-stress/README.md)
+# HAND DERIVATION (see grammar.xml). Five FS-free verbal extension suffixes apply in any order in the stratum; the verb template then needs a required TAM prefix (5 fillers) with optional subject, object and final-vowel slots; the noun template needs a required class prefix. Verb and noun roots share shapes, so extension-laden nominal forms spawn verb candidates that apply extensions and then die at the required TAM slot.
+# Parses for each word are every (root, rule choice) whose surface equals the word, enumerated by an independent script over
+# the rule tables, then confirmed against the engine. Signature: morpheme IDs in surface order, then "|" and the surface.
+language: StressBantuExtensionRequiredSlot
+inspired_by: ["Bantu verb with stratum-level extension chain and a required TAM slot"]
+sources:
+  - "synthetic stress fixture (not a specific language)"
+requires: []
+fieldworks_producible: true
+budget_ms: 60000
+words:
+  - word: mtumilan
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL1+N_TUM+EX1+EX2|mtumilan"
+        rules: [mrEX1, mrEX2, mrCL1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: vikitianil
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL4+N_KITI+EX2+EX1|vikitianil"
+        rules: [mrEX2, mrEX1, mrCL4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kibonisik
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL3+N_BON+EX3+EX4|kibonisik"
+        rules: [mrEX3, mrEX4, mrCL3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kisimaisan
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL3+N_SIMA+EX3+EX2|kisimaisan"
+        rules: [mrEX3, mrEX2, mrCL3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: vimtuulik
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL4+N_MTU+EX5+EX4|vimtuulik"
+        rules: [mrEX5, mrEX4, mrCL4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kitakaikan
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL3+N_TAKA+EX4+EX2|kitakaikan"
+        rules: [mrEX4, mrEX2, mrCL3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mlimikan
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL1+N_LIM+EX4+EX2|mlimikan"
+        rules: [mrEX4, mrEX2, mrCL1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kibonulil
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL3+N_BON+EX5+EX1|kibonulil"
+        rules: [mrEX5, mrEX1, mrCL3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kikalilis
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL3+N_KAL+EX1+EX3|kikalilis"
+        rules: [mrEX1, mrEX3, mrCL3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: wamtuil
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL2+N_MTU+EX1|wamtuil"
+        rules: [mrEX1, mrCL2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: wakalikil
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL2+N_KAL+EX4+EX1|wakalikil"
+        rules: [mrEX4, mrEX1, mrCL2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: walimikan
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL2+N_LIM+EX4+EX2|walimikan"
+        rules: [mrEX4, mrEX2, mrCL2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mbonilan
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL1+N_BON+EX1+EX2|mbonilan"
+        rules: [mrEX1, mrEX2, mrCL1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: wasimaanul
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL2+N_SIMA+EX2+EX5|wasimaanul"
+        rules: [mrEX2, mrEX5, mrCL2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mtumilis
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL1+N_TUM+EX1+EX3|mtumilis"
+        rules: [mrEX1, mrEX3, mrCL1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mkitiilan
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL1+N_KITI+EX1+EX2|mkitiilan"
+        rules: [mrEX1, mrEX2, mrCL1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: wakitiis
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL2+N_KITI+EX3|wakitiis"
+        rules: [mrEX3, mrCL2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kisimaikil
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL3+N_SIMA+EX4+EX1|kisimaikil"
+        rules: [mrEX4, mrEX1, mrCL3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mmtuik
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL1+N_MTU+EX4|mmtuik"
+        rules: [mrEX4, mrCL1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: vitumilul
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL4+N_TUM+EX1+EX5|vitumilul"
+        rules: [mrEX1, mrEX5, mrCL4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mlimanik
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL1+N_LIM+EX2+EX4|mlimanik"
+        rules: [mrEX2, mrEX4, mrCL1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kitakaikul
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL3+N_TAKA+EX4+EX5|kitakaikul"
+        rules: [mrEX4, mrEX5, mrCL3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kibonilan
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL3+N_BON+EX1+EX2|kibonilan"
+        rules: [mrEX1, mrEX2, mrCL3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: vitumaulan
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL4+N_TUMA+EX5+EX2|vitumaulan"
+        rules: [mrEX5, mrEX2, mrCL4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kimtuulil
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "CL3+N_MTU+EX5+EX1|kimtuulil"
+        rules: [mrEX5, mrEX1, mrCL3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: nimemubonulisane
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM1+TB5+OM1+V_BON+EX5+EX3+EX2+FV2|nimemubonulisane"
+        rules: [mrEX5, mrEX3, mrEX2, mrFV2, mrOM1, mrTB5, mrSM1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mlisemikilane
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM5+TB3+V_SEM+EX4+EX1+EX2+FV2|mlisemikilane"
+        rules: [mrEX4, mrEX1, mrEX2, mrFV2, mrTB3, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: wanalimilulana
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM6+TB2+V_LIM+EX1+EX5+EX2+FV1|wanalimilulana"
+        rules: [mrEX1, mrEX5, mrEX2, mrFV1, mrTB2, mrSM6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: nitawasemikila
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM1+TB4+OM2+V_SEM+EX4+EX1+FV1|nitawasemikila"
+        rules: [mrEX4, mrEX1, mrFV1, mrOM2, mrTB4, mrSM1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: tulikukalanilis
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM4+TB3+OM4+V_KAL+EX2+EX1+EX3|tulikukalanilis"
+        rules: [mrEX2, mrEX1, mrEX3, mrOM4, mrTB3, mrSM4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: nitakilimanikil
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM1+TB4+OM3+V_LIM+EX2+EX4+EX1|nitakilimanikil"
+        rules: [mrEX2, mrEX4, mrEX1, mrOM3, mrTB4, mrSM1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: takulekanisile
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "TB4+OM4+V_LEK+EX2+EX3+EX1+FV2|takulekanisile"
+        rules: [mrEX2, mrEX3, mrEX1, mrFV2, mrOM4, mrTB4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: tumekiwanikilis
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM4+TB5+OM3+V_WAN+EX4+EX1+EX3|tumekiwanikilis"
+        rules: [mrEX4, mrEX1, mrEX3, mrOM3, mrTB5, mrSM4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: tutawawanilisula
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM4+TB4+OM2+V_WAN+EX1+EX3+EX5+FV1|tutawawanilisula"
+        rules: [mrEX1, mrEX3, mrEX5, mrFV1, mrOM2, mrTB4, mrSM4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: memubonikise
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "TB5+OM1+V_BON+EX4+EX3+FV2|memubonikise"
+        rules: [mrEX4, mrEX3, mrFV2, mrOM1, mrTB5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: waliwasomisikile
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM6+TB3+OM2+V_SOM+EX3+EX4+EX1+FV2|waliwasomisikile"
+        rules: [mrEX3, mrEX4, mrEX1, mrFV2, mrOM2, mrTB3, mrSM6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: alimisikile
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "TB1+V_LIM+EX3+EX4+EX1+FV2|alimisikile"
+        rules: [mrEX3, mrEX4, mrEX1, mrFV2, mrTB1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: umewasomisan
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM2+TB5+OM2+V_SOM+EX3+EX2|umewasomisan"
+        rules: [mrEX3, mrEX2, mrOM2, mrTB5, mrSM2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: akugululisile
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "TB1+OM4+V_GUL+EX5+EX3+EX1+FV2|akugululisile"
+        rules: [mrEX5, mrEX3, mrEX1, mrFV2, mrOM4, mrTB1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: liwasemisilule
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "TB3+OM2+V_SEM+EX3+EX1+EX5+FV2|liwasemisilule"
+        rules: [mrEX3, mrEX1, mrEX5, mrFV2, mrOM2, mrTB3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: makisemisilike
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM5+TB1+OM3+V_SEM+EX3+EX1+EX4+FV2|makisemisilike"
+        rules: [mrEX3, mrEX1, mrEX4, mrFV2, mrOM3, mrTB1, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mnakibonikana
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM5+TB2+OM3+V_BON+EX4+EX2+FV1|mnakibonikana"
+        rules: [mrEX4, mrEX2, mrFV1, mrOM3, mrTB2, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: ulikikalanisika
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM2+TB3+OM3+V_KAL+EX2+EX3+EX4+FV1|ulikikalanisika"
+        rules: [mrEX2, mrEX3, mrEX4, mrFV1, mrOM3, mrTB3, mrSM2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: atakibonikulila
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM3+TB4+OM3+V_BON+EX4+EX5+EX1+FV1|atakibonikulila"
+        rules: [mrEX4, mrEX5, mrEX1, mrFV1, mrOM3, mrTB4, mrSM3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: wamemulimanulika
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM6+TB5+OM1+V_LIM+EX2+EX5+EX4+FV1|wamemulimanulika"
+        rules: [mrEX2, mrEX5, mrEX4, mrFV1, mrOM1, mrTB5, mrSM6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: wanakupatulilisa
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM6+TB2+OM4+V_PAT+EX5+EX1+EX3+FV1|wanakupatulilisa"
+        rules: [mrEX5, mrEX1, mrEX3, mrFV1, mrOM4, mrTB2, mrSM6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: tumekisemisula
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM4+TB5+OM3+V_SEM+EX3+EX5+FV1|tumekisemisula"
+        rules: [mrEX3, mrEX5, mrFV1, mrOM3, mrTB5, mrSM4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: alimunenisik
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM3+TB3+OM1+V_NEN+EX3+EX4|alimunenisik"
+        rules: [mrEX3, mrEX4, mrOM1, mrTB3, mrSM3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: uliwatumulika
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM2+TB3+OM2+V_TUM+EX5+EX4+FV1|uliwatumulika"
+        rules: [mrEX5, mrEX4, mrFV1, mrOM2, mrTB3, mrSM2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: unadikanisik
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "SM2+TB2+V_DIK+EX2+EX3+EX4|unadikanisik"
+        rules: [mrEX2, mrEX3, mrEX4, mrTB2, mrSM2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+

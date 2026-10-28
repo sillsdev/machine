@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>StressMprBantuConcord</Name>
+    <PartsOfSpeech><PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech></PartsOfSpeech>
+    <MorphologicalPhonologicalRuleFeatures>
+      <MorphologicalPhonologicalRuleFeature id="c1">Class1</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="c2">Class2</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="c3">Class3</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="c4">Class4</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="c5">Class5</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="c6">Class6</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeatureGroup outputType="append" matchType="all" features="c1 c2 c3 c4 c5 c6"><Name>NounClass</Name></MorphologicalPhonologicalRuleFeatureGroup>
+    </MorphologicalPhonologicalRuleFeatures>
+    <CharacterDefinitionTable id="t1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="ca"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="ce"><Representations><Representation>e</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="ci"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="co"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cu"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cl"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cm"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cn"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cr"><Representations><Representation>r</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cs"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="ct"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="ck"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cp"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cd"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses><FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass></NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="linear" morphologicalRules="mrSm mrOm mrFv">
+        <Name>S</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrSm" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>sm</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="mrSm_0">
+                <MorphologicalInput requiredMPRFeatures="c1"><PhoneticSequence id="mrSms0"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>a</PhoneticShape></InsertSegments><CopyFromInput index="mrSms0" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="mrSm_1">
+                <MorphologicalInput requiredMPRFeatures="c2"><PhoneticSequence id="mrSms1"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>u</PhoneticShape></InsertSegments><CopyFromInput index="mrSms1" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="mrSm_2">
+                <MorphologicalInput requiredMPRFeatures="c3"><PhoneticSequence id="mrSms2"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>i</PhoneticShape></InsertSegments><CopyFromInput index="mrSms2" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="mrSm_3">
+                <MorphologicalInput requiredMPRFeatures="c4"><PhoneticSequence id="mrSms3"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>a</PhoneticShape></InsertSegments><CopyFromInput index="mrSms3" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="mrSm_4">
+                <MorphologicalInput requiredMPRFeatures="c5"><PhoneticSequence id="mrSms4"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>u</PhoneticShape></InsertSegments><CopyFromInput index="mrSms4" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="mrSm_5">
+                <MorphologicalInput requiredMPRFeatures="c6"><PhoneticSequence id="mrSms5"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>i</PhoneticShape></InsertSegments><CopyFromInput index="mrSms5" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SM</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrOm" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>om</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="mrOm_0">
+                <MorphologicalInput requiredMPRFeatures="c1"><PhoneticSequence id="mrOms0"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>u</PhoneticShape></InsertSegments><CopyFromInput index="mrOms0" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="mrOm_1">
+                <MorphologicalInput requiredMPRFeatures="c2"><PhoneticSequence id="mrOms1"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>a</PhoneticShape></InsertSegments><CopyFromInput index="mrOms1" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="mrOm_2">
+                <MorphologicalInput requiredMPRFeatures="c3"><PhoneticSequence id="mrOms2"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>i</PhoneticShape></InsertSegments><CopyFromInput index="mrOms2" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="mrOm_3">
+                <MorphologicalInput requiredMPRFeatures="c4"><PhoneticSequence id="mrOms3"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>i</PhoneticShape></InsertSegments><CopyFromInput index="mrOms3" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="mrOm_4">
+                <MorphologicalInput requiredMPRFeatures="c5"><PhoneticSequence id="mrOms4"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>a</PhoneticShape></InsertSegments><CopyFromInput index="mrOms4" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="mrOm_5">
+                <MorphologicalInput requiredMPRFeatures="c6"><PhoneticSequence id="mrOms5"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>u</PhoneticShape></InsertSegments><CopyFromInput index="mrOms5" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="mrOm_6">
+                <MorphologicalInput excludedMPRFeatures="c1 c2"><PhoneticSequence id="mrOms6"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>ka</PhoneticShape></InsertSegments><CopyFromInput index="mrOms6" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>OM</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrFv" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>fv</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="mrFv_0">
+                <MorphologicalInput requiredMPRFeatures="c1"><PhoneticSequence id="mrFvs0"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="mrFvs0" /><InsertSegments><PhoneticShape>a</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="mrFv_1">
+                <MorphologicalInput requiredMPRFeatures="c2"><PhoneticSequence id="mrFvs1"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="mrFvs1" /><InsertSegments><PhoneticShape>i</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="mrFv_2">
+                <MorphologicalInput requiredMPRFeatures="c3"><PhoneticSequence id="mrFvs2"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="mrFvs2" /><InsertSegments><PhoneticShape>a</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="mrFv_3">
+                <MorphologicalInput requiredMPRFeatures="c4"><PhoneticSequence id="mrFvs3"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="mrFvs3" /><InsertSegments><PhoneticShape>i</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="mrFv_4">
+                <MorphologicalInput requiredMPRFeatures="c5"><PhoneticSequence id="mrFvs4"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="mrFvs4" /><InsertSegments><PhoneticShape>a</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="mrFv_5">
+                <MorphologicalInput requiredMPRFeatures="c6"><PhoneticSequence id="mrFvs5"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="mrFvs5" /><InsertSegments><PhoneticShape>i</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>FV</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posV">
+            <Name>verbTemplate</Name>
+            <Slot morphologicalRules="mrSm"><Name>smSlot</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrOm"><Name>omSlot</Name></Slot>
+            <Slot morphologicalRules="mrFv"><Name>fvSlot</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="e_tum" partOfSpeech="posV" ruleFeatures="c1">
+            <Allomorphs><Allomorph id="a_tum"><PhoneticShape>tum</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>V_tum</MorphemeId>
+            <Gloss>tum</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="e_lim" partOfSpeech="posV" ruleFeatures="c1">
+            <Allomorphs><Allomorph id="a_lim"><PhoneticShape>lim</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>V_lim</MorphemeId>
+            <Gloss>lim</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="e_tuma" partOfSpeech="posV" ruleFeatures="c2">
+            <Allomorphs><Allomorph id="a_tuma"><PhoneticShape>tuma</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>V_tuma</MorphemeId>
+            <Gloss>tuma</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="e_lima" partOfSpeech="posV" ruleFeatures="c2">
+            <Allomorphs><Allomorph id="a_lima"><PhoneticShape>lima</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>V_lima</MorphemeId>
+            <Gloss>lima</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="e_kal" partOfSpeech="posV" ruleFeatures="c3">
+            <Allomorphs><Allomorph id="a_kal"><PhoneticShape>kal</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>V_kal</MorphemeId>
+            <Gloss>kal</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="e_pak" partOfSpeech="posV" ruleFeatures="c3">
+            <Allomorphs><Allomorph id="a_pak"><PhoneticShape>pak</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>V_pak</MorphemeId>
+            <Gloss>pak</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="e_kala" partOfSpeech="posV" ruleFeatures="c4">
+            <Allomorphs><Allomorph id="a_kala"><PhoneticShape>kala</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>V_kala</MorphemeId>
+            <Gloss>kala</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="e_paka" partOfSpeech="posV" ruleFeatures="c4">
+            <Allomorphs><Allomorph id="a_paka"><PhoneticShape>paka</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>V_paka</MorphemeId>
+            <Gloss>paka</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="e_dum" partOfSpeech="posV" ruleFeatures="c5">
+            <Allomorphs><Allomorph id="a_dum"><PhoneticShape>dum</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>V_dum</MorphemeId>
+            <Gloss>dum</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="e_mal" partOfSpeech="posV" ruleFeatures="c5">
+            <Allomorphs><Allomorph id="a_mal"><PhoneticShape>mal</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>V_mal</MorphemeId>
+            <Gloss>mal</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="e_duma" partOfSpeech="posV" ruleFeatures="c6">
+            <Allomorphs><Allomorph id="a_duma"><PhoneticShape>duma</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>V_duma</MorphemeId>
+            <Gloss>duma</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="e_mala" partOfSpeech="posV" ruleFeatures="c6">
+            <Allomorphs><Allomorph id="a_mala"><PhoneticShape>mala</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>V_mala</MorphemeId>
+            <Gloss>mala</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

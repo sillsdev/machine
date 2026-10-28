@@ -1,0 +1,508 @@
+# kind: stress (timing and optimization parity fixture, not conformance; see conformance-stress/README.md)
+# HAND DERIVATION (see grammar.xml). Pure-morphotactics Bantu-like stress grammar, no phonology.
+# Verb template, application order innermost to outermost: extension (optional suffix, 2 fillers),
+# final vowel (optional suffix, 2), object marker (optional prefix, 6), TAM (REQUIRED prefix, 5),
+# subject marker (optional prefix, 8). Surface = SM TAM OM root EXT FV. Noun template: one REQUIRED
+# class prefix (6 fillers). 16 verb roots and 14 noun roots; several noun and verb shapes coincide
+# (lim tum kal bon lek) and noun roots like kilim/tuma contain verb-affix material, so bare stems
+# and partly unapplied forms reach root lookup and die at the required slot.
+# For each word the parses below are every (root, slot choice) whose surface equals the word. They
+# were enumerated by a small independent script over the slot tables above, then confirmed against
+# the engine with PruneByTemplateReplay off. A word with no derivation is an expect_fail word; its
+# blocked_by names the required-slot rule class that no analysis can supply.
+# Signature: morpheme IDs outermost first, then the root, then "|" and the surface.
+language: StressRequiredTemplateSlot
+inspired_by: ["Bantu verb templates with a required TAM slot (synthetic stress, not a specific language)"]
+sources:
+  - "synthetic stress fixture for E3 (template replay at lexical lookup)"
+requires: []
+fieldworks_producible: true
+budget_ms: 60000
+words:
+  - word: matuma
+    note: >-
+      2 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "CL6+N_TUMA|matuma"
+        rules: [mrCL6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+      - signature: "SM5+TAM1+V_TUM+FV1|matuma"
+        rules: [mrFV1, mrTAM1, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: makilim
+    note: >-
+      2 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "CL6+N_KILIM|makilim"
+        rules: [mrCL6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+      - signature: "SM5+TAM1+OM3+V_LIM|makilim"
+        rules: [mrOM3, mrTAM1, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mabon
+    note: >-
+      2 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "CL6+N_BON|mabon"
+        rules: [mrCL6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+      - signature: "SM5+TAM1+V_BON|mabon"
+        rules: [mrTAM1, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: matum
+    note: >-
+      2 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "CL6+N_TUM|matum"
+        rules: [mrCL6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+      - signature: "SM5+TAM1+V_TUM|matum"
+        rules: [mrTAM1, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: malim
+    note: >-
+      2 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "CL6+N_LIM|malim"
+        rules: [mrCL6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+      - signature: "SM5+TAM1+V_LIM|malim"
+        rules: [mrTAM1, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: malek
+    note: >-
+      2 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "CL6+N_LEK|malek"
+        rules: [mrCL6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+      - signature: "SM5+TAM1+V_LEK|malek"
+        rules: [mrTAM1, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: makal
+    note: >-
+      2 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "CL6+N_KAL|makal"
+        rules: [mrCL6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+      - signature: "SM5+TAM1+V_KAL|makal"
+        rules: [mrTAM1, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: tuliwanan
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM4+TAM3+V_WAN+EXT2|tuliwanan"
+        rules: [mrEXT2, mrTAM3, mrSM4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mnamulekil
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM5+TAM2+OM1+V_LEK+EXT1|mnamulekil"
+        rules: [mrEXT1, mrOM1, mrTAM2, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: nilimubona
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM1+TAM3+OM1+V_BON+FV1|nilimubona"
+        rules: [mrFV1, mrOM1, mrTAM3, mrSM1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: anawamake
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM3+TAM2+OM2+V_MAK+FV2|anawamake"
+        rules: [mrFV2, mrOM2, mrTAM2, mrSM3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: waakal
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM6+TAM1+V_KAL|waakal"
+        rules: [mrTAM1, mrSM6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: ulimutuman
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM2+TAM3+OM1+V_TUM+EXT2|ulimutuman"
+        rules: [mrEXT2, mrOM1, mrTAM3, mrSM2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: anamuteka
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM3+TAM2+OM1+V_TEK+FV1|anamuteka"
+        rules: [mrFV1, mrOM1, mrTAM2, mrSM3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mnamutekan
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM5+TAM2+OM1+V_TEK+EXT2|mnamutekan"
+        rules: [mrEXT2, mrOM1, mrTAM2, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: wamewaleke
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM6+TAM5+OM2+V_LEK+FV2|wamewaleke"
+        rules: [mrFV2, mrOM2, mrTAM5, mrSM6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: waawatekil
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM6+TAM1+OM2+V_TEK+EXT1|waawatekil"
+        rules: [mrEXT1, mrOM2, mrTAM1, mrSM6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: likipatana
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "TAM3+OM3+V_PAT+EXT2+FV1|likipatana"
+        rules: [mrEXT2, mrFV1, mrOM3, mrTAM3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mlitunene
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM5+TAM3+OM6+V_NEN+FV2|mlitunene"
+        rules: [mrFV2, mrOM6, mrTAM3, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: waavisipe
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM6+TAM1+OM4+V_SIP+FV2|waavisipe"
+        rules: [mrFV2, mrOM4, mrTAM1, mrSM6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mmenena
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM5+TAM5+V_NEN+FV1|mmenena"
+        rules: [mrFV1, mrTAM5, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mmetutek
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM5+TAM5+OM6+V_TEK|mmetutek"
+        rules: [mrOM6, mrTAM5, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: metumila
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "TAM5+V_TUM+EXT1+FV1|metumila"
+        rules: [mrEXT1, mrFV1, mrTAM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: nitakusipa
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM1+TAM4+OM5+V_SIP+FV1|nitakusipa"
+        rules: [mrFV1, mrOM5, mrTAM4, mrSM1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: awalima
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "TAM1+OM2+V_LIM+FV1|awalima"
+        rules: [mrFV1, mrOM2, mrTAM1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: unamakil
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM2+TAM2+V_MAK+EXT1|unamakil"
+        rules: [mrEXT1, mrTAM2, mrSM2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: malimana
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM5+TAM1+V_LIM+EXT2+FV1|malimana"
+        rules: [mrEXT2, mrFV1, mrTAM1, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: tavipatila
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "TAM4+OM4+V_PAT+EXT1+FV1|tavipatila"
+        rules: [mrEXT1, mrFV1, mrOM4, mrTAM4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mekibalane
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "TAM5+OM3+V_BAL+EXT2+FV2|mekibalane"
+        rules: [mrEXT2, mrFV2, mrOM3, mrTAM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: tumebalane
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM4+TAM5+V_BAL+EXT2+FV2|tumebalane"
+        rules: [mrEXT2, mrFV2, mrTAM5, mrSM4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: tamugula
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "TAM4+OM1+V_GUL+FV1|tamugula"
+        rules: [mrFV1, mrOM1, mrTAM4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: ulimutuma
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM2+TAM3+OM1+V_TUM+FV1|ulimutuma"
+        rules: [mrFV1, mrOM1, mrTAM3, mrSM2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: unawagul
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM2+TAM2+OM2+V_GUL|unawagul"
+        rules: [mrOM2, mrTAM2, mrSM2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mewasemane
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "TAM5+OM2+V_SEM+EXT2+FV2|mewasemane"
+        rules: [mrEXT2, mrFV2, mrOM2, mrTAM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mtatuseman
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM5+TAM4+OM6+V_SEM+EXT2|mtatuseman"
+        rules: [mrEXT2, mrOM6, mrTAM4, mrSM5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: nakukalan
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "TAM2+OM5+V_KAL+EXT2|nakukalan"
+        rules: [mrEXT2, mrOM5, mrTAM2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: tuagulane
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM4+TAM1+V_GUL+EXT2+FV2|tuagulane"
+        rules: [mrEXT2, mrFV2, mrTAM1, mrSM4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: nakileke
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "TAM2+OM3+V_LEK+FV2|nakileke"
+        rules: [mrFV2, mrOM3, mrTAM2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: vinatubona
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM8+TAM2+OM6+V_BON+FV1|vinatubona"
+        rules: [mrFV1, mrOM6, mrTAM2, mrSM8]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: umewateke
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM2+TAM5+OM2+V_TEK+FV2|umewateke"
+        rules: [mrFV2, mrOM2, mrTAM5, mrSM2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: vitatum
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM8+TAM4+V_TUM|vitatum"
+        rules: [mrTAM4, mrSM8]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: aaleke
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM3+TAM1+V_LEK+FV2|aaleke"
+        rules: [mrFV2, mrTAM1, mrSM3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: vinabale
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "SM8+TAM2+V_BAL+FV2|vinabale"
+        rules: [mrFV2, mrTAM2, mrSM8]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: mtuma
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "CL1+N_TUMA|mtuma"
+        rules: [mrCL1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: vikal
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "CL4+N_KAL|vikal"
+        rules: [mrCL4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: vidiko
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "CL4+N_DIKO|vidiko"
+        rules: [mrCL4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kibon
+    note: >-
+      1 derivation(s) found by enumerating root x slot choices (see header).
+    parses:
+      - signature: "CL3+N_BON|kibon"
+        rules: [mrCL3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: tumu
+    note: >-
+      No derivation: the verb template needs a TAM prefix and the noun template a class prefix, and no
+      root plus slot choice yields this surface. Zero parses.
+    expect_fail: true
+    blocked_by: [mrTAM1]
+    exercises:
+      - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: nalekk
+    note: >-
+      No derivation: the verb template needs a TAM prefix and the noun template a class prefix, and no
+      root plus slot choice yields this surface. Zero parses.
+    expect_fail: true
+    blocked_by: [mrTAM1]
+    exercises:
+      - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: bon
+    note: >-
+      No derivation: the verb template needs a TAM prefix and the noun template a class prefix, and no
+      root plus slot choice yields this surface. Zero parses.
+    expect_fail: true
+    blocked_by: [mrTAM1]
+    exercises:
+      - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: waatumb
+    note: >-
+      No derivation: the verb template needs a TAM prefix and the noun template a class prefix, and no
+      root plus slot choice yields this surface. Zero parses.
+    expect_fail: true
+    blocked_by: [mrTAM1]
+    exercises:
+      - "Affix template slots (obligatory/disjunctive/ordering)"
+

@@ -1,0 +1,306 @@
+# kind: stress (timing and optimization parity fixture, not conformance; see conformance-stress/README.md)
+# Stress fixture for trail MPR replay: five declension classes carried as one MPR group, 20 noun roots
+# (four per class, stems overlapping in shape across classes), and case/number suffixes with one allomorph
+# per class, each gated by requiredMPRFeatures. Endings are homophonous across classes and cases, so most
+# analyses of a surface form pick a suffix allomorph of the wrong class and die in synthesis on the MPR check.
+# The DAT rule has one allomorph gated by excludedMPRFeatures. The DER slot outputs features of an Overwrite
+# group (Theme), which also feeds the NOM "ak" allomorph. Expected parses were derived by hand from the
+# ending tables in grammar.xml (root + optional DER + optional PL + one case ending, class-gated) and
+# confirmed against the engine.
+language: StressMprInflectionClasses
+inspired_by: ["Indo-European declension classes (Latin, Russian style); synthetic, not modeling a real language"]
+sources:
+  - "research harness stress fixture; no external source"
+requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: "research stress fixture; not authored through FieldWorks"
+budget_ms: 15000
+words:
+  - word: telis
+    note: "telis"
+    parses:
+      - signature: "R_tel+GEN|telis"
+        rules: [mrGen]
+  - word: muris
+    note: "muris"
+    parses:
+      - signature: "R_mur+GEN|muris"
+        rules: [mrGen]
+  - word: kaspis
+    note: "kaspis"
+    parses:
+      - signature: "R_kasp+GEN|kaspis"
+        rules: [mrGen]
+  - word: lupis
+    note: "lupis"
+    parses:
+      - signature: "R_lup+GEN|lupis"
+        rules: [mrGen]
+  - word: telai
+    note: "telai"
+    parses:
+      - signature: "R_tel+DAT|telai"
+        rules: [mrDat]
+      - signature: "R_tela+GEN|telai"
+        rules: [mrGen]
+  - word: murai
+    note: "murai"
+    parses:
+      - signature: "R_mur+DAT|murai"
+        rules: [mrDat]
+      - signature: "R_mura+GEN|murai"
+        rules: [mrGen]
+  - word: kasi
+    note: "kasi"
+    parses:
+      - signature: "R_kas+GEN|kasi"
+        rules: [mrGen]
+  - word: lupoi
+    note: "lupoi"
+    parses:
+      - signature: "R_lupo+GEN|lupoi"
+        rules: [mrGen]
+  - word: nisis
+    note: "nisis"
+    parses:
+      - signature: "R_nis+GEN|nisis"
+        rules: [mrGen]
+  - word: patis
+    note: "patis"
+    parses:
+      - signature: "R_pat+GEN|patis"
+        rules: [mrGen]
+  - word: ronis
+    note: "ronis"
+    parses:
+      - signature: "R_ron+GEN|ronis"
+        rules: [mrGen]
+  - word: domis
+    note: "domis"
+    parses:
+      - signature: "R_dom+GEN|domis"
+        rules: [mrGen]
+  - word: nisuus
+    note: "nisuus"
+    parses:
+      - signature: "R_nisu+GEN|nisuus"
+        rules: [mrGen]
+      - signature: "R_nisu+NOM|nisuus"
+        rules: [mrNom]
+  - word: patius
+    note: "patius"
+    parses:
+      - signature: "R_pati+GEN|patius"
+        rules: [mrGen]
+      - signature: "R_pati+NOM|patius"
+        rules: [mrNom]
+  - word: ronaus
+    note: "ronaus"
+    parses:
+      - signature: "R_rona+GEN|ronaus"
+        rules: [mrGen]
+      - signature: "R_rona+NOM|ronaus"
+        rules: [mrNom]
+  - word: domius
+    note: "domius"
+    parses:
+      - signature: "R_domi+GEN|domius"
+        rules: [mrGen]
+      - signature: "R_domi+NOM|domius"
+        rules: [mrNom]
+  - word: simes
+    note: "simes"
+    parses:
+      - signature: "R_sim+GEN|simes"
+        rules: [mrGen]
+  - word: nores
+    note: "nores"
+    parses:
+      - signature: "R_nor+GEN|nores"
+        rules: [mrGen]
+  - word: kades
+    note: "kades"
+    parses:
+      - signature: "R_kad+GEN|kades"
+        rules: [mrGen]
+  - word: lutes
+    note: "lutes"
+    parses:
+      - signature: "R_lut+GEN|lutes"
+        rules: [mrGen]
+  - word: telarai
+    note: "telarai"
+    parses:
+      - signature: "R_tel+PL+DAT|telarai"
+        rules: [mrPl, mrDat]
+  - word: murarai
+    note: "murarai"
+    parses:
+      - signature: "R_mur+PL+DAT|murarai"
+        rules: [mrPl, mrDat]
+  - word: kasparai
+    note: "kasparai"
+    parses:
+      - signature: "R_kasp+PL+DAT|kasparai"
+        rules: [mrPl, mrDat]
+  - word: luparai
+    note: "luparai"
+    parses:
+      - signature: "R_lup+PL+DAT|luparai"
+        rules: [mrPl, mrDat]
+  - word: telaoro
+    note: "telaoro"
+    parses:
+      - signature: "R_tela+PL+DAT|telaoro"
+        rules: [mrPl, mrDat]
+      - signature: "R_tela+PL+NOM|telaoro"
+        rules: [mrPl, mrNom]
+  - word: muraoro
+    note: "muraoro"
+    parses:
+      - signature: "R_mura+PL+DAT|muraoro"
+        rules: [mrPl, mrDat]
+      - signature: "R_mura+PL+NOM|muraoro"
+        rules: [mrPl, mrNom]
+  - word: kasoro
+    note: "kasoro"
+    parses:
+      - signature: "R_kas+PL+DAT|kasoro"
+        rules: [mrPl, mrDat]
+      - signature: "R_kas+PL+NOM|kasoro"
+        rules: [mrPl, mrNom]
+  - word: lupooro
+    note: "lupooro"
+    parses:
+      - signature: "R_lupo+PL+DAT|lupooro"
+        rules: [mrPl, mrDat]
+      - signature: "R_lupo+PL+NOM|lupooro"
+        rules: [mrPl, mrNom]
+  - word: nisari
+    note: "nisari"
+    parses:
+      - signature: "R_nis+PL+DAT|nisari"
+        rules: [mrPl, mrDat]
+  - word: patari
+    note: "patari"
+    parses:
+      - signature: "R_pat+PL+DAT|patari"
+        rules: [mrPl, mrDat]
+  - word: ronari
+    note: "ronari"
+    parses:
+      - signature: "R_ron+PL+DAT|ronari"
+        rules: [mrPl, mrDat]
+  - word: domari
+    note: "domari"
+    parses:
+      - signature: "R_dom+PL+DAT|domari"
+        rules: [mrPl, mrDat]
+  - word: nisuorui
+    note: "nisuorui"
+    parses:
+      - signature: "R_nisu+PL+DAT|nisuorui"
+        rules: [mrPl, mrDat]
+  - word: patiorui
+    note: "patiorui"
+    parses:
+      - signature: "R_pati+PL+DAT|patiorui"
+        rules: [mrPl, mrDat]
+  - word: ronaorui
+    note: "ronaorui"
+    parses:
+      - signature: "R_rona+PL+DAT|ronaorui"
+        rules: [mrPl, mrDat]
+  - word: domiorui
+    note: "domiorui"
+    parses:
+      - signature: "R_domi+PL+DAT|domiorui"
+        rules: [mrPl, mrDat]
+  - word: simeris
+    note: "simeris"
+    parses:
+      - signature: "R_sim+PL+DAT|simeris"
+        rules: [mrPl, mrDat]
+  - word: noreris
+    note: "noreris"
+    parses:
+      - signature: "R_nor+PL+DAT|noreris"
+        rules: [mrPl, mrDat]
+  - word: kaderis
+    note: "kaderis"
+    parses:
+      - signature: "R_kad+PL+DAT|kaderis"
+        rules: [mrPl, mrDat]
+  - word: luteris
+    note: "luteris"
+    parses:
+      - signature: "R_lut+PL+DAT|luteris"
+        rules: [mrPl, mrDat]
+  - word: teltia
+    note: "teltia"
+    parses:
+      - signature: "R_tel+DER+NOM|teltia"
+        rules: [mrDer, mrNom]
+  - word: murtia
+    note: "murtia"
+    parses:
+      - signature: "R_mur+DER+NOM|murtia"
+        rules: [mrDer, mrNom]
+  - word: kasptia
+    note: "kasptia"
+    parses:
+      - signature: "R_kasp+DER+NOM|kasptia"
+        rules: [mrDer, mrNom]
+  - word: luptia
+    note: "luptia"
+    parses:
+      - signature: "R_lup+DER+NOM|luptia"
+        rules: [mrDer, mrNom]
+  - word: telatao
+    note: "telatao"
+    parses:
+      - signature: "R_tela+DER+DAT|telatao"
+        rules: [mrDer, mrDat]
+      - signature: "R_tela+DER+NOM|telatao"
+        rules: [mrDer, mrNom]
+  - word: muratao
+    note: "muratao"
+    parses:
+      - signature: "R_mura+DER+DAT|muratao"
+        rules: [mrDer, mrDat]
+      - signature: "R_mura+DER+NOM|muratao"
+        rules: [mrDer, mrNom]
+  - word: kastao
+    note: "kastao"
+    parses:
+      - signature: "R_kas+DER+DAT|kastao"
+        rules: [mrDer, mrDat]
+      - signature: "R_kas+DER+NOM|kastao"
+        rules: [mrDer, mrNom]
+  - word: lupotao
+    note: "lupotao"
+    parses:
+      - signature: "R_lupo+DER+DAT|lupotao"
+        rules: [mrDer, mrDat]
+      - signature: "R_lupo+DER+NOM|lupotao"
+        rules: [mrDer, mrNom]
+  - word: nistes
+    note: "nistes"
+    parses:
+      - signature: "R_nis+DER+NOM|nistes"
+        rules: [mrDer, mrNom]
+  - word: pattes
+    note: "pattes"
+    parses:
+      - signature: "R_pat+DER+NOM|pattes"
+        rules: [mrDer, mrNom]
+  - word: rontes
+    note: "rontes"
+    parses:
+      - signature: "R_ron+DER+NOM|rontes"
+        rules: [mrDer, mrNom]
+  - word: domtes
+    note: "domtes"
+    parses:
+      - signature: "R_dom+DER+NOM|domtes"
+        rules: [mrDer, mrNom]

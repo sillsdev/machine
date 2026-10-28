@@ -1,0 +1,394 @@
+# kind: stress (timing and optimization parity fixture, not conformance; see conformance-stress/README.md)
+# HAND DERIVATION. Prefix rules, each with allomorphs conditioned on the first segment of the stem to its right
+# (RightEnvironment). Environments of one rule are mutually exclusive, so exactly one allomorph is valid.
+#   CLS  (noun class): p t k -> mu, b d g -> ng, m n -> ny, a -> ka, e i -> ki, o u -> ku, l -> lu
+#   PLU  (plural, outside CLS): e i -> ba, p t k -> ma, b d g -> ve, a o u -> va, m n l -> be
+#   OBJ  (verb, inner): b d g m n l -> ku, p t k -> ji, vowel -> mi
+#   SUBJ (verb, outer): p t k -> ni, any vowel -> tu, b d g -> ko, m n -> si, l -> wa
+# Prefixes are applied innermost first, so an outer prefix sees the first segment of the inner prefix.
+# Allomorph lists are ordered differently per rule, so recorded indices spread over 0..A-1. Every expected
+# parse enumerates every root and slot choice that yields the surface, so ambiguous surfaces list all analyses.
+# Confirmed against the engine with the E1 cutoff off.
+language: StressBantuPrefixDensity
+inspired_by: ["synthetic Bantu noun-class and agreement prefixes written as separate environment-conditioned allomorphs"]
+sources:
+  - "E1 stress fixture 2, hermitcrab-2026-10-27-synthesis-to-analysis-round"
+requires: []
+fieldworks_producible: true
+budget_ms: 60000
+words:
+  - word: bemupata
+    note: >-
+      pata + CLS + PLU: CLS -> mu- (allomorph 2); PLU -> be- (allomorph 4). Surface bemupata.
+    parses:
+      - signature: "PLU+CLS+PATA|bemupata"
+        gloss: PLU-CLS-pata
+        rules: [rCls, rPlu]
+        exercises: []
+  - word: mupata
+    note: >-
+      pata + CLS: CLS -> mu- (allomorph 2). Surface mupata.
+    parses:
+      - signature: "CLS+PATA|mupata"
+        gloss: CLS-pata
+        rules: [rCls]
+        exercises: []
+  - word: bemutika
+    note: >-
+      tika + CLS + PLU: CLS -> mu- (allomorph 2); PLU -> be- (allomorph 4). Surface bemutika.
+    parses:
+      - signature: "PLU+CLS+TIKA|bemutika"
+        gloss: PLU-CLS-tika
+        rules: [rCls, rPlu]
+        exercises: []
+  - word: mutika
+    note: >-
+      tika + CLS: CLS -> mu- (allomorph 2). Surface mutika.
+    parses:
+      - signature: "CLS+TIKA|mutika"
+        gloss: CLS-tika
+        rules: [rCls]
+        exercises: []
+  - word: bemukopo
+    note: >-
+      kopo + CLS + PLU: CLS -> mu- (allomorph 2); PLU -> be- (allomorph 4). Surface bemukopo.
+    parses:
+      - signature: "PLU+CLS+KOPO|bemukopo"
+        gloss: PLU-CLS-kopo
+        rules: [rCls, rPlu]
+        exercises: []
+  - word: mukopo
+    note: >-
+      kopo + CLS: CLS -> mu- (allomorph 2). Surface mukopo.
+    parses:
+      - signature: "CLS+KOPO|mukopo"
+        gloss: CLS-kopo
+        rules: [rCls]
+        exercises: []
+  - word: bengbede
+    note: >-
+      bede + CLS + PLU: CLS -> ng- (allomorph 0); PLU -> be- (allomorph 4). Surface bengbede.
+    parses:
+      - signature: "PLU+CLS+BEDE|bengbede"
+        gloss: PLU-CLS-bede
+        rules: [rCls, rPlu]
+        exercises: []
+  - word: ngbede
+    note: >-
+      bede + CLS: CLS -> ng- (allomorph 0). Surface ngbede.
+    parses:
+      - signature: "CLS+BEDE|ngbede"
+        gloss: CLS-bede
+        rules: [rCls]
+        exercises: []
+  - word: benggidu
+    note: >-
+      gidu + CLS + PLU: CLS -> ng- (allomorph 0); PLU -> be- (allomorph 4). Surface benggidu.
+    parses:
+      - signature: "PLU+CLS+GIDU|benggidu"
+        gloss: PLU-CLS-gidu
+        rules: [rCls, rPlu]
+        exercises: []
+  - word: nggidu
+    note: >-
+      gidu + CLS: CLS -> ng- (allomorph 0). Surface nggidu.
+    parses:
+      - signature: "CLS+GIDU|nggidu"
+        gloss: CLS-gidu
+        rules: [rCls]
+        exercises: []
+  - word: benymano
+    note: >-
+      mano + CLS + PLU: CLS -> ny- (allomorph 3); PLU -> be- (allomorph 4). Surface benymano.
+    parses:
+      - signature: "PLU+CLS+MANO|benymano"
+        gloss: PLU-CLS-mano
+        rules: [rCls, rPlu]
+        exercises: []
+  - word: nymano
+    note: >-
+      mano + CLS: CLS -> ny- (allomorph 3). Surface nymano.
+    parses:
+      - signature: "CLS+MANO|nymano"
+        gloss: CLS-mano
+        rules: [rCls]
+        exercises: []
+  - word: benynuku
+    note: >-
+      nuku + CLS + PLU: CLS -> ny- (allomorph 3); PLU -> be- (allomorph 4). Surface benynuku.
+    parses:
+      - signature: "PLU+CLS+NUKU|benynuku"
+        gloss: PLU-CLS-nuku
+        rules: [rCls, rPlu]
+        exercises: []
+  - word: nynuku
+    note: >-
+      nuku + CLS: CLS -> ny- (allomorph 3). Surface nynuku.
+    parses:
+      - signature: "CLS+NUKU|nynuku"
+        gloss: CLS-nuku
+        rules: [rCls]
+        exercises: []
+  - word: belulema
+    note: >-
+      lema + CLS + PLU: CLS -> lu- (allomorph 6); PLU -> be- (allomorph 4). Surface belulema.
+    parses:
+      - signature: "PLU+CLS+LEMA|belulema"
+        gloss: PLU-CLS-lema
+        rules: [rCls, rPlu]
+        exercises: []
+  - word: lulema
+    note: >-
+      lema + CLS: CLS -> lu- (allomorph 6). Surface lulema.
+    parses:
+      - signature: "CLS+LEMA|lulema"
+        gloss: CLS-lema
+        rules: [rCls]
+        exercises: []
+  - word: bemupela
+    note: >-
+      pela + CLS + PLU: CLS -> mu- (allomorph 2); PLU -> be- (allomorph 4). Surface bemupela.
+    parses:
+      - signature: "PLU+CLS+PELA|bemupela"
+        gloss: PLU-CLS-pela
+        rules: [rCls, rPlu]
+        exercises: []
+  - word: mupela
+    note: >-
+      pela + CLS: CLS -> mu- (allomorph 2). Surface mupela.
+    parses:
+      - signature: "CLS+PELA|mupela"
+        gloss: CLS-pela
+        rules: [rCls]
+        exercises: []
+  - word: bemukitu
+    note: >-
+      kitu + CLS + PLU: CLS -> mu- (allomorph 2); PLU -> be- (allomorph 4). Surface bemukitu.
+    parses:
+      - signature: "PLU+CLS+KITU|bemukitu"
+        gloss: PLU-CLS-kitu
+        rules: [rCls, rPlu]
+        exercises: []
+  - word: mukitu
+    note: >-
+      kitu + CLS: CLS -> mu- (allomorph 2). Surface mukitu.
+    parses:
+      - signature: "CLS+KITU|mukitu"
+        gloss: CLS-kitu
+        rules: [rCls]
+        exercises: []
+  - word: bengdali
+    note: >-
+      dali + CLS + PLU: CLS -> ng- (allomorph 0); PLU -> be- (allomorph 4). Surface bengdali.
+    parses:
+      - signature: "PLU+CLS+DALI|bengdali"
+        gloss: PLU-CLS-dali
+        rules: [rCls, rPlu]
+        exercises: []
+  - word: ngdali
+    note: >-
+      dali + CLS: CLS -> ng- (allomorph 0). Surface ngdali.
+    parses:
+      - signature: "CLS+DALI|ngdali"
+        gloss: CLS-dali
+        rules: [rCls]
+        exercises: []
+  - word: bengbago
+    note: >-
+      bago + CLS + PLU: CLS -> ng- (allomorph 0); PLU -> be- (allomorph 4). Surface bengbago.
+    parses:
+      - signature: "PLU+CLS+BAGO|bengbago"
+        gloss: PLU-CLS-bago
+        rules: [rCls, rPlu]
+        exercises: []
+  - word: ngbago
+    note: >-
+      bago + CLS: CLS -> ng- (allomorph 0). Surface ngbago.
+    parses:
+      - signature: "CLS+BAGO|ngbago"
+        gloss: CLS-bago
+        rules: [rCls]
+        exercises: []
+  - word: jipet
+    note: >-
+      pet + OBJ: OBJ -> ji- (allomorph 1). Surface jipet.
+    parses:
+      - signature: "OBJ+PET|jipet"
+        gloss: OBJ-pet
+        rules: [rObj]
+        exercises: []
+  - word: jitik
+    note: >-
+      tik + OBJ: OBJ -> ji- (allomorph 1). Surface jitik.
+    parses:
+      - signature: "OBJ+TIK|jitik"
+        gloss: OBJ-tik
+        rules: [rObj]
+        exercises: []
+  - word: jikon
+    note: >-
+      kon + OBJ: OBJ -> ji- (allomorph 1). Surface jikon.
+    parses:
+      - signature: "OBJ+KON|jikon"
+        gloss: OBJ-kon
+        rules: [rObj]
+        exercises: []
+  - word: nikubed
+    note: >-
+      bed + OBJ + SUBJ: OBJ -> ku- (allomorph 0); SUBJ -> ni- (allomorph 0). Surface nikubed.
+    parses:
+      - signature: "SUBJ+OBJ+BED|nikubed"
+        gloss: SUBJ-OBJ-bed
+        rules: [rObj, rSubj]
+        exercises: []
+  - word: kubed
+    note: >-
+      bed + OBJ: OBJ -> ku- (allomorph 0). Surface kubed.
+    parses:
+      - signature: "OBJ+BED|kubed"
+        gloss: OBJ-bed
+        rules: [rObj]
+        exercises: []
+  - word: nikugid
+    note: >-
+      gid + OBJ + SUBJ: OBJ -> ku- (allomorph 0); SUBJ -> ni- (allomorph 0). Surface nikugid.
+    parses:
+      - signature: "SUBJ+OBJ+GID|nikugid"
+        gloss: SUBJ-OBJ-gid
+        rules: [rObj, rSubj]
+        exercises: []
+  - word: kugid
+    note: >-
+      gid + OBJ: OBJ -> ku- (allomorph 0). Surface kugid.
+    parses:
+      - signature: "OBJ+GID|kugid"
+        gloss: OBJ-gid
+        rules: [rObj]
+        exercises: []
+  - word: nikumun
+    note: >-
+      mun + OBJ + SUBJ: OBJ -> ku- (allomorph 0); SUBJ -> ni- (allomorph 0). Surface nikumun.
+    parses:
+      - signature: "SUBJ+OBJ+MUN|nikumun"
+        gloss: SUBJ-OBJ-mun
+        rules: [rObj, rSubj]
+        exercises: []
+  - word: kumun
+    note: >-
+      mun + OBJ: OBJ -> ku- (allomorph 0). Surface kumun.
+    parses:
+      - signature: "OBJ+MUN|kumun"
+        gloss: OBJ-mun
+        rules: [rObj]
+        exercises: []
+  - word: nikunok
+    note: >-
+      nok + OBJ + SUBJ: OBJ -> ku- (allomorph 0); SUBJ -> ni- (allomorph 0). Surface nikunok.
+    parses:
+      - signature: "SUBJ+OBJ+NOK|nikunok"
+        gloss: SUBJ-OBJ-nok
+        rules: [rObj, rSubj]
+        exercises: []
+  - word: kunok
+    note: >-
+      nok + OBJ: OBJ -> ku- (allomorph 0). Surface kunok.
+    parses:
+      - signature: "OBJ+NOK|kunok"
+        gloss: OBJ-nok
+        rules: [rObj]
+        exercises: []
+  - word: nikulom
+    note: >-
+      lom + OBJ + SUBJ: OBJ -> ku- (allomorph 0); SUBJ -> ni- (allomorph 0). Surface nikulom.
+    parses:
+      - signature: "SUBJ+OBJ+LOM|nikulom"
+        gloss: SUBJ-OBJ-lom
+        rules: [rObj, rSubj]
+        exercises: []
+  - word: kulom
+    note: >-
+      lom + OBJ: OBJ -> ku- (allomorph 0). Surface kulom.
+    parses:
+      - signature: "OBJ+LOM|kulom"
+        gloss: OBJ-lom
+        rules: [rObj]
+        exercises: []
+  - word: simiate
+    note: >-
+      ate + OBJ + SUBJ: OBJ -> mi- (allomorph 2); SUBJ -> si- (allomorph 3). Surface simiate.
+    parses:
+      - signature: "SUBJ+OBJ+ATE|simiate"
+        gloss: SUBJ-OBJ-ate
+        rules: [rObj, rSubj]
+        exercises: []
+  - word: miate
+    note: >-
+      ate + OBJ: OBJ -> mi- (allomorph 2). Surface miate.
+    parses:
+      - signature: "OBJ+ATE|miate"
+        gloss: OBJ-ate
+        rules: [rObj]
+        exercises: []
+  - word: simiemi
+    note: >-
+      emi + OBJ + SUBJ: OBJ -> mi- (allomorph 2); SUBJ -> si- (allomorph 3). Surface simiemi.
+    parses:
+      - signature: "SUBJ+OBJ+EMI|simiemi"
+        gloss: SUBJ-OBJ-emi
+        rules: [rObj, rSubj]
+        exercises: []
+  - word: miemi
+    note: >-
+      emi + OBJ: OBJ -> mi- (allomorph 2). Surface miemi.
+    parses:
+      - signature: "OBJ+EMI|miemi"
+        gloss: OBJ-emi
+        rules: [rObj]
+        exercises: []
+  - word: simiila
+    note: >-
+      ila + OBJ + SUBJ: OBJ -> mi- (allomorph 2); SUBJ -> si- (allomorph 3). Surface simiila.
+    parses:
+      - signature: "SUBJ+OBJ+ILA|simiila"
+        gloss: SUBJ-OBJ-ila
+        rules: [rObj, rSubj]
+        exercises: []
+  - word: miila
+    note: >-
+      ila + OBJ: OBJ -> mi- (allomorph 2). Surface miila.
+    parses:
+      - signature: "OBJ+ILA|miila"
+        gloss: OBJ-ila
+        rules: [rObj]
+        exercises: []
+  - word: simioku
+    note: >-
+      oku + OBJ + SUBJ: OBJ -> mi- (allomorph 2); SUBJ -> si- (allomorph 3). Surface simioku.
+    parses:
+      - signature: "SUBJ+OBJ+OKU|simioku"
+        gloss: SUBJ-OBJ-oku
+        rules: [rObj, rSubj]
+        exercises: []
+  - word: mioku
+    note: >-
+      oku + OBJ: OBJ -> mi- (allomorph 2). Surface mioku.
+    parses:
+      - signature: "OBJ+OKU|mioku"
+        gloss: OBJ-oku
+        rules: [rObj]
+        exercises: []
+  - word: kakata
+    note: >-
+      No allomorph environment and root combination yields this surface.
+    expect_fail: true
+    exercises: []
+  - word: nipata
+    note: >-
+      No allomorph environment and root combination yields this surface.
+    expect_fail: true
+    exercises: []
+  - word: bapata
+    note: >-
+      No allomorph environment and root combination yields this surface.
+    expect_fail: true
+    exercises: []
