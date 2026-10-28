@@ -361,6 +361,41 @@ censusmerge runs (`truncate-morphotactic-identity#default` word 2), and the on a
   MORE** unification calls. The two stack in events, but on Mbugwe and Sena the check's own unifications cost more than
   the walk work they save. PanGloss port: sillsdev/PanGloss #66 (for #546 and #566).
 
+## Combined stack and R2's cost
+
+**Measurement.** One census binary, one harness and one word set, every arm against master (result 9; census mode, 150 s per word; words aborted or erroring in any arm are dropped from all arms). The stack is #546 with R1 and R3 (PRs #577 and #576), R2 (PR #572) and R5 (PR #574). Work is analysis events plus synthesis steps. Unification is top-level FeatureStruct calls, look-ahead checks and the edge prefilter included. Matcher work is FST traversals, arc inspections and prefilter unifications. The stack needs one test-only commit: 11 older tests on toy grammars with no root set `RootSubstringPrune` off, because R2 pruned their outputs. No product code changes in the merge. The table is before the witness-reuse fix below; the fix changes unification and matcher work only, and events are identical.
+
+| grammar | work | unification | matcher |
+| --- | --- | --- | --- |
+| Mbugwe (40 words) | 33.26% less | 20.96% less | 38.31% less |
+| Sena (51) | 64.31% less | 15.43% less | 22.45% less |
+| Aweti (99) | 27.58% less | 45.64% less | 55.71% less |
+| Amharic (24) | 14.08% less | 10.42% less | 14.96% less |
+| Indonesian (70) | equal | 5.49% less | 6.51% less |
+| conformance (1,452 runs) | 2.01% less | 3.18% less | 8.69% less |
+| stress bantu-tam (60) | 89.64% less | 64.03% less | 81.38% less |
+| stress bantu-tam shared tail (60) | 91.26% less | 64.40% less | 82.90% less |
+| stress early-lexicon (60) | 67.72% less | 83.86% less | 87.06% less |
+
+**Parity.** Per-word parse signatures equal master on every completed word in every arm, the full stack included: 0 differences. Shadow on the full stack: 0 violations.
+
+**Additivity (work, in points of master; the sum is of the single arms #546, R1 with R3, R2 and R5).**
+- Mbugwe is near-additive: the stack is 33.26% less, 0.98 points less than the sum of 34.23. R2 is off on Mbugwe, so the stack equals #546 with R3.
+- Sena overlaps: the singles sum to 103.30 points, the stack gives 64.31% less, 38.99 points less than the sum. #546, R3 and R2 remove the same dead branches. R2 adds 4.74 points on top of #546 with R3 (59.57% less to 64.31% less).
+- Aweti is super-additive: the stack gives 27.58% less against 13.12 points summed. R3 on the shared walk lets the look-ahead cut inside the shared tail; #546 alone gives 1.61% less.
+
+**R2's cost: root cause.** The extra unification and matcher work is R2's own probe, not a change in merging or order. With R2 on in the stack, every non-probe counter is equal or lower (events, lookups, nodes, look-ahead checks, edge-prefilter unifications). The added unifications track the added trie arcs almost one for one (conformance +37,582 unifications against +37,518 arcs). The prune rate is too low to pay for the probe: conformance prunes 13 of 7,214 probes, and Sena prunes 72 of 1,225 probes, where each prune saves about 575 unifications and a probe inspects about 70 arcs. Most probes pass, because they find a root, and a pass still walks the arcs up to the first accepting path. Bantu-tam prunes late, after R3 has cut nearly all the work, so each prune saves about 50 unifications against about 47 spent per probe.
+
+**Witness-reuse fix (folded into #572 @ `01bdf5ae`).** Most probes re-find a root the input already had. Under R2's flag conditions an analysis rule's output is a run of the input's segments, so a root run found in the input that still lies inside that run is also a root run of the output. The fix records the witness and its window on the word, and skips the probe when the witness lies in the window. It is a two-field per-word value: no cache, and no size or prune-rate gate. A witness can only skip a probe, and a skipped probe can only keep a word, so it cannot drop a parse. Prune decisions match #572 whenever the witness is valid; per-word signatures equal master on 1,916 completed words, and event counts equal #572's on every grammar. In the stack the fix removes about 90% of R2's unification overhead against no R2: conformance 3.18% less becomes 14.63% less (15.66% less without R2), Sena 15.43% less becomes 17.11% less (18.63% less without R2), bantu-tam 64.03% less becomes 69.39% less (73.10% less without R2). Early-lexicon stays ahead of no R2 (84.04% less against 71.31% less).
+
+**Residual, 1 to 4 points.** With the fix, R2 in the stack still does more unification work than no R2: 1.03 points more on conformance, 1.52 on Sena and 3.71 on bantu-tam. Matcher work is 1.25, 2.05 and 4.28 points more. R2 still saves events: 4.74 points of Sena work on top of #546 with R3. The residual is one input probe per stratum entry, the decisive probes, and probes where the stem root is cut and another root must be searched. No sound grammar-independent rule removes it. A gate on the measured prune rate would be a runtime heuristic with run-to-run nondeterminism under the parallel cascade; it was not prototyped.
+
+**Standalone.** Alone on master, #572 with the fix is still a unification loss: 9.05% more on Sena, 1.00% more on conformance and 37.48% more on bantu-tam. Its event savings are 17.29% less on Sena, 0.22% less on conformance and 6.37% less on bantu-tam. It is a gain only on the early-lexicon fixture, which is synthetic: 58.20% less unification and 67.72% less work.
+
+**Landing decision.** #572 stays a draft and lands only on top of #577 and #574. Standalone it is a net unification and matcher loss on Sena, conformance and bantu-tam. Stacked, the fixed R2 is below master on every counter, but still above no R2 by the residual above. If the owner requires R2 never to cost more than no R2, the alternative is dropping #572, which gives up Sena's 4.74 points of work.
+
+**Stress grammars.** The stress fixtures are now PR #578: opt-in (`[Explicit]`, `[Category("Stress")]`, run with the filter `TestCategory=Stress`), not run in CI. Their expected parses are master's output. They are synthetic; the real-grammar figures above are Mbugwe, Sena, Aweti, Amharic, Indonesian and conformance.
+
 ## Cross-cutting lessons
 
 1. **Count a check's own cost in the same unit as what it saves.** R1, R2 and R5 all first reported gross numbers.
