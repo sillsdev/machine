@@ -22,6 +22,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (_templates.Length != Rules.Count)
                 return;
 
+            _root.Templates.AddRange(Enumerable.Range(0, _templates.Length));
             _slotOptionality = _templates.Select(t => t.Template.Slots.Select(s => s.Optional).ToArray()).ToArray();
             for (int t = 0; t < _templates.Length; t++)
             {
@@ -38,6 +39,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                             Slot = slot,
                             Optional = slot.Optional,
                             Rule = template.SlotRules[s],
+                            Depth = node.Depth + 1,
                         };
                         node.Children.Add(child);
                     }
@@ -76,7 +78,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 Word inWord = input.Clone();
                 inWord.Freeze();
-                Walk(_root, inWord, outputs);
+                Walk(_root, inWord, new WalkState(_templates, outputs, _morpher), null);
             }
 
             // Template order determines which equal word survives and the order seen by analysis folding.
@@ -106,37 +108,104 @@ namespace SIL.Machine.Morphology.HermitCrab
             return true;
         }
 
-        private static void Walk(SlotNode node, Word input, HashSet<Word>[] outputs)
+        // A template that fails the look-ahead on a word is dead below it while its siblings go on.
+        // Marks are set on entry and undone on return, so the mask is one bool per template per call.
+        private void Walk(SlotNode node, Word input, WalkState state, int[][] fired)
         {
+            List<int> marked = null;
+            if (state.Mode != RequiredSlotLookaheadMode.Off)
+            {
+                foreach (int t in node.Templates)
+                {
+                    if (state.Outputs[t] == null || state.Dead[t])
+                        continue;
+                    AnalysisAffixTemplateRule template = _templates[t];
+                    int[] templateFired = fired?[t];
+                    if (
+                        !template.RequiredSlotCannotUnapply(
+                            input,
+                            template.Template.Slots.Count - 1 - node.Depth,
+                            ref templateFired
+                        )
+                    )
+                    {
+                        if (!ReferenceEquals(templateFired, fired?[t]))
+                        {
+                            fired = fired == null ? new int[_templates.Length][] : (int[][])fired.Clone();
+                            fired[t] = templateFired;
+                        }
+                        continue;
+                    }
+                    state.Dead[t] = true;
+                    if (marked == null)
+                        marked = new List<int>();
+                    marked.Add(t);
+                }
+            }
+
             foreach (int t in node.Terminals)
-                outputs[t]?.Add(input);
+            {
+                if (state.Outputs[t] == null || state.Dead[t])
+                    continue;
+                _templates[t].ReportShadow("completed-under-fired", fired?[t], -1);
+                state.Outputs[t].Add(input);
+            }
 
             foreach (SlotNode child in node.Children)
             {
-                if (!AnyAdmitted(child.Templates, outputs))
+                if (!AnyLive(child.Templates, state))
                     continue;
 
                 foreach (Word word in child.Rule.Apply(input))
-                    Walk(child, word, outputs);
+                {
+                    if (fired != null)
+                    {
+                        foreach (int t in child.Templates)
+                            _templates[t]
+                                .ReportShadow("violated", fired[t], _templates[t].SlotRules.Count - child.Depth);
+                    }
+                    Walk(child, word, state, fired);
+                }
                 if (child.Optional)
-                    Walk(child, input, outputs);
+                    Walk(child, input, state, fired);
+            }
+
+            if (marked != null)
+            {
+                foreach (int t in marked)
+                    state.Dead[t] = false;
             }
         }
 
-        private static bool AnyAdmitted(List<int> templates, HashSet<Word>[] outputs)
+        private static bool AnyLive(List<int> templates, WalkState state)
         {
             for (int i = 0; i < templates.Count; i++)
             {
-                if (outputs[templates[i]] != null)
+                if (state.Outputs[templates[i]] != null && !state.Dead[templates[i]])
                     return true;
             }
             return false;
+        }
+
+        private sealed class WalkState
+        {
+            public WalkState(AnalysisAffixTemplateRule[] templates, HashSet<Word>[] outputs, Morpher morpher)
+            {
+                Outputs = outputs;
+                Dead = new bool[templates.Length];
+                Mode = morpher.RequiredSlotLookahead;
+            }
+
+            public HashSet<Word>[] Outputs { get; }
+            public bool[] Dead { get; }
+            public RequiredSlotLookaheadMode Mode { get; }
         }
 
         private sealed class SlotNode
         {
             public AffixTemplateSlot Slot { get; set; }
             public bool Optional { get; set; }
+            public int Depth { get; set; }
             public IRule<Word, ShapeNode> Rule { get; set; }
             public List<SlotNode> Children { get; } = new List<SlotNode>();
             public List<int> Templates { get; } = new List<int>();

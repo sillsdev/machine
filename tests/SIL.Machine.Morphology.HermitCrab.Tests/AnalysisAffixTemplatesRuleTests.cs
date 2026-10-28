@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
@@ -196,6 +196,120 @@ public class AnalysisAffixTemplatesRuleTests : HermitCrabTestBase
 
         Assert.That(shared.Apply(input), Is.EqualTo(own.Apply(input)).Using(FreezableEqualityComparer<Word>.Default));
     }
+
+    private sealed record LookaheadRun(string[] Output, int InnerA, int InnerS, int Tail, List<string> Shadow);
+
+    // Two templates share the tail slot "ad". Template A needs an inner "a" suffix, which the tail's unapplication
+    // consumes from "sad"; template B has an optional inner "s" slot and still yields its outputs.
+    private LookaheadRun RunSharedTail(RequiredSlotLookaheadMode mode, string text, bool innerAIsOptional = false)
+    {
+        CountingSuffix a = Suffix("a", "a");
+        CountingSuffix s = Suffix("s", "s");
+        CountingSuffix tail = Suffix("ad", "ad");
+        var shadow = new List<string>();
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
+        {
+            RequiredSlotLookahead = mode,
+            RequiredSlotShadow = (kind, template, slot) => shadow.Add(kind),
+        };
+        IRule<Word, ShapeNode>[] rules = new[]
+        {
+            Template(new AffixTemplateSlot(a) { Optional = innerAIsOptional }, new AffixTemplateSlot(tail)),
+            Template(new AffixTemplateSlot(s) { Optional = true }, new AffixTemplateSlot(tail)),
+        }
+            .Select(t => t.CompileAnalysisRule(morpher))
+            .ToArray();
+        var shared = new AnalysisAffixTemplatesRule(morpher, rules);
+        Word input = Input(text);
+        input.Freeze();
+        string[] output = shared.Apply(input).Select(Signature).ToArray();
+        return new LookaheadRun(output, a.ApplyCount, s.ApplyCount, tail.ApplyCount, shadow);
+    }
+
+    [Test]
+    public void LookaheadPrunesOnlyTheTemplateWhoseRequiredSlotIsGone()
+    {
+        LookaheadRun off = RunSharedTail(RequiredSlotLookaheadMode.Off, "sad");
+        LookaheadRun on = RunSharedTail(RequiredSlotLookaheadMode.On, "sad");
+
+        Assert.That(off.InnerA, Is.EqualTo(1));
+        Assert.That(on.InnerA, Is.EqualTo(0), "the required inner suffix cannot unapply once the tail took the a");
+        Assert.That(on.Tail, Is.EqualTo(off.Tail), "the shared tail still runs once");
+        Assert.That(on.InnerS, Is.EqualTo(off.InnerS), "the other template is unaffected");
+        Assert.That(off.Output, Is.Not.Empty);
+        Assert.That(on.Output, Is.EqualTo(off.Output));
+    }
+
+    [Test]
+    public void LookaheadKeepsEveryAttemptWhenBothTemplatesAreFeasible()
+    {
+        LookaheadRun off = RunSharedTail(RequiredSlotLookaheadMode.Off, "saad");
+        LookaheadRun on = RunSharedTail(RequiredSlotLookaheadMode.On, "saad");
+
+        Assert.That((on.InnerA, on.InnerS, on.Tail), Is.EqualTo((off.InnerA, off.InnerS, off.Tail)));
+        Assert.That(on.Output, Is.EqualTo(off.Output));
+    }
+
+    [TestCase("sad", false)]
+    [TestCase("saad", false)]
+    [TestCase("sad", true)]
+    [TestCase("dd", false)]
+    public void ShadowLookaheadOnTheSharedWalkNeverViolatesOrChangesTheOutput(string text, bool optional)
+    {
+        LookaheadRun off = RunSharedTail(RequiredSlotLookaheadMode.Off, text, optional);
+        LookaheadRun shadow = RunSharedTail(RequiredSlotLookaheadMode.Shadow, text, optional);
+
+        Assert.That(shadow.Output, Is.EqualTo(off.Output));
+        Assert.That((shadow.InnerA, shadow.InnerS, shadow.Tail), Is.EqualTo((off.InnerA, off.InnerS, off.Tail)));
+        Assert.That(shadow.Shadow, Does.Not.Contain("violated"));
+        Assert.That(shadow.Shadow, Does.Not.Contain("completed-under-fired"));
+        if (text == "sad" && !optional)
+            Assert.That(shadow.Shadow, Does.Contain("fired"));
+    }
+
+    [Test]
+    public void LookaheadSharedWalkMatchesPerTemplateWalkOnEveryShortInput()
+    {
+        int compared = 0;
+        foreach (string text in Inputs(5))
+        {
+            foreach (
+                RequiredSlotLookaheadMode mode in new[] { RequiredSlotLookaheadMode.Off, RequiredSlotLookaheadMode.On }
+            )
+            {
+                CountingSuffix a = Suffix("a", "a");
+                CountingSuffix s = Suffix("s", "s");
+                CountingSuffix tail = Suffix("ad", "ad");
+                var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
+                {
+                    RequiredSlotLookahead = mode,
+                };
+                IRule<Word, ShapeNode>[] rules = new[]
+                {
+                    Template(new AffixTemplateSlot(a), new AffixTemplateSlot(tail)),
+                    Template(
+                        new AffixTemplateSlot(s) { Optional = true },
+                        new AffixTemplateSlot(a),
+                        new AffixTemplateSlot(tail)
+                    ),
+                    Template(new AffixTemplateSlot(s), new AffixTemplateSlot(tail)),
+                }
+                    .Select(t => t.CompileAnalysisRule(morpher))
+                    .ToArray();
+                var own = new RuleBatch<Word, ShapeNode>(rules, false, FreezableEqualityComparer<Word>.Default);
+                var shared = new AnalysisAffixTemplatesRule(morpher, rules);
+                Word input = Input(text);
+                input.Freeze();
+                Word[] expected = own.Apply(input).ToArray();
+                Word[] actual = shared.Apply(input).ToArray();
+                Assert.That(actual, Is.EqualTo(expected).Using(FreezableEqualityComparer<Word>.Default), text);
+                compared += actual.Length;
+            }
+        }
+        Assert.That(compared, Is.GreaterThan(10));
+    }
+
+    private static string Signature(Word w) => w + " " + string.Join(",", w.MorphologicalRules.Select(r => r.Name));
 
     private Word Input(string text) => new(Morphophonemic, Table3.Segment(text));
 

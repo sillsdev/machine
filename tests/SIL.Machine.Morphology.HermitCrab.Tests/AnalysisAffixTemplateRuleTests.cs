@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
@@ -280,8 +280,8 @@ public class AnalysisAffixTemplateRuleTests : HermitCrabTestBase
         });
     }
 
-    // An optional slot whose rule inserts "z" after the copied parts; the word never contains the t and i
-    // that the required inner slot inserts, so a pure rule lets the walk prune at entry, before the optional rule is tried, and an impure one does not.
+    // The word lacks the t and i that the required inner slot inserts, so a pure optional rule that inserts "z"
+    // lets the walk prune at entry, and an impure one does not.
     private (WalkResult Off, WalkResult On) WalkWithOptionalSlot(
         Pattern<Word, ShapeNode>[] lhs,
         MorphologicalOutputAction[] rhs
