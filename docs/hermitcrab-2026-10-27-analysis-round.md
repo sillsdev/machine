@@ -1,6 +1,6 @@
 # HermitCrab analysis-side optimization, 2026-10-27 round
 
-**Disposition: six candidates are PRs (R1 #575, R2 #572, T1 #571, R5 #574, R3 #576, R1 on #546 #577), one is a
+**Disposition: seven candidates are PRs (R1 #575, R2 #572, T1 #571, R5 #574, R3 #576, R1 on #546 #577, R1 purity extension #579), one is a
 dead end (R4), and one is not built (R6).** This round follows the
 [synthesis-to-analysis round](hermitcrab-2026-10-27-synthesis-to-analysis-round.md), whose conclusion was that
 synthesis is 1.0% (Aweti) to 9.0% (Mbugwe sample) of total work and the dominant cost is analysis. Here the
@@ -396,6 +396,14 @@ censusmerge runs (`truncate-morphotactic-identity#default` word 2), and the on a
 
 **Stress grammars.** The stress fixtures are now PR #578: opt-in (`[Explicit]`, `[Category("Stress")]`, run with the filter `TestCategory=Stress`), not run in CI. Their expected parses are master's output. They are synthetic; the real-grammar figures above are Mbugwe, Sena, Aweti, Amharic, Indonesian and conformance.
 
+## Impure slots: unbounded runs restore nothing (PR #579, stacked on #576)
+
+- **R1 purity extension (PR #579, stacked on #576).** R1 called a slot impure when a copied part "may match nothing". Mbugwe's vowel-fusion allomorphs copy `OptionalSegmentSequence min=0 max=-1` runs, so every object and subject slot there was impure and the walk stopped testing behind them. `AnalysisMorphologicalTransform.Untruncate` writes nothing back for an unbounded quantifier (`max=-1`), so those allomorphs restore no segment and are pure. `RequiredSlotMaterial.RestoredSegments` now mirrors `Untruncate`: one segment for a bare segment constraint, `max(0, MaxOccur)` times the children for a quantifier, and the sum of the children for anything else. An allomorph whose parts restore 0 segments is pure. Bounded quantifiers, bare segments, optional alternations and any `ModifyFromInput` stay impure as before. The count is computed once per allomorph at construction, with no cache and no `Interlocked`. The Presence argument is unchanged. A kō-style copy-twice allomorph is still unordered, so R1's independent presence test runs behind it. The relation rests on `Untruncate` emitting nothing for `MaxOccur == -1`; the tests pin it.
+- **Figures, #576 → #579 (less work than master).** Events plus synthesis steps: Mbugwe **8.19% less → 40.85% less**; the synthetic fusion stress grammar **2.11% less → 74.59% less**; other grammars unchanged. Unification calls: Mbugwe **1.83% less → 22.55% less**. Matcher work: Mbugwe **7.65% less → 30.47% less**. The look-ahead's own check unifications on Mbugwe are **13.88% more** (995,434 → 1,133,568), and they are included in those totals.
+- **Shadow and parity.** 0 violations and 0 completed-under-fired on every grammar; parses equal to master on every completed word.
+- **Limit (open).** Aweti keeps about 16% of its events behind bounded runs, bare restored segments or modification (16.42% with any live template blocked, measured before this change). A supply-set design, which would count distinct restored nodes, was not built.
+- PanGloss port: sillsdev/PanGloss #67.
+
 ## Cross-cutting lessons
 
 1. **Count a check's own cost in the same unit as what it saves.** R1, R2 and R5 all first reported gross numbers.
@@ -418,6 +426,7 @@ censusmerge runs (`truncate-morphotactic-identity#default` word 2), and the on a
    mostly restoration violations; the sound share on the four target grammars was zero.
 7. **A gate tuned to the test lexicons is overfitting.** R2's root-count gate would have removed the conformance
    loss and no real-grammar gain, so it was rejected.
+8. **A conservative purity test can hide work.** R1's purity test treated a copied part that may match nothing as impure, though an unbounded run restores nothing. Making the test exact against Untruncate was worth a further 32.66 points less Mbugwe work (8.19% less → 40.85% less).
 
 ## Open questions
 
