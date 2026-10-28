@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Annotations;
@@ -23,25 +24,72 @@ namespace SIL.Machine.Morphology.HermitCrab
     }
 
     /// <summary>
+    /// What a walk over the slots of one template has established about the shape, in the ordinals of the shape
+    /// the walk started from. Create it with <see cref="Start"/>.
+    /// </summary>
+    internal struct SlotWalk
+    {
+        /// <summary>Stands for "any number" in <see cref="ReachLeft"/> and <see cref="ReachRight"/>.</summary>
+        public const int Unbounded = int.MaxValue / 4;
+
+        /// <summary>Every node the slots still to unapply can match lies after this ordinal.</summary>
+        public int Lo;
+
+        /// <summary>Every node the slots still to unapply can match lies before this ordinal.</summary>
+        public int Hi;
+
+        /// <summary>The most nodes that the slots walked so far can have removed from the left edge.</summary>
+        public int ReachLeft;
+
+        /// <summary>The most nodes that the slots walked so far can have removed from the right edge.</summary>
+        public int ReachRight;
+
+        /// <summary>False once a slot walked so far can reorder the nodes it copies.</summary>
+        public bool Ordered;
+
+        public static SlotWalk Start()
+        {
+            return new SlotWalk
+            {
+                Lo = -1,
+                Hi = int.MaxValue,
+                Ordered = true,
+            };
+        }
+    }
+
+    /// <summary>
     /// A necessary condition for a required affix template slot to unapply later in a template walk: some
-    /// allomorph of some rule in the slot must have every inserted segment unify with a segment of the shape.
+    /// allomorph of some rule in the slot must have its inserted segments, in the order it inserts them, unify
+    /// with distinct segment nodes of the shape in that order, and the nodes must be where the slots that unapply
+    /// first can leave them.
     /// </summary>
     /// <remarks>
     /// The tables are built once from the template and depend only on the grammar.
     ///
-    /// Soundness. The analysis pattern of an allomorph holds one top-level constraint per inserted segment
-    /// (<see cref="InsertSegments.GenerateAnalysisLhs"/>, <see cref="InsertSimpleContext.GenerateAnalysisLhs"/>),
-    /// and the rule can only unapply if each constraint unifies with a distinct segment node of the shape.
-    /// A rule is pure when every right-hand side action copies an input part or inserts material, and every
-    /// left-hand part is copied by a <see cref="CopyFromInput"/> that must capture a segment, or has no
-    /// segment to restore. Then <see cref="AnalysisMorphologicalTransform.GenerateShape"/> only copies input
-    /// nodes and never untruncates a segment. Unification can only narrow the feature structure of a copied
-    /// node, so a constraint that unifies with no node of the shape unifies with no node of the shape after
-    /// any number of pure unapplications. Inside one template walk only the rules of that template's slots
-    /// run, and the stratum's phonological rules ran before the walk. The test for slot j is therefore used
-    /// only when every rule in the slots still to be walked after j is pure. Optional nodes count as present
-    /// because the matcher can match them. Anything that cannot be summarised (a null affix, a constraint with
-    /// variables, an unknown rule type) leaves the slot unprunable.
+    /// Presence. The analysis pattern of an allomorph holds one top-level constraint per inserted segment, in the
+    /// order of the right-hand side (<see cref="InsertSegments.GenerateAnalysisLhs"/>,
+    /// <see cref="InsertSimpleContext.GenerateAnalysisLhs"/>), and the rule can only unapply if the constraints
+    /// unify with segment nodes of the shape in that order, each node used once. A rule is pure when every
+    /// right-hand side action copies an input part or inserts material, and every left-hand part is copied by a
+    /// <see cref="CopyFromInput"/> that must capture a segment, or has no segment to restore. Then
+    /// <see cref="AnalysisMorphologicalTransform.GenerateShape"/> only copies input nodes and never untruncates a
+    /// segment. Unification can only narrow the feature structure of a copied node, so a constraint that unifies
+    /// with no node of the shape unifies with no node of the shape after any number of pure unapplications. Inside
+    /// one template walk only the rules of that template's slots run, and the stratum's phonological rules ran
+    /// before the walk. The test for slot j is therefore used only when every rule in the slots still to be walked
+    /// after j is pure. Optional nodes count as present because the matcher can match them. Anything that cannot
+    /// be summarised (a null affix, a constraint with variables that is then matched by any segment, an unknown
+    /// rule type) can only weaken the test.
+    ///
+    /// Order. A pure rule is ordered when it copies each part at most once and in left-hand order, so the shape
+    /// it unapplies to is a subsequence of the shape it was given. An ordered rule whose inserts all come before
+    /// its first copied part (after its last) is anchored on that side: the analysis matcher is anchored at both
+    /// ends of the shape, so the first inserted constraint must match the first segment left once the outer slots
+    /// have removed their own prefixes. A rule can remove from an edge at most as many nodes as it inserts there
+    /// (<see cref="SlotWalk.ReachLeft"/>), and the nodes of a required ordered slot lie after the prefix and before
+    /// the suffix it inserts (<see cref="SlotWalk.Lo"/>, <see cref="SlotWalk.Hi"/>). Both only hold while every
+    /// slot walked so far is ordered, and the reach only while none can remove from the middle.
     /// </remarks>
     internal class RequiredSlotMaterial
     {
@@ -62,69 +110,183 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>
+        /// Records that the slot is the next one to unapply, so that the slots before it are tested against what
+        /// it can leave of the shape.
+        /// </summary>
+        public void Advance(int slot, ref SlotWalk walk)
+        {
+            SlotSummary summary = _slots[slot];
+            if (!walk.Ordered || !summary.IsOrdered)
+            {
+                walk.Ordered = false;
+                walk.Lo = -1;
+                walk.Hi = int.MaxValue;
+                walk.ReachLeft = SlotWalk.Unbounded;
+                walk.ReachRight = SlotWalk.Unbounded;
+                return;
+            }
+            walk.ReachLeft = Math.Min(SlotWalk.Unbounded, walk.ReachLeft + summary.ReachLeft);
+            walk.ReachRight = Math.Min(SlotWalk.Unbounded, walk.ReachRight + summary.ReachRight);
+        }
+
+        /// <summary>
         /// True if no allomorph of the slot can unapply to a word with this shape, provided that every slot
-        /// walked between this word and the slot is pure.
+        /// walked between this word and the slot is pure. When the slot can unapply and is ordered, narrows the
+        /// window of the walk for the slots before it.
         /// </summary>
         /// <param name="slot">The slot to test.</param>
         /// <param name="shape">The shape of the partial.</param>
+        /// <param name="walk">What the slots walked since the shape was taken have established.</param>
         /// <param name="unifications">Incremented by the feature structure unifications performed.</param>
-        public bool CannotUnapply(int slot, Shape shape, ref long unifications)
+        public bool CannotUnapply(int slot, Shape shape, ref SlotWalk walk, ref long unifications)
         {
             SlotSummary summary = _slots[slot];
             if (summary.MayAlwaysUnapply)
                 return false;
 
-            // The constraints of a slot repeat across its allomorphs, so each distinct one is looked up once.
-            ulong known = 0;
-            ulong present = 0;
-            foreach (int[] requirements in summary.Allomorphs)
+            // The window is only narrowed for a slot that has slots after it in the walk, and that needs every
+            // passing allomorph, not the first.
+            bool narrow = walk.Ordered && summary.IsOrdered && slot > 0;
+            int newLo = int.MaxValue;
+            int newHi = -1;
+            bool any = false;
+            foreach (AllomorphSummary allomorph in summary.Allomorphs)
             {
-                bool all = true;
-                foreach (int index in requirements)
+                int prefixEnd = -1;
+                int suffixStart = int.MaxValue;
+                bool found = walk.Ordered
+                    ? Embeds(allomorph, shape, ref walk, ref unifications, out prefixEnd, out suffixStart)
+                    : AllPresent(allomorph, shape, ref unifications);
+                if (!found)
+                    continue;
+
+                if (!narrow)
+                    return false;
+                any = true;
+                newLo = Math.Min(newLo, allomorph.Pre > 0 ? prefixEnd : walk.Lo);
+                newHi = Math.Max(newHi, allomorph.Post > 0 ? suffixStart : walk.Hi);
+            }
+            if (!any)
+                return true;
+
+            walk.Lo = newLo;
+            walk.Hi = newHi;
+            return false;
+        }
+
+        // The ordinals are those of the shape, margins excluded. A node is counted against the reach only when it
+        // cannot be skipped, because the matcher may skip an optional node.
+        private static bool Embeds(
+            AllomorphSummary allomorph,
+            Shape shape,
+            ref SlotWalk walk,
+            ref long unifications,
+            out int prefixEnd,
+            out int suffixStart
+        )
+        {
+            prefixEnd = -1;
+            suffixStart = int.MaxValue;
+            FeatureStruct[] sequence = allomorph.Sequence;
+            int front = sequence.Length - allomorph.Post;
+            int forwardEnd = -1;
+
+            int next = 0;
+            int before = 0;
+            int ordinal = -1;
+            foreach (ShapeNode node in shape)
+            {
+                if (next == front)
+                    break;
+                ordinal++;
+                if (ordinal >= walk.Hi)
+                    break;
+
+                bool segment = node.Type() == HCFeatureSystem.Segment;
+                if (segment && ordinal > walk.Lo)
                 {
-                    bool found;
-                    ulong bit = index < 64 ? 1UL << index : 0;
-                    if ((known & bit) != 0)
+                    if (next < allomorph.Pre && before > Math.Min(SlotWalk.Unbounded, walk.ReachLeft + next))
+                        return false;
+
+                    FeatureStruct required = sequence[next];
+                    if (required == null || IsUnifiable(node, required, ref unifications))
                     {
-                        found = (present & bit) != 0;
+                        if (next == allomorph.Pre - 1)
+                            prefixEnd = ordinal;
+                        forwardEnd = ordinal;
+                        next++;
                     }
-                    else
+                }
+                if (segment && !node.Annotation.Optional)
+                    before++;
+            }
+            if (next < front)
+                return false;
+            if (allomorph.Post == 0)
+                return true;
+
+            int taken = 0;
+            int after = 0;
+            ordinal = shape.Count;
+            for (ShapeNode node = shape.Last; node != null && taken < allomorph.Post; node = node.Prev)
+            {
+                ordinal--;
+                if (ordinal <= walk.Lo || ordinal <= forwardEnd)
+                    break;
+
+                bool segment = node.Type() == HCFeatureSystem.Segment;
+                if (segment && ordinal < walk.Hi)
+                {
+                    if (after > Math.Min(SlotWalk.Unbounded, walk.ReachRight + taken))
+                        return false;
+
+                    FeatureStruct required = sequence[sequence.Length - 1 - taken];
+                    if (required == null || IsUnifiable(node, required, ref unifications))
                     {
-                        found = IsPresent(summary.Distinct[index], shape, ref unifications);
-                        known |= bit;
-                        if (found)
-                            present |= bit;
+                        suffixStart = ordinal;
+                        taken++;
                     }
-                    if (!found)
+                }
+                if (segment && !node.Annotation.Optional)
+                    after++;
+            }
+            return taken == allomorph.Post;
+        }
+
+        // Once a slot that can reorder nodes has been walked the order of the shape says nothing about the order of
+        // the shape the slot unapplies to, so each constraint is only looked for on its own.
+        private static bool AllPresent(AllomorphSummary allomorph, Shape shape, ref long unifications)
+        {
+            foreach (FeatureStruct required in allomorph.Sequence)
+            {
+                if (required == null)
+                    continue;
+
+                bool found = false;
+                foreach (ShapeNode node in shape)
+                {
+                    if (node.Type() == HCFeatureSystem.Segment && IsUnifiable(node, required, ref unifications))
                     {
-                        all = false;
+                        found = true;
                         break;
                     }
                 }
-                if (all)
+                if (!found)
                     return false;
             }
             return true;
         }
 
-        private static bool IsPresent(FeatureStruct required, Shape shape, ref long unifications)
+        private static bool IsUnifiable(ShapeNode node, FeatureStruct required, ref long unifications)
         {
-            foreach (ShapeNode node in shape)
-            {
-                if (node.Type() != HCFeatureSystem.Segment)
-                    continue;
-
-                unifications++;
-                if (node.Annotation.FeatureStruct.IsUnifiable(required, false, null))
-                    return true;
-            }
-            return false;
+            unifications++;
+            return node.Annotation.FeatureStruct.IsUnifiable(required, false, null);
         }
 
         private static SlotSummary Summarize(AffixTemplateSlot slot)
         {
             var summary = new SlotSummary();
-            var allomorphs = new List<FeatureStruct[]>();
+            var allomorphs = new List<AllomorphSummary>();
             foreach (MorphemicMorphologicalRule rule in slot.Rules)
             {
                 IList<AffixProcessAllomorph> ruleAllomorphs;
@@ -139,73 +301,117 @@ namespace SIL.Machine.Morphology.HermitCrab
                     default:
                         summary.MayAlwaysUnapply = true;
                         summary.IsPure = false;
+                        summary.IsOrdered = false;
+                        summary.ReachLeft = SlotWalk.Unbounded;
+                        summary.ReachRight = SlotWalk.Unbounded;
                         continue;
                 }
 
                 foreach (AffixProcessAllomorph allomorph in ruleAllomorphs)
                 {
-                    if (!IsPure(allomorph))
+                    bool pure = IsPure(allomorph);
+                    if (!pure)
                         summary.IsPure = false;
+                    if (!pure || !IsOrdered(allomorph))
+                        summary.IsOrdered = false;
 
-                    FeatureStruct[] requirements = GetRequirements(allomorph);
-                    if (requirements.Length == 0)
+                    AllomorphSummary allomorphSummary = Summarize(allomorph);
+                    summary.ReachLeft = Math.Max(summary.ReachLeft, allomorphSummary.ReachLeft);
+                    summary.ReachRight = Math.Max(summary.ReachRight, allomorphSummary.ReachRight);
+                    if (allomorphSummary.Sequence.Length == 0)
                         summary.MayAlwaysUnapply = true;
                     else
-                        allomorphs.Add(requirements);
+                        allomorphs.Add(allomorphSummary);
                 }
             }
-            var distinct = new List<FeatureStruct>();
-            summary.Allomorphs = allomorphs
-                .Select(requirements =>
-                    requirements
-                        .Select(fs =>
-                        {
-                            int index = distinct.FindIndex(d => d.ValueEquals(fs));
-                            if (index < 0)
-                            {
-                                distinct.Add(fs);
-                                index = distinct.Count - 1;
-                            }
-                            return index;
-                        })
-                        .ToArray()
-                )
-                .ToArray();
-            summary.Distinct = distinct.ToArray();
+            summary.Allomorphs = allomorphs.ToArray();
             return summary;
         }
 
-        private static FeatureStruct[] GetRequirements(AffixProcessAllomorph allomorph)
+        // Pre is the inserts before the first non-insertion, Post those after the last; any between is an infix.
+        // A non-segment constraint matches nothing the matcher sees, so skipping it only weakens the test.
+        private static AllomorphSummary Summarize(AffixProcessAllomorph allomorph)
         {
-            var requirements = new List<FeatureStruct>();
-            foreach (MorphologicalOutputAction action in allomorph.Rhs)
+            var sequence = new List<FeatureStruct>();
+            IList<MorphologicalOutputAction> rhs = allomorph.Rhs;
+            int first = -1;
+            int last = -1;
+            for (int i = 0; i < rhs.Count; i++)
             {
-                if (action is InsertSegments insertSegments)
-                {
-                    foreach (ShapeNode node in insertSegments.Segments.Shape)
-                    {
-                        if (node.Type() != HCFeatureSystem.Boundary)
-                            AddRequirement(requirements, node.Annotation.FeatureStruct);
-                    }
-                }
-                else if (action is InsertSimpleContext insertContext)
-                {
-                    AddRequirement(requirements, insertContext.SimpleContext.FeatureStruct);
-                }
+                if (IsInsertion(rhs[i]))
+                    continue;
+                if (first < 0)
+                    first = i;
+                last = i;
             }
-            return requirements.ToArray();
+
+            int pre = 0;
+            int post = 0;
+            bool infix = false;
+            for (int i = 0; i < rhs.Count; i++)
+            {
+                if (!IsInsertion(rhs[i]))
+                    continue;
+
+                int before = sequence.Count;
+                foreach (FeatureStruct fs in InsertedConstraints(rhs[i]))
+                {
+                    if ((FeatureSymbol)fs.GetValue(HCFeatureSystem.Type) != HCFeatureSystem.Segment)
+                        continue;
+
+                    // A constraint with variables is bound by earlier matches, so any segment stands for it.
+                    FeatureStruct copy = null;
+                    if (!fs.HasVariables)
+                    {
+                        copy = fs.Clone();
+                        copy.Freeze();
+                    }
+                    sequence.Add(copy);
+                }
+                int added = sequence.Count - before;
+                if (first < 0 || (i > first && i < last))
+                    infix = true;
+                else if (i < first)
+                    pre += added;
+                else
+                    post += added;
+            }
+
+            var summary = new AllomorphSummary { Sequence = sequence.ToArray() };
+            if (infix)
+            {
+                summary.ReachLeft = SlotWalk.Unbounded;
+                summary.ReachRight = SlotWalk.Unbounded;
+            }
+            else
+            {
+                summary.Pre = pre;
+                summary.Post = post;
+                summary.ReachLeft = pre;
+                summary.ReachRight = post;
+            }
+            return summary;
         }
 
-        // A constraint with variables is bound by earlier matches, and one that is not a segment is never
-        // matched against the segments the matcher considers, so neither can be tested here.
-        private static void AddRequirement(List<FeatureStruct> requirements, FeatureStruct fs)
+        private static bool IsInsertion(MorphologicalOutputAction action)
         {
-            if (fs.HasVariables || (FeatureSymbol)fs.GetValue(HCFeatureSystem.Type) != HCFeatureSystem.Segment)
-                return;
+            return action is InsertSegments || action is InsertSimpleContext;
+        }
 
-            FeatureStruct copy = fs.Clone();
-            copy.Freeze();
-            requirements.Add(copy);
+        private static IEnumerable<FeatureStruct> InsertedConstraints(MorphologicalOutputAction action)
+        {
+            if (action is InsertSegments insertSegments)
+            {
+                foreach (ShapeNode node in insertSegments.Segments.Shape)
+                {
+                    if (node.Type() != HCFeatureSystem.Boundary)
+                        yield return node.Annotation.FeatureStruct;
+                }
+            }
+            else if (action is InsertSimpleContext insertContext)
+            {
+                yield return insertContext.SimpleContext.FeatureStruct;
+            }
         }
 
         private static bool IsPure(AffixProcessAllomorph allomorph)
@@ -215,7 +421,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 if (action is CopyFromInput)
                     copied.Add(action.PartName);
-                else if (!(action is InsertSegments || action is InsertSimpleContext))
+                else if (!IsInsertion(action))
                     return false;
             }
 
@@ -225,6 +431,24 @@ namespace SIL.Machine.Morphology.HermitCrab
                     continue;
                 if (!copied.Contains(part.Name) || MinSegments(part) == 0)
                     return false;
+            }
+            return true;
+        }
+
+        // GenerateShape writes parts in left-hand order, so copying them in another order, or one twice, can
+        // reorder or repeat nodes.
+        private static bool IsOrdered(AffixProcessAllomorph allomorph)
+        {
+            int previous = -1;
+            foreach (MorphologicalOutputAction action in allomorph.Rhs)
+            {
+                if (!(action is CopyFromInput))
+                    continue;
+
+                int index = allomorph.Lhs.ToList().FindIndex(part => part.Name == action.PartName);
+                if (index <= previous)
+                    return false;
+                previous = index;
             }
             return true;
         }
@@ -253,12 +477,23 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
+        private class AllomorphSummary
+        {
+            public FeatureStruct[] Sequence;
+            public int Pre;
+            public int Post;
+            public int ReachLeft;
+            public int ReachRight;
+        }
+
         private class SlotSummary
         {
             public bool IsPure = true;
+            public bool IsOrdered = true;
             public bool MayAlwaysUnapply;
-            public int[][] Allomorphs;
-            public FeatureStruct[] Distinct;
+            public int ReachLeft;
+            public int ReachRight;
+            public AllomorphSummary[] Allomorphs;
         }
     }
 }
