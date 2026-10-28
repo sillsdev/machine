@@ -1,0 +1,252 @@
+# kind: stress (timing and optimization parity fixture, not conformance; see conformance-stress/README.md)
+language: StressBantuTamFusion
+sources: []
+requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: "research stress fixture; not authored through FieldWorks"
+budget_ms: 60000
+words:
+  - word: wnonemileila
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: rokaatemani
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_5_ro+tam_kaa+tem+fv_5+pl_5|rokaatemani"
+        rules: [fv_5, pl_5, subj_5_ro, tam_kaa]
+  - word: dudagileilni
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_1_du+dag+tam_ile+ext_1_il+pl_1|dudagileilni"
+        rules: [ext_1_il, pl_1, subj_1_du, tam_ile]
+  - word: dbubbabisana
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: yogorileani
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_1_yo+gor+tam_ile+fv_1+pl_1|yogorileani"
+        rules: [fv_1, pl_1, subj_1_yo, tam_ile]
+  - word: wokesana
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_2_wo+kes+tam_ana|wokesana"
+        rules: [subj_2_wo, tam_ana]
+  - word: kgogyayeedagola
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: holayeekum
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_6_ho+obj_la+tam_jee+kum|holayeekum"
+        rules: [obj_la, subj_6_ho, tam_jee]
+  - word: hopatanaana
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_2_ho+pat+tam_ana+ext_2_an+fv_2|hopatanaana"
+        rules: [ext_2_an, fv_2, subj_2_ho, tam_ana]
+  - word: tkokaawabani
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: kosiarewabutani
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_7_ko+obj_si+tam_are+wab+ext_7_ut+fv_7+pl_7|kosiarewabutani"
+        rules: [ext_7_ut, fv_7, obj_si, pl_7, subj_7_ko, tam_are]
+  - word: honanugileil
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_1_ho+obj_na+nug+tam_ile+ext_1_il|honanugileil"
+        rules: [ext_1_il, obj_na, subj_1_ho, tam_ile]
+  - word: nrorotiye
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: bubabelileni
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_1_bu+obj_ba+bel+tam_ile+pl_1|bubabelileni"
+        rules: [obj_ba, pl_1, subj_1_bu, tam_ile]
+  - word: dupiriyeis
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_0_du+pir+tam_iye+ext_0_is|dupiriyeis"
+        rules: [ext_0_is, subj_0_du, tam_iye]
+  - word: hkokkakaapatekni
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: logumiyeis
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_0_lo+gum+tam_iye+ext_0_is|logumiyeis"
+        rules: [ext_0_is, subj_0_lo, tam_iye]
+  - word: dudipirileani
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_1_du+obj_di+pir+tam_ile+fv_1+pl_1|dudipirileani"
+        rules: [fv_1, obj_di, pl_1, subj_1_du, tam_ile]
+  - word: mdodagileilani
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: rokesiye
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_0_ro+kes+tam_iye|rokesiye"
+        rules: [subj_0_ro, tam_iye]
+  - word: posayeetemola
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_6_po+obj_sa+tam_jee+tem+ext_6_ol+fv_6|posayeetemola"
+        rules: [ext_6_ol, fv_6, obj_sa, subj_6_po, tam_jee]
+  - word: kkokaatemekani
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: pokaakumni
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_5_po+tam_kaa+kum+pl_5|pokaakumni"
+        rules: [pl_5, subj_5_po, tam_kaa]
+  - word: somukaalub
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_5_so+obj_mu+tam_kaa+lub|somukaalub"
+        rules: [obj_mu, subj_5_so, tam_kaa]
+  - word: rtotgigoonema
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: womeebelada
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_8_wo+tam_mee+bel+ext_8_ad+fv_8|womeebelada"
+        rules: [ext_8_ad, fv_8, subj_8_wo, tam_mee]
+  - word: gomikaabeliyea
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_11_go+obj_mi+tam_kaa-iye+bel+fv_11|gomikaabeliyea"
+        rules: [fv_11, obj_mi, subj_11_go, tam_kaa-iye]
+  - word: mkokkakaaweniyeni
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: yokaamosiye
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_11_yo+tam_kaa-iye+mos|yokaamosiye"
+        rules: [subj_11_yo, tam_kaa-iye]
+  - word: wobisokaa
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_4_wo+bis+tam_oka+fv_4|wobisokaa"
+        rules: [fv_4, subj_4_wo, tam_oka]
+  - word: tmomoseka
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: tomeenug
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_8_to+tam_mee+nug|tomeenug"
+        rules: [subj_8_to, tam_mee]
+  - word: sokatuudolemani
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_9_so+obj_ka+tam_tuu+dol+ext_9_em+fv_9+pl_9|sokatuudolemani"
+        rules: [ext_9_em, fv_9, obj_ka, pl_9, subj_9_so, tam_tuu]
+  - word: hgogmameedaga
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: rotuupatem
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_9_ro+tam_tuu+pat+ext_9_em|rotuupatem"
+        rules: [ext_9_em, subj_9_ro, tam_tuu]
+  - word: romeewenad
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_8_ro+tam_mee+wen+ext_8_ad|romeewenad"
+        rules: [ext_8_ad, subj_8_ro, tam_mee]
+  - word: ntutuulenani
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: tomameerota
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_8_to+obj_ma+tam_mee+rot+fv_8|tomameerota"
+        rules: [fv_8, obj_ma, subj_8_to, tam_mee]
+  - word: wokaabeliyea
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_11_wo+tam_kaa-iye+bel+fv_11|wokaabeliyea"
+        rules: [fv_11, subj_11_wo, tam_kaa-iye]
+  - word: gwowtatuubala
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: mowenekani
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_3_mo+wen+tam_eka+pl_3|mowenekani"
+        rules: [pl_3, subj_3_mo, tam_eka]
+  - word: dutuulubani
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_9_du+tam_tuu+lub+fv_9+pl_9|dutuulubani"
+        rules: [fv_9, pl_9, subj_9_du, tam_tuu]
+  - word: tpopgagookor
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: gokaakoriyeni
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_11_go+tam_kaa-iye+kor+pl_11|gokaakoriyeni"
+        rules: [pl_11, subj_11_go, tam_kaa-iye]
+  - word: womugoogor
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_10_wo+obj_mu+tam_goo+gor|womugoogor"
+        rules: [obj_mu, subj_10_wo, tam_goo]
+  - word: ssostituurem
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: kotuubala
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_9_ko+tam_tuu+bal+fv_9|kotuubala"
+        rules: [fv_9, subj_9_ko, tam_tuu]
+  - word: ronimeedolada
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    parses:
+      - signature: "subj_8_ro+obj_ni+tam_mee+dol+ext_8_ad+fv_8|ronimeedolada"
+        rules: [ext_8_ad, fv_8, obj_ni, subj_8_ro, tam_mee]
+  - word: woarebam
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: arehit
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: rogipiye
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: yeehit
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: dugipiye
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: remile
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: nobameka
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: patoka
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: butuugip
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: goonem
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: dutuubam
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
+  - word: tuurot
+    note: "Bantu vowel-fusion slot-template stress: 60 words over 12 synthetic templates whose object and subject rules each have a plain and a vowel-fusion allomorph; expected parses are the master engine's, 28 words have no parse."
+    expect_fail: true
