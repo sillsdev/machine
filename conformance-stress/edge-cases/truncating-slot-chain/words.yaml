@@ -1,0 +1,798 @@
+# kind: stress (timing and optimization parity fixture, not conformance; see conformance-stress/README.md)
+language: StressTruncatingSlotChain
+sources: []
+requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: "research stress fixture; not authored through FieldWorks"
+budget_ms: 60000
+words:
+  - word: tokorklsu
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_to+kor+tam_ka+ext_le+o3_su|tokorklsu"
+        rules: [ext_le, o3_su, subj_to, tam_ka]
+      - signature: "subj_to+kor+tam_ke+ext_le+o3_su|tokorklsu"
+        rules: [ext_le, o3_su, subj_to, tam_ke]
+      - signature: "subj_to+kor+tam_ki+ext_le+o3_su|tokorklsu"
+        rules: [ext_le, o3_su, subj_to, tam_ki]
+      - signature: "subj_to+kor+tam_ko+ext_le+o3_su|tokorklsu"
+        rules: [ext_le, o3_su, subj_to, tam_ko]
+      - signature: "subj_to+kor+tam_ku+ext_le+o3_su|tokorklsu"
+        rules: [ext_le, o3_su, subj_to, tam_ku]
+  - word: nolenksu
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_no+len+tam_ka+ext_su|nolenksu"
+        rules: [ext_su, subj_no, tam_ka]
+      - signature: "subj_no+len+tam_ke+ext_su|nolenksu"
+        rules: [ext_su, subj_no, tam_ke]
+      - signature: "subj_no+len+tam_ki+ext_su|nolenksu"
+        rules: [ext_su, subj_no, tam_ki]
+      - signature: "subj_no+len+tam_ko+ext_su|nolenksu"
+        rules: [ext_su, subj_no, tam_ko]
+      - signature: "subj_no+len+tam_ku+ext_su|nolenksu"
+        rules: [ext_su, subj_no, tam_ku]
+  - word: dusabkti
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_du+sab+tam_ka+ext_ti|dusabkti"
+        rules: [ext_ti, subj_du, tam_ka]
+      - signature: "subj_du+sab+tam_ke+ext_ti|dusabkti"
+        rules: [ext_ti, subj_du, tam_ke]
+      - signature: "subj_du+sab+tam_ki+ext_ti|dusabkti"
+        rules: [ext_ti, subj_du, tam_ki]
+      - signature: "subj_du+sab+tam_ko+ext_ti|dusabkti"
+        rules: [ext_ti, subj_du, tam_ko]
+      - signature: "subj_du+sab+tam_ku+ext_ti|dusabkti"
+        rules: [ext_ti, subj_du, tam_ku]
+  - word: sodipkpu
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_so+dip+tam_ka+ext_pu|sodipkpu"
+        rules: [ext_pu, subj_so, tam_ka]
+      - signature: "subj_so+dip+tam_ke+ext_pu|sodipkpu"
+        rules: [ext_pu, subj_so, tam_ke]
+      - signature: "subj_so+dip+tam_ki+ext_pu|sodipkpu"
+        rules: [ext_pu, subj_so, tam_ki]
+      - signature: "subj_so+dip+tam_ko+ext_pu|sodipkpu"
+        rules: [ext_pu, subj_so, tam_ko]
+      - signature: "subj_so+dip+tam_ku+ext_pu|sodipkpu"
+        rules: [ext_pu, subj_so, tam_ku]
+  - word: topatksu
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_to+pat+tam_ka+ext_su|topatksu"
+        rules: [ext_su, subj_to, tam_ka]
+      - signature: "subj_to+pat+tam_ke+ext_su|topatksu"
+        rules: [ext_su, subj_to, tam_ke]
+      - signature: "subj_to+pat+tam_ki+ext_su|topatksu"
+        rules: [ext_su, subj_to, tam_ki]
+      - signature: "subj_to+pat+tam_ko+ext_su|topatksu"
+        rules: [ext_su, subj_to, tam_ko]
+      - signature: "subj_to+pat+tam_ku+ext_su|topatksu"
+        rules: [ext_su, subj_to, tam_ku]
+  - word: notagkkne
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_no+tag+tam_ka+ext_ka+o3_ne|notagkkne"
+        rules: [ext_ka, o3_ne, subj_no, tam_ka]
+      - signature: "subj_no+tag+tam_ke+ext_ka+o3_ne|notagkkne"
+        rules: [ext_ka, o3_ne, subj_no, tam_ke]
+      - signature: "subj_no+tag+tam_ki+ext_ka+o3_ne|notagkkne"
+        rules: [ext_ka, o3_ne, subj_no, tam_ki]
+      - signature: "subj_no+tag+tam_ko+ext_ka+o3_ne|notagkkne"
+        rules: [ext_ka, o3_ne, subj_no, tam_ko]
+      - signature: "subj_no+tag+tam_ku+ext_ka+o3_ne|notagkkne"
+        rules: [ext_ka, o3_ne, subj_no, tam_ku]
+  - word: pobiskrda
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_po+bis+tam_ka+ext_ri+o3_da|pobiskrda"
+        rules: [ext_ri, o3_da, subj_po, tam_ka]
+      - signature: "subj_po+bis+tam_ke+ext_ri+o3_da|pobiskrda"
+        rules: [ext_ri, o3_da, subj_po, tam_ke]
+      - signature: "subj_po+bis+tam_ki+ext_ri+o3_da|pobiskrda"
+        rules: [ext_ri, o3_da, subj_po, tam_ki]
+      - signature: "subj_po+bis+tam_ko+ext_ri+o3_da|pobiskrda"
+        rules: [ext_ri, o3_da, subj_po, tam_ko]
+      - signature: "subj_po+bis+tam_ku+ext_ri+o3_da|pobiskrda"
+        rules: [ext_ri, o3_da, subj_po, tam_ku]
+  - word: nunugkspi
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_nu+nug+tam_ka+ext_su+o4_pi|nunugkspi"
+        rules: [ext_su, o4_pi, subj_nu, tam_ka]
+      - signature: "subj_nu+nug+tam_ke+ext_su+o4_pi|nunugkspi"
+        rules: [ext_su, o4_pi, subj_nu, tam_ke]
+      - signature: "subj_nu+nug+tam_ki+ext_su+o4_pi|nunugkspi"
+        rules: [ext_su, o4_pi, subj_nu, tam_ki]
+      - signature: "subj_nu+nug+tam_ko+ext_su+o4_pi|nunugkspi"
+        rules: [ext_su, o4_pi, subj_nu, tam_ko]
+      - signature: "subj_nu+nug+tam_ku+ext_su+o4_pi|nunugkspi"
+        rules: [ext_su, o4_pi, subj_nu, tam_ku]
+  - word: rotemkprra
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_ro+tem+tam_ka+ext_pu+o2_ru+o3_ra|rotemkprra"
+        rules: [ext_pu, o2_ru, o3_ra, subj_ro, tam_ka]
+      - signature: "subj_ro+tem+tam_ke+ext_pu+o2_ru+o3_ra|rotemkprra"
+        rules: [ext_pu, o2_ru, o3_ra, subj_ro, tam_ke]
+      - signature: "subj_ro+tem+tam_ki+ext_pu+o2_ru+o3_ra|rotemkprra"
+        rules: [ext_pu, o2_ru, o3_ra, subj_ro, tam_ki]
+      - signature: "subj_ro+tem+tam_ko+ext_pu+o2_ru+o3_ra|rotemkprra"
+        rules: [ext_pu, o2_ru, o3_ra, subj_ro, tam_ko]
+      - signature: "subj_ro+tem+tam_ku+ext_pu+o2_ru+o3_ra|rotemkprra"
+        rules: [ext_pu, o2_ru, o3_ra, subj_ro, tam_ku]
+  - word: mowabkpdma
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_mo+wab+tam_ka+ext_pu+o2_di+o4_ma|mowabkpdma"
+        rules: [ext_pu, o2_di, o4_ma, subj_mo, tam_ka]
+      - signature: "subj_mo+wab+tam_ka+ext_pu+o3_da+o4_ma|mowabkpdma"
+        rules: [ext_pu, o3_da, o4_ma, subj_mo, tam_ka]
+      - signature: "subj_mo+wab+tam_ke+ext_pu+o2_di+o4_ma|mowabkpdma"
+        rules: [ext_pu, o2_di, o4_ma, subj_mo, tam_ke]
+      - signature: "subj_mo+wab+tam_ke+ext_pu+o3_da+o4_ma|mowabkpdma"
+        rules: [ext_pu, o3_da, o4_ma, subj_mo, tam_ke]
+      - signature: "subj_mo+wab+tam_ki+ext_pu+o2_di+o4_ma|mowabkpdma"
+        rules: [ext_pu, o2_di, o4_ma, subj_mo, tam_ki]
+      - signature: "subj_mo+wab+tam_ki+ext_pu+o3_da+o4_ma|mowabkpdma"
+        rules: [ext_pu, o3_da, o4_ma, subj_mo, tam_ki]
+      - signature: "subj_mo+wab+tam_ko+ext_pu+o2_di+o4_ma|mowabkpdma"
+        rules: [ext_pu, o2_di, o4_ma, subj_mo, tam_ko]
+      - signature: "subj_mo+wab+tam_ko+ext_pu+o3_da+o4_ma|mowabkpdma"
+        rules: [ext_pu, o3_da, o4_ma, subj_mo, tam_ko]
+      - signature: "subj_mo+wab+tam_ku+ext_pu+o2_di+o4_ma|mowabkpdma"
+        rules: [ext_pu, o2_di, o4_ma, subj_mo, tam_ku]
+      - signature: "subj_mo+wab+tam_ku+ext_pu+o3_da+o4_ma|mowabkpdma"
+        rules: [ext_pu, o3_da, o4_ma, subj_mo, tam_ku]
+  - word: nomerkkpa
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_no+mer+tam_ka+ext_ka+o2_pa|nomerkkpa"
+        rules: [ext_ka, o2_pa, subj_no, tam_ka]
+      - signature: "subj_no+mer+tam_ke+ext_ka+o2_pa|nomerkkpa"
+        rules: [ext_ka, o2_pa, subj_no, tam_ke]
+      - signature: "subj_no+mer+tam_ki+ext_ka+o2_pa|nomerkkpa"
+        rules: [ext_ka, o2_pa, subj_no, tam_ki]
+      - signature: "subj_no+mer+tam_ko+ext_ka+o2_pa|nomerkkpa"
+        rules: [ext_ka, o2_pa, subj_no, tam_ko]
+      - signature: "subj_no+mer+tam_ku+ext_ka+o2_pa|nomerkkpa"
+        rules: [ext_ka, o2_pa, subj_no, tam_ku]
+  - word: sowabkndmi
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_so+wab+tam_ka+ext_na+o2_di+o3_mi|sowabkndmi"
+        rules: [ext_na, o2_di, o3_mi, subj_so, tam_ka]
+      - signature: "subj_so+wab+tam_ke+ext_na+o2_di+o3_mi|sowabkndmi"
+        rules: [ext_na, o2_di, o3_mi, subj_so, tam_ke]
+      - signature: "subj_so+wab+tam_ki+ext_na+o2_di+o3_mi|sowabkndmi"
+        rules: [ext_na, o2_di, o3_mi, subj_so, tam_ki]
+      - signature: "subj_so+wab+tam_ko+ext_na+o2_di+o3_mi|sowabkndmi"
+        rules: [ext_na, o2_di, o3_mi, subj_so, tam_ko]
+      - signature: "subj_so+wab+tam_ku+ext_na+o2_di+o3_mi|sowabkndmi"
+        rules: [ext_na, o2_di, o3_mi, subj_so, tam_ku]
+  - word: mowenkmki
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_mo+wen+tam_ka+ext_mo+o3_ki|mowenkmki"
+        rules: [ext_mo, o3_ki, subj_mo, tam_ka]
+      - signature: "subj_mo+wen+tam_ke+ext_mo+o3_ki|mowenkmki"
+        rules: [ext_mo, o3_ki, subj_mo, tam_ke]
+      - signature: "subj_mo+wen+tam_ki+ext_mo+o3_ki|mowenkmki"
+        rules: [ext_mo, o3_ki, subj_mo, tam_ki]
+      - signature: "subj_mo+wen+tam_ko+ext_mo+o3_ki|mowenkmki"
+        rules: [ext_mo, o3_ki, subj_mo, tam_ko]
+      - signature: "subj_mo+wen+tam_ku+ext_mo+o3_ki|mowenkmki"
+        rules: [ext_mo, o3_ki, subj_mo, tam_ku]
+  - word: lomoskpra
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_lo+mos+tam_ka+ext_pu+o3_ra|lomoskpra"
+        rules: [ext_pu, o3_ra, subj_lo, tam_ka]
+      - signature: "subj_lo+mos+tam_ke+ext_pu+o3_ra|lomoskpra"
+        rules: [ext_pu, o3_ra, subj_lo, tam_ke]
+      - signature: "subj_lo+mos+tam_ki+ext_pu+o3_ra|lomoskpra"
+        rules: [ext_pu, o3_ra, subj_lo, tam_ki]
+      - signature: "subj_lo+mos+tam_ko+ext_pu+o3_ra|lomoskpra"
+        rules: [ext_pu, o3_ra, subj_lo, tam_ko]
+      - signature: "subj_lo+mos+tam_ku+ext_pu+o3_ra|lomoskpra"
+        rules: [ext_pu, o3_ra, subj_lo, tam_ku]
+  - word: dutemkmllu
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_du+tem+tam_ka+ext_mo+o2_la+o4_lu|dutemkmllu"
+        rules: [ext_mo, o2_la, o4_lu, subj_du, tam_ka]
+      - signature: "subj_du+tem+tam_ka+ext_mo+o3_lo+o4_lu|dutemkmllu"
+        rules: [ext_mo, o3_lo, o4_lu, subj_du, tam_ka]
+      - signature: "subj_du+tem+tam_ke+ext_mo+o2_la+o4_lu|dutemkmllu"
+        rules: [ext_mo, o2_la, o4_lu, subj_du, tam_ke]
+      - signature: "subj_du+tem+tam_ke+ext_mo+o3_lo+o4_lu|dutemkmllu"
+        rules: [ext_mo, o3_lo, o4_lu, subj_du, tam_ke]
+      - signature: "subj_du+tem+tam_ki+ext_mo+o2_la+o4_lu|dutemkmllu"
+        rules: [ext_mo, o2_la, o4_lu, subj_du, tam_ki]
+      - signature: "subj_du+tem+tam_ki+ext_mo+o3_lo+o4_lu|dutemkmllu"
+        rules: [ext_mo, o3_lo, o4_lu, subj_du, tam_ki]
+      - signature: "subj_du+tem+tam_ko+ext_mo+o2_la+o4_lu|dutemkmllu"
+        rules: [ext_mo, o2_la, o4_lu, subj_du, tam_ko]
+      - signature: "subj_du+tem+tam_ko+ext_mo+o3_lo+o4_lu|dutemkmllu"
+        rules: [ext_mo, o3_lo, o4_lu, subj_du, tam_ko]
+      - signature: "subj_du+tem+tam_ku+ext_mo+o2_la+o4_lu|dutemkmllu"
+        rules: [ext_mo, o2_la, o4_lu, subj_du, tam_ku]
+      - signature: "subj_du+tem+tam_ku+ext_mo+o3_lo+o4_lu|dutemkmllu"
+        rules: [ext_mo, o3_lo, o4_lu, subj_du, tam_ku]
+  - word: lotagkna
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_lo+tag+tam_ka+ext_na|lotagkna"
+        rules: [ext_na, subj_lo, tam_ka]
+      - signature: "subj_lo+tag+tam_ke+ext_na|lotagkna"
+        rules: [ext_na, subj_lo, tam_ke]
+      - signature: "subj_lo+tag+tam_ki+ext_na|lotagkna"
+        rules: [ext_na, subj_lo, tam_ki]
+      - signature: "subj_lo+tag+tam_ko+ext_na|lotagkna"
+        rules: [ext_na, subj_lo, tam_ko]
+      - signature: "subj_lo+tag+tam_ku+ext_na|lotagkna"
+        rules: [ext_na, subj_lo, tam_ku]
+  - word: mogumksta
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_mo+gum+tam_ka+ext_su+o3_ta|mogumksta"
+        rules: [ext_su, o3_ta, subj_mo, tam_ka]
+      - signature: "subj_mo+gum+tam_ke+ext_su+o3_ta|mogumksta"
+        rules: [ext_su, o3_ta, subj_mo, tam_ke]
+      - signature: "subj_mo+gum+tam_ki+ext_su+o3_ta|mogumksta"
+        rules: [ext_su, o3_ta, subj_mo, tam_ki]
+      - signature: "subj_mo+gum+tam_ko+ext_su+o3_ta|mogumksta"
+        rules: [ext_su, o3_ta, subj_mo, tam_ko]
+      - signature: "subj_mo+gum+tam_ku+ext_su+o3_ta|mogumksta"
+        rules: [ext_su, o3_ta, subj_mo, tam_ku]
+  - word: hokesksnpi
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_ho+kes+tam_ka+ext_su+o2_no+o4_pi|hokesksnpi"
+        rules: [ext_su, o2_no, o4_pi, subj_ho, tam_ka]
+      - signature: "subj_ho+kes+tam_ka+ext_su+o3_ne+o4_pi|hokesksnpi"
+        rules: [ext_su, o3_ne, o4_pi, subj_ho, tam_ka]
+      - signature: "subj_ho+kes+tam_ke+ext_su+o2_no+o4_pi|hokesksnpi"
+        rules: [ext_su, o2_no, o4_pi, subj_ho, tam_ke]
+      - signature: "subj_ho+kes+tam_ke+ext_su+o3_ne+o4_pi|hokesksnpi"
+        rules: [ext_su, o3_ne, o4_pi, subj_ho, tam_ke]
+      - signature: "subj_ho+kes+tam_ki+ext_su+o2_no+o4_pi|hokesksnpi"
+        rules: [ext_su, o2_no, o4_pi, subj_ho, tam_ki]
+      - signature: "subj_ho+kes+tam_ki+ext_su+o3_ne+o4_pi|hokesksnpi"
+        rules: [ext_su, o3_ne, o4_pi, subj_ho, tam_ki]
+      - signature: "subj_ho+kes+tam_ko+ext_su+o2_no+o4_pi|hokesksnpi"
+        rules: [ext_su, o2_no, o4_pi, subj_ho, tam_ko]
+      - signature: "subj_ho+kes+tam_ko+ext_su+o3_ne+o4_pi|hokesksnpi"
+        rules: [ext_su, o3_ne, o4_pi, subj_ho, tam_ko]
+      - signature: "subj_ho+kes+tam_ku+ext_su+o2_no+o4_pi|hokesksnpi"
+        rules: [ext_su, o2_no, o4_pi, subj_ho, tam_ku]
+      - signature: "subj_ho+kes+tam_ku+ext_su+o3_ne+o4_pi|hokesksnpi"
+        rules: [ext_su, o3_ne, o4_pi, subj_ho, tam_ku]
+  - word: pobalklbpo
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_po+bal+tam_ka+ext_le+o2_ba+o3_po|pobalklbpo"
+        rules: [ext_le, o2_ba, o3_po, subj_po, tam_ka]
+      - signature: "subj_po+bal+tam_ke+ext_le+o2_ba+o3_po|pobalklbpo"
+        rules: [ext_le, o2_ba, o3_po, subj_po, tam_ke]
+      - signature: "subj_po+bal+tam_ki+ext_le+o2_ba+o3_po|pobalklbpo"
+        rules: [ext_le, o2_ba, o3_po, subj_po, tam_ki]
+      - signature: "subj_po+bal+tam_ko+ext_le+o2_ba+o3_po|pobalklbpo"
+        rules: [ext_le, o2_ba, o3_po, subj_po, tam_ko]
+      - signature: "subj_po+bal+tam_ku+ext_le+o2_ba+o3_po|pobalklbpo"
+        rules: [ext_le, o2_ba, o3_po, subj_po, tam_ku]
+  - word: sosolkklo
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_so+sol+tam_ka+ext_ka+o3_lo|sosolkklo"
+        rules: [ext_ka, o3_lo, subj_so, tam_ka]
+      - signature: "subj_so+sol+tam_ke+ext_ka+o3_lo|sosolkklo"
+        rules: [ext_ka, o3_lo, subj_so, tam_ke]
+      - signature: "subj_so+sol+tam_ki+ext_ka+o3_lo|sosolkklo"
+        rules: [ext_ka, o3_lo, subj_so, tam_ki]
+      - signature: "subj_so+sol+tam_ko+ext_ka+o3_lo|sosolkklo"
+        rules: [ext_ka, o3_lo, subj_so, tam_ko]
+      - signature: "subj_so+sol+tam_ku+ext_ka+o3_lo|sosolkklo"
+        rules: [ext_ka, o3_lo, subj_so, tam_ku]
+  - word: totagktpa
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_to+tag+tam_ka+ext_ti+o2_pa|totagktpa"
+        rules: [ext_ti, o2_pa, subj_to, tam_ka]
+      - signature: "subj_to+tag+tam_ke+ext_ti+o2_pa|totagktpa"
+        rules: [ext_ti, o2_pa, subj_to, tam_ke]
+      - signature: "subj_to+tag+tam_ki+ext_ti+o2_pa|totagktpa"
+        rules: [ext_ti, o2_pa, subj_to, tam_ki]
+      - signature: "subj_to+tag+tam_ko+ext_ti+o2_pa|totagktpa"
+        rules: [ext_ti, o2_pa, subj_to, tam_ko]
+      - signature: "subj_to+tag+tam_ku+ext_ti+o2_pa|totagktpa"
+        rules: [ext_ti, o2_pa, subj_to, tam_ku]
+  - word: lobelktta
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_lo+bel+tam_ka+ext_ti+o3_ta|lobelktta"
+        rules: [ext_ti, o3_ta, subj_lo, tam_ka]
+      - signature: "subj_lo+bel+tam_ke+ext_ti+o3_ta|lobelktta"
+        rules: [ext_ti, o3_ta, subj_lo, tam_ke]
+      - signature: "subj_lo+bel+tam_ki+ext_ti+o3_ta|lobelktta"
+        rules: [ext_ti, o3_ta, subj_lo, tam_ki]
+      - signature: "subj_lo+bel+tam_ko+ext_ti+o3_ta|lobelktta"
+        rules: [ext_ti, o3_ta, subj_lo, tam_ko]
+      - signature: "subj_lo+bel+tam_ku+ext_ti+o3_ta|lobelktta"
+        rules: [ext_ti, o3_ta, subj_lo, tam_ku]
+  - word: sobelksu
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_so+bel+tam_ka+ext_su|sobelksu"
+        rules: [ext_su, subj_so, tam_ka]
+      - signature: "subj_so+bel+tam_ke+ext_su|sobelksu"
+        rules: [ext_su, subj_so, tam_ke]
+      - signature: "subj_so+bel+tam_ki+ext_su|sobelksu"
+        rules: [ext_su, subj_so, tam_ki]
+      - signature: "subj_so+bel+tam_ko+ext_su|sobelksu"
+        rules: [ext_su, subj_so, tam_ko]
+      - signature: "subj_so+bel+tam_ku+ext_su|sobelksu"
+        rules: [ext_su, subj_so, tam_ku]
+  - word: rotemkka
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_ro+tem+tam_ka+ext_ka|rotemkka"
+        rules: [ext_ka, subj_ro, tam_ka]
+      - signature: "subj_ro+tem+tam_ke+ext_ka|rotemkka"
+        rules: [ext_ka, subj_ro, tam_ke]
+      - signature: "subj_ro+tem+tam_ki+ext_ka|rotemkka"
+        rules: [ext_ka, subj_ro, tam_ki]
+      - signature: "subj_ro+tem+tam_ko+ext_ka|rotemkka"
+        rules: [ext_ka, subj_ro, tam_ko]
+      - signature: "subj_ro+tem+tam_ku+ext_ka|rotemkka"
+        rules: [ext_ka, subj_ro, tam_ku]
+  - word: dumerkrkni
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_du+mer+tam_ka+ext_ri+o2_ko+o4_ni|dumerkrkni"
+        rules: [ext_ri, o2_ko, o4_ni, subj_du, tam_ka]
+      - signature: "subj_du+mer+tam_ka+ext_ri+o3_ki+o4_ni|dumerkrkni"
+        rules: [ext_ri, o3_ki, o4_ni, subj_du, tam_ka]
+      - signature: "subj_du+mer+tam_ke+ext_ri+o2_ko+o4_ni|dumerkrkni"
+        rules: [ext_ri, o2_ko, o4_ni, subj_du, tam_ke]
+      - signature: "subj_du+mer+tam_ke+ext_ri+o3_ki+o4_ni|dumerkrkni"
+        rules: [ext_ri, o3_ki, o4_ni, subj_du, tam_ke]
+      - signature: "subj_du+mer+tam_ki+ext_ri+o2_ko+o4_ni|dumerkrkni"
+        rules: [ext_ri, o2_ko, o4_ni, subj_du, tam_ki]
+      - signature: "subj_du+mer+tam_ki+ext_ri+o3_ki+o4_ni|dumerkrkni"
+        rules: [ext_ri, o3_ki, o4_ni, subj_du, tam_ki]
+      - signature: "subj_du+mer+tam_ko+ext_ri+o2_ko+o4_ni|dumerkrkni"
+        rules: [ext_ri, o2_ko, o4_ni, subj_du, tam_ko]
+      - signature: "subj_du+mer+tam_ko+ext_ri+o3_ki+o4_ni|dumerkrkni"
+        rules: [ext_ri, o3_ki, o4_ni, subj_du, tam_ko]
+      - signature: "subj_du+mer+tam_ku+ext_ri+o2_ko+o4_ni|dumerkrkni"
+        rules: [ext_ri, o2_ko, o4_ni, subj_du, tam_ku]
+      - signature: "subj_du+mer+tam_ku+ext_ri+o3_ki+o4_ni|dumerkrkni"
+        rules: [ext_ri, o3_ki, o4_ni, subj_du, tam_ku]
+  - word: wotemknlra
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_wo+tem+tam_ka+ext_na+o2_la+o3_ra|wotemknlra"
+        rules: [ext_na, o2_la, o3_ra, subj_wo, tam_ka]
+      - signature: "subj_wo+tem+tam_ke+ext_na+o2_la+o3_ra|wotemknlra"
+        rules: [ext_na, o2_la, o3_ra, subj_wo, tam_ke]
+      - signature: "subj_wo+tem+tam_ki+ext_na+o2_la+o3_ra|wotemknlra"
+        rules: [ext_na, o2_la, o3_ra, subj_wo, tam_ki]
+      - signature: "subj_wo+tem+tam_ko+ext_na+o2_la+o3_ra|wotemknlra"
+        rules: [ext_na, o2_la, o3_ra, subj_wo, tam_ko]
+      - signature: "subj_wo+tem+tam_ku+ext_na+o2_la+o3_ra|wotemknlra"
+        rules: [ext_na, o2_la, o3_ra, subj_wo, tam_ku]
+  - word: lobalkkbma
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_lo+bal+tam_ka+ext_ka+o2_ba+o4_ma|lobalkkbma"
+        rules: [ext_ka, o2_ba, o4_ma, subj_lo, tam_ka]
+      - signature: "subj_lo+bal+tam_ka+ext_ka+o3_bu+o4_ma|lobalkkbma"
+        rules: [ext_ka, o3_bu, o4_ma, subj_lo, tam_ka]
+      - signature: "subj_lo+bal+tam_ke+ext_ka+o2_ba+o4_ma|lobalkkbma"
+        rules: [ext_ka, o2_ba, o4_ma, subj_lo, tam_ke]
+      - signature: "subj_lo+bal+tam_ke+ext_ka+o3_bu+o4_ma|lobalkkbma"
+        rules: [ext_ka, o3_bu, o4_ma, subj_lo, tam_ke]
+      - signature: "subj_lo+bal+tam_ki+ext_ka+o2_ba+o4_ma|lobalkkbma"
+        rules: [ext_ka, o2_ba, o4_ma, subj_lo, tam_ki]
+      - signature: "subj_lo+bal+tam_ki+ext_ka+o3_bu+o4_ma|lobalkkbma"
+        rules: [ext_ka, o3_bu, o4_ma, subj_lo, tam_ki]
+      - signature: "subj_lo+bal+tam_ko+ext_ka+o2_ba+o4_ma|lobalkkbma"
+        rules: [ext_ka, o2_ba, o4_ma, subj_lo, tam_ko]
+      - signature: "subj_lo+bal+tam_ko+ext_ka+o3_bu+o4_ma|lobalkkbma"
+        rules: [ext_ka, o3_bu, o4_ma, subj_lo, tam_ko]
+      - signature: "subj_lo+bal+tam_ku+ext_ka+o2_ba+o4_ma|lobalkkbma"
+        rules: [ext_ka, o2_ba, o4_ma, subj_lo, tam_ku]
+      - signature: "subj_lo+bal+tam_ku+ext_ka+o3_bu+o4_ma|lobalkkbma"
+        rules: [ext_ka, o3_bu, o4_ma, subj_lo, tam_ku]
+  - word: yotulkmkhi
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_yo+tul+tam_ka+ext_mo+o2_ko+o4_hi|yotulkmkhi"
+        rules: [ext_mo, o2_ko, o4_hi, subj_yo, tam_ka]
+      - signature: "subj_yo+tul+tam_ka+ext_mo+o3_ki+o4_hi|yotulkmkhi"
+        rules: [ext_mo, o3_ki, o4_hi, subj_yo, tam_ka]
+      - signature: "subj_yo+tul+tam_ke+ext_mo+o2_ko+o4_hi|yotulkmkhi"
+        rules: [ext_mo, o2_ko, o4_hi, subj_yo, tam_ke]
+      - signature: "subj_yo+tul+tam_ke+ext_mo+o3_ki+o4_hi|yotulkmkhi"
+        rules: [ext_mo, o3_ki, o4_hi, subj_yo, tam_ke]
+      - signature: "subj_yo+tul+tam_ki+ext_mo+o2_ko+o4_hi|yotulkmkhi"
+        rules: [ext_mo, o2_ko, o4_hi, subj_yo, tam_ki]
+      - signature: "subj_yo+tul+tam_ki+ext_mo+o3_ki+o4_hi|yotulkmkhi"
+        rules: [ext_mo, o3_ki, o4_hi, subj_yo, tam_ki]
+      - signature: "subj_yo+tul+tam_ko+ext_mo+o2_ko+o4_hi|yotulkmkhi"
+        rules: [ext_mo, o2_ko, o4_hi, subj_yo, tam_ko]
+      - signature: "subj_yo+tul+tam_ko+ext_mo+o3_ki+o4_hi|yotulkmkhi"
+        rules: [ext_mo, o3_ki, o4_hi, subj_yo, tam_ko]
+      - signature: "subj_yo+tul+tam_ku+ext_mo+o2_ko+o4_hi|yotulkmkhi"
+        rules: [ext_mo, o2_ko, o4_hi, subj_yo, tam_ku]
+      - signature: "subj_yo+tul+tam_ku+ext_mo+o3_ki+o4_hi|yotulkmkhi"
+        rules: [ext_mo, o3_ki, o4_hi, subj_yo, tam_ku]
+  - word: horotktta
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_ho+rot+tam_ka+ext_ti+o3_ta|horotktta"
+        rules: [ext_ti, o3_ta, subj_ho, tam_ka]
+      - signature: "subj_ho+rot+tam_ke+ext_ti+o3_ta|horotktta"
+        rules: [ext_ti, o3_ta, subj_ho, tam_ke]
+      - signature: "subj_ho+rot+tam_ki+ext_ti+o3_ta|horotktta"
+        rules: [ext_ti, o3_ta, subj_ho, tam_ki]
+      - signature: "subj_ho+rot+tam_ko+ext_ti+o3_ta|horotktta"
+        rules: [ext_ti, o3_ta, subj_ho, tam_ko]
+      - signature: "subj_ho+rot+tam_ku+ext_ti+o3_ta|horotktta"
+        rules: [ext_ti, o3_ta, subj_ho, tam_ku]
+  - word: lolubknlsa
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_lo+lub+tam_ka+ext_na+o2_la+o4_sa|lolubknlsa"
+        rules: [ext_na, o2_la, o4_sa, subj_lo, tam_ka]
+      - signature: "subj_lo+lub+tam_ka+ext_na+o3_lo+o4_sa|lolubknlsa"
+        rules: [ext_na, o3_lo, o4_sa, subj_lo, tam_ka]
+      - signature: "subj_lo+lub+tam_ke+ext_na+o2_la+o4_sa|lolubknlsa"
+        rules: [ext_na, o2_la, o4_sa, subj_lo, tam_ke]
+      - signature: "subj_lo+lub+tam_ke+ext_na+o3_lo+o4_sa|lolubknlsa"
+        rules: [ext_na, o3_lo, o4_sa, subj_lo, tam_ke]
+      - signature: "subj_lo+lub+tam_ki+ext_na+o2_la+o4_sa|lolubknlsa"
+        rules: [ext_na, o2_la, o4_sa, subj_lo, tam_ki]
+      - signature: "subj_lo+lub+tam_ki+ext_na+o3_lo+o4_sa|lolubknlsa"
+        rules: [ext_na, o3_lo, o4_sa, subj_lo, tam_ki]
+      - signature: "subj_lo+lub+tam_ko+ext_na+o2_la+o4_sa|lolubknlsa"
+        rules: [ext_na, o2_la, o4_sa, subj_lo, tam_ko]
+      - signature: "subj_lo+lub+tam_ko+ext_na+o3_lo+o4_sa|lolubknlsa"
+        rules: [ext_na, o3_lo, o4_sa, subj_lo, tam_ko]
+      - signature: "subj_lo+lub+tam_ku+ext_na+o2_la+o4_sa|lolubknlsa"
+        rules: [ext_na, o2_la, o4_sa, subj_lo, tam_ku]
+      - signature: "subj_lo+lub+tam_ku+ext_na+o3_lo+o4_sa|lolubknlsa"
+        rules: [ext_na, o3_lo, o4_sa, subj_lo, tam_ku]
+  - word: nogorkkmni
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_no+gor+tam_ka+ext_ka+o2_me+o4_ni|nogorkkmni"
+        rules: [ext_ka, o2_me, o4_ni, subj_no, tam_ka]
+      - signature: "subj_no+gor+tam_ka+ext_ka+o3_mi+o4_ni|nogorkkmni"
+        rules: [ext_ka, o3_mi, o4_ni, subj_no, tam_ka]
+      - signature: "subj_no+gor+tam_ke+ext_ka+o2_me+o4_ni|nogorkkmni"
+        rules: [ext_ka, o2_me, o4_ni, subj_no, tam_ke]
+      - signature: "subj_no+gor+tam_ke+ext_ka+o3_mi+o4_ni|nogorkkmni"
+        rules: [ext_ka, o3_mi, o4_ni, subj_no, tam_ke]
+      - signature: "subj_no+gor+tam_ki+ext_ka+o2_me+o4_ni|nogorkkmni"
+        rules: [ext_ka, o2_me, o4_ni, subj_no, tam_ki]
+      - signature: "subj_no+gor+tam_ki+ext_ka+o3_mi+o4_ni|nogorkkmni"
+        rules: [ext_ka, o3_mi, o4_ni, subj_no, tam_ki]
+      - signature: "subj_no+gor+tam_ko+ext_ka+o2_me+o4_ni|nogorkkmni"
+        rules: [ext_ka, o2_me, o4_ni, subj_no, tam_ko]
+      - signature: "subj_no+gor+tam_ko+ext_ka+o3_mi+o4_ni|nogorkkmni"
+        rules: [ext_ka, o3_mi, o4_ni, subj_no, tam_ko]
+      - signature: "subj_no+gor+tam_ku+ext_ka+o2_me+o4_ni|nogorkkmni"
+        rules: [ext_ka, o2_me, o4_ni, subj_no, tam_ku]
+      - signature: "subj_no+gor+tam_ku+ext_ka+o3_mi+o4_ni|nogorkkmni"
+        rules: [ext_ka, o3_mi, o4_ni, subj_no, tam_ku]
+  - word: dubalkshmlu
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_du+bal+tam_ka+ext_su+o2_he+o3_mi+o4_lu|dubalkshmlu"
+        rules: [ext_su, o2_he, o3_mi, o4_lu, subj_du, tam_ka]
+      - signature: "subj_du+bal+tam_ke+ext_su+o2_he+o3_mi+o4_lu|dubalkshmlu"
+        rules: [ext_su, o2_he, o3_mi, o4_lu, subj_du, tam_ke]
+      - signature: "subj_du+bal+tam_ki+ext_su+o2_he+o3_mi+o4_lu|dubalkshmlu"
+        rules: [ext_su, o2_he, o3_mi, o4_lu, subj_du, tam_ki]
+      - signature: "subj_du+bal+tam_ko+ext_su+o2_he+o3_mi+o4_lu|dubalkshmlu"
+        rules: [ext_su, o2_he, o3_mi, o4_lu, subj_du, tam_ko]
+      - signature: "subj_du+bal+tam_ku+ext_su+o2_he+o3_mi+o4_lu|dubalkshmlu"
+        rules: [ext_su, o2_he, o3_mi, o4_lu, subj_du, tam_ku]
+  - word: yomosknbtke
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_yo+mos+tam_ka+ext_na+o2_ba+o3_ta+o4_ke|yomosknbtke"
+        rules: [ext_na, o2_ba, o3_ta, o4_ke, subj_yo, tam_ka]
+      - signature: "subj_yo+mos+tam_ke+ext_na+o2_ba+o3_ta+o4_ke|yomosknbtke"
+        rules: [ext_na, o2_ba, o3_ta, o4_ke, subj_yo, tam_ke]
+      - signature: "subj_yo+mos+tam_ki+ext_na+o2_ba+o3_ta+o4_ke|yomosknbtke"
+        rules: [ext_na, o2_ba, o3_ta, o4_ke, subj_yo, tam_ki]
+      - signature: "subj_yo+mos+tam_ko+ext_na+o2_ba+o3_ta+o4_ke|yomosknbtke"
+        rules: [ext_na, o2_ba, o3_ta, o4_ke, subj_yo, tam_ko]
+      - signature: "subj_yo+mos+tam_ku+ext_na+o2_ba+o3_ta+o4_ke|yomosknbtke"
+        rules: [ext_na, o2_ba, o3_ta, o4_ke, subj_yo, tam_ku]
+  - word: mopatktnga
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_mo+pat+tam_ka+ext_ti+o2_no+o4_ga|mopatktnga"
+        rules: [ext_ti, o2_no, o4_ga, subj_mo, tam_ka]
+      - signature: "subj_mo+pat+tam_ka+ext_ti+o3_ne+o4_ga|mopatktnga"
+        rules: [ext_ti, o3_ne, o4_ga, subj_mo, tam_ka]
+      - signature: "subj_mo+pat+tam_ke+ext_ti+o2_no+o4_ga|mopatktnga"
+        rules: [ext_ti, o2_no, o4_ga, subj_mo, tam_ke]
+      - signature: "subj_mo+pat+tam_ke+ext_ti+o3_ne+o4_ga|mopatktnga"
+        rules: [ext_ti, o3_ne, o4_ga, subj_mo, tam_ke]
+      - signature: "subj_mo+pat+tam_ki+ext_ti+o2_no+o4_ga|mopatktnga"
+        rules: [ext_ti, o2_no, o4_ga, subj_mo, tam_ki]
+      - signature: "subj_mo+pat+tam_ki+ext_ti+o3_ne+o4_ga|mopatktnga"
+        rules: [ext_ti, o3_ne, o4_ga, subj_mo, tam_ki]
+      - signature: "subj_mo+pat+tam_ko+ext_ti+o2_no+o4_ga|mopatktnga"
+        rules: [ext_ti, o2_no, o4_ga, subj_mo, tam_ko]
+      - signature: "subj_mo+pat+tam_ko+ext_ti+o3_ne+o4_ga|mopatktnga"
+        rules: [ext_ti, o3_ne, o4_ga, subj_mo, tam_ko]
+      - signature: "subj_mo+pat+tam_ku+ext_ti+o2_no+o4_ga|mopatktnga"
+        rules: [ext_ti, o2_no, o4_ga, subj_mo, tam_ku]
+      - signature: "subj_mo+pat+tam_ku+ext_ti+o3_ne+o4_ga|mopatktnga"
+        rules: [ext_ti, o3_ne, o4_ga, subj_mo, tam_ku]
+  - word: hodipktpplu
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_ho+dip+tam_ka+ext_ti+o2_pa+o3_po+o4_lu|hodipktpplu"
+        rules: [ext_ti, o2_pa, o3_po, o4_lu, subj_ho, tam_ka]
+      - signature: "subj_ho+dip+tam_ke+ext_ti+o2_pa+o3_po+o4_lu|hodipktpplu"
+        rules: [ext_ti, o2_pa, o3_po, o4_lu, subj_ho, tam_ke]
+      - signature: "subj_ho+dip+tam_ki+ext_ti+o2_pa+o3_po+o4_lu|hodipktpplu"
+        rules: [ext_ti, o2_pa, o3_po, o4_lu, subj_ho, tam_ki]
+      - signature: "subj_ho+dip+tam_ko+ext_ti+o2_pa+o3_po+o4_lu|hodipktpplu"
+        rules: [ext_ti, o2_pa, o3_po, o4_lu, subj_ho, tam_ko]
+      - signature: "subj_ho+dip+tam_ku+ext_ti+o2_pa+o3_po+o4_lu|hodipktpplu"
+        rules: [ext_ti, o2_pa, o3_po, o4_lu, subj_ho, tam_ku]
+  - word: nuremknltke
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_nu+rem+tam_ka+ext_na+o2_la+o3_ta+o4_ke|nuremknltke"
+        rules: [ext_na, o2_la, o3_ta, o4_ke, subj_nu, tam_ka]
+      - signature: "subj_nu+rem+tam_ke+ext_na+o2_la+o3_ta+o4_ke|nuremknltke"
+        rules: [ext_na, o2_la, o3_ta, o4_ke, subj_nu, tam_ke]
+      - signature: "subj_nu+rem+tam_ki+ext_na+o2_la+o3_ta+o4_ke|nuremknltke"
+        rules: [ext_na, o2_la, o3_ta, o4_ke, subj_nu, tam_ki]
+      - signature: "subj_nu+rem+tam_ko+ext_na+o2_la+o3_ta+o4_ke|nuremknltke"
+        rules: [ext_na, o2_la, o3_ta, o4_ke, subj_nu, tam_ko]
+      - signature: "subj_nu+rem+tam_ku+ext_na+o2_la+o3_ta+o4_ke|nuremknltke"
+        rules: [ext_na, o2_la, o3_ta, o4_ke, subj_nu, tam_ku]
+  - word: gowabkmlke
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_go+wab+tam_ka+ext_mo+o2_la+o4_ke|gowabkmlke"
+        rules: [ext_mo, o2_la, o4_ke, subj_go, tam_ka]
+      - signature: "subj_go+wab+tam_ka+ext_mo+o3_lo+o4_ke|gowabkmlke"
+        rules: [ext_mo, o3_lo, o4_ke, subj_go, tam_ka]
+      - signature: "subj_go+wab+tam_ke+ext_mo+o2_la+o4_ke|gowabkmlke"
+        rules: [ext_mo, o2_la, o4_ke, subj_go, tam_ke]
+      - signature: "subj_go+wab+tam_ke+ext_mo+o3_lo+o4_ke|gowabkmlke"
+        rules: [ext_mo, o3_lo, o4_ke, subj_go, tam_ke]
+      - signature: "subj_go+wab+tam_ki+ext_mo+o2_la+o4_ke|gowabkmlke"
+        rules: [ext_mo, o2_la, o4_ke, subj_go, tam_ki]
+      - signature: "subj_go+wab+tam_ki+ext_mo+o3_lo+o4_ke|gowabkmlke"
+        rules: [ext_mo, o3_lo, o4_ke, subj_go, tam_ki]
+      - signature: "subj_go+wab+tam_ko+ext_mo+o2_la+o4_ke|gowabkmlke"
+        rules: [ext_mo, o2_la, o4_ke, subj_go, tam_ko]
+      - signature: "subj_go+wab+tam_ko+ext_mo+o3_lo+o4_ke|gowabkmlke"
+        rules: [ext_mo, o3_lo, o4_ke, subj_go, tam_ko]
+      - signature: "subj_go+wab+tam_ku+ext_mo+o2_la+o4_ke|gowabkmlke"
+        rules: [ext_mo, o2_la, o4_ke, subj_go, tam_ku]
+      - signature: "subj_go+wab+tam_ku+ext_mo+o3_lo+o4_ke|gowabkmlke"
+        rules: [ext_mo, o3_lo, o4_ke, subj_go, tam_ku]
+  - word: bunemksdpi
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_bu+nem+tam_ka+ext_su+o2_di+o4_pi|bunemksdpi"
+        rules: [ext_su, o2_di, o4_pi, subj_bu, tam_ka]
+      - signature: "subj_bu+nem+tam_ka+ext_su+o3_da+o4_pi|bunemksdpi"
+        rules: [ext_su, o3_da, o4_pi, subj_bu, tam_ka]
+      - signature: "subj_bu+nem+tam_ke+ext_su+o2_di+o4_pi|bunemksdpi"
+        rules: [ext_su, o2_di, o4_pi, subj_bu, tam_ke]
+      - signature: "subj_bu+nem+tam_ke+ext_su+o3_da+o4_pi|bunemksdpi"
+        rules: [ext_su, o3_da, o4_pi, subj_bu, tam_ke]
+      - signature: "subj_bu+nem+tam_ki+ext_su+o2_di+o4_pi|bunemksdpi"
+        rules: [ext_su, o2_di, o4_pi, subj_bu, tam_ki]
+      - signature: "subj_bu+nem+tam_ki+ext_su+o3_da+o4_pi|bunemksdpi"
+        rules: [ext_su, o3_da, o4_pi, subj_bu, tam_ki]
+      - signature: "subj_bu+nem+tam_ko+ext_su+o2_di+o4_pi|bunemksdpi"
+        rules: [ext_su, o2_di, o4_pi, subj_bu, tam_ko]
+      - signature: "subj_bu+nem+tam_ko+ext_su+o3_da+o4_pi|bunemksdpi"
+        rules: [ext_su, o3_da, o4_pi, subj_bu, tam_ko]
+      - signature: "subj_bu+nem+tam_ku+ext_su+o2_di+o4_pi|bunemksdpi"
+        rules: [ext_su, o2_di, o4_pi, subj_bu, tam_ku]
+      - signature: "subj_bu+nem+tam_ku+ext_su+o3_da+o4_pi|bunemksdpi"
+        rules: [ext_su, o3_da, o4_pi, subj_bu, tam_ku]
+  - word: honemkske
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_ho+nem+tam_ka+ext_su+o4_ke|honemkske"
+        rules: [ext_su, o4_ke, subj_ho, tam_ka]
+      - signature: "subj_ho+nem+tam_ke+ext_su+o4_ke|honemkske"
+        rules: [ext_su, o4_ke, subj_ho, tam_ke]
+      - signature: "subj_ho+nem+tam_ki+ext_su+o4_ke|honemkske"
+        rules: [ext_su, o4_ke, subj_ho, tam_ki]
+      - signature: "subj_ho+nem+tam_ko+ext_su+o4_ke|honemkske"
+        rules: [ext_su, o4_ke, subj_ho, tam_ko]
+      - signature: "subj_ho+nem+tam_ku+ext_su+o4_ke|honemkske"
+        rules: [ext_su, o4_ke, subj_ho, tam_ku]
+  - word: wobiskrhblu
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_wo+bis+tam_ka+ext_ri+o2_he+o3_bu+o4_lu|wobiskrhblu"
+        rules: [ext_ri, o2_he, o3_bu, o4_lu, subj_wo, tam_ka]
+      - signature: "subj_wo+bis+tam_ke+ext_ri+o2_he+o3_bu+o4_lu|wobiskrhblu"
+        rules: [ext_ri, o2_he, o3_bu, o4_lu, subj_wo, tam_ke]
+      - signature: "subj_wo+bis+tam_ki+ext_ri+o2_he+o3_bu+o4_lu|wobiskrhblu"
+        rules: [ext_ri, o2_he, o3_bu, o4_lu, subj_wo, tam_ki]
+      - signature: "subj_wo+bis+tam_ko+ext_ri+o2_he+o3_bu+o4_lu|wobiskrhblu"
+        rules: [ext_ri, o2_he, o3_bu, o4_lu, subj_wo, tam_ko]
+      - signature: "subj_wo+bis+tam_ku+ext_ri+o2_he+o3_bu+o4_lu|wobiskrhblu"
+        rules: [ext_ri, o2_he, o3_bu, o4_lu, subj_wo, tam_ku]
+  - word: nunemkpu
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_nu+nem+tam_ka+ext_pu|nunemkpu"
+        rules: [ext_pu, subj_nu, tam_ka]
+      - signature: "subj_nu+nem+tam_ke+ext_pu|nunemkpu"
+        rules: [ext_pu, subj_nu, tam_ke]
+      - signature: "subj_nu+nem+tam_ki+ext_pu|nunemkpu"
+        rules: [ext_pu, subj_nu, tam_ki]
+      - signature: "subj_nu+nem+tam_ko+ext_pu|nunemkpu"
+        rules: [ext_pu, subj_nu, tam_ko]
+      - signature: "subj_nu+nem+tam_ku+ext_pu|nunemkpu"
+        rules: [ext_pu, subj_nu, tam_ku]
+  - word: nuremkpsa
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_nu+rem+tam_ka+ext_pu+o4_sa|nuremkpsa"
+        rules: [ext_pu, o4_sa, subj_nu, tam_ka]
+      - signature: "subj_nu+rem+tam_ke+ext_pu+o4_sa|nuremkpsa"
+        rules: [ext_pu, o4_sa, subj_nu, tam_ke]
+      - signature: "subj_nu+rem+tam_ki+ext_pu+o4_sa|nuremkpsa"
+        rules: [ext_pu, o4_sa, subj_nu, tam_ki]
+      - signature: "subj_nu+rem+tam_ko+ext_pu+o4_sa|nuremkpsa"
+        rules: [ext_pu, o4_sa, subj_nu, tam_ko]
+      - signature: "subj_nu+rem+tam_ku+ext_pu+o4_sa|nuremkpsa"
+        rules: [ext_pu, o4_sa, subj_nu, tam_ku]
+  - word: gopirkmkksa
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_go+pir+tam_ka+ext_mo+o2_ko+o3_ki+o4_sa|gopirkmkksa"
+        rules: [ext_mo, o2_ko, o3_ki, o4_sa, subj_go, tam_ka]
+      - signature: "subj_go+pir+tam_ke+ext_mo+o2_ko+o3_ki+o4_sa|gopirkmkksa"
+        rules: [ext_mo, o2_ko, o3_ki, o4_sa, subj_go, tam_ke]
+      - signature: "subj_go+pir+tam_ki+ext_mo+o2_ko+o3_ki+o4_sa|gopirkmkksa"
+        rules: [ext_mo, o2_ko, o3_ki, o4_sa, subj_go, tam_ki]
+      - signature: "subj_go+pir+tam_ko+ext_mo+o2_ko+o3_ki+o4_sa|gopirkmkksa"
+        rules: [ext_mo, o2_ko, o3_ki, o4_sa, subj_go, tam_ko]
+      - signature: "subj_go+pir+tam_ku+ext_mo+o2_ko+o3_ki+o4_sa|gopirkmkksa"
+        rules: [ext_mo, o2_ko, o3_ki, o4_sa, subj_go, tam_ku]
+  - word: nomerkthksa
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_no+mer+tam_ka+ext_ti+o2_he+o3_ki+o4_sa|nomerkthksa"
+        rules: [ext_ti, o2_he, o3_ki, o4_sa, subj_no, tam_ka]
+      - signature: "subj_no+mer+tam_ke+ext_ti+o2_he+o3_ki+o4_sa|nomerkthksa"
+        rules: [ext_ti, o2_he, o3_ki, o4_sa, subj_no, tam_ke]
+      - signature: "subj_no+mer+tam_ki+ext_ti+o2_he+o3_ki+o4_sa|nomerkthksa"
+        rules: [ext_ti, o2_he, o3_ki, o4_sa, subj_no, tam_ki]
+      - signature: "subj_no+mer+tam_ko+ext_ti+o2_he+o3_ki+o4_sa|nomerkthksa"
+        rules: [ext_ti, o2_he, o3_ki, o4_sa, subj_no, tam_ko]
+      - signature: "subj_no+mer+tam_ku+ext_ti+o2_he+o3_ki+o4_sa|nomerkthksa"
+        rules: [ext_ti, o2_he, o3_ki, o4_sa, subj_no, tam_ku]
+  - word: sokesksnke
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_so+kes+tam_ka+ext_su+o2_no+o4_ke|sokesksnke"
+        rules: [ext_su, o2_no, o4_ke, subj_so, tam_ka]
+      - signature: "subj_so+kes+tam_ka+ext_su+o3_ne+o4_ke|sokesksnke"
+        rules: [ext_su, o3_ne, o4_ke, subj_so, tam_ka]
+      - signature: "subj_so+kes+tam_ke+ext_su+o2_no+o4_ke|sokesksnke"
+        rules: [ext_su, o2_no, o4_ke, subj_so, tam_ke]
+      - signature: "subj_so+kes+tam_ke+ext_su+o3_ne+o4_ke|sokesksnke"
+        rules: [ext_su, o3_ne, o4_ke, subj_so, tam_ke]
+      - signature: "subj_so+kes+tam_ki+ext_su+o2_no+o4_ke|sokesksnke"
+        rules: [ext_su, o2_no, o4_ke, subj_so, tam_ki]
+      - signature: "subj_so+kes+tam_ki+ext_su+o3_ne+o4_ke|sokesksnke"
+        rules: [ext_su, o3_ne, o4_ke, subj_so, tam_ki]
+      - signature: "subj_so+kes+tam_ko+ext_su+o2_no+o4_ke|sokesksnke"
+        rules: [ext_su, o2_no, o4_ke, subj_so, tam_ko]
+      - signature: "subj_so+kes+tam_ko+ext_su+o3_ne+o4_ke|sokesksnke"
+        rules: [ext_su, o3_ne, o4_ke, subj_so, tam_ko]
+      - signature: "subj_so+kes+tam_ku+ext_su+o2_no+o4_ke|sokesksnke"
+        rules: [ext_su, o2_no, o4_ke, subj_so, tam_ku]
+      - signature: "subj_so+kes+tam_ku+ext_su+o3_ne+o4_ke|sokesksnke"
+        rules: [ext_su, o3_ne, o4_ke, subj_so, tam_ku]
+  - word: kolenktpma
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_ko+len+tam_ka+ext_ti+o2_pa+o4_ma|kolenktpma"
+        rules: [ext_ti, o2_pa, o4_ma, subj_ko, tam_ka]
+      - signature: "subj_ko+len+tam_ka+ext_ti+o3_po+o4_ma|kolenktpma"
+        rules: [ext_ti, o3_po, o4_ma, subj_ko, tam_ka]
+      - signature: "subj_ko+len+tam_ke+ext_ti+o2_pa+o4_ma|kolenktpma"
+        rules: [ext_ti, o2_pa, o4_ma, subj_ko, tam_ke]
+      - signature: "subj_ko+len+tam_ke+ext_ti+o3_po+o4_ma|kolenktpma"
+        rules: [ext_ti, o3_po, o4_ma, subj_ko, tam_ke]
+      - signature: "subj_ko+len+tam_ki+ext_ti+o2_pa+o4_ma|kolenktpma"
+        rules: [ext_ti, o2_pa, o4_ma, subj_ko, tam_ki]
+      - signature: "subj_ko+len+tam_ki+ext_ti+o3_po+o4_ma|kolenktpma"
+        rules: [ext_ti, o3_po, o4_ma, subj_ko, tam_ki]
+      - signature: "subj_ko+len+tam_ko+ext_ti+o2_pa+o4_ma|kolenktpma"
+        rules: [ext_ti, o2_pa, o4_ma, subj_ko, tam_ko]
+      - signature: "subj_ko+len+tam_ko+ext_ti+o3_po+o4_ma|kolenktpma"
+        rules: [ext_ti, o3_po, o4_ma, subj_ko, tam_ko]
+      - signature: "subj_ko+len+tam_ku+ext_ti+o2_pa+o4_ma|kolenktpma"
+        rules: [ext_ti, o2_pa, o4_ma, subj_ko, tam_ku]
+      - signature: "subj_ko+len+tam_ku+ext_ti+o3_po+o4_ma|kolenktpma"
+        rules: [ext_ti, o3_po, o4_ma, subj_ko, tam_ku]
+  - word: bumerklbkbo
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_bu+mer+tam_ka+ext_le+o2_ba+o3_ki+o4_bo|bumerklbkbo"
+        rules: [ext_le, o2_ba, o3_ki, o4_bo, subj_bu, tam_ka]
+      - signature: "subj_bu+mer+tam_ke+ext_le+o2_ba+o3_ki+o4_bo|bumerklbkbo"
+        rules: [ext_le, o2_ba, o3_ki, o4_bo, subj_bu, tam_ke]
+      - signature: "subj_bu+mer+tam_ki+ext_le+o2_ba+o3_ki+o4_bo|bumerklbkbo"
+        rules: [ext_le, o2_ba, o3_ki, o4_bo, subj_bu, tam_ki]
+      - signature: "subj_bu+mer+tam_ko+ext_le+o2_ba+o3_ki+o4_bo|bumerklbkbo"
+        rules: [ext_le, o2_ba, o3_ki, o4_bo, subj_bu, tam_ko]
+      - signature: "subj_bu+mer+tam_ku+ext_le+o2_ba+o3_ki+o4_bo|bumerklbkbo"
+        rules: [ext_le, o2_ba, o3_ki, o4_bo, subj_bu, tam_ku]
+  - word: kotagktbu
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    parses:
+      - signature: "subj_ko+tag+tam_ka+ext_ti+o3_bu|kotagktbu"
+        rules: [ext_ti, o3_bu, subj_ko, tam_ka]
+      - signature: "subj_ko+tag+tam_ke+ext_ti+o3_bu|kotagktbu"
+        rules: [ext_ti, o3_bu, subj_ko, tam_ke]
+      - signature: "subj_ko+tag+tam_ki+ext_ti+o3_bu|kotagktbu"
+        rules: [ext_ti, o3_bu, subj_ko, tam_ki]
+      - signature: "subj_ko+tag+tam_ko+ext_ti+o3_bu|kotagktbu"
+        rules: [ext_ti, o3_bu, subj_ko, tam_ko]
+      - signature: "subj_ko+tag+tam_ku+ext_ti+o3_bu|kotagktbu"
+        rules: [ext_ti, o3_bu, subj_ko, tam_ku]
+  - word: gobamkti
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    expect_fail: true
+  - word: hitkkla
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    expect_fail: true
+  - word: pohulkkni
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    expect_fail: true
+  - word: korkkthi
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    expect_fail: true
+  - word: bubamkmlo
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    expect_fail: true
+  - word: merktltu
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    expect_fail: true
+  - word: gobamknki
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    expect_fail: true
+  - word: merkppo
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    expect_fail: true
+  - word: kogipklnki
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    expect_fail: true
+  - word: lenkpmmtu
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    expect_fail: true
+  - word: logipkmstu
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    expect_fail: true
+  - word: hanknplu
+    note: "Truncating-slot stress: 60 words over 5 synthetic templates whose required and optional suffix slots each delete the vowel before them; expected parses are the master engine's, 12 words have no parse."
+    expect_fail: true
