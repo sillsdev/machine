@@ -1,7 +1,7 @@
 # HermitCrab analysis-side optimization, 2026-10-27 round
 
-**Disposition: four candidates are PRs (R1 #575, R2 #572, T1 #571, R5 #574), one is a dead end (R4), one
-is not built (R6), and two are in progress (R3, R1 on #546).** This round follows the
+**Disposition: six candidates are PRs (R1 #575, R2 #572, T1 #571, R5 #574, R3 #576, R1 on #546 #577), one is a
+dead end (R4), and one is not built (R6).** This round follows the
 [synthesis-to-analysis round](hermitcrab-2026-10-27-synthesis-to-analysis-round.md), whose conclusion was that
 synthesis is 1.0% (Aweti) to 9.0% (Mbugwe sample) of total work and the dominant cost is analysis. Here the
 target is the analysis side: the template battery, rule outputs that cannot reach a root, matcher work per
@@ -36,8 +36,8 @@ This record follows the [optimization ledger](hermitcrab-optimization-ledger.md)
 | R5 edge-segment prefilter | #564 | #574 | **KEEP.** The plan's score of 0 was wrong |
 | R4 subsequence fallback | #568 | none | **DEAD END** |
 | R6 merging while tracing | #565 | none | Not built. Owner product decision |
-| R3 ordered look-ahead | #567 | | In progress |
-| R1 on #546 | #566 | | In progress |
+| R3 ordered look-ahead | #567 | #576 | **KEEP.** Stacks on #575 |
+| R1 on #546 | #566 | #577 | **KEEP.** Stacks on #546 and #575 |
 
 Earlier-round PRs: **#560** (E1, allomorph-loop cutoff) and **#570** (MPR and stem-name trail replay). E3 (template
 replay) was dropped on cost; its code stays at `perf/hc-lookup-replay-templates` @ `9efd059c`.
@@ -336,12 +336,30 @@ censusmerge runs (`truncate-morphotactic-identity#default` word 2), and the on a
 - **R6, merging while tracing (#565): not built.** Census merging changes analysis events by only 0.2-2.4%, but
   under tracing lookups are 1.67x (Mbugwe) to 2.19x (Aweti) more frequent. Whether Try-a-Word shows folded
   duplicates is an owner product decision, and it is low in steps. It interacts with #534 and #563.
-- **R3, ordered and edge-anchored look-ahead (#567): in progress.** It targets the 90% of Mbugwe's no-lookup
-  ceiling that R1 leaves, where required slots insert a single segment. Result not recorded here.
-- **R1 on #546 (#566): in progress.** It measures R1 on the shared-slot walk and reports what #546 leaves. The rule
+- **R3, ordered and edge-anchored look-ahead (#567): KEEP, PR #576.** It targets the 90% of Mbugwe's no-lookup
+  ceiling that R1 leaves, where required slots insert a single segment. Results are in the section above.
+- **R1 on #546 (#566): KEEP, PR #577; results in the section above.** It measures R1 on the shared-slot walk and reports what #546 leaves. The rule
   set in advance: if R1 saves under 3% of slot events on the #546 walk where it saved over 5% on master, the two
   overlap and only one should land. Further sharing of non-trailing slots needs a key on the shape, which is a memo,
   so any residual is reported as a ceiling and not proposed.
+
+## R3 and R1 on #546: KEEP, and the two stack (issues #567, #566; PRs #576, #577)
+
+- **R3, ordered and edge-anchored look-ahead (#567; PR #576, stacked on #575).** Within a rule, the required inserted
+  segments must embed in order; the check is anchored at the edge it can reach; and a passing required slot narrows the
+  window for the slots behind it. Shadow: 0 violations on every grammar, and parses are equal per word. Events plus
+  synthesis steps, less work than master: Sena **40.9% less**, Mbugwe **7.3% less**, Aweti **11.0% less**, Amharic
+  **11.9% less**. Unification calls, less than master: Amharic **2.75% less** (R1 alone was 0.63% MORE), Sena
+  **5.22% less**, Aweti **9.27% less**, Mbugwe **1.83% less**. Mbugwe gains little over R1 because most of its required
+  slots are not testable; the next step is an R1 purity extension with its own soundness argument. PanGloss port:
+  sillsdev/PanGloss #65.
+- **R1 on #546 (#566; PR #577, stacked on #546 and #575, commit `bbb81a00`).** The look-ahead runs on the shared trie
+  walk, so a template whose required slot cannot unapply is dropped for its whole subtree. Reviewed LAND. Shadow: 0
+  violations. Events plus synthesis steps, less work than master: Sena **55.64% less**, Mbugwe **32.15% less**, Aweti
+  **20.06% less**, Amharic **9.10% less**. Unification calls, less than master: Sena **4.81% less**, Mbugwe **15.19%
+  less**, Aweti **12.18% less**; Amharic **0.63% MORE**. Against #546 alone, Mbugwe **1.07% MORE** and Sena **1.40%
+  MORE** unification calls. The two stack in events, but on Mbugwe and Sena the check's own unifications cost more than
+  the walk work they save. PanGloss port: sillsdev/PanGloss #66 (for #546 and #566).
 
 ## Cross-cutting lessons
 
