@@ -219,6 +219,65 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>
+        /// Eagerly parses surface forms in input order, capturing each parse's exception and trace in its result.
+        /// Requires a Morpher constructed with maxDegreeOfParallelism: 1. Tracing runs the batch serially.
+        /// Keep the Language, settings, and tracing fixed until completion; selectors and custom rules must
+        /// support concurrent calls when maxWordConcurrency is greater than 1 and tracing is disabled.
+        /// Do not overlap traced calls sharing a trace manager. Failed parses have empty analyses.
+        /// Batch argument validation and input enumeration errors propagate to the caller.
+        /// </summary>
+        public IReadOnlyList<WordParseResult> ParseWords(
+            IEnumerable<string> words,
+            int maxWordConcurrency = 4,
+            bool guessRoot = false
+        )
+        {
+            if (words == null)
+                throw new ArgumentNullException(nameof(words));
+            if (maxWordConcurrency < 1)
+                throw new ArgumentOutOfRangeException(nameof(maxWordConcurrency));
+            if (MaxDegreeOfParallelism != 1)
+            {
+                throw new InvalidOperationException(
+                    "ParseWords requires a Morpher constructed with maxDegreeOfParallelism: 1."
+                );
+            }
+
+            string[] inputs = words.ToArray();
+            var results = new WordParseResult[inputs.Length];
+            void Parse(int index)
+            {
+                object trace = null;
+                try
+                {
+                    var analyses = ParseWord(inputs[index], out trace, guessRoot).ToList().AsReadOnly();
+                    results[index] = new WordParseResult(inputs[index], analyses, trace, null);
+                }
+                catch (Exception error)
+                {
+                    results[index] = new WordParseResult(inputs[index], Array.Empty<Word>(), trace, error);
+                }
+            }
+
+            if (_traceManager.IsTracing || maxWordConcurrency == 1)
+            {
+                for (int i = 0; i < inputs.Length; i++)
+                    Parse(i);
+            }
+            else
+            {
+                Parallel.For(
+                    0,
+                    inputs.Length,
+                    new ParallelOptions { MaxDegreeOfParallelism = maxWordConcurrency },
+                    Parse
+                );
+            }
+
+            return Array.AsReadOnly(results);
+        }
+
+        /// <summary>
         /// Generates surface forms from the specified word synthesis information.
         /// </summary>
         public IEnumerable<string> GenerateWords(
