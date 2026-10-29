@@ -1410,6 +1410,334 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
         );
     }
 
+    [Test]
+    public void UpdateUsfm_AlignmentIsNotCheckedWhenAlignmentInfoBehaviorsLeaveNothingToPlace()
+    {
+        // The updater keeps the paragraph marker that the info strips, and pair 1-9 is outside the tokens
+        PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
+            sourceTokens: Tokenizer.Tokenize("One two. Three.").ToList(),
+            translationTokens: Tokenizer.Tokenize("Uno dos. Tres.").ToList(),
+            alignment: ToWordAlignmentMatrix("0-0 1-9"),
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Strip,
+            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+        );
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                "Uno dos. Tres.",
+                new Dictionary<string, object> { { "alignment_info", alignInfo } }
+            ),
+        ];
+        string usfm =
+            @"\id MAT
+\c 1
+\v 1 One two.
+\p Three.
+";
+
+        string target = UpdateUsfm(rows, usfm, usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]);
+
+        string result =
+            @"\id MAT
+\c 1
+\v 1 Uno dos. Tres.
+\p
+";
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void GetBlockAlignmentInfo_ShiftsLaterRowsPastEarlierTokens()
+    {
+        var block = new UsfmUpdateBlock(
+            ScrRef("MAT 1:1", "MAT 1:2"),
+            rows:
+            [
+                new UsfmUpdateBlockRow("x y", AlignmentMetadata("a b", "x y", "0-0 1-1")),
+                new UsfmUpdateBlockRow("z w v", AlignmentMetadata("c d", "z w v", "0-0 1-2")),
+            ]
+        );
+
+        PlaceMarkersAlignmentInfo? info = GetAlignmentInfo(block);
+
+        Assert.That(info, Is.Not.Null);
+        Assert.That(info!.SourceTokens, Is.EqualTo(new[] { "a", "b", "c", "d" }));
+        Assert.That(info.TranslationTokens, Is.EqualTo(new[] { "x", "y", "z", "w", "v" }));
+        Assert.That(
+            info.Alignment.ValueEquals(new WordAlignmentMatrix(4, 5, new[] { (0, 0), (1, 1), (2, 2), (3, 4) })),
+            Is.True
+        );
+    }
+
+    [Test]
+    public void GetBlockAlignmentInfo_ShiftsByTokenCountRatherThanMatrixSize()
+    {
+        // The first row's matrix omits its unaligned final token, so it is narrower than the row's tokens
+        var block = new UsfmUpdateBlock(
+            ScrRef("MAT 1:1", "MAT 1:2"),
+            rows:
+            [
+                new UsfmUpdateBlockRow("x y .", AlignmentMetadata("a b", "x y .", "0-0 1-1")),
+                new UsfmUpdateBlockRow("z w v", AlignmentMetadata("c d", "z w v", "0-0 1-2")),
+            ]
+        );
+
+        PlaceMarkersAlignmentInfo? info = GetAlignmentInfo(block);
+
+        Assert.That(info, Is.Not.Null);
+        Assert.That(info!.TranslationTokens, Is.EqualTo(new[] { "x", "y", ".", "z", "w", "v" }));
+        Assert.That(
+            info.Alignment.ValueEquals(new WordAlignmentMatrix(4, 6, new[] { (0, 0), (1, 1), (2, 3), (3, 5) })),
+            Is.True
+        );
+    }
+
+    [Test]
+    public void GetBlockAlignmentInfo_IgnoresRowsWithoutText()
+    {
+        var block = new UsfmUpdateBlock(
+            ScrRef("MAT 1:1", "MAT 1:2", "MAT 1:3"),
+            rows:
+            [
+                new UsfmUpdateBlockRow("x y", AlignmentMetadata("a b", "x y", "0-0 1-1")),
+                new UsfmUpdateBlockRow(""),
+                new UsfmUpdateBlockRow("z w v", AlignmentMetadata("c d", "z w v", "0-0 1-2")),
+            ]
+        );
+
+        PlaceMarkersAlignmentInfo? info = GetAlignmentInfo(block);
+
+        Assert.That(info, Is.Not.Null);
+        Assert.That(info!.SourceTokens, Is.EqualTo(new[] { "a", "b", "c", "d" }));
+        Assert.That(info.TranslationTokens, Is.EqualTo(new[] { "x", "y", "z", "w", "v" }));
+        Assert.That(
+            info.Alignment.ValueEquals(new WordAlignmentMatrix(4, 5, new[] { (0, 0), (1, 1), (2, 2), (3, 4) })),
+            Is.True
+        );
+    }
+
+    [Test]
+    public void GetBlockAlignmentInfo_ShiftsLaterRowsPastRowsWithoutAlignedWords()
+    {
+        var block = new UsfmUpdateBlock(
+            ScrRef("MAT 1:1", "MAT 1:2", "MAT 1:3"),
+            rows:
+            [
+                new UsfmUpdateBlockRow("x y", AlignmentMetadata("a b", "x y", "0-0 1-1")),
+                new UsfmUpdateBlockRow("u t", AlignmentMetadata("e f", "u t", "")),
+                new UsfmUpdateBlockRow("z w v", AlignmentMetadata("c d", "z w v", "0-0 1-2")),
+            ]
+        );
+
+        PlaceMarkersAlignmentInfo? info = GetAlignmentInfo(block);
+
+        Assert.That(info, Is.Not.Null);
+        Assert.That(info!.SourceTokens, Is.EqualTo(new[] { "a", "b", "e", "f", "c", "d" }));
+        Assert.That(info.TranslationTokens, Is.EqualTo(new[] { "x", "y", "u", "t", "z", "w", "v" }));
+        Assert.That(
+            info.Alignment.ValueEquals(new WordAlignmentMatrix(6, 7, new[] { (0, 0), (1, 1), (4, 4), (5, 6) })),
+            Is.True
+        );
+    }
+
+    [Test]
+    public void GetBlockAlignmentInfo_RejectsAlignedWordPairOutsideTokensOfSingleRow()
+    {
+        var block = new UsfmUpdateBlock(
+            ScrRef("MAT 1:1"),
+            rows: [new UsfmUpdateBlockRow("x y", AlignmentMetadata("a b", "x y", "0-0 1-5"))]
+        );
+
+        var ex = Assert.Throws<UsfmUpdateBlockHandlerException>(() => GetAlignmentInfo(block));
+        Assert.That(ex!.Message, Does.Contain("1-5"));
+    }
+
+    [Test]
+    public void GetBlockAlignmentInfo_RejectsAlignedWordPairOutsideTokensOfMergedRow()
+    {
+        var block = new UsfmUpdateBlock(
+            ScrRef("MAT 1:1", "MAT 1:2"),
+            rows:
+            [
+                new UsfmUpdateBlockRow("x y", AlignmentMetadata("a b", "x y", "0-0 2-1")),
+                new UsfmUpdateBlockRow("z w", AlignmentMetadata("c d", "z w", "0-0 1-1")),
+            ]
+        );
+
+        var ex = Assert.Throws<UsfmUpdateBlockHandlerException>(() => GetAlignmentInfo(block));
+        Assert.That(ex!.Message, Does.Contain("2-1"));
+    }
+
+    [Test]
+    public void UpdateUsfm_SingleRowWithoutAlignmentInfoIsNotPlaced()
+    {
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Esta es la primera parte. Esta es la segunda parte."),
+        ];
+        string usfm =
+            @"\id MAT
+\c 1
+\v 1 This is the first part.
+\p This is the second part.
+";
+
+        string target = UpdateUsfm(rows, usfm, usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]);
+
+        string result =
+            @"\id MAT
+\c 1
+\v 1 Esta es la primera parte. Esta es la segunda parte.
+\p
+";
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void UpdateUsfm_AlignedRowsWithRowWithoutAlignmentInfoAreNotPlaced()
+    {
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                "Esta es la primera parte.",
+                AlignmentMetadata("This is the first part.", "Esta es la primera parte.", "0-0 1-1 2-2 3-3 4-4 5-5")
+            ),
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:2"),
+                "Esta es la segunda parte.",
+                AlignmentMetadata("This is the second part.", "Esta es la segunda parte.", "0-0 1-1 2-2 3-3 4-4 5-5")
+            ),
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "Esta es la tercera parte."),
+        ];
+        string usfm =
+            @"\id MAT
+\c 1
+\v 1-3 This is the first part.
+\p This is the second part. This is the third part.
+";
+
+        string target = UpdateUsfm(rows, usfm, usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]);
+
+        string result =
+            @"\id MAT
+\c 1
+\v 1-3 Esta es la primera parte. Esta es la segunda parte. Esta es la tercera parte.
+\p
+";
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void UpdateUsfm_SingleRowWithoutAlignedWordsPlacesMarkersAtEnd()
+    {
+        string source = "This is the first part. This is the second part.";
+        string pretranslation = "Esta es la primera parte. Esta es la segunda parte.";
+        List<string> sourceTokens = Tokenizer.Tokenize(source).ToList();
+        List<string> translationTokens = Tokenizer.Tokenize(pretranslation).ToList();
+        PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
+            sourceTokens: sourceTokens,
+            translationTokens: translationTokens,
+            alignment: new WordAlignmentMatrix(sourceTokens.Count, translationTokens.Count),
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
+        );
+
+        AssertMarkersPlacedAtEnd(
+            "\\v 1 This is the first part. \\f + \\ft note\\f*",
+            "\\v 1 Esta es la primera parte. Esta es la segunda parte.",
+            [new UpdateUsfmRow(ScrRef("MAT 1:1"), pretranslation, AlignmentMetadata(alignInfo))]
+        );
+    }
+
+    [Test]
+    public void UpdateUsfm_SingleRowWithEmptyAlignmentMatrixPlacesMarkersAtEnd()
+    {
+        string source = "This is the first part. This is the second part.";
+        string pretranslation = "Esta es la primera parte. Esta es la segunda parte.";
+        PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
+            sourceTokens: Tokenizer.Tokenize(source).ToList(),
+            translationTokens: Tokenizer.Tokenize(pretranslation).ToList(),
+            alignment: ToWordAlignmentMatrix(""),
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
+        );
+
+        AssertMarkersPlacedAtEnd(
+            "\\v 1 This is the first part. \\f + \\ft note\\f*",
+            "\\v 1 Esta es la primera parte. Esta es la segunda parte.",
+            [new UpdateUsfmRow(ScrRef("MAT 1:1"), pretranslation, AlignmentMetadata(alignInfo))]
+        );
+    }
+
+    [Test]
+    public void UpdateUsfm_MergedRowsWithoutAlignedWordsPlaceMarkersAtEnd()
+    {
+        PlaceMarkersAlignmentInfo firstAlignInfo = new PlaceMarkersAlignmentInfo(
+            sourceTokens: Tokenizer.Tokenize("This is the first part.").ToList(),
+            translationTokens: Tokenizer.Tokenize("Esta es la primera parte.").ToList(),
+            alignment: ToWordAlignmentMatrix(""),
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
+        );
+        PlaceMarkersAlignmentInfo secondAlignInfo = new PlaceMarkersAlignmentInfo(
+            sourceTokens: Tokenizer.Tokenize("This is the second part.").ToList(),
+            translationTokens: Tokenizer.Tokenize("Esta es la segunda parte.").ToList(),
+            alignment: ToWordAlignmentMatrix(""),
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
+        );
+
+        AssertMarkersPlacedAtEnd(
+            "\\v 1-2 This is the first part. \\f + \\ft note\\f*",
+            "\\v 1-2 Esta es la primera parte. Esta es la segunda parte.",
+            [
+                new UpdateUsfmRow(ScrRef("MAT 1:1"), "Esta es la primera parte.", AlignmentMetadata(firstAlignInfo)),
+                new UpdateUsfmRow(ScrRef("MAT 1:2"), "Esta es la segunda parte.", AlignmentMetadata(secondAlignInfo)),
+            ]
+        );
+    }
+
+    private static void AssertMarkersPlacedAtEnd(
+        string sourceVerseLine,
+        string resultVerseLine,
+        IReadOnlyList<UpdateUsfmRow> rows
+    )
+    {
+        string usfm = $"\\id MAT\n\\c 1\n{sourceVerseLine}\n\\p This is \\w the\\w* second part.\n";
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
+        );
+
+        string result = $"\\id MAT\n\\c 1\n{resultVerseLine}\n\\p \\w \\w*\\f + \\ft note\\f*\n";
+        AssertUsfmEquals(target, result);
+    }
+
+    private static PlaceMarkersAlignmentInfo? GetAlignmentInfo(UsfmUpdateBlock block)
+    {
+        List<PlaceMarkersAlignmentInfo> rowAlignmentInfos = PlaceMarkersUsfmUpdateBlockHandler.GetRowAlignmentInfos(
+            block
+        );
+        return rowAlignmentInfos == null
+            ? null
+            : PlaceMarkersUsfmUpdateBlockHandler.GetBlockAlignmentInfo(block, rowAlignmentInfos);
+    }
+
+    private static Dictionary<string, object> AlignmentMetadata(PlaceMarkersAlignmentInfo alignInfo)
+    {
+        return new Dictionary<string, object> { { "alignment_info", alignInfo } };
+    }
+
+    private static Dictionary<string, object> AlignmentMetadata(string source, string translation, string alignment)
+    {
+        return AlignmentMetadata(CreateAlignmentInfo(source, translation, alignment));
+    }
+
     private static PlaceMarkersAlignmentInfo CreateAlignmentInfo(string source, string translation, string alignment)
     {
         return new PlaceMarkersAlignmentInfo(

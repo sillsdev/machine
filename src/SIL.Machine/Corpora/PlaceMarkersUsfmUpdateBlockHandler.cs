@@ -226,12 +226,9 @@ namespace SIL.Machine.Corpora
                     }
                     else
                     {
-                        if (!openStyleTargetTokensByMarker.TryGetValue(marker, out List<int> openTokens))
-                        {
-                            openTokens = new List<int>();
-                            openStyleTargetTokensByMarker[marker] = openTokens;
-                        }
-                        openTokens.Add(adjacentTargetToken);
+                        if (!openStyleTargetTokensByMarker.ContainsKey(marker))
+                            openStyleTargetTokensByMarker[marker] = new List<int>();
+                        openStyleTargetTokensByMarker[marker].Add(adjacentTargetToken);
                     }
                 }
 
@@ -319,7 +316,7 @@ namespace SIL.Machine.Corpora
             foreach (UsfmUpdateBlockRow row in block.Rows)
             {
                 // Rows that contributed no text, such as the later verses of a verse range, have nothing to align
-                if (row.Text.Trim().Length == 0)
+                if (string.IsNullOrWhiteSpace(row.Text))
                     continue;
                 if (
                     !row.Metadata.TryGetValue(PlaceMarkersAlignmentInfo.MetadataKey, out object infoObject)
@@ -366,7 +363,8 @@ namespace SIL.Machine.Corpora
             var wordPairs = new List<(int, int)>();
             foreach (PlaceMarkersAlignmentInfo info in infos)
             {
-                // Offset by token counts, not matrix size, since a matrix may omit unaligned trailing tokens
+                // Offset by the token counts rather than the matrix size,
+                // since a matrix may omit unaligned trailing tokens
                 foreach (AlignedWordPair pair in info.Alignment.ToAlignedWordPairs())
                 {
                     wordPairs.Add((sourceTokens.Count + pair.SourceIndex, translationTokens.Count + pair.TargetIndex));

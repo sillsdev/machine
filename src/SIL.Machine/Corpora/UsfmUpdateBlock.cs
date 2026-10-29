@@ -27,7 +27,11 @@ namespace SIL.Machine.Corpora
 
         public override int GetHashCode()
         {
-            return Text?.GetHashCode() ?? 0;
+            int code = Text?.GetHashCode() ?? 0;
+            // Summed so that the result doesn't depend on the order of the metadata
+            foreach (KeyValuePair<string, object> entry in Metadata)
+                code += entry.Key.GetHashCode() ^ (entry.Value?.GetHashCode() ?? 0);
+            return code;
         }
     }
 
