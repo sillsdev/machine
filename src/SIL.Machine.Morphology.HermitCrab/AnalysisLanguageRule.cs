@@ -32,13 +32,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                 HashSet<Word> outputSet = tempSet;
                 outputSet.Clear();
 
-                // Limit alternatives accross all invocations of _rules[i].Apply.
+                // The limit spans every input to this stratum in this parse.
                 int alternativeCount = 0;
-                _rules[i].MaxAlternatives = _morpher.MaxAlternatives;
+                int maxAlternatives = _morpher.MaxAlternatives;
 
                 foreach (Word inData in inputSet)
                 {
-                    foreach (Word outData in _rules[i].Apply(inData, ref alternativeCount))
+                    foreach (Word outData in _rules[i].Apply(inData, ref alternativeCount, maxAlternatives))
                     {
                         outputSet.Add(outData);
                         results.Add(outData);
