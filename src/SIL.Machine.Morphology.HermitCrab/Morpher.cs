@@ -99,10 +99,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         /// <summary>
         /// True if any morpheme other than a <see cref="LexEntry"/> is partial. Analysis may prune a final
-        /// template that follows a non-template rule only when this is false. Partial lexical entries do not
-        /// count: <see cref="SynthesisAffixTemplatesRule"/> applies no template to a word whose root is partial,
-        /// and when it substitutes an inflectional-family relative for the root, the relative's word is
-        /// non-partial, so a following non-partial rule is blocked either way.
+        /// template that follows a non-template rule only when this is false.
         /// </summary>
         public bool HasPartialRules { get; }
 
