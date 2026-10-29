@@ -16,7 +16,7 @@ public enum GateArmStatus
 
 /// <summary>
 /// The checked-in denominator for MC/DC obligations keyed to <see cref="FailureReason"/> -- HermitCrab's
-/// OWN 23 engine decision points (<see cref="EngineGateInventoryLedger"/>) -- rather than to a DTD
+/// OWN 24 engine decision points (<see cref="EngineGateInventoryLedger"/>) -- rather than to a DTD
 /// attribute pair (<see cref="DataflowObligationLedger"/>).
 ///
 /// <para>
@@ -25,9 +25,9 @@ public enum GateArmStatus
 /// (<c>FindPairedWitness</c> derives the satisfied arm from the reader attribute's own name:
 /// <c>required*</c> -&gt; AbsentGatedForm, <c>excluded*</c> -&gt; PresentGatedForm, anything else -&gt;
 /// null) -- of 346 enumerated cells, 28 are even certifiable. Worse, it cannot NAME a gate the DTD fuses
-/// into no single attribute at all: six of the 23 <see cref="FailureReason"/> values
+/// into no single attribute at all: seven of the 24 <see cref="FailureReason"/> values
 /// (<see cref="EngineGateInventoryLedger.DtdAttributes"/>) have no row there whatsoever. This ledger
-/// starts from the ENGINE's own 23 gates instead, so every one of them gets a denominator row regardless
+/// starts from the ENGINE's own 24 gates instead, so every one of them gets a denominator row regardless
 /// of whether the schema names it with an attribute, and MC/DC's two arms per gate are evidenced with
 /// the engine's own vocabulary:
 /// <list type="bullet">
@@ -55,19 +55,20 @@ public enum GateArmStatus
 /// <para>
 /// <b>Every obligation also carries its two layer verdicts, so a miss says WHERE it is blocked.</b>
 /// <c>xml_reachable</c> is whether any DTD attribute or element reaches the gate at all (from
-/// <see cref="EngineGateInventoryLedger.DtdAttributes"/>; five of its six <c>"-"</c> entries are reachable
+/// <see cref="EngineGateInventoryLedger.DtdAttributes"/>; six of its seven <c>"-"</c> entries are reachable
 /// only via element content -- <see cref="ElementContentReachableWithoutAttribute"/> -- and one,
 /// <see cref="FailureReason.SurfaceFormMismatch"/>, is a pure engine-internal check no grammar construct
 /// feeds at all). <c>flex_producible</c> is FieldWorks' own HCLoader capability
 /// (<c>conformance/fieldworks-producibility.tsv</c>, treated as fixed -- see that file's own doc
-/// comment). An obligation is <c>worth_covering</c> only when both are Yes: 21 of the 23 gates today
+/// comment). An obligation is <c>worth_covering</c> only when both are Yes: 22 of the 24 gates today
 /// (<see cref="FailureReason.SurfaceFormMismatch"/> fails the first, <see
 /// cref="FailureReason.ObligatorySyntacticFeatures"/> the second). A gate that IS worth covering can
 /// still be unevidenced for two further, honestly distinct reasons: the current corpus never witnesses
 /// it at all (<see cref="EngineGateStatus.Unreached"/>), or it is witnessed but has no DTD attribute to
-/// sever (the three <c>"-"</c> gates that ARE reachable and producible -- <see
+/// sever (the four witnessed <c>"-"</c> gates that ARE reachable and producible -- <see
 /// cref="FailureReason.Environments"/>, <see cref="FailureReason.DisjunctiveAllomorph"/>, <see
-/// cref="FailureReason.Pattern"/> -- for which this ledger has no isolable element-content severance
+/// cref="FailureReason.Pattern"/>, <see cref="FailureReason.AllomorphNotApplicable"/> -- for which this
+/// ledger has no isolable element-content severance
 /// primitive yet). Every one of these is named in the row's own evidence text, never collapsed to a
 /// single "Unknown".
 /// </para>
@@ -77,7 +78,7 @@ public enum GateArmStatus
 /// different question this ledger does not: whether a specific WRITER/READER PAYLOAD PAIR survives the
 /// full MC/DC treatment (n-condition vectors, the four mutator-kill classes) for the 40 write/read
 /// chains <see cref="InteractionChainLedger"/> derives from the DTD. This ledger answers whether each of
-/// the engine's 23 OWN DECISION POINTS is independently shown to matter.
+/// the engine's 24 OWN DECISION POINTS is independently shown to matter.
 /// </para>
 /// </summary>
 public static class GateObligationLedger
@@ -102,20 +103,22 @@ public static class GateObligationLedger
     );
 
     /// <summary>
-    /// The five of <see cref="EngineGateInventoryLedger.DtdAttributes"/>'s six <c>"-"</c> gates that are
+    /// The six of <see cref="EngineGateInventoryLedger.DtdAttributes"/>'s seven <c>"-"</c> gates that are
     /// still reachable from a fixture -- via child ELEMENTS (<see cref="FailureReason.Environments"/>),
     /// PhoneticSequence element CONTENT (<see cref="FailureReason.Pattern"/>/<see
     /// cref="FailureReason.HeadPattern"/>/<see cref="FailureReason.NonHeadPattern"/>), or allomorph
-    /// sibling structure (<see cref="FailureReason.DisjunctiveAllomorph"/>) -- as opposed to <see
+    /// sibling structure (<see cref="FailureReason.DisjunctiveAllomorph"/> and
+    /// <see cref="FailureReason.AllomorphNotApplicable"/>) -- as opposed to <see
     /// cref="FailureReason.SurfaceFormMismatch"/>, a pure engine-internal reconstruction check with no
-    /// grammar input at all. Deliberately a fixed set, not re-derived: which of these five have an
-    /// isolable severance primitive built (three do not yet -- see this class's own doc comment) is a
+    /// grammar input at all. Deliberately a fixed set, not re-derived: which of these six have an
+    /// isolable severance primitive built (four witnessed gates do not) is a
     /// tooling question, not something a fixture sweep can answer for us.
     /// </summary>
     private static readonly HashSet<string> ElementContentReachableWithoutAttribute = new(StringComparer.Ordinal)
     {
         "Environments",
         "DisjunctiveAllomorph",
+        "AllomorphNotApplicable",
         "Pattern",
         "HeadPattern",
         "NonHeadPattern",
@@ -151,7 +154,7 @@ public static class GateObligationLedger
     private static string XmlUnreachableReason(string gate) =>
         gate == nameof(FailureReason.SurfaceFormMismatch)
             ? "pure engine-internal reconstruction check (Morpher.cs's confirming-synthesis IsMatch) with no grammar attribute or element input at all -- see EngineGateInventoryLedger.DtdAttributes"
-            : "no DTD attribute, and not one of the five known element-content-reachable gates -- see EngineGateInventoryLedger.DtdAttributes";
+            : "no DTD attribute, and not one of the six known element-content-reachable gates -- see EngineGateInventoryLedger.DtdAttributes";
 
     private static string FlexUnproducibleReason(string gate) =>
         gate == nameof(FailureReason.ObligatorySyntacticFeatures)
@@ -581,7 +584,7 @@ public static class GateObligationLedger
         var writer = new StringWriter();
         writer.WriteLine("# GENERATED by hc-conformance --write-gate-obligations. One row per (gate, arm) pair, gate");
         writer.WriteLine(
-            "# ranging over all 23 SIL.Machine.Morphology.HermitCrab.FailureReason members (excluding None)"
+            "# ranging over all 24 SIL.Machine.Morphology.HermitCrab.FailureReason members (excluding None)"
         );
         writer.WriteLine("# and arm in {Blocked, Control} -- the two arms MC/DC demands for each of the engine's own");
         writer.WriteLine("# decision points, as opposed to conformance/dataflow-obligations.tsv's DTD-attribute-pair");

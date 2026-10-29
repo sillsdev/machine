@@ -205,11 +205,11 @@ satisfied by one witnessed interleaving even when a second, unwitnessed one woul
 class is pinned only by a hand-crafted fixture (`edge-cases/mpr-overwrite-order-dependence`), never by
 a ledger.
 
-## A second denominator: engine gates, not DTD attribute pairs — 23 gates, 16 witnessed
+## A second denominator: engine gates, not DTD attribute pairs — 24 gates, 19 witnessed
 
 Every layer above is keyed to the DTD: an attribute, or a pair of attributes joined by a payload
 type. `conformance/engine-gate-inventory.tsv` is keyed to something else entirely —
-`SIL.Machine.Morphology.HermitCrab.FailureReason` (`ITraceManager.cs`), the 23-member enum
+`SIL.Machine.Morphology.HermitCrab.FailureReason` (`ITraceManager.cs`), the 24-member enum
 (excluding `None`) HermitCrab itself uses to name every decision it makes when declining to apply or
 unapply something. This is the engine's own vocabulary for "why did this not happen", authored by
 whoever wrote the engine, not derived from the schema at all — a genuinely different axis from the
@@ -238,20 +238,21 @@ makes some decisions the schema fuses or never names as its own thing:
 **What turned out to have an attribute anyway, against this layer's own working assumption when it
 was proposed.** The proposal guessed `PartialParse`, `BoundRoot`, `MaxApplicationCount`,
 `SurfaceFormMismatch`, `DisjunctiveAllomorph`, and the two template-ordering reasons had no DTD
-attribute reaching them at all. Reading `XmlLanguageLoader.cs` line by line for every one of the 23
+attribute reaching them at all. Reading `XmlLanguageLoader.cs` line by line for every one of the 24
 raise sites (`EngineGateInventoryLedger.DtdAttributes`'s own doc comment cites the exact lines) showed
 that guess half wrong: `BoundRoot` *does* resolve to one attribute (`Allomorph.isBound`),
 `MaxApplicationCount` to one
 (`MorphologicalRule.multipleApplication`/`CompoundingRule.multipleApplication`), `PartialParse` to two
 (`Slot.optional`, `AffixTemplate.final`), and both template-ordering reasons to the same two
-(`AffixTemplate.final`, `MorphologicalRule.partial`). Only `SurfaceFormMismatch` and
-`DisjunctiveAllomorph` are genuinely attribute-free: the former is a pure engine-internal
+(`AffixTemplate.final`, `MorphologicalRule.partial`). Of those proposed, `SurfaceFormMismatch` and
+`DisjunctiveAllomorph` are attribute-free: the former is a pure engine-internal
 reconstruction check with no grammar input at all, the latter is driven by allomorph order and
-`Environment` element overlap among siblings, never a flat attribute value. Three more —
+`Environment` element overlap among siblings, never a flat attribute value. Four more —
 `Environments`, `Pattern`, `HeadPattern`/`NonHeadPattern` — join them for a different reason: their
 DTD-side driver is child ELEMENT content (`RequiredEnvironments`/`ExcludedEnvironments`, a
-`PhoneticSequence`), not an attribute, so `dtd_attributes` is honestly `-` for six gates in total, not
-seven. Recording that a guess was wrong, and exactly how, is the point of writing the mapping down
+`PhoneticSequence`), not an attribute. `AllomorphNotApplicable` also depends on sibling
+`MorphologicalSubrule` elements rather than an attribute, so `dtd_attributes` is `-` for seven gates.
+Recording that a guess was wrong, and exactly how, is the point of writing the mapping down
 mechanically-cited rather than asserting it.
 
 **How `Witnessed` is decided, and why it is a WEAKER claim than a `Satisfied` obligation cell —
@@ -280,13 +281,10 @@ scale.
 grammar.xml attribute values and inferring what "should" fire — the same standard `TraceRuleAttributor`
 and `FailureRuleAttributor` already hold this suite's rule-level attribution to.
 
-**16 of 23 gates are `Witnessed`.** The 7 that are not are each a specific, named corpus gap, not "the
+**19 of 24 gates are `Witnessed`.** The 5 that are not are each a specific, named corpus gap, not "the
 suite is thin" in the abstract — see `EngineGateInventoryLedgerTests.UnreachedGatesAreTheKnownCorpusGaps`
-for the exact reasoning behind each one (a compounding candidate whose head/non-head phonetic pattern
-is tried and fails; a rule re-applied to its own `multipleApplication` cap within one derivation; the
-non-head-side compounding gates, structurally present but never the one that actually fails; a
-`partial="true"` rule tried immediately after an explicit `AffixTemplate final="false"`; and a rule
-whose `outputObligatoryFeatures` promise goes unmet by the time `Morpher.IsWordValid` checks it).
+for the exact list: the head and non-head compounding pattern gates, two non-head compounding feature
+gates, and `ObligatorySyntacticFeatures`.
 ## A third constraint layer: what a real FieldWorks project can produce
 
 Everything above measures two layers: what the HC **engine** does, and what HC's XML/DTD can
@@ -295,7 +293,7 @@ Everything above measures two layers: what the HC **engine** does, and what HC's
 single component that turns a LibLCM-backed FieldWorks project into an HC grammar — it is the only
 place that integrates both the LibLCM data model and what is reachable from it, so it is the right
 authority for this third layer. `conformance/fieldworks-producibility.tsv` records, for every
-`FailureReason` the engine can report (`ITraceManager.cs`, 23 members besides `None`), every
+`FailureReason` the engine can report (`ITraceManager.cs`, 24 members besides `None`), every
 IDREF/IDREFS attribute this suite's own DTD inventory tracks (`interface-inventory.tsv`, 60 rows —
 same 60 as layer 2 above), and five hand-curated `loader-gap` subjects that are neither shape — a
 whole runtime construct `HCLoader` never builds at all (`RealizationalRule`), a structural fact
@@ -325,7 +323,7 @@ produce it, no matter how the grammar is authored, so no fixture — however cle
 covering that construct say anything about real FieldWorks use. A `No` here does not mean "not yet
 covered"; it means the coverage question is moot for that subject, and the honest response is to
 retire it from the "should the suite cover this" conversation rather than keep chasing it. 26 of the
-88 subjects landed there. About a third of those (9 of 22, on the interface side) are constructs the
+89 subjects landed there. About a third of those (9 of 22, on the interface side) are constructs the
 *engine* fully implements and even the engine's own reference XML loader reads — `HCLoader` simply
 never wires them up from LibLCM (`CompoundingRule.outputObligatoryFeatures`, `.outputProdRestrictions
 MprFeatures`, `HeadMorphologicalInput.requiredMPRFeatures`/`excludedMPRFeatures`, `InsertSegments.` /
@@ -393,10 +391,10 @@ to re-derive a verdict from the FieldWorks repo. Treat this ledger the way you w
 to an external paper: trustworthy as of when it was written, and due for a re-read — by hand, not by
 CI — whenever `HCLoader.cs` is known to have changed.
 
-## Gate-keyed obligations: MC/DC over the engine's own 23 gates — the primary claim now
+## Gate-keyed obligations: MC/DC over the engine's own 24 gates — the primary claim now
 
 `conformance/gate-obligations.tsv` (`GateObligationLedger`) is the synthesis of the two sections
-above: it takes the engine-gate denominator (23 `FailureReason` gates) and, for each one, demands
+above: it takes the engine-gate denominator (24 `FailureReason` gates) and, for each one, demands
 the two arms MC/DC requires, evidenced with the engine's own vocabulary rather than inferred from a
 DTD attribute's spelling. `what-it-claims.md`'s primary funnel table gives the headline counts; this
 section is the mechanics behind them.
@@ -405,8 +403,8 @@ section is the mechanics behind them.
 writer/reader chain but `FindPairedWitness` derives the arm it can certify purely from the reader
 attribute's own name (`required*` → `AbsentGatedForm`, `excluded*` → `PresentGatedForm`, anything
 else → nothing) — of 346 cells, 28 are even certifiable, and it cannot name a gate the schema fuses
-into no single attribute at all (six of the 23 gates have no row there whatsoever — see the
-"second denominator" section above). `GateObligationLedger` starts from the engine's 23 gates
+into no single attribute at all (seven of the 24 gates have no row there whatsoever — see the
+"second denominator" section above). `GateObligationLedger` starts from the engine's 24 gates
 instead, so every gate gets a denominator row regardless of what the schema calls it.
 
 **The two arms, and how each is evidenced.**
@@ -435,26 +433,28 @@ instead, so every gate gets a denominator row regardless of what the schema call
 **The two layer verdicts, and why a miss says WHERE.** Every obligation also carries:
 
 - **`xml_reachable`** — whether any DTD attribute or element reaches the gate at all. Read directly
-  off `EngineGateInventoryLedger.DtdAttributes`: `-` means no attribute, but five of its six `-`
+  off `EngineGateInventoryLedger.DtdAttributes`: `-` means no attribute, but six of its seven `-`
   entries ARE still reachable via element content (`Environments` via child elements, `Pattern`/
   `HeadPattern`/`NonHeadPattern` via `PhoneticSequence` content, `DisjunctiveAllomorph` via allomorph
-  sibling order) and are marked `xml_reachable=Yes` on that basis. Only `SurfaceFormMismatch` is
+  sibling order, and `AllomorphNotApplicable` via sibling subrules) and are marked `xml_reachable=Yes`
+  on that basis. Only `SurfaceFormMismatch` is
   `xml_reachable=No`: it is a pure engine-internal reconstruction check (`Morpher`'s confirming-
   synthesis shape comparison) with no grammar attribute or element input at all.
 - **`flex_producible`** — FieldWorks' own HCLoader capability, read straight from
   `fieldworks-producibility.tsv` (treated as fixed, per that file's own doc comment — this ledger
   does not re-derive or drift-check it). Only `ObligatorySyntacticFeatures` is `flex_producible=No`.
 
-An obligation is `worth_covering` only when both are `Yes` — 21 of 23 gates (42 of 46 obligations)
+An obligation is `worth_covering` only when both are `Yes` — 22 of 24 gates (44 of 48 obligations)
 today. A gate that IS worth covering can still be `NotEvidenced` for reasons that have nothing to do
 with either layer, and each is named distinctly rather than collapsed together:
 
-- **Unreached in the current corpus.** 6 of the 7 `Unreached` gates from `engine-gate-inventory.tsv`
-  are worth covering but no fixture triggers them at all yet (the seventh, `ObligatorySyntacticFeatures`,
+- **Unreached in the current corpus.** 4 of the 5 `Unreached` gates from `engine-gate-inventory.tsv`
+  are worth covering but no fixture triggers them at all yet (the fifth, `ObligatorySyntacticFeatures`,
   is also `flex_producible=No`, so it is excluded before reaching this check). No candidate word
   exists to evidence either arm from, so both are `NotEvidenced` naming the corpus gap directly.
 - **No severance primitive for a bare element-content gate.** `Environments`, `DisjunctiveAllomorph`,
-  and `Pattern` are `xml_reachable=Yes` via element content and ARE witnessed by the corpus, but this
+  `AllomorphNotApplicable`, and `Pattern` are `xml_reachable=Yes` via element content and are witnessed
+  by the corpus, but this
   ledger has no isolable way to sever "this one rule's `PhoneticSequence` shape" or "this allomorph's
   sibling order" without touching unrelated rules — a real tooling gap, named as exactly that, not
   attempted and not guessed.
@@ -467,11 +467,10 @@ with either layer, and each is named distinctly rather than collapsed together:
   the Control arm reports `NotEvidenced` by name whenever the gated construct's element
   (`Allomorph`, `MorphologicalInput`, `AffixTemplate`, `PhonologicalSubrule`, a co-occurrence rule)
   is not one of the three `GrammarRuleIndex` can resolve. `HeadProdRestrictMprFeatures` is the one
-  gate today whose blocking attribute (`CompoundingRule.headProdRestrictionsMprFeatures`) sits
-  directly on a `CompoundingRule` element, so it is the only gate with both arms `Evidenced` —
-  contrasting it against, say, `BoundRoot`'s `Allomorph`-rooted Control arm is the check that the
-  Control arm's limitation is about the ELEMENT KIND, not a broken mechanism (see
-  `GateObligationLedgerTests.OnlyHeadProdRestrictMprFeaturesHasBothArmsEvidenced`).
+  gate whose blocking attribute (`CompoundingRule.headProdRestrictionsMprFeatures`) sits directly on
+  a `CompoundingRule` element and has both arms `Evidenced`. Contrast it against `BoundRoot`'s
+  `Allomorph`-rooted Control arm; `GateObligationLedgerTests.SevenGatesHaveBothArmsEvidenced` pins
+  the full set of seven gates with both arms evidenced.
 
 **Where the severance evidence comes from.** For every DTD attribute that is also an `IDREF`/`IDREFS`
 attribute (`interface-inventory.tsv`'s own scope), `GateObligationLedger` reads the already-computed

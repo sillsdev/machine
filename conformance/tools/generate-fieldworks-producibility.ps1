@@ -58,7 +58,7 @@ if (-not (Test-Path $TraceManagerPath)) { throw "Cannot find $TraceManagerPath" 
 if (-not (Test-Path $InterfaceInventoryPath)) { throw "Cannot find $InterfaceInventoryPath" }
 
 # ---------------------------------------------------------------------------
-# 1. Mechanically extract the FailureReason subjects (23, excluding None).
+# 1. Mechanically extract the FailureReason subjects (24, excluding None).
 # ---------------------------------------------------------------------------
 $traceManagerText = Get-Content $TraceManagerPath -Raw
 $enumMatch = [regex]::Match($traceManagerText, "public enum FailureReason\s*\{(?<body>[^}]*)\}")
@@ -67,8 +67,8 @@ $failureReasons = $enumMatch.Groups["body"].Value -split "," |
     ForEach-Object { $_.Trim() } |
     Where-Object { $_ -and $_ -ne "None" }
 
-if ($failureReasons.Count -ne 23) {
-    throw "Expected 23 FailureReason members besides None, found $($failureReasons.Count): $($failureReasons -join ', ')"
+if ($failureReasons.Count -ne 24) {
+    throw "Expected 24 FailureReason members besides None, found $($failureReasons.Count): $($failureReasons -join ', ')"
 }
 
 # ---------------------------------------------------------------------------
@@ -138,6 +138,18 @@ Add-Verdict "failure-reason" "AllomorphCoOccurrenceRules" "Yes" @(
     "HCLoader.cs:2163-2189 (LoadAllomorphCoOccurrenceRules)"
     "HCLoader.cs:341-345 (call site, gated on IMoAlloAdhocProhibRepository)"
 ) "Corroborated by HCLoaderTests.cs:1046-1047 (AllomorphCoOccurrenceRules.Count/First asserted)."
+
+Add-Verdict "failure-reason" "AllomorphNotApplicable" "Yes" @(
+    "HCLoader.cs:269-304 (entry forms collected for morphological rules)"
+    "HCLoader.cs:1025-1051,1097-1098,1134-1189 (affix forms loaded into one rule)"
+    "HCLoader.cs:1216-1229,1244-1245,1601-1623 (unconditioned suffixes share a stem pattern)"
+    "HCLoaderTests.cs:450-466 (multiple runtime allomorphs on one rule)"
+) (
+    "Two unconditioned suffix forms on one entry yield sibling allomorphs with overlapping stem " +
+    "patterns. Analysis records the unapplied allomorph; confirming synthesis can match and reject " +
+    "its sibling as AllomorphNotApplicable. The engine's IsAllomorphApplicable test exercises this " +
+    "shape of rule with -s and -z siblings (AffixProcessRuleTests.cs:2035-2089)."
+)
 
 Add-Verdict "failure-reason" "Environments" "Yes" @(
     "HCLoader.cs:815-829 (LoadRootAllomorph)"
@@ -726,7 +738,7 @@ if ($staleKeys) { throw "Verdict table has entries with no matching subject (sta
 $dupes = $rows | Group-Object subject_kind, subject | Where-Object { $_.Count -gt 1 }
 if ($dupes) { throw "Duplicate subjects in output: $($dupes.Name -join '; ')" }
 
-if ($rows.Count -ne 88) { throw "Expected 88 total rows (23 failure-reason + 60 interface-attribute + 5 loader-gap), got $($rows.Count)" }
+if ($rows.Count -ne 89) { throw "Expected 89 total rows (24 failure-reason + 60 interface-attribute + 5 loader-gap), got $($rows.Count)" }
 
 # ---------------------------------------------------------------------------
 # 5. Emit the TSV.

@@ -191,8 +191,8 @@ public sealed class FieldworksProducibilityLedgerTests
 
         TestContext.Out.WriteLine($"producible: Yes={yes} No={no} Conditional={conditional}");
 
-        Assert.That(rows, Has.Count.EqualTo(88));
-        Assert.That(yes, Is.EqualTo(62));
+        Assert.That(rows, Has.Count.EqualTo(89));
+        Assert.That(yes, Is.EqualTo(63));
         Assert.That(no, Is.EqualTo(26));
         Assert.That(conditional, Is.EqualTo(0));
     }

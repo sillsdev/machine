@@ -38,9 +38,9 @@ public sealed class GateObligationLedgerTests
                 + $"notEvidenced={notEvidenced} blockedEvidenced={blockedEvidenced} controlEvidenced={controlEvidenced}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(46));
-        Assert.That(gates, Is.EqualTo(23));
-        Assert.That(worthCovering, Is.EqualTo(42));
+        Assert.That(rows, Has.Count.EqualTo(48));
+        Assert.That(gates, Is.EqualTo(24));
+        Assert.That(worthCovering, Is.EqualTo(44));
         Assert.That(evidenced + notEvidenced, Is.EqualTo(rows.Count));
         Assert.That(evidenced, Is.EqualTo(18));
         Assert.That(blockedEvidenced, Is.EqualTo(11));
@@ -70,6 +70,26 @@ public sealed class GateObligationLedgerTests
         {
             string expected = row.XmlReachable == "Yes" && row.FlexProducible == "Yes" ? "Yes" : "No";
             Assert.That(row.WorthCovering, Is.EqualTo(expected), row.Gate + "/" + row.Arm);
+        }
+    }
+
+    [Test]
+    public void AllomorphNotApplicableIsReachableButHasNoSeveranceWitness()
+    {
+        Assert.That(EngineGateInventoryLedger.DtdAttributes["AllomorphNotApplicable"], Is.EqualTo("-"));
+        GateObligationLedger.Row[] rows = GateObligationLedger
+            .Read(RepositoryRoot())
+            .Where(row => row.Gate == "AllomorphNotApplicable")
+            .ToArray();
+
+        Assert.That(rows.Select(row => row.Arm), Is.EquivalentTo(new[] { "Blocked", "Control" }));
+        foreach (GateObligationLedger.Row row in rows)
+        {
+            Assert.That(row.XmlReachable, Is.EqualTo("Yes"));
+            Assert.That(row.FlexProducible, Is.EqualTo("Yes"));
+            Assert.That(row.WorthCovering, Is.EqualTo("Yes"));
+            Assert.That(row.Status, Is.EqualTo(GateArmStatus.NotEvidenced));
+            Assert.That(row.Evidence, Does.Contain("no isolable severance primitive"));
         }
     }
 

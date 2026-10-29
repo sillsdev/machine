@@ -12,10 +12,10 @@ construct changes a parse.**
 That last clause is the whole claim, and it is narrower than it sounds. Read the next section before
 relying on it.
 
-## The primary funnel: gate-keyed obligations (23 engine gates, 46 obligations)
+## The primary funnel: gate-keyed obligations (24 engine gates, 48 obligations)
 
 **This is the headline number now.** `gate-obligations.tsv` is keyed to
-`SIL.Machine.Morphology.HermitCrab.FailureReason` — HermitCrab's own 23-member enumeration
+`SIL.Machine.Morphology.HermitCrab.FailureReason` — HermitCrab's own 24-member enumeration
 (excluding `None`) of the decisions it makes when declining to apply or unapply something — rather
 than to a DTD attribute pair. Every gate contributes exactly two obligations, the two arms MC/DC
 demands: **Blocked** (a word fails, the engine's own trace names this exact gate as why, and severing
@@ -25,20 +25,20 @@ and that the Blocked arm's failure is attributable to the gate, not to a rule th
 
 | | count |
 |---|---|
-| gates | 23 |
-| obligations (gates × 2 arms) | 46 |
-| worth covering (`xml_reachable`=Yes and `flex_producible`=Yes) | 42 |
-| arms evidenced | **14** (9 Blocked, 5 Control) |
-| gates with *both* arms evidenced | **5** (`ExcludedMprFeatures`, `HeadProdRestrictMprFeatures`, `HeadRequiredSyntacticFeatureStruct`, `RequiredMprFeatures`, `RequiredSyntacticFeatureStruct`) |
+| gates | 24 |
+| obligations (gates × 2 arms) | 48 |
+| worth covering (`xml_reachable`=Yes and `flex_producible`=Yes) | 44 |
+| arms evidenced | **18** (11 Blocked, 7 Control) |
+| gates with *both* arms evidenced | **7** (`ExcludedMprFeatures`, `HeadProdRestrictMprFeatures`, `HeadRequiredSyntacticFeatureStruct`, `NonPartialRuleProhibitedAfterFinalTemplate`, `NonPartialRuleRequiredAfterNonFinalTemplate`, `RequiredMprFeatures`, `RequiredSyntacticFeatureStruct`) |
 
 **Why this ledger, not `dataflow-obligations.tsv`, is now the primary claim.** The older ledger
 enumerates four MC/DC arms per writer/reader chain but its generator can certify at most one of them
 per chain (see "342 gaps, but only 14 an author can pick up" below) — of 346 enumerated cells, 28 are
-even certifiable, and only 9 are satisfied. Worse, it has no row at all for six of the engine's 23
-gates, because its cells are DTD-attribute write/read pairs and those six gates are not that shape
-(`PartialParse`, `BoundRoot`, `MaxApplicationCount`, `DisjunctiveAllomorph`, `Environments`,
+even certifiable, and only 9 are satisfied. Worse, it has no row at all for seven of the engine's 24
+gates, because its cells are DTD-attribute write/read pairs and those seven gates are not that shape
+(`PartialParse`, `BoundRoot`, `MaxApplicationCount`, `DisjunctiveAllomorph`, `AllomorphNotApplicable`, `Environments`,
 `SurfaceFormMismatch` — see `how-it-is-computed.md`'s engine-gate-inventory section). Keying the
-denominator to the engine's own 23 gates instead fixes both problems at once: every gate gets a row
+denominator to the engine's own 24 gates instead fixes both problems at once: every gate gets a row
 regardless of whether the schema names it with an attribute, and the Blocked arm's evidence is
 stronger than the old chain pairing because the engine's own trace *names* the failure reason,
 rather than the old generator inferring an arm from an attribute's spelling.
@@ -47,9 +47,9 @@ rather than the old generator inferring an arm from an attribute's spelling.
 answers its own question honestly — whether a specific WRITER/READER PAYLOAD PAIR survives full MC/DC
 treatment for the 40 chains `interaction-chains.tsv` derives from the DTD — and neither its file nor
 its tests are going away. `gate-obligations.tsv` answers a different, now-primary question: whether
-each of the engine's 23 own decision points is independently shown to matter. Read
+each of the engine's 24 own decision points is independently shown to matter. Read
 `how-it-is-computed.md`'s gate-obligations section for the full mechanics, including exactly which
-9 obligations are evidenced today and why the rest are not (a corpus gap the current fixtures never
+18 obligations are evidenced today and why the rest are not (a corpus gap the current fixtures never
 trigger, a construct FieldWorks' HCLoader can never produce, an element-content gate with no
 severance primitive built yet, or a rule element `GrammarRuleIndex` cannot resolve to a fired-rule
 id for the Control arm) — every one of those reasons is named in the row's own evidence text, never
@@ -70,7 +70,7 @@ ledger, not this one, is the number to cite as the suite's primary claim.
 | Interface edges | 60 declared, 44 present | **19** | `interface-inventory.tsv`, `interface-witness.tsv` |
 | Interaction chains | 40 declared, 26 exercised | **9** paired | `interaction-chains.tsv` |
 | Obligation cells | 346 enumerated, 18 worth covering | **9** | `dataflow-obligations.tsv`, `fieldworks-producibility.tsv` |
-| Gate arms (MC/DC) | 46, 42 worth covering | **14** | `gate-obligations.tsv` |
+| Gate arms (MC/DC) | 48, 44 worth covering | **18** | `gate-obligations.tsv` |
 
 Each layer is stricter than the one above, so the numbers fall as the demand rises. The unit layer
 asks "does this knob do anything." The cell layer asks "is there a named word whose parse flips when

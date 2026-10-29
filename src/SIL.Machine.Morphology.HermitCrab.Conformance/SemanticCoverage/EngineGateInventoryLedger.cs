@@ -33,7 +33,7 @@ public enum EngineGateStatus
 /// <see cref="FailureReason.DisjunctiveAllomorph"/>, and <see cref="FailureReason.SurfaceFormMismatch"/>
 /// likewise have no row in <c>conformance/dataflow-obligations.tsv</c> at all -- not because they are
 /// unimportant, but because that ledger's cells are payload write/read PAIRS and these are not that
-/// shape. See this class's own <see cref="DtdAttributes"/> table for exactly which of the 23 turn out
+/// shape. See this class's own <see cref="DtdAttributes"/> table for exactly which of the 24 turn out
 /// to have an identifiable attribute anyway (more than half do) and which genuinely do not.
 /// </para>
 ///
@@ -73,13 +73,14 @@ public static class EngineGateInventoryLedger
     /// <see cref="DataflowObligationLedger.ApplicableMutatorClasses"/>'s own schema/engine-derived
     /// mapping, because "which attribute reaches which engine decision" requires reading what the
     /// loader DOES with an attribute, which no regex over the DTD or the engine alone can derive.
-    /// <see cref="NoAttributes"/> is a genuine finding, not a placeholder, for six of the 23: three
+    /// <see cref="NoAttributes"/> is a genuine finding, not a placeholder, for seven of the 24: three
     /// (<see cref="FailureReason.Pattern"/>/<see cref="FailureReason.HeadPattern"/>/
     /// <see cref="FailureReason.NonHeadPattern"/>) are driven by PhoneticSequence ELEMENT CONTENT (the
     /// shape itself), never an attribute; <see cref="FailureReason.Environments"/> and
     /// <see cref="FailureReason.DisjunctiveAllomorph"/> are driven by the presence/order/overlap of
     /// RequiredEnvironments/ExcludedEnvironments child ELEMENTS among an allomorph's siblings, again no
-    /// attribute; <see cref="FailureReason.SurfaceFormMismatch"/> is a pure engine-internal
+    /// attribute. <see cref="FailureReason.AllomorphNotApplicable"/> depends on sibling subrules;
+    /// <see cref="FailureReason.SurfaceFormMismatch"/> is a pure engine-internal
     /// reconstruction check with no grammar input at all. Every other gate DOES resolve to a real
     /// IDREFS/boolean attribute -- including three that are easy to assume have none
     /// (<see cref="FailureReason.BoundRoot"/> -> <c>Allomorph.isBound</c>,
@@ -105,6 +106,8 @@ public static class EngineGateInventoryLedger
         // Structural: which of a morpheme's OTHER allomorphs are tried, driven by allomorph order,
         // free-fluctuation, and Environment overlap (Allomorph.cs's IsWordValid) -- no attribute names it.
         ["DisjunctiveAllomorph"] = NoAttributes,
+        // Sibling subrules determine which allomorph confirming synthesis may apply.
+        ["AllomorphNotApplicable"] = NoAttributes,
         // Pure engine-internal reconstruction check (Morpher.cs's IsMatch): the confirming synthesis's
         // shape does not match the original surface. No grammar attribute feeds this at all.
         ["SurfaceFormMismatch"] = NoAttributes,
