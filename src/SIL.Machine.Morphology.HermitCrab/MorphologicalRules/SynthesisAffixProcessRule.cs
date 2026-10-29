@@ -137,14 +137,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
             var appliedAllomorphIndices = new HashSet<int>();
             var output = new List<Word>();
-            // Allomorphs after the recorded one can never yield output, so the loop ends there.
-            int recordedIndex = -1;
-            if (input.CurrentRecordedAllomorph is AffixProcessAllomorph recorded)
-                recordedIndex = _rule.Allomorphs.IndexOf(recorded);
             for (int i = 0; i < _rules.Count; i++)
             {
-                if (recordedIndex >= 0 && i > recordedIndex)
-                    break;
                 AffixProcessAllomorph allo = _rule.Allomorphs[i];
                 MprFeatureGroup group;
                 if (
@@ -218,6 +212,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         if (_morpher.TraceManager.IsTracing)
                             _morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
                         output.Add(outWord);
+
+                        // Allomorphs after the recorded one can never yield output, so the loop ends there.
+                        if (input.CurrentRecordedAllomorph == allo)
+                            break;
                     }
                     else if (_morpher.TraceManager.IsTracing)
                     {
