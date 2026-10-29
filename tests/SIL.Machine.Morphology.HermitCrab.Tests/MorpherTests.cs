@@ -647,6 +647,328 @@ public class MorpherTests : HermitCrabTestBase
             Assert.That(parallel.ParseWord(word), Is.Not.Empty, $"'{word}' must parse");
     }
 
+    [TestCase(MorphologicalRuleOrder.Unordered, 0)]
+    [TestCase(MorphologicalRuleOrder.Unordered, 100)]
+    [TestCase(MorphologicalRuleOrder.Linear, 0)]
+    [TestCase(MorphologicalRuleOrder.Linear, 100)]
+    public void ParseWords_PreservesInputOrderAndSingleWordAnalysisSets(MorphologicalRuleOrder ruleOrder, int limit)
+    {
+        AddAffixTemplateAndCommutingPrefixes();
+        SetRuleOrder(ruleOrder);
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1) { MaxAlternatives = limit };
+        string[] words = { "gudisagd", "sag", "digusagd", "sagt", "disagd", "sag" };
+        string[][] expected = words
+            .Select(w => morpher.ParseWord(w).Select(BatchAnalysisSignature).ToArray())
+            .ToArray();
+
+        foreach (int concurrency in new[] { 1, 4 })
+        {
+            IReadOnlyList<WordParseResult> results = morpher.ParseWords(words, concurrency);
+
+            Assert.That(results.Select(r => r.SurfaceForm), Is.EqualTo(words));
+            for (int i = 0; i < words.Length; i++)
+            {
+                Assert.That(results[i].Error, Is.Null);
+                Assert.That(results[i].Trace, Is.Null);
+                Assert.That(results[i].Analyses.Select(BatchAnalysisSignature), Is.EquivalentTo(expected[i]));
+            }
+            Assert.That(results[1].Analyses, Is.Not.Empty);
+        }
+    }
+
+    [TestCase(MorphologicalRuleOrder.Unordered, 0)]
+    [TestCase(MorphologicalRuleOrder.Unordered, 1)]
+    [TestCase(MorphologicalRuleOrder.Unordered, 2)]
+    [TestCase(MorphologicalRuleOrder.Linear, 0)]
+    [TestCase(MorphologicalRuleOrder.Linear, 1)]
+    [TestCase(MorphologicalRuleOrder.Linear, 2)]
+    public void ParseWord_MaxAlternativesCanChangeBetweenCalls(MorphologicalRuleOrder ruleOrder, int degree)
+    {
+        AddAffixTemplateAndCommutingPrefixes();
+        SetRuleOrder(ruleOrder);
+        var morpher = new Morpher(TraceManager, Language, degree);
+        string[] expected = morpher.ParseWord("gudisagd").Select(BatchAnalysisSignature).ToArray();
+        Assert.That(expected, Is.Not.Empty);
+
+        foreach (int limit in new[] { 1, 100, 1, 0 })
+        {
+            morpher.MaxAlternatives = limit;
+            if (limit == 1)
+                Assert.Throws<MaxAlternativesExceededException>(() => morpher.ParseWord("gudisagd"));
+            else
+                Assert.That(morpher.ParseWord("gudisagd").Select(BatchAnalysisSignature), Is.EquivalentTo(expected));
+        }
+    }
+
+    [Test]
+    public void CompileAnalysisRule_DirectStratumInvocationRemainsUncapped()
+    {
+        AddAffixTemplateAndCommutingPrefixes();
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1) { MaxAlternatives = 1 };
+        IRule<Word, ShapeNode> rule = Morphophonemic.CompileAnalysisRule(morpher);
+        var input = new Word(Morphophonemic, Table3.Segment("gudisagd"));
+        input.Freeze();
+
+        Assert.That(rule.Apply(input), Is.Not.Empty);
+        Assert.Throws<MaxAlternativesExceededException>(() => morpher.ParseWord("gudisagd"));
+    }
+
+    [Test]
+    public void ParseWords_MatchesSingleWordAnalysisSetsWithCompounding()
+    {
+        AddCompoundingAndPrefixRules();
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        string[] words = { "pʰutdidat", "pʰutdat", "pʰutdat" };
+
+        foreach (int concurrency in new[] { 1, 4 })
+        {
+            IReadOnlyList<WordParseResult> results = morpher.ParseWords(words, concurrency);
+            Assert.That(results.Select(r => r.SurfaceForm), Is.EqualTo(words));
+            for (int i = 0; i < words.Length; i++)
+            {
+                Assert.That(results[i].Error, Is.Null);
+                Assert.That(
+                    results[i].Analyses.Select(BatchAnalysisSignature),
+                    Is.EquivalentTo(morpher.ParseWord(words[i]).Select(BatchAnalysisSignature))
+                );
+            }
+            Assert.That(results[1].Analyses, Has.Count.EqualTo(2));
+        }
+    }
+
+    [TestCase(2)]
+    [TestCase(4)]
+    public void ParseWords_UsesBoundedWordConcurrency(int concurrency)
+    {
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        using var entered = new CountdownEvent(concurrency);
+        int calls = 0;
+        int active = 0;
+        int peak = 0;
+        object sync = new();
+        morpher.LexEntrySelector = _ =>
+        {
+            int current = Interlocked.Increment(ref active);
+            try
+            {
+                lock (sync)
+                    peak = Math.Max(peak, current);
+                if (Interlocked.Increment(ref calls) <= concurrency)
+                    entered.Signal();
+                if (!entered.Wait(TimeSpan.FromSeconds(10)))
+                    throw new TimeoutException("The requested word workers did not enter lexical lookup.");
+                return true;
+            }
+            finally
+            {
+                Interlocked.Decrement(ref active);
+            }
+        };
+        string[] words = Enumerable.Repeat("sag", 8).ToArray();
+
+        IReadOnlyList<WordParseResult> results =
+            concurrency == 4 ? morpher.ParseWords(words) : morpher.ParseWords(words, concurrency);
+
+        Assert.That(results.Select(r => r.Error), Is.All.Null);
+        Assert.That(results.Select(r => r.Analyses.Count), Is.All.GreaterThan(0));
+        Assert.That(peak, Is.EqualTo(concurrency));
+    }
+
+    [TestCase(1)]
+    [TestCase(4)]
+    public void ParseWords_CapturesInvalidShapesWithoutLosingOtherResults(int concurrency)
+    {
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        string[] words = { "sag", "sag$", "sagt", "sag" };
+
+        IReadOnlyList<WordParseResult> results = morpher.ParseWords(words, concurrency);
+
+        Assert.That(results.Select(r => r.SurfaceForm), Is.EqualTo(words));
+        Assert.That(results[1].Error, Is.TypeOf<InvalidShapeException>());
+        Assert.That(results[1].Analyses, Is.Empty);
+        Assert.That(results[1].Trace, Is.Null);
+        Assert.That(results[2].Error, Is.Null);
+        Assert.That(results[2].Analyses, Is.Empty);
+        foreach (int index in new[] { 0, 3 })
+        {
+            Assert.That(results[index].Error, Is.Null);
+            Assert.That(results[index].Analyses, Is.Not.Empty);
+        }
+    }
+
+    [TestCase(1)]
+    [TestCase(4)]
+    public void ParseWords_CapturesMaxAlternativesPerWord(int concurrency)
+    {
+        AddAffixTemplateAndCommutingPrefixes();
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1) { MaxAlternatives = 1 };
+
+        IReadOnlyList<WordParseResult> results = morpher.ParseWords(
+            new[] { "gudisagd", "sag", "digusagd", "sag" },
+            concurrency
+        );
+
+        foreach (int index in new[] { 0, 2 })
+        {
+            Assert.That(results[index].Error, Is.TypeOf<MaxAlternativesExceededException>());
+            Assert.That(results[index].Analyses, Is.Empty);
+        }
+        foreach (int index in new[] { 1, 3 })
+        {
+            Assert.That(results[index].Error, Is.Null);
+            Assert.That(results[index].Analyses, Is.Not.Empty);
+        }
+
+        morpher.MaxAlternatives = 0;
+        Assert.That(morpher.ParseWords(new[] { "gudisagd" }, concurrency)[0].Analyses, Is.Not.Empty);
+    }
+
+    [TestCase(-1)]
+    [TestCase(0)]
+    [TestCase(2)]
+    public void ParseWords_RequiresSequentialMorpher(int degree)
+    {
+        var morpher = new Morpher(TraceManager, Language, degree);
+
+        var error = Assert.Throws<InvalidOperationException>(() => morpher.ParseWords(new[] { "sag" }));
+
+        Assert.That(error!.Message, Does.Contain("maxDegreeOfParallelism: 1"));
+        Assert.That(morpher.ParseWord("sag"), Is.Not.Empty);
+    }
+
+    [Test]
+    public void ParseWords_ValidatesBatchArguments()
+    {
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+
+        Assert.Throws<ArgumentNullException>(() => morpher.ParseWords(null!));
+        Assert.Throws<ArgumentOutOfRangeException>(() => morpher.ParseWords(new[] { "sag" }, 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => morpher.ParseWords(new[] { "sag" }, -1));
+        Assert.That(morpher.ParseWords(Array.Empty<string>()), Is.Empty);
+    }
+
+    [Test]
+    public void ParseWords_EnumeratesInputOnceAndPropagatesEnumerationErrors()
+    {
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        int enumerations = 0;
+        IEnumerable<string> Inputs()
+        {
+            enumerations++;
+            yield return "sag";
+            yield return "sag";
+        }
+        var error = new InvalidOperationException("Input enumeration failed.");
+        IEnumerable<string> BrokenInputs()
+        {
+            yield return "sag";
+            throw error;
+        }
+
+        Assert.That(morpher.ParseWords(Inputs()), Has.Count.EqualTo(2));
+        Assert.That(enumerations, Is.EqualTo(1));
+        Assert.That(
+            Assert.Throws<InvalidOperationException>(() => morpher.ParseWords(BrokenInputs())),
+            Is.SameAs(error)
+        );
+    }
+
+    [Test]
+    public void ParseWords_GuessesRootsWhenRequested()
+    {
+        var naturalClass = new NaturalClass(new FeatureStruct()) { Name = "BatchAny" };
+        Morphophonemic.CharacterDefinitionTable.AddNaturalClass(naturalClass);
+        LexEntry pattern = AddEntry("batch_pattern", new FeatureStruct(), Morphophonemic, "[BatchAny]*");
+        try
+        {
+            var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+            string[] words = { "gag", "sag", "gug" };
+            Assert.That(morpher.ParseWords(words)[0].Analyses, Is.Empty);
+
+            foreach (int concurrency in new[] { 1, 4 })
+            {
+                IReadOnlyList<WordParseResult> results = morpher.ParseWords(words, concurrency, guessRoot: true);
+                for (int i = 0; i < words.Length; i++)
+                {
+                    Assert.That(results[i].Error, Is.Null);
+                    Assert.That(results[i].Analyses, Is.Not.Empty);
+                    Assert.That(
+                        results[i].Analyses.Select(BatchAnalysisSignature),
+                        Is.EquivalentTo(morpher.ParseWord(words[i], out _, true).Select(BatchAnalysisSignature))
+                    );
+                }
+                Assert.That(results[0].Analyses.All(w => w.RootAllomorph.Guessed), Is.True);
+            }
+        }
+        finally
+        {
+            Morphophonemic.Entries.Remove(pattern);
+            Entries.Remove("batch_pattern");
+        }
+    }
+
+    [Test]
+    public void ParseWords_TracingRunsOnCallingThreadAndRetainsPerWordTraces()
+    {
+        AddAffixTemplateAndCommutingPrefixes();
+        TraceManager.IsTracing = true;
+        try
+        {
+            var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+            var error = new InvalidOperationException("First parse failed.");
+            int callingThread = Environment.CurrentManagedThreadId;
+            int offThreadCalls = 0;
+            int calls = 0;
+            morpher.RuleSelector = _ =>
+            {
+                if (Environment.CurrentManagedThreadId != callingThread)
+                    Interlocked.Increment(ref offThreadCalls);
+                if (Interlocked.Increment(ref calls) == 1)
+                    throw error;
+                return true;
+            };
+
+            IReadOnlyList<WordParseResult> results = morpher.ParseWords(new[] { "sag", "digusagd", "sag" }, 4);
+
+            Assert.That(offThreadCalls, Is.Zero);
+            Assert.That(results[0].Error, Is.SameAs(error));
+            Assert.That(results[0].Analyses, Is.Empty);
+            Assert.That(results.Select(r => r.Trace), Is.All.InstanceOf<Trace>());
+            Assert.That(results.Select(r => r.Trace).Distinct().Count(), Is.EqualTo(3));
+            foreach (int index in new[] { 1, 2 })
+            {
+                Assert.That(results[index].Error, Is.Null);
+                Assert.That(results[index].Analyses, Is.Not.Empty);
+                Assert.That(
+                    results[index].Analyses.Select(BatchAnalysisSignature),
+                    Is.EquivalentTo(morpher.ParseWord(results[index].SurfaceForm).Select(BatchAnalysisSignature))
+                );
+            }
+        }
+        finally
+        {
+            TraceManager.IsTracing = false;
+        }
+    }
+
+    private string BatchAnalysisSignature(Word word)
+    {
+        static string AllomorphKey(Allomorph allomorph) => $"{allomorph.Morpheme.Id}:{allomorph.Index}";
+        return string.Join(
+            "|",
+            new[]
+            {
+                AllomorphKey(word.RootAllomorph),
+                string.Join(",", word.MorphologicalRules.Select(r => r.Name)),
+                string.Join(",", word.Allomorphs.Select(AllomorphKey).OrderBy(s => s, StringComparer.Ordinal)),
+                string.Join(",", word.AllomorphsInMorphOrder.Select(AllomorphKey)),
+                word.Shape.ToString(Language.SurfaceStratum.CharacterDefinitionTable, false),
+                word.SyntacticFeatureStruct.ToString(),
+                word.RealizationalFeatureStruct.ToString(),
+            }
+        );
+    }
+
     private void AssertSingleThreadedMatchesParallel(params string[] words)
     {
         var parallel = new Morpher(TraceManager, Language);
