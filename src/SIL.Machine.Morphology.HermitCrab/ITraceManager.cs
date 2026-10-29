@@ -96,6 +96,7 @@
         );
 
         void Blocked(IHCRule rule, Word output);
+        void MorphOrderSuppressed(Word suppressedWord, Word canonicalWord);
 
         void Successful(Language lang, Word word);
         void Failed(Language lang, Word word, FailureReason reason, Allomorph allomorph, object failureObj);

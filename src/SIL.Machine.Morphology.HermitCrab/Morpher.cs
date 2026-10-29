@@ -10,6 +10,7 @@ using SIL.Machine.FeatureModel;
 using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 using SIL.Machine.Rules;
 using SIL.ObjectModel;
+using static SIL.Machine.Morphology.HermitCrab.AnalysisStratumRule;
 #if OUTPUT_ANALYSES
 using System.IO;
 #endif
@@ -57,6 +58,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             MaxStemCount = 2;
             MaxAlternatives = 0;
             MergeEquivalentAnalyses = true;
+            MorphOrderMatters = true;
             PruneDisagreeingCopies = true;
             LexEntrySelector = entry => true;
             RuleSelector = rule => true;
@@ -96,6 +98,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// Merged analyses will be expanded if lexical lookup succeeds.
         /// </summary>
         public bool MergeEquivalentAnalyses { get; set; }
+
+        /// <summary>
+        /// Does the order that morphemes appear in matter?
+        /// If not, only keep one order for Words that are equivalent except for morpheme order.
+        /// </summary>
+        public bool MorphOrderMatters { get; set; }
 
         /// <summary>
         /// A Morpher is partial if any of the elements are partial.
@@ -345,6 +353,9 @@ namespace SIL.Machine.Morphology.HermitCrab
         private IEnumerable<Word> SynthesizeSequential(string word, IEnumerable<Word> analyses)
         {
             var matches = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
+            Dictionary<AnalysisMergeKey, Word> wordCache = MorphOrderMatters
+                ? new Dictionary<AnalysisMergeKey, Word>()
+                : null;
             int alternativeCount = 0;
             foreach (Word analysisWord in analyses)
             {
@@ -355,10 +366,24 @@ namespace SIL.Machine.Morphology.HermitCrab
                         alternativeCount++;
                         if (MaxAlternatives > 0 && alternativeCount > MaxAlternatives)
                             throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
-                        foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
+                        foreach (Word validWord in _synthesisRule.Apply(alternative))
                         {
-                            if (IsMatch(word, validWord))
-                                matches.Add(validWord);
+                            if (!IsWordValid(validWord))
+                                continue;
+                            if (!IsMatch(word, validWord))
+                                continue;
+                            if (!MorphOrderMatters)
+                            {
+                                var key = new AnalysisMergeKey(validWord);
+                                if (wordCache.TryGetValue(key, out Word canonicalWord))
+                                {
+                                    if (TraceManager.IsTracing)
+                                        TraceManager.MorphOrderSuppressed(validWord, canonicalWord);
+                                    continue;
+                                }
+                                wordCache[key] = validWord;
+                            }
+                            matches.Add(validWord);
                         }
                     }
                 }
@@ -369,6 +394,9 @@ namespace SIL.Machine.Morphology.HermitCrab
         private IEnumerable<Word> SynthesizeParallel(string word, ConcurrentQueue<Word> analyses)
         {
             var matches = new ConcurrentBag<Word>();
+            ConcurrentDictionary<AnalysisMergeKey, Word> wordCache = MorphOrderMatters
+                ? new ConcurrentDictionary<AnalysisMergeKey, Word>()
+                : null;
             int alternativeCount = 0;
             Exception exception = null;
             Parallel.ForEach(
@@ -392,10 +420,24 @@ namespace SIL.Machine.Morphology.HermitCrab
                                     {
                                         throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
                                     }
-                                    foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
+                                    foreach (Word validWord in _synthesisRule.Apply(alternative))
                                     {
-                                        if (IsMatch(word, validWord))
-                                            matches.Add(validWord);
+                                        if (!IsWordValid(validWord))
+                                            continue;
+                                        if (!IsMatch(word, validWord))
+                                            continue;
+                                        if (!MorphOrderMatters)
+                                        {
+                                            var key = new AnalysisMergeKey(validWord);
+                                            if (wordCache.TryGetValue(key, out Word canonicalWord))
+                                            {
+                                                if (TraceManager.IsTracing)
+                                                    TraceManager.MorphOrderSuppressed(validWord, canonicalWord);
+                                                continue;
+                                            }
+                                            wordCache[key] = validWord;
+                                        }
+                                        matches.Add(validWord);
                                     }
                                 }
                             }
