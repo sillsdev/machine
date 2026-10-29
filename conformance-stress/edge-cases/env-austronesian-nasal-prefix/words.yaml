@@ -1,0 +1,286 @@
+# kind: stress (timing and optimization parity fixture, not conformance; see conformance-stress/README.md)
+language: AustronesianNasalPrefixes
+inspired_by: ["Synthetic Austronesian nasal-assimilating meN- and peN- prefixes with place-conditioned allomorphs and a locative suffix with a zero allomorph (not modeling one real language)."]
+sources: []
+requires: []
+# Stress fixture for the required-environment prefilter. Expected parses follow the allomorph and disjunction
+# rules by hand; the zero allomorphs' environments are read at an engine-defined position, so words with a
+# zero-allomorph parse take the engine's verdict with the prefilter switched off.
+budget_ms: 60000
+words:
+  - word: paba
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    exercises:
+      - "AffixProcessRule: prefix/suffix/circumfix/infix"
+    parses:
+      - signature: "R00|paba"
+        gloss: parse
+        rules: []
+  - word: bupi
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R01|bupi"
+        gloss: parse
+        rules: []
+  - word: bapu
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R02|bapu"
+        gloss: parse
+        rules: []
+  - word: tadi
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R03|tadi"
+        gloss: parse
+        rules: []
+  - word: dusa
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R04|dusa"
+        gloss: parse
+        rules: []
+  - word: sadu
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R05|sadu"
+        gloss: parse
+        rules: []
+  - word: kagu
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R06|kagu"
+        gloss: parse
+        rules: []
+  - word: gaku
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R07|gaku"
+        gloss: parse
+        rules: []
+  - word: kuga
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R08|kuga"
+        gloss: parse
+        rules: []
+  - word: umi
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R09+LOC|umi"
+        gloss: parse
+        rules: [mrLOC]
+      - signature: "R09|umi"
+        gloss: parse
+        rules: []
+  - word: api
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R10|api"
+        gloss: parse
+        rules: []
+  - word: ubu
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R11|ubu"
+        gloss: parse
+        rules: []
+  - word: ata
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R12|ata"
+        gloss: parse
+        rules: []
+  - word: isu
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R13|isu"
+        gloss: parse
+        rules: []
+  - word: peisui
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "CAUS+R13+LOC|peisui"
+        gloss: parse
+        rules: [mrCAUS, mrLOC]
+      - signature: "CAUS+R13+LOC|peisui"
+        gloss: parse
+        rules: [mrLOC, mrCAUS]
+  - word: mempaba
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "ACT+R00|mempaba"
+        gloss: parse
+        rules: [mrACT]
+  - word: pemeata
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "CAUS+ACT+R12|pemeata"
+        gloss: parse
+        rules: [mrCAUS, mrACT]
+  - word: kigui
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R18+LOC|kigui"
+        gloss: parse
+        rules: [mrLOC]
+  - word: meata
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "ACT+R12|meata"
+        gloss: parse
+        rules: [mrACT]
+  - word: tadii
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R03+LOC|tadii"
+        gloss: parse
+        rules: [mrLOC]
+  - word: mekgusi
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "ACT+R19|mekgusi"
+        gloss: parse
+        rules: [mrACT]
+  - word: pembapu
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "CAUS+R02|pembapu"
+        gloss: parse
+        rules: [mrCAUS]
+  - word: meadu
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "ACT+R14|meadu"
+        gloss: parse
+        rules: [mrACT]
+  - word: pentadi
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "CAUS+R03|pentadi"
+        gloss: parse
+        rules: [mrCAUS]
+  - word: mempendasi
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "ACT+LOC+CAUS+R17|mempendasi"
+        gloss: parse
+        rules: [mrACT, mrCAUS, mrLOC]
+      - signature: "ACT+CAUS+R17|mempendasi"
+        gloss: parse
+        rules: [mrACT, mrCAUS]
+  - word: gusii
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "R19+LOC|gusii"
+        gloss: parse
+        rules: [mrLOC]
+  - word: mekgaku
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "ACT+R07|mekgaku"
+        gloss: parse
+        rules: [mrACT]
+  - word: pemempaba
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "CAUS+ACT+R00|pemempaba"
+        gloss: parse
+        rules: [mrCAUS, mrACT]
+  - word: pemekkuga
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "CAUS+ACT+R08|pemekkuga"
+        gloss: parse
+        rules: [mrCAUS, mrACT]
+  - word: meapii
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "ACT+R10+LOC|meapii"
+        gloss: parse
+        rules: [mrACT, mrLOC]
+      - signature: "ACT+R10+LOC|meapii"
+        gloss: parse
+        rules: [mrLOC, mrACT]
+  - word: mempipai
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "ACT+R15+LOC|mempipai"
+        gloss: parse
+        rules: [mrACT, mrLOC]
+      - signature: "ACT+R15+LOC|mempipai"
+        gloss: parse
+        rules: [mrLOC, mrACT]
+  - word: mekgakui
+    note: >-
+      Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
+    parses:
+      - signature: "ACT+R07+LOC|mekgakui"
+        gloss: parse
+        rules: [mrACT, mrLOC]
+      - signature: "ACT+R07+LOC|mekgakui"
+        gloss: parse
+        rules: [mrLOC, mrACT]
+  - word: pekdusa
+    note: >-
+      Rejection: no allomorph choice satisfies every Required environment and disjunctive block for this surface.
+    expect_fail: true
+  - word: mepekadu
+    note: >-
+      Rejection: no allomorph choice satisfies every Required environment and disjunctive block for this surface.
+    expect_fail: true
+  - word: mekdasi
+    note: >-
+      Rejection: no allomorph choice satisfies every Required environment and disjunctive block for this surface.
+    expect_fail: true
+  - word: pemmentadi
+    note: >-
+      Rejection: no allomorph choice satisfies every Required environment and disjunctive block for this surface.
+    expect_fail: true
+  - word: pekmeapi
+    note: >-
+      Rejection: no allomorph choice satisfies every Required environment and disjunctive block for this surface.
+    expect_fail: true
+  - word: mekpemkigu
+    note: >-
+      Rejection: no allomorph choice satisfies every Required environment and disjunctive block for this surface.
+    expect_fail: true
+  - word: penmengusi
+    note: >-
+      Rejection: no allomorph choice satisfies every Required environment and disjunctive block for this surface.
+    expect_fail: true
+  - word: mempekbupi
+    note: >-
+      Rejection: no allomorph choice satisfies every Required environment and disjunctive block for this surface.
+    expect_fail: true

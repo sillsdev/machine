@@ -1,0 +1,444 @@
+# kind: stress (timing and optimization parity fixture, not conformance; see conformance-stress/README.md)
+# HAND DERIVATION (see grammar.xml). Seven FS-free derivational suffixes in one unordered stratum apply to any root in any order. Verb roots and noun roots share shapes; only the verb template (required tense slot, optional person slot) applies to verbs, so every verb-root candidate for a nominal derivation applies its suffixes and then dies at the required slot.
+# Parses for each word are every (root, rule choice) whose surface equals the word, enumerated by an independent script over
+# the rule tables, then confirmed against the engine. Signature: morpheme IDs in surface order, then "|" and the surface.
+language: StressDerivationChainHomophoneRoots
+inspired_by: ["agglutinative suffixing language (Turkic-like): free derivational suffix chain, finite verb inflection template"]
+sources:
+  - "synthetic stress fixture (not a specific language)"
+requires: []
+fieldworks_producible: true
+budget_ms: 60000
+words:
+  - word: tutlasata
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_TUT+DR4+DR3+DR6|tutlasata"
+        rules: [mrDR4, mrDR3, mrDR6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: tutsakila
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_TUT+DR3+DR7+DR4|tutsakila"
+        rules: [mrDR3, mrDR7, mrDR4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: gitlikcima
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_GIT+DR1+DR2+DR5|gitlikcima"
+        rules: [mrDR1, mrDR2, mrDR5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kalmasata
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_KAL+DR5+DR3+DR6|kalmasata"
+        rules: [mrDR5, mrDR3, mrDR6]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kitapmacila
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_KITAP+DR5+DR2+DR4|kitapmacila"
+        rules: [mrDR5, mrDR2, mrDR4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: gitlakici
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_GIT+DR4+DR7+DR2|gitlakici"
+        rules: [mrDR4, mrDR7, mrDR2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: vertalama
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_VER+DR6+DR4+DR5|vertalama"
+        rules: [mrDR6, mrDR4, mrDR5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kaltacila
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_KAL+DR6+DR2+DR4|kaltacila"
+        rules: [mrDR6, mrDR2, mrDR4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: sevmalaki
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_SEV+DR5+DR4+DR7|sevmalaki"
+        rules: [mrDR5, mrDR4, mrDR7]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: denilamasa
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_DENI+DR4+DR5+DR3|denilamasa"
+        rules: [mrDR4, mrDR5, mrDR3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: yaztasaki
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_YAZ+DR6+DR3+DR7|yaztasaki"
+        rules: [mrDR6, mrDR3, mrDR7]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: gitsataki
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_GIT+DR3+DR6+DR7|gitsataki"
+        rules: [mrDR3, mrDR6, mrDR7]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: yazliktama
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_YAZ+DR1+DR6+DR5|yazliktama"
+        rules: [mrDR1, mrDR6, mrDR5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: bolcimasa
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_BOL+DR2+DR5+DR3|bolcimasa"
+        rules: [mrDR2, mrDR5, mrDR3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kalkitaci
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_KAL+DR7+DR6+DR2|kalkitaci"
+        rules: [mrDR7, mrDR6, mrDR2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: denilikciki
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_DENI+DR1+DR2+DR7|denilikciki"
+        rules: [mrDR1, mrDR2, mrDR7]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: vermatala
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_VER+DR5+DR6+DR4|vermatala"
+        rules: [mrDR5, mrDR6, mrDR4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: denisacima
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_DENI+DR3+DR2+DR5|denisacima"
+        rules: [mrDR3, mrDR2, mrDR5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: tuttaci
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_TUT+DR6+DR2|tuttaci"
+        rules: [mrDR6, mrDR2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: gitcilaki
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_GIT+DR2+DR4+DR7|gitcilaki"
+        rules: [mrDR2, mrDR4, mrDR7]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: vertasaki
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_VER+DR6+DR3+DR7|vertasaki"
+        rules: [mrDR6, mrDR3, mrDR7]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: yazlama
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_YAZ+DR4+DR5|yazlama"
+        rules: [mrDR4, mrDR5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: bollikkisa
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_BOL+DR1+DR7+DR3|bollikkisa"
+        rules: [mrDR1, mrDR7, mrDR3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kallamasa
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "N_KAL+DR4+DR5+DR3|kallamasa"
+        rules: [mrDR4, mrDR5, mrDR3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: bolliktair
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_BOL+DR1+DR6+TA3|bolliktair"
+        rules: [mrDR1, mrDR6, mrTA3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: bollikcimaan
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_BOL+DR1+DR2+DR5+TA5+PR2|bollikcimaan"
+        rules: [mrDR1, mrDR2, mrDR5, mrTA5, mrPR2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: bolciliktami
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_BOL+DR2+DR1+DR6+TA2|bolciliktami"
+        rules: [mrDR2, mrDR1, mrDR6, mrTA2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: tutcitakidin
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_TUT+DR2+DR6+DR7+TA1+PR2|tutcitakidin"
+        rules: [mrDR2, mrDR6, mrDR7, mrTA1, mrPR2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: vertacilikirm
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_VER+DR6+DR2+DR1+TA3+PR1|vertacilikirm"
+        rules: [mrDR6, mrDR2, mrDR1, mrTA3, mrPR1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: verkilikmair
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_VER+DR7+DR1+DR5+TA3|verkilikmair"
+        rules: [mrDR7, mrDR1, mrDR5, mrTA3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: yazlikcitadim
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_YAZ+DR1+DR2+DR6+TA1+PR1|yazlikcitadim"
+        rules: [mrDR1, mrDR2, mrDR6, mrTA1, mrPR1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: sevsataciak
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_SEV+DR3+DR6+DR2+TA5+PR3|sevsataciak"
+        rules: [mrDR3, mrDR6, mrDR2, mrTA5, mrPR3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: vercitasaekn
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_VER+DR2+DR6+DR3+TA4+PR2|vercitasaekn"
+        rules: [mrDR2, mrDR6, mrDR3, mrTA4, mrPR2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: tutcikitadi
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_TUT+DR2+DR7+DR6+TA1|tutcikitadi"
+        rules: [mrDR2, mrDR7, mrDR6, mrTA1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: vercikiladik
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_VER+DR2+DR7+DR4+TA1+PR3|vercikiladik"
+        rules: [mrDR2, mrDR7, mrDR4, mrTA1, mrPR3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kalcilikek
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_KAL+DR2+DR1+TA4|kalcilikek"
+        rules: [mrDR2, mrDR1, mrTA4]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kalcimairk
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_KAL+DR2+DR5+TA3+PR3|kalcimairk"
+        rules: [mrDR2, mrDR5, mrTA3, mrPR3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: gitlikcimi
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_GIT+DR1+DR2+TA2|gitlikcimi"
+        rules: [mrDR1, mrDR2, mrTA2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: gitmakilikan
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_GIT+DR5+DR7+DR1+TA5+PR2|gitmakilikan"
+        rules: [mrDR5, mrDR7, mrDR1, mrTA5, mrPR2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: yazsaliklaa
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_YAZ+DR3+DR1+DR4+TA5|yazsaliklaa"
+        rules: [mrDR3, mrDR1, mrDR4, mrTA5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: sevciliklairm
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_SEV+DR2+DR1+DR4+TA3+PR1|sevciliklairm"
+        rules: [mrDR2, mrDR1, mrDR4, mrTA3, mrPR1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: yazcisataan
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_YAZ+DR2+DR3+DR6+TA5+PR2|yazcisataan"
+        rules: [mrDR2, mrDR3, mrDR6, mrTA5, mrPR2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: durlamasaan
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_DUR+DR4+DR5+DR3+TA5+PR2|durlamasaan"
+        rules: [mrDR4, mrDR5, mrDR3, mrTA5, mrPR2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: durcisataa
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_DUR+DR2+DR3+DR6+TA5|durcisataa"
+        rules: [mrDR2, mrDR3, mrDR6, mrTA5]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kalliklamin
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_KAL+DR1+DR4+TA2+PR2|kalliklamin"
+        rules: [mrDR1, mrDR4, mrTA2, mrPR2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: bollikmacian
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_BOL+DR1+DR5+DR2+TA5+PR2|bollikmacian"
+        rules: [mrDR1, mrDR5, mrDR2, mrTA5, mrPR2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: verciliklairn
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_VER+DR2+DR1+DR4+TA3+PR2|verciliklairn"
+        rules: [mrDR2, mrDR1, mrDR4, mrTA3, mrPR2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: gitsamairk
+    note: >-
+      1 derivation(s): root x rule choices whose surface equals the word.
+    parses:
+      - signature: "V_GIT+DR3+DR5+TA3+PR3|gitsamairk"
+        rules: [mrDR3, mrDR5, mrTA3, mrPR3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
