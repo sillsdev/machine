@@ -62,7 +62,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             RuleSelector = rule => true;
 
             _morphemes = new ReadOnlyObservableCollection<Morpheme>(morphemes);
-            IsPartial = GetPartialMorphemes().Count() > 0;
+            HasPartialRules = GetPartialMorphemes().Any(morpheme => !(morpheme is LexEntry));
         }
 
         public IEnumerable<Morpheme> GetPartialMorphemes()
@@ -98,9 +98,10 @@ namespace SIL.Machine.Morphology.HermitCrab
         public bool MergeEquivalentAnalyses { get; set; }
 
         /// <summary>
-        /// A Morpher is partial if any of the elements are partial.
+        /// True if any morpheme other than a <see cref="LexEntry"/> is partial. Analysis may prune a final
+        /// template that follows a non-template rule only when this is false.
         /// </summary>
-        public bool IsPartial { get; }
+        public bool HasPartialRules { get; }
 
         /// <summary>
         /// Enforce final templates even if some of the morphemes were partial.
@@ -491,8 +492,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                             SyntacticFeatureStruct = input.SyntacticFeatureStruct,
                             Stratum = input.Stratum,
                         };
-                        // Don't update Morpher.IsPartial even if lexEntry.IsPartial is true.
-                        // We don't mind if final templates are filtered during analysis in this case.
                         lexEntry.Allomorphs.Add(root);
                         // Point the root allomorph to the lexical pattern in FieldWorks.
                         if (lexicalPattern.Morpheme != null)
