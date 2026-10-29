@@ -260,6 +260,12 @@ namespace SIL.Machine.Morphology.HermitCrab
             return curAllomorph == null || curAllomorph == allomorph;
         }
 
+        /// <summary>
+        /// The allomorph that analysis recorded for the rule now being applied, or null when any allomorph is
+        /// acceptable or no rule is pending.
+        /// </summary>
+        internal Allomorph CurrentRecordedAllomorph => _mruleAppIndex < 0 ? null : _allomorphApps[_mruleAppIndex];
+
         internal bool HasRemainingRulesFromStratum(Stratum stratum)
         {
             if (_mruleAppIndex < 0)
