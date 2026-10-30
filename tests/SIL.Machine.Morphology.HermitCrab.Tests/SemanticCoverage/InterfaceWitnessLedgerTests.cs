@@ -43,12 +43,12 @@ public sealed class InterfaceWitnessLedgerTests
         );
 
         // Pins the number of present interface/fixture pairs and how they split by witness status.
-        Assert.That(rows, Has.Count.EqualTo(1358));
-        Assert.That(evidenced, Is.EqualTo(241));
-        Assert.That(requiredByDtd, Is.EqualTo(735));
-        Assert.That(requiredByLoader, Is.EqualTo(104));
+        Assert.That(rows, Has.Count.EqualTo(1369));
+        Assert.That(evidenced, Is.EqualTo(242));
+        Assert.That(requiredByDtd, Is.EqualTo(741));
+        Assert.That(requiredByLoader, Is.EqualTo(105));
         Assert.That(timeout, Is.EqualTo(1));
-        Assert.That(unobservable, Is.EqualTo(277));
+        Assert.That(unobservable, Is.EqualTo(280));
         Assert.That(distinctInterfacesEverEvidenced, Is.EqualTo(21));
     }
 

@@ -647,6 +647,19 @@ edge-cases/final-template-partial-root	Interface	Slot.morphologicalRules	require
 edge-cases/final-template-partial-root	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/final-template-partial-root	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/final-template-partial-root	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	2 claim(s)
+edge-cases/flex-null-affix-environments	Interface	BoundaryMarker.boundary	required-by-dtd	RequiredByDtd
+edge-cases/flex-null-affix-environments	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/flex-null-affix-environments	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/flex-null-affix-environments	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/flex-null-affix-environments	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/flex-null-affix-environments	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/flex-null-affix-environments	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/flex-null-affix-environments	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/flex-null-affix-environments	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/flex-null-affix-environments	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/flex-null-affix-environments	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/flex-null-affix-environments	Construct	AffixProcessRule: prefix/suffix/circumfix/infix	claimed-unmapped	1 claim(s)
+edge-cases/flex-null-affix-environments	Construct	Boundary markers (CharacterDefinitionTable)	claimed-confirmed	1 claim(s)
 edge-cases/free-fluctuating-allomorph-pair	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/free-fluctuating-allomorph-pair	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/free-fluctuating-allomorph-pair	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
