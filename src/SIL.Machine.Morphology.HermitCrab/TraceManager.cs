@@ -256,7 +256,9 @@
 
         public void MorphOrderSuppressed(Word output, Word canonicalWord)
         {
-            ((Trace)output.CurrentTrace).Children.Add(new Trace(TraceType.MorphOrderSuppressed, null) { Output = output });
+            ((Trace)output.CurrentTrace).Children.Add(
+                new Trace(TraceType.MorphOrderSuppressed, null) { Output = output }
+            );
         }
 
         public void Successful(Language lang, Word word)

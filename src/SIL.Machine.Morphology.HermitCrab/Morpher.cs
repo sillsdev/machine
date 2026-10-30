@@ -353,7 +353,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private IEnumerable<Word> SynthesizeSequential(string word, IEnumerable<Word> analyses)
         {
             var matches = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
-            Dictionary<AnalysisMergeKey, Word> wordCache = MorphOrderMatters
+            Dictionary<AnalysisMergeKey, Word> wordCache = !MorphOrderMatters
                 ? new Dictionary<AnalysisMergeKey, Word>()
                 : null;
             int alternativeCount = 0;
@@ -394,7 +394,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private IEnumerable<Word> SynthesizeParallel(string word, ConcurrentQueue<Word> analyses)
         {
             var matches = new ConcurrentBag<Word>();
-            ConcurrentDictionary<AnalysisMergeKey, Word> wordCache = MorphOrderMatters
+            ConcurrentDictionary<AnalysisMergeKey, Word> wordCache = !MorphOrderMatters
                 ? new ConcurrentDictionary<AnalysisMergeKey, Word>()
                 : null;
             int alternativeCount = 0;
@@ -482,9 +482,16 @@ namespace SIL.Machine.Morphology.HermitCrab
                 {
                     Word newWord = input.Clone();
                     newWord.RootAllomorph = allomorph;
+                    newWord.Freeze();
+                    if (
+                        newWord.SyntacticFeatureStruct != null
+                        && !newWord.SyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct)
+                    )
+                    {    // Lookup fails because syntactic features don't match.
+                        continue;
+                    }
                     if (_traceManager.IsTracing)
                         _traceManager.SynthesizeWord(_lang, newWord);
-                    newWord.Freeze();
                     yield return newWord;
                 }
             }

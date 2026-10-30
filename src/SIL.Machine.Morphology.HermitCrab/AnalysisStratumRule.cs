@@ -153,12 +153,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _morpher.TraceManager.EndUnapplyStratum(_stratum, input);
             foreach (Word mruleOutWord in mruleOutWords)
             {
-                alternativeCount++;
-                if (_maxAlternatives > 0 && alternativeCount > _maxAlternatives)
-                {
-                    // Stops before full enumeration because ApplyTemplates and ApplyMorphologicalRules use yield return.
-                    throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
-                }
                 // Skip intermediate sources from phonological rules, templates, and morphological rules.
                 mruleOutWord.Source = origInput;
                 AnalysisMergeKey key = default;
@@ -173,6 +167,12 @@ namespace SIL.Machine.Morphology.HermitCrab
                             _morpher.TraceManager.MorphOrderSuppressed(mruleOutWord, canonicalWord);
                         continue;
                     }
+                }
+                alternativeCount++;
+                if (_maxAlternatives > 0 && alternativeCount > _maxAlternatives)
+                {
+                    // Stops before full enumeration because ApplyTemplates and ApplyMorphologicalRules use yield return.
+                    throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
                 }
                 Word newMruleOutWord = mruleOutWord;
                 // Only cache a canonical that made it into the output. Two words can have different keys yet
