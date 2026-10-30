@@ -304,6 +304,8 @@ FinalTemplateMergeKey,sagdss,SAG+FINAL+TEMPLATE+NOM|sagdss,Affix template slots 
 FinalTemplatePartialDiscriminators,dakfa,DAK+FINTAGA|dakfa,Affix template slots (obligatory/disjunctive/ordering)
 FinalTemplatePartialRoot,dakfa,DAK+FINX|dakfa,Affix template slots (obligatory/disjunctive/ordering)
 FinalTemplatePartialRoot,nibfb,NIB+FINY|nibfb,Affix template slots (obligatory/disjunctive/ordering)
+FlexNullAffixEnvironments,zsag,PZ+NP+ROOT|z+?[(^0)(*0)(&0)∅]?+?sag,AffixProcessRule: prefix/suffix/circumfix/infix
+FlexNullAffixEnvironments,zsag,PZ+NP+ROOT|z+?[(^0)(*0)(&0)∅]?+?sag,Boundary markers (CharacterDefinitionTable)
 FreeFluctuatingAllomorphPair,pol,ALT|pol,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,pel,ALT|pel,Disjunctive allomorphs / free-fluctuation
 FreeFluctuatingAllomorphPair,kits,ORD+SSFX|kits,Disjunctive allomorphs / free-fluctuation

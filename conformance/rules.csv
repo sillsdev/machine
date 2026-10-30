@@ -155,6 +155,12 @@ FinalTemplatePartialRoot,mrFinX,dakfa
 FinalTemplatePartialRoot,mrFinY,nibfb
 FinalTemplatePartialRoot,mrGateX,!dakfaga;pakga
 FinalTemplatePartialRoot,mrGateY,pibgb;!nibfbgb
+FlexNullAffixEnvironments,mrNP,zsag
+FlexNullAffixEnvironments,mrNS,sagz
+FlexNullAffixEnvironments,mrPT,tsag
+FlexNullAffixEnvironments,mrPZ,zsag
+FlexNullAffixEnvironments,mrST,sagt
+FlexNullAffixEnvironments,mrSZ,sagz
 FreeFluctuatingAllomorphPair,ruleS,kits;!kots
 GeminateUnderMerge,prMerge,f
 GeminateUnderMerge,prShorten,f

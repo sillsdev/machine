@@ -1,0 +1,43 @@
+# oracle-provenance: founding-oracle
+# This FLEx boundary representation pins the scope of machine#597, which concerns truly empty output.
+language: FlexNullAffixEnvironments
+inspired_by: ["synthetic FieldWorks null prefix and suffix environment probe"]
+sources: ["https://github.com/sillsdev/machine/issues/597"]
+requires: []
+fieldworks_producible: true
+words:
+  - word: sag
+    note: Bare root; neither null environment has a z neighbour.
+    provenance: "https://github.com/sillsdev/machine/issues/597"
+    parses:
+      - signature: "ROOT|sag"
+        rules: []
+  - word: zsag
+    note: The null prefix has z on its left when the outer real prefix is present.
+    provenance: "https://github.com/sillsdev/machine/issues/597"
+    parses:
+      - signature: "PZ+NP+ROOT|z+?[(^0)(*0)(&0)∅]?+?sag"
+        rules: [mrNP, mrPZ]
+        exercises: ["AffixProcessRule: prefix/suffix/circumfix/infix", "Boundary markers (CharacterDefinitionTable)"]
+      - signature: "PZ+ROOT|z+?sag"
+        rules: [mrPZ]
+  - word: tsag
+    note: The null prefix requires z, not t, on its left.
+    provenance: "https://github.com/sillsdev/machine/issues/597"
+    parses:
+      - signature: "PT+ROOT|t+?sag"
+        rules: [mrPT]
+  - word: sagz
+    note: The null suffix has z on its right when the outer real suffix is present.
+    provenance: "https://github.com/sillsdev/machine/issues/597"
+    parses:
+      - signature: "ROOT+NS+SZ|sag+?[(^0)(*0)(&0)∅]?+?z"
+        rules: [mrNS, mrSZ]
+      - signature: "ROOT+SZ|sag+?z"
+        rules: [mrSZ]
+  - word: sagt
+    note: The null suffix requires z, not t, on its right.
+    provenance: "https://github.com/sillsdev/machine/issues/597"
+    parses:
+      - signature: "ROOT+ST|sag+?t"
+        rules: [mrST]
