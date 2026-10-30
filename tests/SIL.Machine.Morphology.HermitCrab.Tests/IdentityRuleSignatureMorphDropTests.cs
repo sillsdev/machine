@@ -107,7 +107,6 @@ public class IdentityRuleSignatureMorphDropTests
         return path;
     }
 
-    // Mirrors BatchCommand.BuildSignature's format without a dependency on the Tool project.
     private static string Signature(IEnumerable<Word> results)
     {
         List<string> signatures = results
@@ -123,9 +122,6 @@ public class IdentityRuleSignatureMorphDropTests
 
     private static string ParseWithFreshMorpher(Language language, string word)
     {
-        // maxDegreeOfParallelism: 1 matches ConformanceMorpherFactory.Create's default
-        // (useMemoization: true) -- the construction every conformance self-check run actually
-        // uses.
         var morpher = new Morpher(new TraceManager(), language, maxDegreeOfParallelism: 1);
         return Signature(morpher.ParseWord(word, out _, false).ToList());
     }
@@ -165,22 +161,18 @@ public class IdentityRuleSignatureMorphDropTests
     }
 
     [Test]
-    public void Fenos_IdentityWrapsOutermost_IsFlakyPendingASeparateOrderingDefect()
+    public void Fenos_IdentityWrapsOutermost_EveryFreshLoadHasCorrectSignature()
     {
-        // Measured: fix reaches the correct signature 41/100 fresh loads; reverted, 0/100. The
-        // remaining gap is a separate ordering defect (#506), not BidirList's random skip-list levels.
         string path = WriteTempGrammar();
         try
         {
             const string CorrectSig = "FEN+PTOQ+QTOP+IDENT|fenos;FEN+PTOQ+QTOP|fenos";
-            bool sawCorrect = false;
-            for (int trial = 0; trial < 100 && !sawCorrect; trial++)
+            for (int load = 1; load <= 20; load++)
             {
                 Language language = XmlLanguageLoader.Load(path);
-                sawCorrect = ParseWithFreshMorpher(language, "fenos") == CorrectSig;
+                string signature = ParseWithFreshMorpher(language, "fenos");
+                Assert.That(signature, Is.EqualTo(CorrectSig), $"Fresh load {load} produced {signature}");
             }
-
-            Assert.That(sawCorrect, Is.True, "the correct signature was never reached in 100 tries");
         }
         finally
         {
