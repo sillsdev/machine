@@ -23,6 +23,10 @@
         <SegmentDefinition id="cn"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
         <SegmentDefinition id="ct"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
       </SegmentDefinitions>
+      <BoundaryDefinitions>
+        <BoundaryDefinition id="bNull"><Representations><Representation>^0</Representation><Representation>*0</Representation><Representation>&amp;0</Representation><Representation>∅</Representation></Representations></BoundaryDefinition>
+        <BoundaryDefinition id="bPlus"><Representations><Representation>+</Representation></Representations></BoundaryDefinition>
+      </BoundaryDefinitions>
     </CharacterDefinitionTable>
     <NaturalClasses>
       <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
@@ -326,7 +330,7 @@
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subS6e">
                 <MorphologicalInput><PhoneticSequence id="stemS6e"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
-                <MorphologicalOutput><CopyFromInput index="stemS6e" /></MorphologicalOutput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>^0+</PhoneticShape></InsertSegments><CopyFromInput index="stemS6e" /></MorphologicalOutput>
               </MorphologicalSubrule>
             </MorphologicalSubrules>
             <MorphemeId>S6e</MorphemeId>

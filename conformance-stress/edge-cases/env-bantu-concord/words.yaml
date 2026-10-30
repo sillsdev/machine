@@ -3,9 +3,8 @@ language: BantuConcordAllomorphy
 inspired_by: ["Synthetic Bantu-style noun-class concord and tense allomorphy (not modeling one real language): a concord prefix with four place-conditioned allomorphs plus a fallback, a negative prefix, and a tense suffix with a zero allomorph; conditioned allomorphs precede the fallback so synthesis tries them."]
 sources: []
 requires: []
-# Stress fixture for the required-environment prefilter. Expected parses follow the allomorph and disjunction
-# rules by hand; the zero allomorphs' environments are read at an engine-defined position, so words with a
-# zero-allomorph parse take the engine's verdict with the prefilter switched off.
+# Stress fixture for the required-environment prefilter. Null affixes insert FLEx-style boundaries;
+# expected analyses were checked against their environments and the rule order.
 budget_ms: 60000
 words:
   - word: papa
@@ -84,32 +83,32 @@ words:
     note: >-
       Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
     parses:
+      - signature: "CONC+R10|[(^0)(*0)(&0)∅]?+?mama"
+        gloss: parse
+        rules: [mrCONC]
       - signature: "R10|mama"
         gloss: parse
         rules: []
-      - signature: "R10+TAM|mama"
-        gloss: parse
-        rules: [mrTAM]
   - word: nina
     note: >-
       Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
     parses:
+      - signature: "CONC+R11|[(^0)(*0)(&0)∅]?+?nina"
+        gloss: parse
+        rules: [mrCONC]
       - signature: "R11|nina"
         gloss: parse
         rules: []
-      - signature: "R11+TAM|nina"
-        gloss: parse
-        rules: [mrTAM]
   - word: mumi
     note: >-
       Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
     parses:
+      - signature: "CONC+R12|[(^0)(*0)(&0)∅]?+?mumi"
+        gloss: parse
+        rules: [mrCONC]
       - signature: "R12|mumi"
         gloss: parse
         rules: []
-      - signature: "R12+TAM|mumi"
-        gloss: parse
-        rules: [mrTAM]
   - word: apa
     note: >-
       Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
@@ -190,9 +189,6 @@ words:
       - signature: "CONC+NEG+R08|ntigugu"
         gloss: parse
         rules: [mrCONC, mrNEG]
-      - signature: "CONC+TAM+NEG+R08|ntigugu"
-        gloss: parse
-        rules: [mrCONC, mrNEG, mrTAM]
   - word: aibuna
     note: >-
       Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
@@ -214,12 +210,15 @@ words:
     note: >-
       Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
     parses:
-      - signature: "CONC+NEG+R12+TAM|timumina"
+      - signature: "NEG+CONC+R12+TAM|ti[(^0)(*0)(&0)∅]?+?mumina"
         gloss: parse
-        rules: [mrNEG, mrCONC, mrTAM]
-      - signature: "CONC+NEG+R12+TAM|timumina"
+        rules: [mrCONC, mrNEG, mrTAM]
+      - signature: "NEG+CONC+R12+TAM|ti[(^0)(*0)(&0)∅]?+?mumina"
         gloss: parse
-        rules: [mrTAM, mrNEG, mrCONC]
+        rules: [mrCONC, mrTAM, mrNEG]
+      - signature: "NEG+CONC+R12+TAM|ti[(^0)(*0)(&0)∅]?+?mumina"
+        gloss: parse
+        rules: [mrTAM, mrCONC, mrNEG]
       - signature: "NEG+R12+TAM|timumina"
         gloss: parse
         rules: [mrNEG, mrTAM]
@@ -247,9 +246,6 @@ words:
       - signature: "CONC+NEG+R02|ntipubi"
         gloss: parse
         rules: [mrCONC, mrNEG]
-      - signature: "CONC+TAM+NEG+R02|ntipubi"
-        gloss: parse
-        rules: [mrCONC, mrNEG, mrTAM]
   - word: kagina
     note: >-
       Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.

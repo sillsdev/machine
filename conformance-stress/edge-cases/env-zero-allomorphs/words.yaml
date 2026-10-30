@@ -5,7 +5,7 @@ sources: []
 requires: []
 # Research stress fixture for the required-environment prefilter, not registered in the conformance ledgers.
 # The zero allomorphs (indexes 0) carry a Required left environment on a rare segment class and are placed
-# first so synthesis tries them; no word here validates them.
+# first so synthesis tries them; tabun and gisam exercise the null suffix after a nasal.
 budget_ms: 60000
 words:
   - word: batu
@@ -183,23 +183,23 @@ words:
       - signature: "R16|kanu"
         gloss: R16
         rules: []
-      - signature: "R16+P1|kanu"
-        gloss: R16
-        rules: [mrP1]
-      - signature: "R16+S1|kanu"
-        gloss: R16
-        rules: [mrS1]
   - word: tabun
     note: >-
-      Bare root tabun; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+      Bare root tabun; the zero suffix is licensed by the final nasal; all affixes are optional.
     parses:
+      - signature: "R17+S1|tabun+?[(^0)(*0)(&0)∅]?"
+        gloss: parse
+        rules: [mrS1]
       - signature: "R17|tabun"
         gloss: R17
         rules: []
   - word: gisam
     note: >-
-      Bare root gisam; every affix is optional, and no zero allomorph's rare-class context is satisfied.
+      Bare root gisam; the zero suffix is licensed by the final nasal; all affixes are optional.
     parses:
+      - signature: "R18+S1|gisam+?[(^0)(*0)(&0)∅]?"
+        gloss: parse
+        rules: [mrS1]
       - signature: "R18|gisam"
         gloss: R18
         rules: []
@@ -250,8 +250,14 @@ words:
         rules: [mrP2]
   - word: katabun
     note: >-
-      Hand derivation: root R17 'tabun' with prefixes P1 applied inner to outer; 1 rule orders are possible because the unordered suffix may be applied between or after the prefixes.
+      Hand derivation: root R17 'tabun' with prefixes P1 applied inner to outer; the optional zero suffix follows the final nasal and can apply before or after P1.
     parses:
+      - signature: "P1+R17+S1|katabun+?[(^0)(*0)(&0)∅]?"
+        gloss: parse
+        rules: [mrP1, mrS1]
+      - signature: "P1+R17+S1|katabun+?[(^0)(*0)(&0)∅]?"
+        gloss: parse
+        rules: [mrP1, mrS1]
       - signature: "P1+R17|katabun"
         gloss: R17
         rules: [mrP1]

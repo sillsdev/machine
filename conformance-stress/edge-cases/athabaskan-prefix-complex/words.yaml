@@ -22,14 +22,14 @@ words:
     note: >-
       4 segmentations; 3 survive the exclude rules.
     parses:
-      - signature: "S3b+S2e+S1b+R8+S6e|taaninik"
-        rules: [mrS6e, mrS3b, mrS2e, mrS1b]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S3b+S2e+S1b+R8|taaninik"
         rules: [mrS3b, mrS2e, mrS1b]
         exercises: ["Morpheme co-occurrence rules"]
       - signature: "S6a+S2e+S1b+R8|taaninik"
         rules: [mrS6a, mrS2e, mrS1b]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S3b+S2e+S1b+R8|[(^0)(*0)(&0)∅]?+?taaninik"
+        rules: [mrS6e, mrS3b, mrS2e, mrS1b]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "akiaaant"
     note: >-
@@ -65,9 +65,6 @@ words:
     note: >-
       10 segmentations; 5 survive the exclude rules.
     parses:
-      - signature: "S3c+S2d+S1a+R3+S6e|nikaanat"
-        rules: [mrS6e, mrS3c, mrS2d, mrS1a]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S3c+S2d+S1a+R3|nikaanat"
         rules: [mrS3c, mrS2d, mrS1a]
         exercises: ["Morpheme co-occurrence rules"]
@@ -80,18 +77,15 @@ words:
       - signature: "S5d+S4b+S2b+R3|nikaanat"
         rules: [mrS5d, mrS4b, mrS2b]
         exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S3c+S2d+S1a+R3|[(^0)(*0)(&0)∅]?+?nikaanat"
+        rules: [mrS6e, mrS3c, mrS2d, mrS1a]
+        exercises: ["Morpheme co-occurrence rules"]
   - word: "naikat"
     note: >-
       7 segmentations; 7 survive the exclude rules.
     parses:
-      - signature: "S4c+S1b+R5+S6e|naikat"
-        rules: [mrS6e, mrS4c, mrS1b]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4c+S1b+R5|naikat"
         rules: [mrS4c, mrS1b]
-        exercises: ["Morpheme co-occurrence rules"]
-      - signature: "S4c+S2a+R5+S6e|naikat"
-        rules: [mrS6e, mrS4c, mrS2a]
         exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4c+S2a+R5|naikat"
         rules: [mrS4c, mrS2a]
@@ -104,6 +98,12 @@ words:
         exercises: ["Morpheme co-occurrence rules"]
       - signature: "S6d+S4a+R5|naikat"
         rules: [mrS6d, mrS4a]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S4c+S1b+R5|[(^0)(*0)(&0)∅]?+?naikat"
+        rules: [mrS6e, mrS4c, mrS1b]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S4c+S2a+R5|[(^0)(*0)(&0)∅]?+?naikat"
+        rules: [mrS6e, mrS4c, mrS2a]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "tatiantak"
     note: >-
@@ -126,20 +126,11 @@ words:
     note: >-
       9 segmentations; 9 survive the exclude rules.
     parses:
-      - signature: "S2d+S1b+R10+S6e|kaitik"
-        rules: [mrS6e, mrS2d, mrS1b]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S2d+S1b+R10|kaitik"
         rules: [mrS2d, mrS1b]
         exercises: ["Morpheme co-occurrence rules"]
-      - signature: "S4b+S1b+R10+S6e|kaitik"
-        rules: [mrS6e, mrS4b, mrS1b]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4b+S1b+R10|kaitik"
         rules: [mrS4b, mrS1b]
-        exercises: ["Morpheme co-occurrence rules"]
-      - signature: "S4b+S2a+R10+S6e|kaitik"
-        rules: [mrS6e, mrS4b, mrS2a]
         exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4b+S2a+R10|kaitik"
         rules: [mrS4b, mrS2a]
@@ -153,6 +144,15 @@ words:
       - signature: "S6c+S4a+R10|kaitik"
         rules: [mrS6c, mrS4a]
         exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S2d+S1b+R10|[(^0)(*0)(&0)∅]?+?kaitik"
+        rules: [mrS6e, mrS2d, mrS1b]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S4b+S1b+R10|[(^0)(*0)(&0)∅]?+?kaitik"
+        rules: [mrS6e, mrS4b, mrS1b]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S4b+S2a+R10|[(^0)(*0)(&0)∅]?+?kaitik"
+        rules: [mrS6e, mrS4b, mrS2a]
+        exercises: ["Morpheme co-occurrence rules"]
   - word: "naniianik"
     note: >-
       7 segmentations; 1 survive the exclude rules.
@@ -164,14 +164,8 @@ words:
     note: >-
       10 segmentations; 6 survive the exclude rules.
     parses:
-      - signature: "S2c+S1c+R10+S6e|titatik"
-        rules: [mrS6e, mrS2c, mrS1c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S2c+S1c+R10|titatik"
         rules: [mrS2c, mrS1c]
-        exercises: ["Morpheme co-occurrence rules"]
-      - signature: "S4e+S1c+R10+S6e|titatik"
-        rules: [mrS6e, mrS4e, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4e+S1c+R10|titatik"
         rules: [mrS4e, mrS1c]
@@ -182,13 +176,16 @@ words:
       - signature: "S5b+S3b+R10|titatik"
         rules: [mrS5b, mrS3b]
         exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S2c+S1c+R10|[(^0)(*0)(&0)∅]?+?titatik"
+        rules: [mrS6e, mrS2c, mrS1c]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S4e+S1c+R10|[(^0)(*0)(&0)∅]?+?titatik"
+        rules: [mrS6e, mrS4e, mrS1c]
+        exercises: ["Morpheme co-occurrence rules"]
   - word: "kiatikitik"
     note: >-
       10 segmentations; 4 survive the exclude rules.
     parses:
-      - signature: "S3e+S2c+S1d+R10+S6e|kiatikitik"
-        rules: [mrS6e, mrS3e, mrS2c, mrS1d]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S3e+S2c+S1d+R10|kiatikitik"
         rules: [mrS3e, mrS2c, mrS1d]
         exercises: ["Morpheme co-occurrence rules"]
@@ -197,6 +194,9 @@ words:
         exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5e+S4d+S2a+S1d+R10|kiatikitik"
         rules: [mrS5e, mrS4d, mrS2a, mrS1d]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S3e+S2c+S1d+R10|[(^0)(*0)(&0)∅]?+?kiatikitik"
+        rules: [mrS6e, mrS3e, mrS2c, mrS1d]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "naaaatik"
     note: >-
@@ -209,9 +209,6 @@ words:
     note: >-
       11 segmentations; 6 survive the exclude rules.
     parses:
-      - signature: "S4a+S2b+S1c+R10+S6e|iatatik"
-        rules: [mrS6e, mrS4a, mrS2b, mrS1c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4a+S2b+S1c+R10|iatatik"
         rules: [mrS4a, mrS2b, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
@@ -227,13 +224,13 @@ words:
       - signature: "S6b+S4d+S2b+R10|iatatik"
         rules: [mrS6b, mrS4d, mrS2b]
         exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S4a+S2b+S1c+R10|[(^0)(*0)(&0)∅]?+?iatatik"
+        rules: [mrS6e, mrS4a, mrS2b, mrS1c]
+        exercises: ["Morpheme co-occurrence rules"]
   - word: "nikataant"
     note: >-
       8 segmentations; 4 survive the exclude rules.
     parses:
-      - signature: "S3c+S2d+S1c+R7+S6e|nikataant"
-        rules: [mrS6e, mrS3c, mrS2d, mrS1c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S3c+S2d+S1c+R7|nikataant"
         rules: [mrS3c, mrS2d, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
@@ -242,6 +239,9 @@ words:
         exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5d+S4b+S1c+R7|nikataant"
         rules: [mrS5d, mrS4b, mrS1c]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S3c+S2d+S1c+R7|[(^0)(*0)(&0)∅]?+?nikataant"
+        rules: [mrS6e, mrS3c, mrS2d, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "akkiatakat"
     note: >-
@@ -264,9 +264,6 @@ words:
     note: >-
       9 segmentations; 5 survive the exclude rules.
     parses:
-      - signature: "S4b+S2c+S1a+R2+S6e|katiakin"
-        rules: [mrS6e, mrS4b, mrS2c, mrS1a]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4b+S2c+S1a+R2|katiakin"
         rules: [mrS4b, mrS2c, mrS1a]
         exercises: ["Morpheme co-occurrence rules"]
@@ -279,6 +276,9 @@ words:
       - signature: "S6c+S4e+S2b+R2|katiakin"
         rules: [mrS6c, mrS4e, mrS2b]
         exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S4b+S2c+S1a+R2|[(^0)(*0)(&0)∅]?+?katiakin"
+        rules: [mrS6e, mrS4b, mrS2c, mrS1a]
+        exercises: ["Morpheme co-occurrence rules"]
   - word: "kitiantatik"
     note: >-
       2 segmentations; 1 survive the exclude rules.
@@ -290,9 +290,6 @@ words:
     note: >-
       4 segmentations; 4 survive the exclude rules.
     parses:
-      - signature: "S4b+S2d+S1d+R8+S6e|kakakinik"
-        rules: [mrS6e, mrS4b, mrS2d, mrS1d]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4b+S2d+S1d+R8|kakakinik"
         rules: [mrS4b, mrS2d, mrS1d]
         exercises: ["Morpheme co-occurrence rules"]
@@ -301,6 +298,9 @@ words:
         exercises: ["Morpheme co-occurrence rules"]
       - signature: "S6c+S4b+S1d+R8|kakakinik"
         rules: [mrS6c, mrS4b, mrS1d]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S4b+S2d+S1d+R8|[(^0)(*0)(&0)∅]?+?kakakinik"
+        rules: [mrS6e, mrS4b, mrS2d, mrS1d]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "nataaakin"
     note: >-
@@ -313,9 +313,6 @@ words:
     note: >-
       8 segmentations; 5 survive the exclude rules.
     parses:
-      - signature: "S4b+S2c+S1b+R3+S6e|katiinat"
-        rules: [mrS6e, mrS4b, mrS2c, mrS1b]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4b+S2c+S1b+R3|katiinat"
         rules: [mrS4b, mrS2c, mrS1b]
         exercises: ["Morpheme co-occurrence rules"]
@@ -328,6 +325,9 @@ words:
       - signature: "S6c+S4e+S2a+R3|katiinat"
         rules: [mrS6c, mrS4e, mrS2a]
         exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S4b+S2c+S1b+R3|[(^0)(*0)(&0)∅]?+?katiinat"
+        rules: [mrS6e, mrS4b, mrS2c, mrS1b]
+        exercises: ["Morpheme co-occurrence rules"]
   - word: "kaikkakiink"
     note: >-
       3 segmentations; 1 survive the exclude rules.
@@ -339,9 +339,6 @@ words:
     note: >-
       18 segmentations; 8 survive the exclude rules.
     parses:
-      - signature: "S3a+S2d+S1c+R1+S6e|akatatak"
-        rules: [mrS6e, mrS3a, mrS2d, mrS1c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S3a+S2d+S1c+R1|akatatak"
         rules: [mrS3a, mrS2d, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
@@ -363,13 +360,13 @@ words:
       - signature: "S5c+S4d+S2b+R1|akatatak"
         rules: [mrS5c, mrS4d, mrS2b]
         exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S3a+S2d+S1c+R1|[(^0)(*0)(&0)∅]?+?akatatak"
+        rules: [mrS6e, mrS3a, mrS2d, mrS1c]
+        exercises: ["Morpheme co-occurrence rules"]
   - word: "katitaink"
     note: >-
       7 segmentations; 4 survive the exclude rules.
     parses:
-      - signature: "S4b+S2c+S1c+R4+S6e|katitaink"
-        rules: [mrS6e, mrS4b, mrS2c, mrS1c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4b+S2c+S1c+R4|katitaink"
         rules: [mrS4b, mrS2c, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
@@ -379,13 +376,13 @@ words:
       - signature: "S6c+S4e+S1c+R4|katitaink"
         rules: [mrS6c, mrS4e, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S4b+S2c+S1c+R4|[(^0)(*0)(&0)∅]?+?katitaink"
+        rules: [mrS6e, mrS4b, mrS2c, mrS1c]
+        exercises: ["Morpheme co-occurrence rules"]
   - word: "tikakinat"
     note: >-
       6 segmentations; 4 survive the exclude rules.
     parses:
-      - signature: "S4e+S2d+S1d+R3+S6e|tikakinat"
-        rules: [mrS6e, mrS4e, mrS2d, mrS1d]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4e+S2d+S1d+R3|tikakinat"
         rules: [mrS4e, mrS2d, mrS1d]
         exercises: ["Morpheme co-occurrence rules"]
@@ -394,6 +391,9 @@ words:
         exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5b+S4b+S1d+R3|tikakinat"
         rules: [mrS5b, mrS4b, mrS1d]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S4e+S2d+S1d+R3|[(^0)(*0)(&0)∅]?+?tikakinat"
+        rules: [mrS6e, mrS4e, mrS2d, mrS1d]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "kakiatiink"
     note: >-
@@ -406,9 +406,6 @@ words:
     note: >-
       8 segmentations; 5 survive the exclude rules.
     parses:
-      - signature: "S3b+S2b+S1b+R5+S6e|taaikat"
-        rules: [mrS6e, mrS3b, mrS2b, mrS1b]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S3b+S2b+S1b+R5|taaikat"
         rules: [mrS3b, mrS2b, mrS1b]
         exercises: ["Morpheme co-occurrence rules"]
@@ -421,13 +418,13 @@ words:
       - signature: "S6a+S3a+S2a+R5|taaikat"
         rules: [mrS6a, mrS3a, mrS2a]
         exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S3b+S2b+S1b+R5|[(^0)(*0)(&0)∅]?+?taaikat"
+        rules: [mrS6e, mrS3b, mrS2b, mrS1b]
+        exercises: ["Morpheme co-occurrence rules"]
   - word: "kiatitin"
     note: >-
       8 segmentations; 5 survive the exclude rules.
     parses:
-      - signature: "S3e+S2c+R6+S6e|kiatitin"
-        rules: [mrS6e, mrS3e, mrS2c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S3e+S2c+R6|kiatitin"
         rules: [mrS3e, mrS2c]
         exercises: ["Morpheme co-occurrence rules"]
@@ -440,13 +437,13 @@ words:
       - signature: "S5e+S4d+S2a+R6|kiatitin"
         rules: [mrS5e, mrS4d, mrS2a]
         exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S3e+S2c+R6|[(^0)(*0)(&0)∅]?+?kiatitin"
+        rules: [mrS6e, mrS3e, mrS2c]
+        exercises: ["Morpheme co-occurrence rules"]
   - word: "tainanik"
     note: >-
       4 segmentations; 4 survive the exclude rules.
     parses:
-      - signature: "S3b+S2a+S1e+R8+S6e|tainanik"
-        rules: [mrS6e, mrS3b, mrS2a, mrS1e]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S3b+S2a+S1e+R8|tainanik"
         rules: [mrS3b, mrS2a, mrS1e]
         exercises: ["Morpheme co-occurrence rules"]
@@ -455,6 +452,9 @@ words:
         exercises: ["Morpheme co-occurrence rules"]
       - signature: "S6a+S4a+S1e+R8|tainanik"
         rules: [mrS6a, mrS4a, mrS1e]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S3b+S2a+S1e+R8|[(^0)(*0)(&0)∅]?+?tainanik"
+        rules: [mrS6e, mrS3b, mrS2a, mrS1e]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "kanatiatin"
     note: >-
@@ -474,9 +474,6 @@ words:
     note: >-
       9 segmentations; 5 survive the exclude rules.
     parses:
-      - signature: "S3b+S2c+S1a+R1+S6e|tatiatak"
-        rules: [mrS6e, mrS3b, mrS2c, mrS1a]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S3b+S2c+S1a+R1|tatiatak"
         rules: [mrS3b, mrS2c, mrS1a]
         exercises: ["Morpheme co-occurrence rules"]
@@ -489,6 +486,9 @@ words:
       - signature: "S6a+S4e+S2b+R1|tatiatak"
         rules: [mrS6a, mrS4e, mrS2b]
         exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S3b+S2c+S1a+R1|[(^0)(*0)(&0)∅]?+?tatiatak"
+        rules: [mrS6e, mrS3b, mrS2c, mrS1a]
+        exercises: ["Morpheme co-occurrence rules"]
   - word: "kaniiaant"
     note: >-
       7 segmentations; 1 survive the exclude rules.
@@ -500,9 +500,6 @@ words:
     note: >-
       8 segmentations; 4 survive the exclude rules.
     parses:
-      - signature: "S3c+S2d+S1c+R6+S6e|nikatatin"
-        rules: [mrS6e, mrS3c, mrS2d, mrS1c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S3c+S2d+S1c+R6|nikatatin"
         rules: [mrS3c, mrS2d, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
@@ -511,6 +508,9 @@ words:
         exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5d+S4b+S1c+R6|nikatatin"
         rules: [mrS5d, mrS4b, mrS1c]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S3c+S2d+S1c+R6|[(^0)(*0)(&0)∅]?+?nikatatin"
+        rules: [mrS6e, mrS3c, mrS2d, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "takiaitaant"
     note: >-
@@ -540,9 +540,6 @@ words:
     note: >-
       5 segmentations; 4 survive the exclude rules.
     parses:
-      - signature: "S4b+S2a+S1c+R9+S6e|kaitakan"
-        rules: [mrS6e, mrS4b, mrS2a, mrS1c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4b+S2a+S1c+R9|kaitakan"
         rules: [mrS4b, mrS2a, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
@@ -551,4 +548,7 @@ words:
         exercises: ["Morpheme co-occurrence rules"]
       - signature: "S6c+S4a+S1c+R9|kaitakan"
         rules: [mrS6c, mrS4a, mrS1c]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6e+S4b+S2a+S1c+R9|[(^0)(*0)(&0)∅]?+?kaitakan"
+        rules: [mrS6e, mrS4b, mrS2a, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]

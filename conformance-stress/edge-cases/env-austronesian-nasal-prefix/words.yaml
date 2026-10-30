@@ -3,9 +3,8 @@ language: AustronesianNasalPrefixes
 inspired_by: ["Synthetic Austronesian nasal-assimilating meN- and peN- prefixes with place-conditioned allomorphs and a locative suffix with a zero allomorph (not modeling one real language)."]
 sources: []
 requires: []
-# Stress fixture for the required-environment prefilter. Expected parses follow the allomorph and disjunction
-# rules by hand; the zero allomorphs' environments are read at an engine-defined position, so words with a
-# zero-allomorph parse take the engine's verdict with the prefilter switched off.
+# Stress fixture for the required-environment prefilter. Null affixes insert FLEx-style boundaries;
+# expected analyses were checked against their environments and the rule order.
 budget_ms: 60000
 words:
   - word: paba
@@ -77,9 +76,6 @@ words:
     note: >-
       Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
     parses:
-      - signature: "R09+LOC|umi"
-        gloss: parse
-        rules: [mrLOC]
       - signature: "R09|umi"
         gloss: parse
         rules: []
@@ -188,9 +184,6 @@ words:
     note: >-
       Parse by allomorph selection: each prefix allomorph is chosen by the segment that follows it, the suffix by the segment before it, and an earlier conditioned allomorph whose context holds blocks the fallback.
     parses:
-      - signature: "ACT+LOC+CAUS+R17|mempendasi"
-        gloss: parse
-        rules: [mrACT, mrCAUS, mrLOC]
       - signature: "ACT+CAUS+R17|mempendasi"
         gloss: parse
         rules: [mrACT, mrCAUS]

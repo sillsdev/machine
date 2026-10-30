@@ -4,8 +4,9 @@ These grammars are for timing and optimization work on the analysis pass. They a
 fixtures: they live outside `conformance/`, so no ledger, manifest, coverage report or default runner
 sees them. Each `words.yaml` starts with `# kind: stress`.
 
-Expected output is a parity check: the parses are what `master` produces (three identical runs were
-required), so an optimization must return the same parses. The measure of a change is the number of
+Expected output is a parity check: the original parses came from `master` (three identical runs were
+required). The FLEx-style null-affix rows were updated against the #480 engine and reviewed against the
+grammars; an optimization must return the same parses. The measure of a change is the number of
 analysis steps, not wall-clock time.
 
 Run them only on request:

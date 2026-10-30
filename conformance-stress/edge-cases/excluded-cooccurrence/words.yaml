@@ -12,11 +12,11 @@ words:
     note: >-
       2 segmentations; 2 survive the exclude rules.
     parses:
-      - signature: "S3d+S1d+R3+S6d|tikunup"
-        rules: [mrS6d, mrS3d, mrS1d]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S3d+S1d+R3|tikunup"
         rules: [mrS3d, mrS1d]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S3d+S1d+R3|[(^0)(*0)(&0)∅]?+?tikunup"
+        rules: [mrS6d, mrS3d, mrS1d]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "pikukat"
     note: >-
@@ -41,31 +41,31 @@ words:
     note: >-
       2 segmentations; 2 survive the exclude rules.
     parses:
-      - signature: "S5b+S3b+S2b+S1d+R5+S6d|kanatakupum"
-        rules: [mrS6d, mrS5b, mrS3b, mrS2b, mrS1d]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5b+S3b+S2b+S1d+R5|kanatakupum"
         rules: [mrS5b, mrS3b, mrS2b, mrS1d]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S5b+S3b+S2b+S1d+R5|[(^0)(*0)(&0)∅]?+?kanatakupum"
+        rules: [mrS6d, mrS5b, mrS3b, mrS2b, mrS1d]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "nuumas"
     note: >-
       2 segmentations; 2 survive the exclude rules.
     parses:
-      - signature: "S5c+S3a+R10+S6d|nuumas"
-        rules: [mrS6d, mrS5c, mrS3a]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5c+S3a+R10|nuumas"
         rules: [mrS5c, mrS3a]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S5c+S3a+R10|[(^0)(*0)(&0)∅]?+?nuumas"
+        rules: [mrS6d, mrS5c, mrS3a]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "tasikasunup"
     note: >-
       2 segmentations; 2 survive the exclude rules.
     parses:
-      - signature: "S5d+S4d+S3c+S2d+R3+S6d|tasikasunup"
-        rules: [mrS6d, mrS5d, mrS4d, mrS3c, mrS2d]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5d+S4d+S3c+S2d+R3|tasikasunup"
         rules: [mrS5d, mrS4d, mrS3c, mrS2d]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S5d+S4d+S3c+S2d+R3|[(^0)(*0)(&0)∅]?+?tasikasunup"
+        rules: [mrS6d, mrS5d, mrS4d, mrS3c, mrS2d]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "uukat"
     note: >-
@@ -85,11 +85,11 @@ words:
     note: >-
       2 segmentations; 2 survive the exclude rules.
     parses:
-      - signature: "S4d+S3c+S2b+R12+S6d|sikatapat"
-        rules: [mrS6d, mrS4d, mrS3c, mrS2b]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4d+S3c+S2b+R12|sikatapat"
         rules: [mrS4d, mrS3c, mrS2b]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S4d+S3c+S2b+R12|[(^0)(*0)(&0)∅]?+?sikatapat"
+        rules: [mrS6d, mrS4d, mrS3c, mrS2b]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "nupauimas"
     note: >-
@@ -100,11 +100,11 @@ words:
     note: >-
       2 segmentations; 2 survive the exclude rules.
     parses:
-      - signature: "S5a+S3a+S2d+S1c+R6+S6d|iusunisik"
-        rules: [mrS6d, mrS5a, mrS3a, mrS2d, mrS1c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5a+S3a+S2d+S1c+R6|iusunisik"
         rules: [mrS5a, mrS3a, mrS2d, mrS1c]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S5a+S3a+S2d+S1c+R6|[(^0)(*0)(&0)∅]?+?iusunisik"
+        rules: [mrS6d, mrS5a, mrS3a, mrS2d, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "sanukanisin"
     note: >-
@@ -117,43 +117,43 @@ words:
     note: >-
       4 segmentations; 4 survive the exclude rules.
     parses:
-      - signature: "S5c+S3d+S1b+R3+S6d|nutimanup"
-        rules: [mrS6d, mrS5c, mrS3d, mrS1b]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5c+S3d+S1b+R3|nutimanup"
         rules: [mrS5c, mrS3d, mrS1b]
         exercises: ["Morpheme co-occurrence rules"]
-      - signature: "S5c+S3d+S2c+R3+S6d|nutimanup"
-        rules: [mrS6d, mrS5c, mrS3d, mrS2c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5c+S3d+S2c+R3|nutimanup"
         rules: [mrS5c, mrS3d, mrS2c]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S5c+S3d+S1b+R3|[(^0)(*0)(&0)∅]?+?nutimanup"
+        rules: [mrS6d, mrS5c, mrS3d, mrS1b]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S5c+S3d+S2c+R3|[(^0)(*0)(&0)∅]?+?nutimanup"
+        rules: [mrS6d, mrS5c, mrS3d, mrS2c]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "nuamakat"
     note: >-
       4 segmentations; 4 survive the exclude rules.
     parses:
-      - signature: "S5c+S4a+S1b+R1+S6d|nuamakat"
-        rules: [mrS6d, mrS5c, mrS4a, mrS1b]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5c+S4a+S1b+R1|nuamakat"
         rules: [mrS5c, mrS4a, mrS1b]
         exercises: ["Morpheme co-occurrence rules"]
-      - signature: "S5c+S4a+S2c+R1+S6d|nuamakat"
-        rules: [mrS6d, mrS5c, mrS4a, mrS2c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5c+S4a+S2c+R1|nuamakat"
         rules: [mrS5c, mrS4a, mrS2c]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S5c+S4a+S1b+R1|[(^0)(*0)(&0)∅]?+?nuamakat"
+        rules: [mrS6d, mrS5c, mrS4a, mrS1b]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S5c+S4a+S2c+R1|[(^0)(*0)(&0)∅]?+?nuamakat"
+        rules: [mrS6d, mrS5c, mrS4a, mrS2c]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "taumatas"
     note: >-
       4 segmentations; 2 survive the exclude rules.
     parses:
-      - signature: "S5d+S3a+S2c+R4+S6d|taumatas"
-        rules: [mrS6d, mrS5d, mrS3a, mrS2c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5d+S3a+S2c+R4|taumatas"
         rules: [mrS5d, mrS3a, mrS2c]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S5d+S3a+S2c+R4|[(^0)(*0)(&0)∅]?+?taumatas"
+        rules: [mrS6d, mrS5d, mrS3a, mrS2c]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "kaiamas"
     note: >-
@@ -174,21 +174,21 @@ words:
     note: >-
       2 segmentations; 2 survive the exclude rules.
     parses:
-      - signature: "S5d+S4b+S3b+S1d+R8+S6d|tapanakunit"
-        rules: [mrS6d, mrS5d, mrS4b, mrS3b, mrS1d]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5d+S4b+S3b+S1d+R8|tapanakunit"
         rules: [mrS5d, mrS4b, mrS3b, mrS1d]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S5d+S4b+S3b+S1d+R8|[(^0)(*0)(&0)∅]?+?tapanakunit"
+        rules: [mrS6d, mrS5d, mrS4b, mrS3b, mrS1d]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "pasusin"
     note: >-
       2 segmentations; 2 survive the exclude rules.
     parses:
-      - signature: "S4b+S2d+R11+S6d|pasusin"
-        rules: [mrS6d, mrS4b, mrS2d]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4b+S2d+R11|pasusin"
         rules: [mrS4b, mrS2d]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S4b+S2d+R11|[(^0)(*0)(&0)∅]?+?pasusin"
+        rules: [mrS6d, mrS4b, mrS2d]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "piaipum"
     note: >-
@@ -201,34 +201,34 @@ words:
     note: >-
       2 segmentations; 2 survive the exclude rules.
     parses:
-      - signature: "S5d+S2b+R5+S6d|tatapum"
-        rules: [mrS6d, mrS5d, mrS2b]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5d+S2b+R5|tatapum"
         rules: [mrS5d, mrS2b]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S5d+S2b+R5|[(^0)(*0)(&0)∅]?+?tatapum"
+        rules: [mrS6d, mrS5d, mrS2b]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "unimas"
     note: >-
       3 segmentations; 3 survive the exclude rules.
     parses:
-      - signature: "S3a+S1c+R10+S6d|unimas"
-        rules: [mrS6d, mrS3a, mrS1c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S3a+S1c+R10|unimas"
         rules: [mrS3a, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
       - signature: "S6a+S1c+R10|unimas"
         rules: [mrS6a, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S3a+S1c+R10|[(^0)(*0)(&0)∅]?+?unimas"
+        rules: [mrS6d, mrS3a, mrS1c]
+        exercises: ["Morpheme co-occurrence rules"]
   - word: "akutas"
     note: >-
       2 segmentations; 2 survive the exclude rules.
     parses:
-      - signature: "S4a+S1d+R4+S6d|akutas"
-        rules: [mrS6d, mrS4a, mrS1d]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4a+S1d+R4|akutas"
         rules: [mrS4a, mrS1d]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S4a+S1d+R4|[(^0)(*0)(&0)∅]?+?akutas"
+        rules: [mrS6d, mrS4a, mrS1d]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "pinupatimakam"
     note: >-
@@ -251,27 +251,27 @@ words:
     note: >-
       2 segmentations; 2 survive the exclude rules.
     parses:
-      - signature: "S4b+S3d+S2d+S1d+R1+S6d|patisukukat"
-        rules: [mrS6d, mrS4b, mrS3d, mrS2d, mrS1d]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4b+S3d+S2d+S1d+R1|patisukukat"
         rules: [mrS4b, mrS3d, mrS2d, mrS1d]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S4b+S3d+S2d+S1d+R1|[(^0)(*0)(&0)∅]?+?patisukukat"
+        rules: [mrS6d, mrS4b, mrS3d, mrS2d, mrS1d]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "inikam"
     note: >-
       4 segmentations; 4 survive the exclude rules.
     parses:
-      - signature: "S2a+S1c+R7+S6d|inikam"
-        rules: [mrS6d, mrS2a, mrS1c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S2a+S1c+R7|inikam"
         rules: [mrS2a, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
-      - signature: "S5a+S1c+R7+S6d|inikam"
-        rules: [mrS6d, mrS5a, mrS1c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5a+S1c+R7|inikam"
         rules: [mrS5a, mrS1c]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S2a+S1c+R7|[(^0)(*0)(&0)∅]?+?inikam"
+        rules: [mrS6d, mrS2a, mrS1c]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S5a+S1c+R7|[(^0)(*0)(&0)∅]?+?inikam"
+        rules: [mrS6d, mrS5a, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "uatisunikat"
     note: >-
@@ -284,11 +284,11 @@ words:
     note: >-
       2 segmentations; 2 survive the exclude rules.
     parses:
-      - signature: "S5c+S4a+S3b+S1c+R2+S6d|nuananimis"
-        rules: [mrS6d, mrS5c, mrS4a, mrS3b, mrS1c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5c+S4a+S3b+S1c+R2|nuananimis"
         rules: [mrS5c, mrS4a, mrS3b, mrS1c]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S5c+S4a+S3b+S1c+R2|[(^0)(*0)(&0)∅]?+?nuananimis"
+        rules: [mrS6d, mrS5c, mrS4a, mrS3b, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "pikatisuakam"
     note: >-
@@ -314,37 +314,37 @@ words:
     note: >-
       2 segmentations; 2 survive the exclude rules.
     parses:
-      - signature: "S5c+S4b+S3a+S2d+R8+S6d|nupausunit"
-        rules: [mrS6d, mrS5c, mrS4b, mrS3a, mrS2d]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5c+S4b+S3a+S2d+R8|nupausunit"
         rules: [mrS5c, mrS4b, mrS3a, mrS2d]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S5c+S4b+S3a+S2d+R8|[(^0)(*0)(&0)∅]?+?nupausunit"
+        rules: [mrS6d, mrS5c, mrS4b, mrS3a, mrS2d]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "katanipat"
     note: >-
       4 segmentations; 4 survive the exclude rules.
     parses:
-      - signature: "S3c+S2b+S1c+R12+S6d|katanipat"
-        rules: [mrS6d, mrS3c, mrS2b, mrS1c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S3c+S2b+S1c+R12|katanipat"
         rules: [mrS3c, mrS2b, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
-      - signature: "S5b+S2b+S1c+R12+S6d|katanipat"
-        rules: [mrS6d, mrS5b, mrS2b, mrS1c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5b+S2b+S1c+R12|katanipat"
         rules: [mrS5b, mrS2b, mrS1c]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S3c+S2b+S1c+R12|[(^0)(*0)(&0)∅]?+?katanipat"
+        rules: [mrS6d, mrS3c, mrS2b, mrS1c]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S5b+S2b+S1c+R12|[(^0)(*0)(&0)∅]?+?katanipat"
+        rules: [mrS6d, mrS5b, mrS2b, mrS1c]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "mikatup"
     note: >-
       2 segmentations; 2 survive the exclude rules.
     parses:
-      - signature: "S4c+S3c+R9+S6d|mikatup"
-        rules: [mrS6d, mrS4c, mrS3c]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S4c+S3c+R9|mikatup"
         rules: [mrS4c, mrS3c]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S4c+S3c+R9|[(^0)(*0)(&0)∅]?+?mikatup"
+        rules: [mrS6d, mrS4c, mrS3c]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "piimis"
     note: >-
@@ -374,11 +374,11 @@ words:
     note: >-
       2 segmentations; 2 survive the exclude rules.
     parses:
-      - signature: "S5b+S4d+S3d+R5+S6d|kasitipum"
-        rules: [mrS6d, mrS5b, mrS4d, mrS3d]
-        exercises: ["Morpheme co-occurrence rules"]
       - signature: "S5b+S4d+S3d+R5|kasitipum"
         rules: [mrS5b, mrS4d, mrS3d]
+        exercises: ["Morpheme co-occurrence rules"]
+      - signature: "S6d+S5b+S4d+S3d+R5|[(^0)(*0)(&0)∅]?+?kasitipum"
+        rules: [mrS6d, mrS5b, mrS4d, mrS3d]
         exercises: ["Morpheme co-occurrence rules"]
   - word: "pinunataatas"
     note: >-

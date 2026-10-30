@@ -26,6 +26,10 @@
         <SegmentDefinition id="ci"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
         <SegmentDefinition id="cu"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
       </SegmentDefinitions>
+      <BoundaryDefinitions>
+        <BoundaryDefinition id="bNull"><Representations><Representation>^0</Representation><Representation>*0</Representation><Representation>&amp;0</Representation><Representation>∅</Representation></Representations></BoundaryDefinition>
+        <BoundaryDefinition id="bPlus"><Representations><Representation>+</Representation></Representations></BoundaryDefinition>
+      </BoundaryDefinitions>
     </CharacterDefinitionTable>
     <NaturalClasses>
       <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
@@ -269,7 +273,7 @@
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subS6d">
                 <MorphologicalInput><PhoneticSequence id="stemS6d"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
-                <MorphologicalOutput><CopyFromInput index="stemS6d" /></MorphologicalOutput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>^0+</PhoneticShape></InsertSegments><CopyFromInput index="stemS6d" /></MorphologicalOutput>
               </MorphologicalSubrule>
             </MorphologicalSubrules>
             <MorphemeId>S6d</MorphemeId>
