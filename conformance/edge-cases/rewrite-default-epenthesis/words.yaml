@@ -1,0 +1,39 @@
+# oracle-provenance: founding-oracle machine-commit=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# C# hc.dll replay; see STAGING.md.
+language: rewrite-default-epenthesis
+inspired_by: ["synthetic default feature probe"]
+sources: ["machine/conformance/edge-cases/loader-default-symbol"]
+requires: [phonology]
+fieldworks_producible: false
+fieldworks_producible_notes: "HCLoader does not currently emit SymbolicFeature.defaultSymbol."
+words:
+  - word: bat
+    note: "C# oracle replay; see STAGING.md."
+    expect_fail: true
+    exercises: ["RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"]
+  - word: bdt
+    note: "C# oracle replay; see STAGING.md."
+    parses:
+      - signature: "|b[ad(aa)]t"
+        rules: [pr1]
+        exercises: ["RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"]
+  - word: bt
+    note: "C# oracle replay; see STAGING.md."
+    expect_fail: true
+    exercises: ["RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"]
+  - word: ba
+    note: "C# oracle replay; see STAGING.md."
+    expect_fail: true
+    exercises: ["RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"]
+  - word: b
+    note: "C# oracle replay; see STAGING.md."
+    expect_fail: true
+    exercises: ["RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"]
+  - word: a
+    note: "C# oracle replay; see STAGING.md."
+    expect_fail: true
+    exercises: ["RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"]
+  - word: d
+    note: "C# oracle replay; see STAGING.md."
+    expect_fail: true
+    exercises: ["RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"]

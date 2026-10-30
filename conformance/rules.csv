@@ -16,6 +16,8 @@ BoundaryLeftoverInNarrowingLhsStrrep,prPostNasal,kamo
 BoundaryMidInNarrowingLhsStrrep,mrSfxBo,kanmo;katbo
 BoundaryMidInNarrowingLhsStrrep,mrSfxMo,kanmo;katmo
 BoundaryMidInNarrowingLhsStrrep,prPostNasal,kanmo
+BoundaryNarrowingProbe,mrSfxBo,nmo
+BoundaryNarrowingProbe,prPostNasal,nmo
 ChainedOutputFeatureOverrideLoss,mrInner,zudi;zudiua
 ChainedOutputFeatureOverrideLoss,mrOuter,zudu;zudua;zudiua
 ChainedOutputFeatureOverrideLoss,mrOutermost,zudua;!zudia;zudiua
@@ -253,6 +255,9 @@ quantified-alpha-unbounded-zero-right,prRtlBq,e;ec;et
 ReduplicationNoProposalRoute,rr,ta;tata
 RecursiveEndocentricCompounding,cr1,tevimafl;maflisra;!tevimaflisra
 RewriteAnalysisFeatureNeutralization,prPtoD,d
+rewrite-default-environment,pr1,
+rewrite-default-epenthesis,pr1,bdt
+rewrite-default-narrow,pr1,bt
 RightToLeftAnchorEnvironment,prRtlAnchor,aae;ae;eeae
 RightToLeftAnchorEnvironment,prSpread,eeae
 RightToLeftBoundedQuantifierRewrite,prRtlBq,acet;ecct

@@ -87,6 +87,12 @@ edge-cases/boundary-leftover-in-narrowing-lhs-strrep	kamo	KAN+BO|kamo	Boundary m
 edge-cases/boundary-leftover-in-narrowing-lhs-strrep	kamo	KAN+BO|kamo	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/boundary-mid-in-narrowing-lhs-strrep	kanmo	KAN+BO|kanmo	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/boundary-mid-in-narrowing-lhs-strrep	kanmo	KAN+BO|kanmo	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/boundary-narrowing-probe	nbo	-	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/boundary-narrowing-probe	nbo	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/boundary-narrowing-probe	nmo	KAN+BO|nmo	AffixProcessRule: prefix/suffix/circumfix/infix	Unmapped	-
+edge-cases/boundary-narrowing-probe	nmo	KAN+BO|nmo	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/boundary-narrowing-probe	nmo	KAN+BO|nmo	MorphologicalOutputAction: CopyFromInput/InsertSegments	Confirmed	CopyFromInput,InsertSegments
+edge-cases/boundary-narrowing-probe	nmo	KAN+BO|nmo	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/chained-output-feature-override-loss	zud	ZUD|zud	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/chained-output-feature-override-loss	zudi	ZUD+INNER|zudi	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/chained-output-feature-override-loss	zudia	-	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
@@ -1088,6 +1094,27 @@ edge-cases/rewrite-analysis-feature-neutralization	d	ROOT2|d	CharacterDefinition
 edge-cases/rewrite-analysis-feature-neutralization	d	ROOT2|d	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	Confirmed	FeatureNaturalClass,SegmentNaturalClass,Segments,naturalClass
 edge-cases/rewrite-analysis-feature-neutralization	n	ROOT4|n	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	Confirmed	FeatureNaturalClass,SegmentNaturalClass,Segments,naturalClass
 edge-cases/rewrite-analysis-feature-neutralization	p	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/rewrite-default-environment	a	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-environment	b	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-environment	ba	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-environment	bat	|bat	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-environment	bdt	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-environment	bt	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-environment	d	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-epenthesis	a	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-epenthesis	b	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-epenthesis	ba	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-epenthesis	bat	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-epenthesis	bdt	|b[ad(aa)]t	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-epenthesis	bt	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-epenthesis	d	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-narrow	a	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-narrow	b	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-narrow	ba	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-narrow	bat	|bat	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-narrow	bdt	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-narrow	bt	|bt	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-narrow	d	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/right-to-left-anchor-environment	aa	-	RewriteRule direction (Dir): right-to-left	Unmapped	-
 edge-cases/right-to-left-anchor-environment	aaa	-	RewriteRule direction (Dir): right-to-left	Unmapped	-
 edge-cases/right-to-left-anchor-environment	aae	ROOT1|aae	RewriteRule direction (Dir): right-to-left	Unmapped	-

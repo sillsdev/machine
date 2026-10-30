@@ -4,6 +4,7 @@ edge-cases/boundary-first-in-narrowing-lhs,edge-cases,BoundaryFirstInNarrowingLh
 edge-cases/boundary-first-in-narrowing-lhs-strrep,edge-cases,BoundaryFirstInNarrowingLhsStrrep,Boundary markers (CharacterDefinitionTable);RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 edge-cases/boundary-leftover-in-narrowing-lhs-strrep,edge-cases,BoundaryLeftoverInNarrowingLhsStrrep,Boundary markers (CharacterDefinitionTable);RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 edge-cases/boundary-mid-in-narrowing-lhs-strrep,edge-cases,BoundaryMidInNarrowingLhsStrrep,Boundary markers (CharacterDefinitionTable);RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+edge-cases/boundary-narrowing-probe,edge-cases,BoundaryNarrowingProbe,AffixProcessRule: prefix/suffix/circumfix/infix;Boundary markers (CharacterDefinitionTable);MorphologicalOutputAction: CopyFromInput/InsertSegments;RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 edge-cases/clitic-rule-designation,edge-cases,CliticRuleDesignation,Affix template slots (obligatory/disjunctive/ordering);Clitic rules (isCliticRule / Clitics stratum) after a final template
 edge-cases/deep-optional-affix-nesting,edge-cases,PathologicalDeepOptionalAffixNesting,Affix template slots (obligatory/disjunctive/ordering)
 edge-cases/default-symbol-after-merge,edge-cases,DefaultSymbolAfterMerge,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
@@ -23,6 +24,9 @@ edge-cases/merge-then-metathesis,edge-cases,MergeThenMetathesis,MetathesisRule;R
 edge-cases/mpr-gated-exception,edge-cases,Ranavu,RewriteRule direction (Dir): left-to-right
 edge-cases/mpr-group-overwrite-without-realizational,edge-cases,MprGroupOverwriteWithoutRealizational,MPR features/groups
 edge-cases/process-morphology-in-place-mutation,edge-cases,ProcessMorphologyInPlaceMutation,MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
+edge-cases/rewrite-default-environment,edge-cases,rewrite-default-environment,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+edge-cases/rewrite-default-epenthesis,edge-cases,rewrite-default-epenthesis,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+edge-cases/rewrite-default-narrow,edge-cases,rewrite-default-narrow,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 edge-cases/right-to-left-anchor-environment,edge-cases,RightToLeftAnchorEnvironment,RewriteRule direction (Dir): right-to-left
 edge-cases/simultaneous-epenthesis-cascade,edge-cases,IterativeEpenthesisCascadeProbe,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 edge-cases/simultaneous-expansion-terminates,edge-cases,SimultaneousExpansionTerminates,RewriteRule Simultaneous

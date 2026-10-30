@@ -47,8 +47,8 @@ public sealed class FoldInCandidateLedgerTests
 
         // The 135-fixture corpus adds the non-head MPR candidate alongside compound output POS.
         Assert.That(rows, Has.Count.EqualTo(85));
-        Assert.That(interfaceEdgeCaseOnly, Is.EqualTo(2));
-        Assert.That(interfaceNeverWitnessed, Is.EqualTo(25));
+        Assert.That(interfaceEdgeCaseOnly, Is.EqualTo(3));
+        Assert.That(interfaceNeverWitnessed, Is.EqualTo(24));
         Assert.That(surfaceEdgeCaseOnly, Is.EqualTo(50));
         Assert.That(surfacePresentElsewhere, Is.EqualTo(8));
     }
@@ -66,10 +66,17 @@ public sealed class FoldInCandidateLedgerTests
             )
             .ToArray();
 
-        Assert.That(candidates, Has.Length.EqualTo(2));
+        Assert.That(candidates, Has.Length.EqualTo(3));
         Assert.That(
             candidates.Select(r => r.Obligation),
-            Is.EquivalentTo(new[] { "CompoundingRule.nonHeadPartsOfSpeech", "CompoundingRule.outputPartOfSpeech" })
+            Is.EquivalentTo(
+                new[]
+                {
+                    "CompoundingRule.nonHeadPartsOfSpeech",
+                    "CompoundingRule.outputPartOfSpeech",
+                    "SymbolicFeature.defaultSymbol",
+                }
+            )
         );
     }
 

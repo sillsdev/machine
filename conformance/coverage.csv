@@ -79,6 +79,12 @@ BoundaryLeftoverInNarrowingLhsStrrep,kamo,KAN+BO|kamo,RewriteRule Iterative (epe
 BoundaryLeftoverInNarrowingLhsStrrep,kamo,KAN+BO|kamo,Boundary markers (CharacterDefinitionTable)
 BoundaryMidInNarrowingLhsStrrep,kanmo,KAN+BO|kanmo,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 BoundaryMidInNarrowingLhsStrrep,kanmo,KAN+BO|kanmo,Boundary markers (CharacterDefinitionTable)
+BoundaryNarrowingProbe,nmo,KAN+BO|nmo,AffixProcessRule: prefix/suffix/circumfix/infix
+BoundaryNarrowingProbe,nmo,KAN+BO|nmo,MorphologicalOutputAction: CopyFromInput/InsertSegments
+BoundaryNarrowingProbe,nmo,KAN+BO|nmo,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+BoundaryNarrowingProbe,nmo,KAN+BO|nmo,Boundary markers (CharacterDefinitionTable)
+BoundaryNarrowingProbe,nbo,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+BoundaryNarrowingProbe,nbo,,Boundary markers (CharacterDefinitionTable)
 ChainedOutputFeatureOverrideLoss,zud,ZUD|zud,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 ChainedOutputFeatureOverrideLoss,zudi,ZUD+INNER|zudi,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 ChainedOutputFeatureOverrideLoss,zudu,ZUD+OUTER|zudu,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
@@ -1080,6 +1086,27 @@ RewriteAnalysisFeatureNeutralization,n,ROOT4|n,NaturalClass: Segments vs Feature
 RewriteAnalysisFeatureNeutralization,p,,"CharacterDefinitionTable: more than one table, one per stratum"
 RewriteAnalysisFeatureNeutralization,b,,"CharacterDefinitionTable: more than one table, one per stratum"
 RewriteAnalysisFeatureNeutralization,bp,,"CharacterDefinitionTable: more than one table, one per stratum"
+rewrite-default-environment,bat,|bat,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-environment,bdt,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-environment,bt,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-environment,ba,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-environment,b,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-environment,a,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-environment,d,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-epenthesis,bat,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-epenthesis,bdt,|b[ad(aa)]t,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-epenthesis,bt,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-epenthesis,ba,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-epenthesis,b,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-epenthesis,a,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-epenthesis,d,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-narrow,bat,|bat,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-narrow,bdt,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-narrow,bt,|bt,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-narrow,ba,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-narrow,b,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-narrow,a,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+rewrite-default-narrow,d,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 RightToLeftAnchorEnvironment,aae,ROOT1|aae,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,ae,ROOT2|ae,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,aaa,,RewriteRule direction (Dir): right-to-left

@@ -167,6 +167,22 @@ edge-cases/boundary-mid-in-narrowing-lhs-strrep	Interface	Stratum.morphologicalR
 edge-cases/boundary-mid-in-narrowing-lhs-strrep	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/boundary-mid-in-narrowing-lhs-strrep	Construct	Boundary markers (CharacterDefinitionTable)	claimed-confirmed	1 claim(s)
 edge-cases/boundary-mid-in-narrowing-lhs-strrep	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
+edge-cases/boundary-narrowing-probe	Interface	BoundaryMarker.boundary	required-by-dtd	RequiredByDtd
+edge-cases/boundary-narrowing-probe	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/boundary-narrowing-probe	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/boundary-narrowing-probe	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/boundary-narrowing-probe	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/boundary-narrowing-probe	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/boundary-narrowing-probe	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/boundary-narrowing-probe	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/boundary-narrowing-probe	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/boundary-narrowing-probe	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/boundary-narrowing-probe	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/boundary-narrowing-probe	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/boundary-narrowing-probe	Construct	AffixProcessRule: prefix/suffix/circumfix/infix	claimed-unmapped	1 claim(s)
+edge-cases/boundary-narrowing-probe	Construct	Boundary markers (CharacterDefinitionTable)	claimed-confirmed	2 claim(s)
+edge-cases/boundary-narrowing-probe	Construct	MorphologicalOutputAction: CopyFromInput/InsertSegments	claimed-confirmed	1 claim(s)
+edge-cases/boundary-narrowing-probe	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	2 claim(s)
 edge-cases/chained-output-feature-override-loss	Surface	dtd:element/HeadFeatures	required-by-dtd	RequiredByDtd
 edge-cases/chained-output-feature-override-loss	Surface	dtd:element/OutputHeadFeatures	witnessed	Evidenced
 edge-cases/chained-output-feature-override-loss	Surface	dtd:element/RequiredHeadFeatures	witnessed	Evidenced
@@ -1240,6 +1256,32 @@ edge-cases/rewrite-analysis-feature-neutralization	Interface	Stratum.phonologica
 edge-cases/rewrite-analysis-feature-neutralization	Construct	CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)	claimed-confirmed	1 claim(s)
 edge-cases/rewrite-analysis-feature-neutralization	Construct	CharacterDefinitionTable: more than one table, one per stratum	claimed-confirmed	5 claim(s)
 edge-cases/rewrite-analysis-feature-neutralization	Construct	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	claimed-confirmed	3 claim(s)
+edge-cases/rewrite-default-environment	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-default-environment	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/rewrite-default-environment	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/rewrite-default-environment	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-default-environment	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-default-environment	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-default-environment	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/rewrite-default-environment	Interface	SymbolicFeature.defaultSymbol	present-but-inert	Unobservable
+edge-cases/rewrite-default-environment	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	7 claim(s)
+edge-cases/rewrite-default-epenthesis	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-default-epenthesis	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/rewrite-default-epenthesis	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/rewrite-default-epenthesis	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-default-epenthesis	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-default-epenthesis	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-default-epenthesis	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/rewrite-default-epenthesis	Interface	SymbolicFeature.defaultSymbol	witnessed	Evidenced
+edge-cases/rewrite-default-epenthesis	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	7 claim(s)
+edge-cases/rewrite-default-narrow	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-default-narrow	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/rewrite-default-narrow	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/rewrite-default-narrow	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-default-narrow	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-default-narrow	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/rewrite-default-narrow	Interface	SymbolicFeature.defaultSymbol	present-but-inert	Unobservable
+edge-cases/rewrite-default-narrow	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	7 claim(s)
 edge-cases/right-to-left-anchor-environment	Surface	dtd:enum/PhonologicalRule/multipleApplicationOrder/rightToLeftIterative	witnessed	Evidenced
 edge-cases/right-to-left-anchor-environment	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/right-to-left-anchor-environment	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader

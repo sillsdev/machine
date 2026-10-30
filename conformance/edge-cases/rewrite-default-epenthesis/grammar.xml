@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>rewrite-default-epenthesis</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="n">
+        <Name>Noun</Name>
+      </PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="nas" defaultSymbol="symNasPlus">
+        <Name>Nasal</Name>
+        <Symbols>
+          <Symbol id="symNasPlus">+</Symbol>
+          <Symbol id="symNasMinus">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="len">
+        <Name>Length</Name>
+        <Symbols>
+          <Symbol id="symShort">-</Symbol>
+          <Symbol id="symLong">+</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="id">
+        <Name>SegId</Name>
+        <Symbols>
+          <Symbol id="idB">b</Symbol>
+          <Symbol id="idT">t</Symbol>
+          <Symbol id="idA">a</Symbol>
+          <Symbol id="idD">d</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="t1">
+      <Name>N2 Orthography</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cB">
+          <Representations>
+            <Representation>b</Representation>
+          </Representations>
+          <FeatureValue feature="id" symbolValues="idB" />
+          <FeatureValue feature="nas" symbolValues="symNasPlus" />
+          <FeatureValue feature="len" symbolValues="symShort" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cT">
+          <Representations>
+            <Representation>t</Representation>
+          </Representations>
+          <FeatureValue feature="id" symbolValues="idT" />
+          <FeatureValue feature="nas" symbolValues="symNasPlus" />
+          <FeatureValue feature="len" symbolValues="symShort" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cA">
+          <Representations>
+            <Representation>a</Representation>
+          </Representations>
+          <FeatureValue feature="id" symbolValues="idA" />
+          <FeatureValue feature="len" symbolValues="symShort" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cD">
+          <Representations>
+            <Representation>d</Representation>
+          </Representations>
+          <FeatureValue feature="id" symbolValues="idD" />
+          <FeatureValue feature="nas" symbolValues="symNasMinus" />
+          <FeatureValue feature="len" symbolValues="symShort" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cAA">
+          <Representations>
+            <Representation>aa</Representation>
+          </Representations>
+          <FeatureValue feature="len" symbolValues="symLong" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncOral">
+        <Name>Oral</Name>
+        <FeatureValue feature="nas" symbolValues="symNasMinus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncLong">
+        <Name>Long</Name>
+        <FeatureValue feature="len" symbolValues="symLong" />
+      </FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="pr1">
+        <Name>insert-oral</Name>
+        <PhoneticInput />
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <SimpleContext naturalClass="ncOral" />
+              </PhoneticSequence>
+            </PhoneticOutput>
+            <Environment>
+              <LeftEnvironment>
+                <PhoneticTemplate>
+                  <PhoneticSequence>
+                    <Segment segment="cB" />
+                  </PhoneticSequence>
+                </PhoneticTemplate>
+              </LeftEnvironment>
+              <RightEnvironment>
+                <PhoneticTemplate>
+                  <PhoneticSequence>
+                    <Segment segment="cT" />
+                  </PhoneticSequence>
+                </PhoneticTemplate>
+              </RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="t1" phonologicalRules="pr1">
+        <Name>main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eBT" partOfSpeech="n">
+            <Allomorphs>
+              <Allomorph id="aBT">
+                <PhoneticShape>bt</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <Gloss>bt</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
