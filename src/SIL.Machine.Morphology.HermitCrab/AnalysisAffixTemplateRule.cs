@@ -88,7 +88,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private bool RequiredSlotCannotUnapply(Word word, int lastSlot, ref int[] fired)
         {
             RequiredSlotLookaheadMode mode = _morpher.RequiredSlotLookahead;
-            if (mode == RequiredSlotLookaheadMode.Off)
+            if (mode == RequiredSlotLookaheadMode.Off || _morpher.TraceManager.IsTracing)
                 return false;
 
             long unifications = 0;

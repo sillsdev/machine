@@ -184,6 +184,46 @@ public class AnalysisAffixTemplateFusionTests : HermitCrabTestBase
         Assert.That(on.RuleAttempts, Is.GreaterThan(0), "the slot may restore up to one segment, so no pruning");
     }
 
+    [Test]
+    public void Apply_EmptyUnboundedRun_RestoresNoSegmentForTheRequiredSlot()
+    {
+        AffixProcessRule fusion = FusionPrefix("fuse", "k", "a");
+        AffixTemplate template = TemplateOf(Slot(false, Suffix("i")), Slot(true, fusion));
+        var morpher = new Morpher(TraceManager, Language, 1);
+        var input = new Word(Morphophonemic, Morphophonemic.CharacterDefinitionTable.Segment("ktat"));
+        input.Freeze();
+        var outputs = fusion.CompileAnalysisRule(morpher).Apply(input).ToArray();
+        Assert.That(outputs, Has.Length.EqualTo(1));
+        Assert.That(outputs[0].Shape.Count(n => n.Type() == HCFeatureSystem.Segment), Is.EqualTo(1));
+        Assert.That(outputs[0].Shape.Any(n => n.Annotation.Optional), Is.False);
+        (WalkResult off, WalkResult on) = WalkBoth(template, "ktat");
+        Assert.That(off.Parses, Is.Empty);
+        Assert.That(on.RuleAttempts, Is.EqualTo(0));
+    }
+
+    [TestCase(true)]
+    [TestCase(false)]
+    public void Apply_UnboundedRunWithOrderedCopiesOrDeletion_RemainsPure(bool copyRun)
+    {
+        var actions = new List<MorphologicalOutputAction> { new CopyFromInput("1") };
+        if (copyRun)
+            actions.Add(new CopyFromInput("2"));
+        actions.Add(new InsertSegments(Table3, "z"));
+        AffixProcessRule outer = RuleOf(
+            "outer",
+            new[]
+            {
+                Pattern<Word, ShapeNode>.New("1").Annotation(Any).OneOrMore.Value,
+                Pattern<Word, ShapeNode>.New("2").Annotation(Any).ZeroOrMore.Value,
+            },
+            actions.ToArray()
+        );
+        AffixTemplate template = TemplateOf(Slot(false, Suffix("ti")), Slot(true, outer));
+        (WalkResult off, WalkResult on) = WalkBoth(template, "sagz");
+        Assert.That(off.RuleAttempts, Is.GreaterThan(0));
+        Assert.That(on.RuleAttempts, Is.EqualTo(0));
+    }
+
     [TestCase(1)]
     [TestCase(0)]
     public void Apply_OnEveryFusionTemplateAndWord_KeepsTheParsesAndNeverViolatesTheShadow(int maxDegreeOfParallelism)
