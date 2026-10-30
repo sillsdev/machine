@@ -139,7 +139,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             input.Freeze();
             IDictionary<AnalysisMergeKey, Word> wordCache = null;
             // Don't merge if tracing because it messes up the tracing.
-            bool mergeEquivalentAnalyses = _morpher.MergeEquivalentAnalyses && !_morpher.TraceManager.IsTracing;
+            bool mergeEquivalentAnalyses =
+                (_morpher.MergeEquivalentAnalyses && !_morpher.TraceManager.IsTracing) || !_morpher.MorphOrderMatters;
             if (mergeEquivalentAnalyses)
                 wordCache = new Dictionary<AnalysisMergeKey, Word>();
 
@@ -152,12 +153,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _morpher.TraceManager.EndUnapplyStratum(_stratum, input);
             foreach (Word mruleOutWord in mruleOutWords)
             {
-                alternativeCount++;
-                if (_maxAlternatives > 0 && alternativeCount > _maxAlternatives)
-                {
-                    // Stops before full enumeration because ApplyTemplates and ApplyMorphologicalRules use yield return.
-                    throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
-                }
                 // Skip intermediate sources from phonological rules, templates, and morphological rules.
                 mruleOutWord.Source = origInput;
                 AnalysisMergeKey key = default;
@@ -166,9 +161,18 @@ namespace SIL.Machine.Morphology.HermitCrab
                     key = new AnalysisMergeKey(mruleOutWord);
                     if (wordCache.TryGetValue(key, out Word canonicalWord))
                     {
-                        canonicalWord.Alternatives.Add(mruleOutWord);
+                        if (_morpher.MorphOrderMatters)
+                            canonicalWord.Alternatives.Add(mruleOutWord);
+                        else if (_morpher.TraceManager.IsTracing)
+                            _morpher.TraceManager.MorphOrderSuppressed(mruleOutWord, canonicalWord);
                         continue;
                     }
+                }
+                alternativeCount++;
+                if (_maxAlternatives > 0 && alternativeCount > _maxAlternatives)
+                {
+                    // Stops before full enumeration because ApplyTemplates and ApplyMorphologicalRules use yield return.
+                    throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
                 }
                 Word newMruleOutWord = mruleOutWord;
                 // Only cache a canonical that made it into the output. Two words can have different keys yet
@@ -248,6 +252,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
                 _shape = word.Shape;
                 _stratum = word.Stratum;
+                // Include SyntacticFeatureStruct here even though it is not part of Word.ValueEquals
+                // because it is implied by the rest of Word but not by the rest of AnalysisMergeKey.
                 _syntacticFS = word.SyntacticFeatureStruct;
                 _realizationalFS = word.RealizationalFeatureStruct;
                 _nonHeadCount = word.NonHeadCount;

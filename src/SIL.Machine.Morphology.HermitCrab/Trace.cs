@@ -50,6 +50,11 @@ namespace SIL.Machine.Morphology.HermitCrab
         Blocked,
 
         /// <summary>
+        /// Suppressed Morph Order trace
+        /// </summary>
+        MorphOrderSuppressed,
+
+        /// <summary>
         /// Word synthesis trace
         /// </summary>
         WordSynthesis,
