@@ -791,4 +791,41 @@ public class AffixTemplateTests : HermitCrabTestBase
         morpher.MergeEquivalentAnalyses = false;
         AssertMorphsEqual(morpher.ParseWord("sagdss"), "32 FINAL TEMPLATE NOM");
     }
+
+    [Test]
+    public void RequiredSlotWithNoRulesDoesNotBlockTheBareStem()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var edSuffix = new AffixProcessRule
+        {
+            Name = "ed_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") },
+            }
+        );
+
+        var verbTemplate = new AffixTemplate
+        {
+            Name = "verb",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        verbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix) { Optional = false });
+        Morphophonemic.AffixTemplates.Add(verbTemplate);
+
+        var morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("sag"));
+        AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
+
+        verbTemplate.Slots.Clear();
+        verbTemplate.Slots.Add(new AffixTemplateSlot() { Optional = false });
+        morpher = new Morpher(TraceManager, Language);
+        Assert.That(verbTemplate.Slots[0].Optional, Is.True);
+        AssertMorphsEqual(morpher.ParseWord("sag"), "32");
+    }
 }
