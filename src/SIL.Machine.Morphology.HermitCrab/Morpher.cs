@@ -90,6 +90,16 @@ namespace SIL.Machine.Morphology.HermitCrab
         internal RequiredSlotLookaheadMode RequiredSlotLookahead { get; set; } = RequiredSlotLookaheadMode.On;
 
         /// <summary>
+        /// Enable required-slot pruning during affix template analysis. Enabled by default. Set it before
+        /// parsing; changing it during a parse alters how much is pruned, not the analyses returned.
+        /// </summary>
+        public bool PruneRequiredSlots
+        {
+            get { return RequiredSlotLookahead != RequiredSlotLookaheadMode.Off; }
+            set { RequiredSlotLookahead = value ? RequiredSlotLookaheadMode.On : RequiredSlotLookaheadMode.Off; }
+        }
+
+        /// <summary>
         /// Called in <see cref="RequiredSlotLookaheadMode.Shadow"/> with a kind and the template and slot it is about:
         /// "fired" (the test is true for a required slot), "violated" (a rule of a fired slot then unapplied under
         /// that partial) and "completed-under-fired" (the template walk completed with a fired slot on its path).

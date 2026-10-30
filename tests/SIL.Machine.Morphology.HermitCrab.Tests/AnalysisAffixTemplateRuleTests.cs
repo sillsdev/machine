@@ -280,8 +280,7 @@ public class AnalysisAffixTemplateRuleTests : HermitCrabTestBase
         });
     }
 
-    // An optional slot whose rule inserts "z" after the copied parts; the word never contains the t and i
-    // that the required inner slot inserts, so a pure rule lets the walk prune at entry, before the optional rule is tried, and an impure one does not.
+    // The input lacks the inner slot's "ti"; a pure outer rule permits pruning before it is tried.
     private (WalkResult Off, WalkResult On) WalkWithOptionalSlot(
         Pattern<Word, ShapeNode>[] lhs,
         MorphologicalOutputAction[] rhs
@@ -411,24 +410,65 @@ public class AnalysisAffixTemplateRuleTests : HermitCrabTestBase
     }
 
     [Test]
-    public void Apply_Tracing_ShowsAPrunedTemplateAsAFailedOutput()
+    public void Apply_Tracing_RunsTheRulesForDetailedFailureInformation()
     {
         AffixTemplate template = RequiredInnerSuffixTemplate();
         Word input = Input("sagufz");
 
-        Walk(template, input, RequiredSlotLookaheadMode.On, tracing: true);
+        WalkResult result = Walk(template, input, RequiredSlotLookaheadMode.On, tracing: true);
         TraceManager.IsTracing = false;
 
+        Assert.That(result.RuleAttempts, Is.GreaterThan(0));
         var root = (Trace)input.CurrentTrace;
-        Trace[] children = root.Children.ToArray();
-        Assert.Multiple(() =>
+        Assert.That(root.Children.Count, Is.GreaterThan(2));
+    }
+
+    [Test]
+    public void Apply_PublicPruningSwitch_ControlsRuleAttempts()
+    {
+        AffixTemplate template = RequiredInnerSuffixTemplate();
+        int attempts = 0;
+        var morpher = new Morpher(TraceManager, Language, 1)
         {
-            Assert.That(
-                children.Select(t => t.Type),
-                Is.EqualTo(new[] { TraceType.TemplateAnalysisInput, TraceType.TemplateAnalysisOutput })
-            );
-            Assert.That(children[1].Output, Is.Null, "the partial is reported as not unapplied");
-        });
+            RuleSelector = rule =>
+            {
+                if (rule is AffixProcessRule)
+                    attempts++;
+                return true;
+            },
+        };
+        Word input = Input("sagufz");
+        input.Freeze();
+        var rule = template.CompileAnalysisRule(morpher);
+        Assert.That(morpher.PruneRequiredSlots, Is.True);
+        Assert.That(rule.Apply(input), Is.Empty);
+        Assert.That(attempts, Is.EqualTo(0));
+        morpher.PruneRequiredSlots = false;
+        Assert.That(rule.Apply(input), Is.Empty);
+        Assert.That(attempts, Is.GreaterThan(0));
+    }
+
+    [TestCase(true)]
+    [TestCase(false)]
+    public void Compile_UntypedConstraints_DisablesTheSummaryConservatively(bool untypedLhs)
+    {
+        var fs = FeatureStruct.New().Value;
+        fs.Freeze();
+        var rule = SuffixRule("untyped", "z");
+        if (untypedLhs)
+        {
+            rule.Allomorphs[0].Lhs.Add(Pattern<Word, ShapeNode>.New("2").Annotation(fs).Value);
+        }
+        else
+        {
+            rule.Allomorphs[0]
+                .Rhs.Add(new InsertSimpleContext(new NaturalClass(fs), System.Array.Empty<SymbolicFeatureValue>()));
+        }
+        var summary = new RequiredSlotMaterial(TemplateOf(Slot(false, rule)));
+        var walk = SlotWalk.Start();
+        long unifications = 0;
+        Assert.That(summary.IsPure(0), Is.False);
+        Assert.That(summary.CannotUnapply(0, Input("sag").Shape, ref walk, ref unifications), Is.False);
     }
 
     [TestCase(1)]

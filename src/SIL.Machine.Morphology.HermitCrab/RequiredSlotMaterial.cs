@@ -65,7 +65,7 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// first can leave them.
     /// </summary>
     /// <remarks>
-    /// The tables are built once from the template and depend only on the grammar.
+    /// The tables are built once from the template's slots, rules, and allomorphs.
     ///
     /// Presence. The analysis pattern of an allomorph holds one top-level constraint per inserted segment, in the
     /// order of the right-hand side (<see cref="InsertSegments.GenerateAnalysisLhs"/>,
@@ -82,6 +82,9 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// after j is pure. Optional nodes count as present because the matcher can match them. Anything that cannot
     /// be summarised (a null affix, a constraint with variables that is then matched by any segment, an unknown
     /// rule type) can only weaken the test.
+    ///
+    /// The edge checks rely on the matchers in <see cref="AnalysisAffixProcessRule"/> and
+    /// <see cref="AnalysisRealizationalAffixProcessRule"/> being anchored and filtering to segments.
     ///
     /// Order. A pure rule is ordered when it copies each part at most once and in left-hand order, so the shape
     /// it unapplies to is a subsequence of the shape it was given. An ordered rule whose inserts all come before
@@ -175,8 +178,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             return false;
         }
 
-        // The ordinals are those of the shape, margins excluded. A node is counted against the reach only when it
-        // cannot be skipped, because the matcher may skip an optional node.
+        // AnalysisAffixProcessRule and AnalysisRealizationalAffixProcessRule use an edge-anchored,
+        // segment-only matcher. Optional nodes do not count against reach because the matcher may skip them.
         private static bool Embeds(
             AllomorphSummary allomorph,
             Shape shape,
@@ -310,6 +313,19 @@ namespace SIL.Machine.Morphology.HermitCrab
 
                 foreach (AffixProcessAllomorph allomorph in ruleAllomorphs)
                 {
+                    if (
+                        allomorph.Lhs.Any(HasUntypedConstraint)
+                        || allomorph.Rhs.Where(IsInsertion).SelectMany(InsertedConstraints).Any(HasNoType)
+                    )
+                    {
+                        summary.MayAlwaysUnapply = true;
+                        summary.IsPure = false;
+                        summary.IsOrdered = false;
+                        summary.ReachLeft = SlotWalk.Unbounded;
+                        summary.ReachRight = SlotWalk.Unbounded;
+                        continue;
+                    }
+
                     bool pure = IsPure(allomorph);
                     if (!pure)
                         summary.IsPure = false;
@@ -370,7 +386,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     sequence.Add(copy);
                 }
                 int added = sequence.Count - before;
-                if (first < 0 || (i > first && i < last))
+                if (added > 0 && (first < 0 || (i > first && i < last)))
                     infix = true;
                 else if (i < first)
                     pre += added;
@@ -428,8 +444,6 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             foreach (Pattern<Word, ShapeNode> part in allomorph.Lhs)
             {
-                if (!HasSegmentConstraint(part))
-                    continue;
                 if (RestoredSegments(part) == 0)
                     continue;
                 if (!copied.Contains(part.Name) || MinSegments(part) == 0)
@@ -456,11 +470,15 @@ namespace SIL.Machine.Morphology.HermitCrab
             return true;
         }
 
-        private static bool HasSegmentConstraint(PatternNode<Word, ShapeNode> node)
+        private static bool HasNoType(FeatureStruct fs)
         {
-            if (node is Constraint<Word, ShapeNode> constraint)
-                return constraint.Type() == HCFeatureSystem.Segment;
-            return node.Children.Any(HasSegmentConstraint);
+            return !fs.TryGetValue(HCFeatureSystem.Type, out SymbolicFeatureValue _);
+        }
+
+        private static bool HasUntypedConstraint(PatternNode<Word, ShapeNode> node)
+        {
+            return (node is Constraint<Word, ShapeNode> constraint && HasNoType(constraint.FeatureStruct))
+                || node.Children.Any(HasUntypedConstraint);
         }
 
         // The segment nodes that AnalysisMorphologicalTransform.Untruncate writes for a part that was not

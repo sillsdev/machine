@@ -226,6 +226,71 @@ public class AnalysisAffixTemplateOrderTests : HermitCrabTestBase
     }
 
     [Test]
+    public void Apply_InnerMaterialOnlyInsideTheOuterSuffix_PrunesAtEntry()
+    {
+        AffixTemplate template = TemplateOf(Slot(false, Infix("ak")), Slot(false, Suffix("ka")));
+        (WalkResult off, WalkResult on) = WalkBoth(template, "gaka");
+        Assert.That(off.RuleAttempts, Is.GreaterThan(0));
+        Assert.That(on.RuleAttempts, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void Apply_BoundaryOnlyInfix_DoesNotMakeReachUnbounded()
+    {
+        var outer = RuleOf(
+            "boundary",
+            new[] { OneSegment("1"), Part("2") },
+            new CopyFromInput("1"),
+            new InsertSegments(Table3, "+"),
+            new CopyFromInput("2")
+        );
+        AffixTemplate template = TemplateOf(Slot(false, Suffix("ti")), Slot(true, outer));
+        (WalkResult off, WalkResult on) = WalkBoth(template, "sagtig");
+        Assert.That(off.RuleAttempts, Is.GreaterThan(0));
+        Assert.That(on.RuleAttempts, Is.EqualTo(0));
+    }
+
+    [TestCase(1)]
+    [TestCase(0)]
+    public void Apply_DeletedOptionalSegmentBeforePrefix_DoesNotCountAgainstReach(int parallelism)
+    {
+        var deletion = RuleOf(
+            "delete",
+            new[] { Pattern<Word, ShapeNode>.New("1").Annotation(Any).Optional.Value, Part("2") },
+            new CopyFromInput("2")
+        );
+        var morpher = new Morpher(TraceManager, Language, parallelism);
+        var input = new Word(Morphophonemic, Morphophonemic.CharacterDefinitionTable.Segment("kasag"));
+        input.Freeze();
+        Word restored = deletion.CompileAnalysisRule(morpher).Apply(input).Single();
+        Assert.That(restored.Shape.First(n => n.Type() == HCFeatureSystem.Segment).Annotation.Optional, Is.True);
+        var template = TemplateOf(Slot(false, Prefix("ka")));
+        var parses = new List<string[]>();
+        foreach (
+            RequiredSlotLookaheadMode mode in new[]
+            {
+                RequiredSlotLookaheadMode.Off,
+                RequiredSlotLookaheadMode.On,
+                RequiredSlotLookaheadMode.Shadow,
+            }
+        )
+        {
+            morpher.RequiredSlotLookahead = mode;
+            parses.Add(
+                template
+                    .CompileAnalysisRule(morpher)
+                    .Apply(restored)
+                    .Select(w => w.ToString())
+                    .OrderBy(x => x, System.StringComparer.Ordinal)
+                    .ToArray()
+            );
+        }
+        Assert.That(parses[0], Is.Not.Empty);
+        Assert.That(parses[1], Is.EqualTo(parses[0]));
+        Assert.That(parses[2], Is.EqualTo(parses[0]));
+    }
+
+    [Test]
     public void Apply_InnerMaterialAfterTheOuterPrefix_IsNotPruned()
     {
         // "sag" with the infix ak is "sakag", and ka- in front gives "kasakag"
