@@ -43,7 +43,7 @@ public sealed class InterfaceInventoryLedgerTests
         // The cross-table segment fixtures make Segments.characterDefinitionTable present.
         Assert.That(present, Is.EqualTo(45));
         Assert.That(rows.Count - present, Is.EqualTo(15));
-        Assert.That(typedEdges, Is.EqualTo(52));
+        Assert.That(typedEdges, Is.EqualTo(54));
         Assert.That(junctions, Has.Count.EqualTo(3));
         Assert.That(
             junctions.Select(j => j.TargetType),

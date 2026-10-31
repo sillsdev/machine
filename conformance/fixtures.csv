@@ -1,4 +1,9 @@
 directory,category,grammar_name,exercises
+edge-cases/adhoc-prohibition-affix-environment-copies,edge-cases,AdhocProhibitionAffixEnvironmentCopies,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+edge-cases/adhoc-prohibition-affix-msa-copies,edge-cases,AdhocProhibitionAffixMsaCopies,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+edge-cases/adhoc-prohibition-circumfix-pairings,edge-cases,AdhocProhibitionCircumfixPairings,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+edge-cases/adhoc-prohibition-stem-msa-copies,edge-cases,AdhocProhibitionStemMsaCopies,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+edge-cases/adhoc-prohibition-variant-msa-copies,edge-cases,AdhocProhibitionVariantMsaCopies,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
 edge-cases/bistratal-overlapping-segment-representation,edge-cases,BistratalOverlappingSegmentRepresentation,"CharacterDefinitionTable: more than one table, one per stratum"
 edge-cases/boundary-first-in-narrowing-lhs,edge-cases,BoundaryFirstInNarrowingLhs,Boundary markers (CharacterDefinitionTable);RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 edge-cases/boundary-first-in-narrowing-lhs-strrep,edge-cases,BoundaryFirstInNarrowingLhsStrrep,Boundary markers (CharacterDefinitionTable);RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)

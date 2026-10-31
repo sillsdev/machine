@@ -1,0 +1,21 @@
+version: 1
+base_sha256: d886d3942d98276394fb943fe99a79aa8cd8040317962ad4c799b2dde120635f
+cases:
+  - id: empty-phoneme-inventory
+    operations:
+      - remove_all_phonemes:
+          require_unreferenced: true
+    expect:
+      xample_projection: same_as_base
+      hc_analyses: same_as_base
+      inferred_segments: [t, a, d, b, g]
+  - id: remove-t-only
+    operations:
+      - remove_phoneme:
+          guid: 642fff7b-b0d2-42a4-9d37-dc88dd40113c
+          assert_representations: [t]
+          require_unreferenced: true
+    expect:
+      xample_projection: same_as_base
+      hc_analyses: same_as_base
+      inferred_segments: [t]

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>AdhocProhibitionAffixMsaCopies</Name>
+    <!--
+      Ad hoc allomorph prohibition on a PREFIX entry with two affix MSAs and MergeMSAs off. In
+      FieldWorks one prefix entry whose one allomorph carries two MoInflAffMsas (both Verb, both in
+      the Verb template's prefix slot; with MergeMSAs on, equal MSAs merge into one rule) loads as two
+      HC morphological rules with one allomorph copy each, and HCLoader.LoadAllomorphCoOccurrenceRules
+      attaches the prohibition to EVERY copy (HCLoader.cs:2163-2189); the grammar below is that
+      per-copy form. da/ba are Verb stems, ga is a control with no prohibition.
+      Direction 1, prefix first: each copy of the ta- allomorph excludes da.
+      Direction 2, stem first: ba excludes each copy of the ta- allomorph (rest side, one rule per copy).
+      tada and taba must therefore have no analysis, whichever copy of the prefix would apply;
+      taga parses twice, once per prefix MSA copy.
+    -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="t1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cG"><Representations><Representation>g</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrTa1" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>mrTa1</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subTa1">
+                <MorphologicalInput><PhoneticSequence id="stem_subTa1"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>ta</PhoneticShape></InsertSegments><CopyFromInput index="stem_subTa1" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>TA1</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrTa2" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>mrTa2</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subTa2">
+                <MorphologicalInput><PhoneticSequence id="stem_subTa2"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>ta</PhoneticShape></InsertSegments><CopyFromInput index="stem_subTa2" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>TA2</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posV">
+            <Name>verbTemplate</Name>
+            <Slot optional="true" morphologicalRules="mrTa1 mrTa2">
+              <Name>prefixSlot</Name>
+            </Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eDa" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aDa"><PhoneticShape>da</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DA</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eBa" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aBa"><PhoneticShape>ba</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>BA</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eGa" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aGa"><PhoneticShape>ga</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>GA</MorphemeId>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+    <AllomorphCoOccurrenceRules>
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="subTa1" otherAllomorphs="aDa" adjacency="anywhere" />
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="subTa2" otherAllomorphs="aDa" adjacency="anywhere" />
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="aBa" otherAllomorphs="subTa1" adjacency="anywhere" />
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="aBa" otherAllomorphs="subTa2" adjacency="anywhere" />
+    </AllomorphCoOccurrenceRules>
+  </Language>
+</HermitCrabInput>

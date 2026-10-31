@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>AdhocProhibitionVariantMsaCopies</Name>
+    <!--
+      Ad hoc MORPHEME prohibition on the Verb MSA of a stem entry that has a variant entry. In
+      FieldWorks the stem da has two MoStemMsas (Verb first, Noun second) and a variant entry di
+      (no senses, no MSAs, one variant LexEntryRef whose component is da). HCLoader loads di once per
+      main MSA under the MAIN entry's MSA (LoadLexEntryOfVariant, AddEntry into m_morphemes[msa],
+      HCLoader.cs:728-735, 782-852), so the one prohibition on the main Verb MSA reaches the main
+      Verb copy AND the variant Verb copy (LoadMorphemeCoOccurrenceRules, HCLoader.cs:2262-2290);
+      the grammar below is that per-copy form. ba/bi is the mirror direction and ga/gi is a control
+      with no prohibition. ta- is a Verb-only prefix.
+      Direction 1, stem first: eDaV and eDiV each exclude the prefix.
+      Direction 2, prefix first: the prefix excludes eBaV and, separately, eBiV (one rule per
+      cross-product choice on the rest side).
+      tada, tadi, taba and tabi must have no analysis; taga and tagi parse once each.
+    -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
+      <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="t1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cG"><Representations><Representation>g</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrTa" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>mrTa</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subTa">
+                <MorphologicalInput><PhoneticSequence id="stem_subTa"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>ta</PhoneticShape></InsertSegments><CopyFromInput index="stem_subTa" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>TA</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posV">
+            <Name>verbTemplate</Name>
+            <Slot optional="true" morphologicalRules="mrTa">
+              <Name>prefixSlot</Name>
+            </Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eDaV" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aDaV"><PhoneticShape>da</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DAV</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eDaN" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aDaN"><PhoneticShape>da</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DAN</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eBaV" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aBaV"><PhoneticShape>ba</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>BAV</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eBaN" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aBaN"><PhoneticShape>ba</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>BAN</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eGaV" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aGaV"><PhoneticShape>ga</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>GAV</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eGaN" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aGaN"><PhoneticShape>ga</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>GAN</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eDiV" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aDiV"><PhoneticShape>di</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DAV</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eDiN" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aDiN"><PhoneticShape>di</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DAN</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eBiV" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aBiV"><PhoneticShape>bi</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>BAV</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eBiN" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aBiN"><PhoneticShape>bi</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>BAN</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eGiV" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aGiV"><PhoneticShape>gi</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>GAV</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eGiN" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aGiN"><PhoneticShape>gi</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>GAN</MorphemeId>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+    <MorphemeCoOccurrenceRules>
+      <MorphemeCoOccurrenceRule type="exclude" primaryMorpheme="eDaV" otherMorphemes="mrTa" adjacency="anywhere" />
+      <MorphemeCoOccurrenceRule type="exclude" primaryMorpheme="eDiV" otherMorphemes="mrTa" adjacency="anywhere" />
+      <MorphemeCoOccurrenceRule type="exclude" primaryMorpheme="mrTa" otherMorphemes="eBaV" adjacency="anywhere" />
+      <MorphemeCoOccurrenceRule type="exclude" primaryMorpheme="mrTa" otherMorphemes="eBiV" adjacency="anywhere" />
+    </MorphemeCoOccurrenceRules>
+  </Language>
+</HermitCrabInput>

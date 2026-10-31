@@ -1,0 +1,55 @@
+# oracle-provenance: founding-oracle machine-commit=aab4c59819adb7b366915e09df2fb28c62b8c03a verified-date=2026-10-31
+# Replayed on hc.dll at Machine aab4c598 (see README.md): the rows below are the oracle's own output.
+# Synthetic; no real language. The grammar is the per-copy form HCLoader emits for a prefix entry whose
+# one allomorph carries two MoInflAffMsas (MergeMSAs off, so equal MSAs stay separate): two
+# morphological rules, one allomorph copy each, and one AllomorphCoOccurrenceRule per copy on both
+# sides (HCLoader.LoadAllomorphCoOccurrenceRules, HCLoader.cs:2163-2189). A loader that keeps one
+# allomorph per allomorph identity wires the prohibition to one prefix copy only and still parses
+# tada/taba through the other.
+language: AdhocProhibitionAffixMsaCopies
+inspired_by: ["a prefix entry with two equal affix MSAs (MergeMSAs off) compiles to two morphological rules; an ad hoc allomorph prohibition names the one prefix allomorph, and HCLoader attaches it to every copy"]
+sources: ["HCLoader.cs:2163-2189 (LoadAllomorphCoOccurrenceRules)"]
+requires: []
+fieldworks_producible: true
+words:
+  - word: da
+    note: >-
+      Control: bare stem da parses.
+    parses:
+      - signature: "DA|da"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: ba
+    note: >-
+      Control: bare stem ba parses.
+    parses:
+      - signature: "BA|ba"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: ga
+    note: >-
+      Control: bare stem ga parses.
+    parses:
+      - signature: "GA|ga"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: taga
+    note: >-
+      Control: ga has no prohibition, so the prefix attaches once per prefix MSA copy.
+    parses:
+      - signature: "TA1+GA|taga"
+        rules: [mrTa1]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+      - signature: "TA2+GA|taga"
+        rules: [mrTa2]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: tada
+    note: >-
+      Prefix first: the prohibition ta- ~ da is declared on each prefix copy. Both candidates (copy 1 + da, copy 2 + da) are excluded, so the word has no analysis.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: taba
+    note: >-
+      Stem first: the prohibition ba ~ ta- is declared on ba once per prefix copy on the rest side. Both candidates are excluded, so the word has no analysis.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]

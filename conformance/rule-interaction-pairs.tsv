@@ -7,6 +7,11 @@
 # or cross-stratum. domain_relation is only ever Disjoint/Overlaps for a PhonologicalRule pair;
 # every other unit-kind combination is Undetermined by construction.
 fixture	stratum_a	stratum_b	pair_kind	unit_a_kind	unit_a	unit_b_kind	unit_b	domain_relation
+edge-cases/adhoc-prohibition-affix-environment-copies	Main	Main	SameStage	AffixTemplate	verbTemplate	AffixTemplate	verbTemplate	Undetermined
+edge-cases/adhoc-prohibition-affix-msa-copies	Main	Main	SameStage	AffixTemplate	verbTemplate	AffixTemplate	verbTemplate	Undetermined
+edge-cases/adhoc-prohibition-circumfix-pairings	Main	Main	SameStage	AffixTemplate	verbTemplate	AffixTemplate	verbTemplate	Undetermined
+edge-cases/adhoc-prohibition-stem-msa-copies	Main	Main	SameStage	AffixTemplate	verbTemplate	AffixTemplate	verbTemplate	Undetermined
+edge-cases/adhoc-prohibition-variant-msa-copies	Main	Main	SameStage	AffixTemplate	verbTemplate	AffixTemplate	verbTemplate	Undetermined
 edge-cases/alpha-variable-name-collision	Main	Main	SameStage	PhonologicalRule	prDoubleAlpha	PhonologicalRule	prDoubleAlpha	Overlaps
 edge-cases/ambiguous-disagree-feature-class-bounded-rtl	Main	Main	SameStage	PhonologicalRule	prDoubleAlpha	PhonologicalRule	prDoubleAlpha	Overlaps
 edge-cases/ambiguous-disagree-feature-class-unbounded-ltr	Main	Main	SameStage	PhonologicalRule	prDoubleAlpha	PhonologicalRule	prDoubleAlpha	Overlaps

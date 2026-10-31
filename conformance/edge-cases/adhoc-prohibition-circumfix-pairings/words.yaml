@@ -1,0 +1,105 @@
+# oracle-provenance: founding-oracle machine-commit=aab4c59819adb7b366915e09df2fb28c62b8c03a verified-date=2026-10-30
+# Replayed on hc.dll at Machine aab4c598 (see README.md): the rows below are the oracle's own output.
+# Synthetic; no real language.
+# The grammar is the per-pairing form HCLoader emits for a circumfix entry (prefix halves ta/to x suffix halves
+# ka/ki = four subrules, HCLoader.cs:1097-1122). All four pairings are registered under the circumfix lexeme
+# form in m_allomorphs, so a prohibition naming that lexeme form is attached to every pairing, on both sides
+# (HCLoader.cs:2212-2236). A loader that kept one allomorph per allomorph identity would still parse tadaka/
+# tabaka etc. through the pairings the rule did not reach. A prohibition naming only one half is not a key of
+# m_allomorphs, so HCLoader emits no rule for it: the FieldWorks witness carries such prohibitions on ga (both
+# directions) and the words on ga below still parse.
+language: AdhocProhibitionCircumfixPairings
+inspired_by: ["a circumfix entry with two prefix halves and two suffix halves compiles to four pairing subrules; an ad hoc allomorph prohibition naming the circumfix lexeme form is attached to every pairing; one naming a single half resolves to nothing"]
+sources: ["HCLoader.cs:1097-1122 (LoadAffixProcessAllomorphs, circumfix branch)", "HCLoader.cs:2212-2236 (LoadAllomorphCoOccurrenceRules)"]
+requires: []
+fieldworks_producible: true
+words:
+  - word: da
+    note: >-
+      Control: bare stem da parses.
+    parses:
+      - signature: "DA|da"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: ba
+    note: >-
+      Control: bare stem ba parses.
+    parses:
+      - signature: "BA|ba"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: ga
+    note: >-
+      Control: bare stem ga parses.
+    parses:
+      - signature: "GA|ga"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: tagaka
+    note: >-
+      Half-only control: ga carries FieldWorks prohibitions that name only the prefix half ta (in both directions); HCLoader resolves them to no rule, so every pairing parses on ga (this one is ta-...-ka).
+    parses:
+      - signature: "CIRC+GA|tagaka"
+        rules: [mrCirc]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: tagaki
+    note: >-
+      Half-only control: ga carries FieldWorks prohibitions that name only the prefix half ta (in both directions); HCLoader resolves them to no rule, so every pairing parses on ga (this one is ta-...-ki).
+    parses:
+      - signature: "CIRC+GA|tagaki"
+        rules: [mrCirc]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: togaka
+    note: >-
+      Half-only control: ga carries FieldWorks prohibitions that name only the prefix half ta (in both directions); HCLoader resolves them to no rule, so every pairing parses on ga (this one is to-...-ka).
+    parses:
+      - signature: "CIRC+GA|togaka"
+        rules: [mrCirc]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: togaki
+    note: >-
+      Half-only control: ga carries FieldWorks prohibitions that name only the prefix half ta (in both directions); HCLoader resolves them to no rule, so every pairing parses on ga (this one is to-...-ki).
+    parses:
+      - signature: "CIRC+GA|togaki"
+        rules: [mrCirc]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: tadaka
+    note: >-
+      Circumfix first: the prohibition names the circumfix lexeme form, attached to the ta-...-ka pairing and to the other three; no pairing may combine with da.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: tadaki
+    note: >-
+      Circumfix first: the prohibition names the circumfix lexeme form, attached to the ta-...-ki pairing and to the other three; no pairing may combine with da.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: todaka
+    note: >-
+      Circumfix first: the prohibition names the circumfix lexeme form, attached to the to-...-ka pairing and to the other three; no pairing may combine with da.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: todaki
+    note: >-
+      Circumfix first: the prohibition names the circumfix lexeme form, attached to the to-...-ki pairing and to the other three; no pairing may combine with da.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: tabaka
+    note: >-
+      Stem first: ba excludes the circumfix lexeme form, one rule per pairing, so the ta-...-ka pairing (like the other three) never combines with ba.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: tabaki
+    note: >-
+      Stem first: ba excludes the circumfix lexeme form, one rule per pairing, so the ta-...-ki pairing (like the other three) never combines with ba.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: tobaka
+    note: >-
+      Stem first: ba excludes the circumfix lexeme form, one rule per pairing, so the to-...-ka pairing (like the other three) never combines with ba.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: tobaki
+    note: >-
+      Stem first: ba excludes the circumfix lexeme form, one rule per pairing, so the to-...-ki pairing (like the other three) never combines with ba.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]

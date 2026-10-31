@@ -8,6 +8,62 @@
 # but 'witnessed' always means the same thing: a word-level counterfactual delta, never
 # mere presence. detail carries the underlying verdict/claim-count for that reason.
 fixture	layer	obligation	status	detail
+edge-cases/adhoc-prohibition-affix-environment-copies	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-affix-environment-copies	Interface	AllomorphCoOccurrenceRule.otherAllomorphs	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Interface	AllomorphCoOccurrenceRule.primaryAllomorph	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-affix-environment-copies	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-affix-environment-copies	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-affix-environment-copies	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Construct	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	claimed-confirmed	7 claim(s)
+edge-cases/adhoc-prohibition-affix-msa-copies	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-affix-msa-copies	Interface	AllomorphCoOccurrenceRule.otherAllomorphs	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-msa-copies	Interface	AllomorphCoOccurrenceRule.primaryAllomorph	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-msa-copies	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-msa-copies	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-affix-msa-copies	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-affix-msa-copies	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-affix-msa-copies	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-msa-copies	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-msa-copies	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-msa-copies	Construct	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	claimed-confirmed	7 claim(s)
+edge-cases/adhoc-prohibition-circumfix-pairings	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-circumfix-pairings	Interface	AllomorphCoOccurrenceRule.otherAllomorphs	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-circumfix-pairings	Interface	AllomorphCoOccurrenceRule.primaryAllomorph	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-circumfix-pairings	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-circumfix-pairings	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-circumfix-pairings	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-circumfix-pairings	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-circumfix-pairings	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-circumfix-pairings	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-circumfix-pairings	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-circumfix-pairings	Construct	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	claimed-confirmed	15 claim(s)
+edge-cases/adhoc-prohibition-stem-msa-copies	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-stem-msa-copies	Interface	AllomorphCoOccurrenceRule.otherAllomorphs	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-stem-msa-copies	Interface	AllomorphCoOccurrenceRule.primaryAllomorph	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-stem-msa-copies	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-stem-msa-copies	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
+edge-cases/adhoc-prohibition-stem-msa-copies	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-stem-msa-copies	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-stem-msa-copies	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-stem-msa-copies	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-stem-msa-copies	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-stem-msa-copies	Construct	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	claimed-confirmed	9 claim(s)
+edge-cases/adhoc-prohibition-variant-msa-copies	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-variant-msa-copies	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-variant-msa-copies	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
+edge-cases/adhoc-prohibition-variant-msa-copies	Interface	MorphemeCoOccurrenceRule.otherMorphemes	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-variant-msa-copies	Interface	MorphemeCoOccurrenceRule.primaryMorpheme	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-variant-msa-copies	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-variant-msa-copies	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/adhoc-prohibition-variant-msa-copies	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-variant-msa-copies	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-variant-msa-copies	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-variant-msa-copies	Construct	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	claimed-confirmed	18 claim(s)
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/Allomorph	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/Allomorphs	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/AlphaVariable	required-by-dtd	RequiredByDtd

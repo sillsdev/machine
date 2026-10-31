@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>AdhocProhibitionCircumfixPairings</Name>
+    <!--
+      Ad hoc allomorph prohibition naming a CIRCUMFIX lexeme form. In FieldWorks a circumfix entry has a
+      circumfix-type lexeme form plus prefix and suffix alternate forms; HCLoader loads one AffixProcess
+      allomorph for every prefix half x suffix half pairing (HCLoader.LoadAffixProcessAllomorphs,
+      HCLoader.cs:1097-1122) and registers every one of them under entry.LexemeFormOA in m_allomorphs, so
+      a prohibition naming the circumfix lexeme form is attached to EVERY pairing
+      (HCLoader.LoadAllomorphCoOccurrenceRules, HCLoader.cs:2212-2236). The grammar below is that per-pairing
+      form: prefix halves ta/to x suffix halves ka/ki = four subrules.
+      da/ba are Verb stems carrying the prohibition, ga is a control.
+      Direction 1, circumfix first: every pairing excludes da.
+      Direction 2, stem first: ba excludes every pairing (one rule per pairing).
+      A prohibition naming only ONE half (a prefix or suffix alternate form) is not a key of m_allomorphs, so
+      HCLoader emits no rule for it: in the FieldWorks witness ga carries such prohibitions in both
+      directions (prefix half ta ~ ga, ga ~ prefix half ta) and this grammar, as emitted, has no rule for
+      them. All four circumfix words on ga must still parse.
+    -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="t1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cG"><Representations><Representation>g</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrCirc" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>mrCirc</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subTaKa">
+                <MorphologicalInput><PhoneticSequence id="stem_subTaKa"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>ta</PhoneticShape></InsertSegments><CopyFromInput index="stem_subTaKa" /><InsertSegments><PhoneticShape>ka</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="subTaKi">
+                <MorphologicalInput><PhoneticSequence id="stem_subTaKi"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>ta</PhoneticShape></InsertSegments><CopyFromInput index="stem_subTaKi" /><InsertSegments><PhoneticShape>ki</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="subToKa">
+                <MorphologicalInput><PhoneticSequence id="stem_subToKa"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>to</PhoneticShape></InsertSegments><CopyFromInput index="stem_subToKa" /><InsertSegments><PhoneticShape>ka</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="subToKi">
+                <MorphologicalInput><PhoneticSequence id="stem_subToKi"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>to</PhoneticShape></InsertSegments><CopyFromInput index="stem_subToKi" /><InsertSegments><PhoneticShape>ki</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>CIRC</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posV">
+            <Name>verbTemplate</Name>
+            <Slot optional="true" morphologicalRules="mrCirc">
+              <Name>circSlot</Name>
+            </Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eDa" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aDa"><PhoneticShape>da</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DA</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eBa" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aBa"><PhoneticShape>ba</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>BA</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eGa" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aGa"><PhoneticShape>ga</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>GA</MorphemeId>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+    <AllomorphCoOccurrenceRules>
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="subTaKa" otherAllomorphs="aDa" adjacency="anywhere" />
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="subTaKi" otherAllomorphs="aDa" adjacency="anywhere" />
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="subToKa" otherAllomorphs="aDa" adjacency="anywhere" />
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="subToKi" otherAllomorphs="aDa" adjacency="anywhere" />
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="aBa" otherAllomorphs="subTaKa" adjacency="anywhere" />
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="aBa" otherAllomorphs="subTaKi" adjacency="anywhere" />
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="aBa" otherAllomorphs="subToKa" adjacency="anywhere" />
+      <AllomorphCoOccurrenceRule type="exclude" primaryAllomorph="aBa" otherAllomorphs="subToKi" adjacency="anywhere" />
+    </AllomorphCoOccurrenceRules>
+  </Language>
+</HermitCrabInput>
