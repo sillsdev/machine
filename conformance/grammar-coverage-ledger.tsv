@@ -8,6 +8,45 @@
 # but 'witnessed' always means the same thing: a word-level counterfactual delta, never
 # mere presence. detail carries the underlying verdict/claim-count for that reason.
 fixture	layer	obligation	status	detail
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/AffixTemplate	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/AffixTemplates	witnessed	Evidenced
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/Allomorph	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/AllomorphCoOccurrenceRule	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/AllomorphCoOccurrenceRules	witnessed	Evidenced
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/Allomorphs	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/CharacterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/CopyFromInput	witnessed	Evidenced
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/FeatureNaturalClass	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/HermitCrabInput	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/InsertSegments	witnessed	Evidenced
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/Language	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/LexicalEntry	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/MorphemeId	witnessed	Evidenced
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/MorphologicalInput	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/MorphologicalOutput	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/MorphologicalRule	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/MorphologicalRuleDefinitions	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/MorphologicalSubrule	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/MorphologicalSubrules	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/Name	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/NaturalClasses	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/OptionalSegmentSequence	witnessed	Evidenced
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/PartOfSpeech	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/PartsOfSpeech	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/PhoneticShape	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/PhoneticTemplate	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/Representation	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/Representations	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/RequiredEnvironments	witnessed	Evidenced
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/SegmentDefinition	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/SegmentDefinitions	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/SegmentNaturalClass	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/Slot	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/Strata	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:element/Stratum	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:enum/AllomorphCoOccurrenceRule/adjacency/anywhere	witnessed	Evidenced
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:enum/AllomorphCoOccurrenceRule/type/exclude	witnessed	Evidenced
+edge-cases/adhoc-prohibition-affix-environment-copies	Surface	dtd:enum/Slot/optional/true	witnessed	Evidenced
 edge-cases/adhoc-prohibition-affix-environment-copies	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/adhoc-prohibition-affix-environment-copies	Interface	AllomorphCoOccurrenceRule.otherAllomorphs	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-affix-environment-copies	Interface	AllomorphCoOccurrenceRule.primaryAllomorph	required-by-dtd	RequiredByDtd
@@ -53,6 +92,10 @@ edge-cases/adhoc-prohibition-stem-msa-copies	Interface	SimpleContext.naturalClas
 edge-cases/adhoc-prohibition-stem-msa-copies	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-stem-msa-copies	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-stem-msa-copies	Construct	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	claimed-confirmed	9 claim(s)
+edge-cases/adhoc-prohibition-variant-msa-copies	Surface	dtd:element/MorphemeCoOccurrenceRule	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-variant-msa-copies	Surface	dtd:element/MorphemeCoOccurrenceRules	witnessed	Evidenced
+edge-cases/adhoc-prohibition-variant-msa-copies	Surface	dtd:enum/MorphemeCoOccurrenceRule/adjacency/anywhere	witnessed	Evidenced
+edge-cases/adhoc-prohibition-variant-msa-copies	Surface	dtd:enum/MorphemeCoOccurrenceRule/type/exclude	witnessed	Evidenced
 edge-cases/adhoc-prohibition-variant-msa-copies	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/adhoc-prohibition-variant-msa-copies	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-variant-msa-copies	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
@@ -64,38 +107,19 @@ edge-cases/adhoc-prohibition-variant-msa-copies	Interface	SimpleContext.naturalC
 edge-cases/adhoc-prohibition-variant-msa-copies	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-variant-msa-copies	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-variant-msa-copies	Construct	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	claimed-confirmed	18 claim(s)
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/Allomorph	required-by-dtd	RequiredByDtd
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/Allomorphs	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/AlphaVariable	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/AlphaVariables	witnessed	Evidenced
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/CharacterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/FeatureValue	witnessed	Evidenced
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/HermitCrabInput	required-by-dtd	RequiredByDtd
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/Language	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/LexicalEntries	witnessed	Evidenced
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/LexicalEntry	required-by-dtd	RequiredByDtd
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/MorphemeId	witnessed	Evidenced
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/Name	required-by-dtd	RequiredByDtd
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/NaturalClasses	required-by-dtd	RequiredByDtd
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/PartOfSpeech	required-by-dtd	RequiredByDtd
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/PartsOfSpeech	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/PhoneticInput	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/PhoneticOutput	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/PhoneticSequence	witnessed	Evidenced
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/PhoneticShape	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/PhonologicalFeatureSystem	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/PhonologicalRule	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/PhonologicalRuleDefinitions	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/PhonologicalSubrule	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/PhonologicalSubrules	required-by-dtd	RequiredByDtd
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/Representation	required-by-dtd	RequiredByDtd
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/Representations	required-by-dtd	RequiredByDtd
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/SegmentDefinition	required-by-dtd	RequiredByDtd
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/SegmentDefinitions	required-by-dtd	RequiredByDtd
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/SegmentNaturalClass	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/SimpleContext	witnessed	Evidenced
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/Strata	required-by-dtd	RequiredByDtd
-edge-cases/alpha-variable-name-collision	Surface	dtd:element/Stratum	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/Symbol	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/SymbolicFeature	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Surface	dtd:element/Symbols	required-by-dtd	RequiredByDtd
@@ -115,8 +139,6 @@ edge-cases/alpha-variable-name-collision	Interface	Stratum.characterDefinitionTa
 edge-cases/alpha-variable-name-collision	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/alpha-variable-name-collision	Interface	VariableFeature.phonologicalFeature	required-by-dtd	RequiredByDtd
 edge-cases/alpha-variable-name-collision	Construct	Alpha-variable phonological environments (VariableFeature/AlphaVariables)	claimed-confirmed	2 claim(s)
-edge-cases/ambiguous-disagree-feature-class-bounded-rtl	Surface	dtd:element/FeatureNaturalClass	required-by-dtd	RequiredByDtd
-edge-cases/ambiguous-disagree-feature-class-bounded-rtl	Surface	dtd:element/PhoneticTemplate	required-by-dtd	RequiredByDtd
 edge-cases/ambiguous-disagree-feature-class-bounded-rtl	Interface	AlphaVariable.variableFeature	required-by-dtd	RequiredByDtd
 edge-cases/ambiguous-disagree-feature-class-bounded-rtl	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/ambiguous-disagree-feature-class-bounded-rtl	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
@@ -146,7 +168,6 @@ edge-cases/ambiguous-disagree-mixed-plus-class	Interface	Stratum.characterDefini
 edge-cases/ambiguous-disagree-mixed-plus-class	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/ambiguous-disagree-mixed-plus-class	Interface	VariableFeature.phonologicalFeature	required-by-dtd	RequiredByDtd
 edge-cases/ambiguous-disagree-mixed-plus-class	Construct	Alpha-variable phonological environments (VariableFeature/AlphaVariables)	claimed-confirmed	1 claim(s)
-edge-cases/ambiguous-disagree-repeated-minus-partial-focus	Surface	dtd:element/OptionalSegmentSequence	witnessed	Evidenced
 edge-cases/ambiguous-disagree-repeated-minus-partial-focus	Interface	AlphaVariable.variableFeature	required-by-dtd	RequiredByDtd
 edge-cases/ambiguous-disagree-repeated-minus-partial-focus	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/ambiguous-disagree-repeated-minus-partial-focus	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
@@ -162,16 +183,8 @@ edge-cases/bistratal-overlapping-segment-representation	Construct	CharacterDefin
 edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/BoundaryDefinition	required-by-dtd	RequiredByDtd
 edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/BoundaryDefinitions	required-by-dtd	RequiredByDtd
 edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/BoundaryMarker	witnessed	Evidenced
-edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/CopyFromInput	witnessed	Evidenced
 edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/Environment	witnessed	Evidenced
-edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/InsertSegments	witnessed	Evidenced
 edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/LeftEnvironment	witnessed	Evidenced
-edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/MorphologicalInput	required-by-dtd	RequiredByDtd
-edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/MorphologicalOutput	required-by-dtd	RequiredByDtd
-edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/MorphologicalRule	required-by-dtd	RequiredByDtd
-edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/MorphologicalRuleDefinitions	required-by-dtd	RequiredByDtd
-edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/MorphologicalSubrule	required-by-dtd	RequiredByDtd
-edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/MorphologicalSubrules	required-by-dtd	RequiredByDtd
 edge-cases/boundary-first-in-narrowing-lhs	Surface	dtd:element/Segment	witnessed	Evidenced
 edge-cases/boundary-first-in-narrowing-lhs	Interface	BoundaryMarker.boundary	required-by-dtd	RequiredByDtd
 edge-cases/boundary-first-in-narrowing-lhs	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
@@ -269,10 +282,6 @@ edge-cases/circumfix-cross-product-and-infix-drop	Interface	SimpleContext.natura
 edge-cases/circumfix-cross-product-and-infix-drop	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/circumfix-cross-product-and-infix-drop	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/circumfix-cross-product-and-infix-drop	Construct	AffixProcessRule: prefix/suffix/circumfix/infix	claimed-unmapped	6 claim(s)
-edge-cases/circumfix-in-template-slot	Surface	dtd:element/AffixTemplate	required-by-dtd	RequiredByDtd
-edge-cases/circumfix-in-template-slot	Surface	dtd:element/AffixTemplates	witnessed	Evidenced
-edge-cases/circumfix-in-template-slot	Surface	dtd:element/Slot	required-by-dtd	RequiredByDtd
-edge-cases/circumfix-in-template-slot	Surface	dtd:enum/Slot/optional/true	witnessed	Evidenced
 edge-cases/circumfix-in-template-slot	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/circumfix-in-template-slot	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/circumfix-in-template-slot	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
@@ -488,7 +497,6 @@ edge-cases/deletion-reinserted-feature-unapply	Interface	SimpleContext.naturalCl
 edge-cases/deletion-reinserted-feature-unapply	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/deletion-reinserted-feature-unapply	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/deletion-reinserted-feature-unapply	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
-edge-cases/diacritic-segments	Surface	dtd:element/RequiredEnvironments	witnessed	Evidenced
 edge-cases/diacritic-segments	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/diacritic-segments	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/diacritic-segments	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
@@ -849,15 +857,10 @@ edge-cases/metathesis-comparison-crash	Interface	SimpleContext.naturalClass	requ
 edge-cases/metathesis-comparison-crash	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/metathesis-comparison-crash	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/metathesis-comparison-crash	Construct	MetathesisRule	claimed-confirmed	1 claim(s)
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:element/AllomorphCoOccurrenceRule	required-by-dtd	RequiredByDtd
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:element/AllomorphCoOccurrenceRules	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:element/MorphemeCoOccurrenceRule	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:element/MorphologicalPhonologicalRuleFeatureGroup	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/Allomorph/isBound/true	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/AllomorphCoOccurrenceRule/isActive/no	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/AllomorphCoOccurrenceRule/type/exclude	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphemeCoOccurrenceRule/isActive/no	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphemeCoOccurrenceRule/type/exclude	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphologicalRule/multipleApplication/0	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Surface	dtd:enum/MorphologicalRule/multipleApplication/2	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Interface	AffixTemplate.requiredPartsOfSpeech	witnessed	Evidenced
@@ -1688,12 +1691,9 @@ languages/prefixal-discontinuous-slot-dependency	Interface	SimpleContext.natural
 languages/prefixal-discontinuous-slot-dependency	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
 languages/prefixal-discontinuous-slot-dependency	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 languages/prefixal-discontinuous-slot-dependency	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	10 claim(s)
-languages/suffixing-evidential-adjacency-chain	Surface	dtd:element/MorphemeCoOccurrenceRules	witnessed	Evidenced
-languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/AllomorphCoOccurrenceRule/adjacency/anywhere	witnessed	Evidenced
 languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/AllomorphCoOccurrenceRule/isActive/yes	witnessed	Evidenced
 languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/MorphemeCoOccurrenceRule/adjacency/adjacentToLeft	witnessed	Evidenced
 languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/MorphemeCoOccurrenceRule/adjacency/adjacentToRight	witnessed	Evidenced
-languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/MorphemeCoOccurrenceRule/adjacency/anywhere	witnessed	Evidenced
 languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/MorphemeCoOccurrenceRule/adjacency/somewhereToLeft	witnessed	Evidenced
 languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/MorphemeCoOccurrenceRule/adjacency/somewhereToRight	witnessed	Evidenced
 languages/suffixing-evidential-adjacency-chain	Surface	dtd:enum/MorphemeCoOccurrenceRule/isActive/yes	witnessed	Evidenced
