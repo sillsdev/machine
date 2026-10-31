@@ -1,0 +1,93 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# Synthetic construct-shaped mimic -- see STAGING.md and grammar.xml's own header comment. Verified
+# against the C# founding oracle (hc.dll, via hc-conformance.exe self-check) after the grammar was
+# fixed to be loadable (PartsOfSpeech must precede PhonologicalFeatureSystem; PhonologicalSubrule
+# carries no `id` attribute in hc.dll's DTD).
+#
+# DIVERGENCE FROM HC-RUST FOUND HERE: word "y" was authored (against `pg_parse::Morpher`, after a
+# Rust-side fix to `pg_rules::stratum::synthesize_stratum_traced`) as "ROOT1|y". The founding oracle
+# instead reports "ROOT1|" (empty shape) for this word's one analysis -- hc.dll renders the surface
+# half of the signature as empty here, not "y". Per this repo's oracle hierarchy (CLAUDE.md), hc.dll
+# is ground truth: `words.yaml` now records "ROOT1|", and the Rust-side fix that produced "ROOT1|y"
+# is itself a divergence from the founding oracle -- see
+# `rust/crates/pg-parse/tests/conformance_fixtures_gate.rs` for whether HC-Rust reproduces "ROOT1|".
+
+language: TwoTableSharedRepresentationRecall
+inspired_by: ["synthetic bistratal shared-representation recall probe (not modeling any real language)"]
+sources:
+  - "docs/conformance/representative-typology-basis.md S1.2.5 (Multi-table: shared-representation-across-tables configuration)"
+  - "docs/conformance/multitable-shared-representation-design.md"
+requires: [phonology]
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  PERMANENTLY KEEP-ENGINE-ONLY, not a temporary or deferred verdict (re-examined 2026-09-16): the effect
+  itself -- one spelling resolving to different segment identities depending on the table -- has no
+  single-table analog. HCLoader builds one table from PhonemeSetsOS[0] and reuses it for every
+  stratum, and inside that table a second phoneme sharing a grapheme is dropped as DuplicateGrapheme
+  (HCLoader.cs:2686-2689); several PhCodes per phoneme run the other way (many spellings, one
+  identity). Kept because each two-table fixture pins a distinct Rust seam (see STAGING.md).
+  Declares two distinct CharacterDefinitionTables (t0 "Inner", t1 "Outer"), with the Inner and
+  Outer strata bound to different ones, and threads material from the Inner stratum's root through
+  the Outer stratum's own obligatory phonological rule. HCLoader loads exactly one
+  CharacterDefinitionTable per grammar and reuses it for every stratum it builds
+  (HCLoader.cs:204,227-233,374,2669-2742) -- the same gap behind edge-cases/cross-table-root-respelling
+  and this fixture's own sibling, edge-cases/bistratal-overlapping-segment-representation.
+words:
+  - word: y
+    note: >-
+      ROOT1, entered on the Inner stratum (table t0, whose only segment is "x"), correctly devoiced
+      by the Outer stratum's (table t1) obligatory "x -> y" phonological rule -- table t1 spells "x"
+      at a DIFFERENT raw index than table t0 does, the deliberate misalignment
+      `rust/crates/pg-foma/tests/two_table_shared_representation_recall.rs` demonstrates a table-
+      blind FST proposer would miss (pre-fix) and the cross-table representation aliasing fix
+      (`crate::replace::RepresentationAliasMap`/`SegAlphabet::render_tokens`) now correctly proposes
+      and confirms. FOUNDING-ORACLE FINDING (see this file's header): hc.dll itself renders this
+      analysis' surface half as EMPTY ("ROOT1|"), not "y" -- the Rust-side fix described below,
+      which changed HC-Rust's own rendering from "ROOT1|" to "ROOT1|y", is a divergence from the
+      founding oracle rather than a correctness improvement. Kept for the historical record: pre-fix,
+      `pg_rules::stratum::synthesize_stratum_traced` did not assign a synthesized word's own
+      `.stratum` field on stratum entry (mirroring the analysis direction's own assignment), and the
+      render-time table lookup resolved the root's OWN (Inner) stratum instead of the one its
+      material actually passed through, which also produced an empty surface half -- for the same
+      literal text as hc.dll's actual behavior, but for an unrelated, since-fixed reason.
+    provenance: "rust/crates/pg-foma/tests/two_table_shared_representation_recall.rs"
+    parses:
+      - signature: "ROOT1|"
+        rules: [prXtoY]
+        exercises:
+          - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: x
+    note: >-
+      ROOT1's own raw (undevoiced) spelling -- the phonological rule is obligatory (phonological
+      rules always apply where their context matches, no optionality), so this must never be a
+      valid surface form.
+    provenance: "rust/crates/pg-foma/tests/two_table_shared_representation_recall.rs"
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: z
+    note: >-
+      Table B's own decoy segment (deliberately declared FIRST in t1's SegmentDefinitions, so t1's
+      own "x" sits at raw index 1, not 0 -- the misalignment this fixture's whole premise depends
+      on). Unattached to any entry or rule output -- a plain negative control.
+    provenance: "rust/crates/pg-foma/tests/two_table_shared_representation_recall.rs"
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: q
+    note: >-
+      ROOT2, entered directly on the Outer stratum (table t1) -- a same-table positive control,
+      entirely unaffected by the cross-table rule, proving ordinary same-table recall is untouched
+      by the aliasing fix.
+    provenance: "rust/crates/pg-foma/tests/two_table_shared_representation_recall.rs"
+    parses:
+      - signature: "ROOT2|q"
+        rules: []
+        exercises:
+          - "CharacterDefinitionTable: more than one table, one per stratum"

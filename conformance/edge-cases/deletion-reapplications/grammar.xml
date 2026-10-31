@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Synthetic. Hiatus resolution by deletion: a high front vowel deletes after any high vowel,
+       prHiatusI   i -> 0 / [+high -cons] _
+     applied left to right, so a run of i's after u deletes completely: TUIIKI, TUIIIKI and TUIIIIKI
+     all surface as "tuki", exactly like TUKI. Analysing "tuki" re-inserts optional i's after each high
+     vowel; how many consecutive deleted i's analysis can restore depends only on
+     Morpher.DeletionReapplications (1 + DelReapps passes), which this fixture's words.yaml sets to 1.
+     TAIKI is the control: after the low vowel "a" nothing deletes. -->
+<HermitCrabInput>
+  <Language>
+    <Name>DeletionReapplications</Name>
+    <PartsOfSpeech><PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech></PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="consPlus">+cons</Symbol><Symbol id="consMinus">-cons</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featHigh"><Name>high</Name><Symbols><Symbol id="highPlus">+high</Symbol><Symbol id="highMinus">-high</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featFront"><Name>front</Name><Symbols><Symbol id="frontPlus">+front</Symbol><Symbol id="frontMinus">-front</Symbol></Symbols></SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featHigh" symbolValues="highMinus" /><FeatureValue feature="featFront" symbolValues="frontPlus" /></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations><FeatureValue feature="featCons" symbolValues="consPlus" /><FeatureValue feature="featHigh" symbolValues="highPlus" /><FeatureValue feature="featFront" symbolValues="frontMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations><FeatureValue feature="featCons" symbolValues="consMinus" /><FeatureValue feature="featHigh" symbolValues="highPlus" /><FeatureValue feature="featFront" symbolValues="frontMinus" /></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations><FeatureValue feature="featCons" symbolValues="consMinus" /><FeatureValue feature="featHigh" symbolValues="highPlus" /><FeatureValue feature="featFront" symbolValues="frontPlus" /></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations><FeatureValue feature="featCons" symbolValues="consMinus" /><FeatureValue feature="featHigh" symbolValues="highMinus" /><FeatureValue feature="featFront" symbolValues="frontMinus" /></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncHighV"><Name>highV</Name><FeatureValue feature="featCons" symbolValues="consMinus" /><FeatureValue feature="featHigh" symbolValues="highPlus" /></FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prHiatusI">
+        <Name>hiatusI</Name>
+        <PhoneticInput><PhoneticSequence><Segment segment="cI" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput />
+            <Environment>
+              <LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncHighV" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" phonologicalRules="prHiatusI">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eTuki" partOfSpeech="posN"><Allomorphs><Allomorph id="aTuki"><PhoneticShape>tuki</PhoneticShape></Allomorph></Allomorphs><MorphemeId>TUKI</MorphemeId><Gloss>tuki</Gloss></LexicalEntry>
+          <LexicalEntry id="eTuiiki" partOfSpeech="posN"><Allomorphs><Allomorph id="aTuiiki"><PhoneticShape>tuiiki</PhoneticShape></Allomorph></Allomorphs><MorphemeId>TUIIKI</MorphemeId><Gloss>tuiiki</Gloss></LexicalEntry>
+          <LexicalEntry id="eTuiiiki" partOfSpeech="posN"><Allomorphs><Allomorph id="aTuiiiki"><PhoneticShape>tuiiiki</PhoneticShape></Allomorph></Allomorphs><MorphemeId>TUIIIKI</MorphemeId><Gloss>tuiiiki</Gloss></LexicalEntry>
+          <LexicalEntry id="eTuiiiiki" partOfSpeech="posN"><Allomorphs><Allomorph id="aTuiiiiki"><PhoneticShape>tuiiiiki</PhoneticShape></Allomorph></Allomorphs><MorphemeId>TUIIIIKI</MorphemeId><Gloss>tuiiiiki</Gloss></LexicalEntry>
+          <LexicalEntry id="eTaiki" partOfSpeech="posN"><Allomorphs><Allomorph id="aTaiki"><PhoneticShape>taiki</PhoneticShape></Allomorph></Allomorphs><MorphemeId>TAIKI</MorphemeId><Gloss>taiki</Gloss></LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

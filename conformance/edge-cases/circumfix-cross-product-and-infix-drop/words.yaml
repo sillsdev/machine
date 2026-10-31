@@ -1,0 +1,92 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle machine-commit=caa4ddde8782557c6fb58cac57e4761ffcafc2a6 verified-date=2026-08-31
+# RECONCILED 2026-08-31: rust/tools/oracle-conformance.ps1's hc-conformance.exe self-check PASSED
+# against every word below (signature AND traced rules: both matched). Any older "NOT the C#
+# founding oracle" / "Oracle: pangloss" sentence elsewhere in this file's own header describes how
+# it was originally authored, not its current verification status -- superseded by the marker above.
+# Synthetic construct-shaped mimic -- see STAGING.md and grammar.xml's own header comment. Oracle:
+# pangloss (`pg_parse::Morpher`, driven directly -- see STAGING.md's "Verification" section), NOT the
+# C# founding oracle -- authored and verified against this repo's own Rust engine only. Signatures
+# below are transcribed verbatim from that run, not hand-derived.
+
+language: CircumfixCrossProductAndInfixDrop
+inspired_by: ["synthetic circumfix-cross-product and infix-with-drop probe (not modeling any real language)"]
+sources:
+  - "docs/research/circumfix-composite-precedence-census.md"
+requires: []
+fieldworks_producible: true
+words:
+  - word: batid
+    note: ROOT bare, no mrCross/mrInfixDrop applied -- a plain control.
+    parses:
+      - signature: "ROOT|batid"
+        rules: []
+
+  - word: pabatidan
+    note: ROOT + mrCross's subCrossAA (prefix pa-, suffix -an) -- cross-product cell 1 of 4.
+    provenance: "docs/research/circumfix-composite-precedence-census.md"
+    parses:
+      - signature: "CROSS+ROOT|pabatidan"
+        rules: [mrCross]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: pabatidin
+    note: ROOT + mrCross's subCrossAB (prefix pa-, suffix -in) -- cross-product cell 2 of 4.
+    provenance: "docs/research/circumfix-composite-precedence-census.md"
+    parses:
+      - signature: "CROSS+ROOT|pabatidin"
+        rules: [mrCross]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: mabatidan
+    note: >-
+      ROOT + mrCross's subCrossBA (prefix ma-, suffix -an): cross-product cell 3 of 4, declared 3rd
+      (non-first) among mrCross's 4 subrules, echoing census C1's own "declared later"
+      reachability concern.
+    provenance: "docs/research/circumfix-composite-precedence-census.md"
+    parses:
+      - signature: "CROSS+ROOT|mabatidan"
+        rules: [mrCross]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: mabatidin
+    note: >-
+      ROOT + mrCross's subCrossBB (prefix ma-, suffix -in): cross-product cell 4 of 4, declared
+      last -- a lowering that mapped 2 prefix allomorphs and 2 suffix allomorphs onto only 2+2
+      independent subrules rather than a true 2x2 product would still produce the other 3 words
+      correctly but miss this one outright.
+    provenance: "docs/research/circumfix-composite-precedence-census.md"
+    parses:
+      - signature: "CROSS+ROOT|mabatidin"
+        rules: [mrCross]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: bumat
+    note: >-
+      ROOT + mrInfixDrop's one subrule: "b" (Copy idP0) + "um" (interior insert) + "at" (Copy
+      idP1) -- idP2 ("id") is never copied, so the rule genuinely drops LHS material while
+      classifying Role::Infix (not a misclassified circumfix). The companion test file
+      (`rust/crates/pg-foma/tests/circumfix_cross_product_and_infix_drop_candidate_selection.rs`)
+      shows this surface is reachable through `build_structural_composites`; the rule is a
+      structural candidate and is excluded from pre-expansion so candidate ownership is unique.
+    provenance: "docs/research/circumfix-composite-precedence-census.md"
+    parses:
+      - signature: "ROOT+INFIXDROP|bumat"
+        rules: [mrInfixDrop]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: pidatan
+    note: >-
+      Structurally-invalid negative control: does not begin with either mrCross prefix ("pa"/
+      "ma"), so no subrule can peel it and no other analysis applies either.
+    provenance: "docs/research/circumfix-composite-precedence-census.md"
+    expect_fail: true
+    exercises:
+      - "AffixProcessRule: prefix/suffix/circumfix/infix"

@@ -1,0 +1,94 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# Signatures transcribed verbatim from the C# founding oracle (hc-conformance self-check, in-process
+# Morpher, memoization on) built from sillsdev/machine 72dbd4f9 (integrate-conformance-framework,
+# PR #480 head), 2026-10-21.
+#
+# prLabDel: [p b] -> 0 / m _, in a grammar with NO phonological feature system. Unapplying it
+# re-inserts an optional node after each m whose feature structure is the class's union,
+# {Type: Segment, StrRep: {p, b}} (SegmentNaturalClass.cs, NarrowAnalysisRewriteRuleSpec.Unapply),
+# so root lookup (RootAllomorphTrie, unification) can take p or b there, or skip it, but never k.
+# Every multi-parse word below needs the re-inserted node to stay optional AND to admit both class
+# members; amuma and umuma need it at two sites at once. The k roots (kili, umka) sit where a node
+# that matched any segment would also find them; synthesis rejects them either way, so they change
+# the work an engine does, not the parses.
+
+language: ClassDeletionReinsertionStrrep
+inspired_by: ["synthetic post-nasal labial-stop deletion (not modeling any real language)"]
+sources:
+  - "src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/NarrowAnalysisRewriteRuleSpec.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/SegmentNaturalClass.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/RootAllomorphTrie.cs"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: amili
+    note: >-
+      am+ili (no deletion), am+pili and am+bili (the labial deleted after the prefix m). The
+      re-inserted node must admit both p and b and must be skippable.
+    parses:
+      - signature: "AM+BILI|amili"
+        rules: [mrPfxAm, prLabDel]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+      - signature: "AM+ILI|amili"
+        rules: [mrPfxAm, prLabDel]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+      - signature: "AM+PILI|amili"
+        rules: [mrPfxAm, prLabDel]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+  - word: amkili
+    note: k is not a labial stop, so it survives after m.
+    parses:
+      - signature: "AM+KILI|amkili"
+        rules: [mrPfxAm]
+  - word: uma
+    note: The bare root uma, and umpa with its root-internal p deleted after m.
+    parses:
+      - signature: "UMA|uma"
+        rules: [prLabDel]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+      - signature: "UMPA|uma"
+        rules: [prLabDel]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+  - word: umka
+    note: Control; k after m is kept.
+    parses:
+      - signature: "UMKA|umka"
+        rules: []
+  - word: amuma
+    note: >-
+      Two re-insertion sites, after the prefix m and after the root m: am+uma, am+umpa (second
+      site) and am+puma (first site).
+    parses:
+      - signature: "AM+PUMA|amuma"
+        rules: [mrPfxAm, prLabDel]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+      - signature: "AM+UMA|amuma"
+        rules: [mrPfxAm, prLabDel]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+      - signature: "AM+UMPA|amuma"
+        rules: [mrPfxAm, prLabDel]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+  - word: umuma
+    note: umbumpa needs b at the first site and p at the second, in one lookup.
+    parses:
+      - signature: "UMBUMPA|umuma"
+        rules: [prLabDel]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+  - word: ampili
+    note: The rule is obligatory, so am+pili never surfaces with its p.
+    expect_fail: true
+  - word: amkuma
+    note: No root kuma, and k cannot be a deleted labial.
+    expect_fail: true

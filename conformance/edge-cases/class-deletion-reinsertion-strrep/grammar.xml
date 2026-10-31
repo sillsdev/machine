@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Synthetic. A deletion rule whose target is a SEGMENT NATURAL CLASS, in a grammar with no
+     PhonologicalFeatureSystem: a labial stop is lost after m,
+       prLabDel  [p b] -> 0 / m _
+     Unapplying it re-inserts an optional node after every m. With no features, that node is
+     {Type: Segment, StrRep: {p, b}}: it can stand only for p or b, never for k. Roots with a
+     labial after m (pili, bili, umpa, puma) and roots with k at the same place (kili, umka) sit
+     side by side, and two words (amuma, umuma) need re-inserted nodes at more than one site. -->
+<HermitCrabInput>
+  <Language>
+    <Name>ClassDeletionReinsertionStrrep</Name>
+    <PartsOfSpeech><PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech></PartsOfSpeech>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <SegmentNaturalClass id="ncAny"><Name>Any</Name><Segment segment="cP" /><Segment segment="cB" /><Segment segment="cK" /><Segment segment="cM" /><Segment segment="cL" /><Segment segment="cA" /><Segment segment="cI" /><Segment segment="cU" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncLab"><Name>labial stop</Name><Segment segment="cP" /><Segment segment="cB" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prLabDel">
+        <Name>labialStopDeletion</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncLab" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput />
+            <Environment><LeftEnvironment><PhoneticTemplate><PhoneticSequence><Segment segment="cM" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment></Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" morphologicalRules="mrPfxAm" phonologicalRules="prLabDel">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrPfxAm" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>pfxAm</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPfxAm">
+                <MorphologicalInput><PhoneticSequence id="stemAm"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>am</PhoneticShape></InsertSegments><CopyFromInput index="stemAm" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>AM</MorphemeId>
+            <Gloss>am</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eIli" partOfSpeech="posN"><Allomorphs><Allomorph id="aIli"><PhoneticShape>ili</PhoneticShape></Allomorph></Allomorphs><MorphemeId>ILI</MorphemeId><Gloss>ili</Gloss></LexicalEntry>
+          <LexicalEntry id="ePili" partOfSpeech="posN"><Allomorphs><Allomorph id="aPili"><PhoneticShape>pili</PhoneticShape></Allomorph></Allomorphs><MorphemeId>PILI</MorphemeId><Gloss>pili</Gloss></LexicalEntry>
+          <LexicalEntry id="eBili" partOfSpeech="posN"><Allomorphs><Allomorph id="aBili"><PhoneticShape>bili</PhoneticShape></Allomorph></Allomorphs><MorphemeId>BILI</MorphemeId><Gloss>bili</Gloss></LexicalEntry>
+          <LexicalEntry id="eKili" partOfSpeech="posN"><Allomorphs><Allomorph id="aKili"><PhoneticShape>kili</PhoneticShape></Allomorph></Allomorphs><MorphemeId>KILI</MorphemeId><Gloss>kili</Gloss></LexicalEntry>
+          <LexicalEntry id="eUma" partOfSpeech="posN"><Allomorphs><Allomorph id="aUma"><PhoneticShape>uma</PhoneticShape></Allomorph></Allomorphs><MorphemeId>UMA</MorphemeId><Gloss>uma</Gloss></LexicalEntry>
+          <LexicalEntry id="eUmpa" partOfSpeech="posN"><Allomorphs><Allomorph id="aUmpa"><PhoneticShape>umpa</PhoneticShape></Allomorph></Allomorphs><MorphemeId>UMPA</MorphemeId><Gloss>umpa</Gloss></LexicalEntry>
+          <LexicalEntry id="eUmka" partOfSpeech="posN"><Allomorphs><Allomorph id="aUmka"><PhoneticShape>umka</PhoneticShape></Allomorph></Allomorphs><MorphemeId>UMKA</MorphemeId><Gloss>umka</Gloss></LexicalEntry>
+          <LexicalEntry id="ePuma" partOfSpeech="posN"><Allomorphs><Allomorph id="aPuma"><PhoneticShape>puma</PhoneticShape></Allomorph></Allomorphs><MorphemeId>PUMA</MorphemeId><Gloss>puma</Gloss></LexicalEntry>
+          <LexicalEntry id="eUmbumpa" partOfSpeech="posN"><Allomorphs><Allomorph id="aUmbumpa"><PhoneticShape>umbumpa</PhoneticShape></Allomorph></Allomorphs><MorphemeId>UMBUMPA</MorphemeId><Gloss>umbumpa</Gloss></LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

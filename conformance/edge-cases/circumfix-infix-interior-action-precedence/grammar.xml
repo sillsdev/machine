@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>CircumfixInfixInteriorActionPrecedence</Name>
+    <!-- Pins census C3 (docs/conformance/circumfix-structural-composite-census.md,
+         openspec/changes/plan-construct-coverage-completion task 4.3b): ONE allomorph
+         (subCircInfix) whose RHS is SIMULTANEOUSLY circumfixing (an InsertSegments before the
+         FIRST CopyFromInput and another InsertSegments after the LAST one) AND infixing (a THIRD
+         InsertSegments sits strictly BETWEEN the two CopyFromInput actions). Before the fix,
+         `crate::emit::classify_affix`'s interior-action test ran first and returned Role::Infix
+         the instant it saw that interior InsertSegments - the wrong taxonomic label for a morph
+         that genuinely wraps the root on both sides, and one that routed this allomorph's rule to
+         `crate::preexpand` instead of `build_structural_composites`. See STAGING.md's own
+         "important correction" section: `crate::preexpand` ALSO resynthesizes via the real engine
+         (`pg_rules::morph::synthesize_cached`), so this was a misclassification/ownership defect,
+         not an actual recall loss - confirmed by testing, not assumed. After the fix, the
+         leading-AND-trailing test runs FIRST, so this shape now classifies CircumfixPrefix and is
+         routed to `build_structural_composites` instead. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posRoot2"><Name>root2</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- No PhonologicalRule/MetathesisRule element at all - pure morphotactics, so requires: []
+         (mechanically derived, per the conformance-grammars skill's own note). -->
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cE"><Representations><Representation>e</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cZ"><Representations><Representation>z</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered"
+        morphologicalRules="mrCircInfix">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- Two LHS parts (p1 = the root's first segment, p2 = the remainder), so the RHS can
+               place an InsertSegments action strictly BETWEEN their two CopyFromInput actions
+               while ALSO leading with one InsertSegments and trailing with another - the
+               simultaneously-circumfixing-and-infixing shape census C3 names. -->
+          <MorphologicalRule id="mrCircInfix" requiredPartsOfSpeech="posRoot2" outputPartOfSpeech="posRoot2">
+            <Name>circInfix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subCircInfix">
+                <MorphologicalInput>
+                  <PhoneticSequence id="p1"><SimpleContext naturalClass="ncAny" /></PhoneticSequence>
+                  <PhoneticSequence id="p2"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments><PhoneticShape>ke</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="p1" />
+                  <InsertSegments><PhoneticShape>z</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="p2" />
+                  <InsertSegments><PhoneticShape>an</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>CIRCINFIX</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot2" partOfSpeech="posRoot2">
+            <Allomorphs><Allomorph id="aRoot2"><PhoneticShape>bat</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT2</MorphemeId>
+            <Gloss>root2</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

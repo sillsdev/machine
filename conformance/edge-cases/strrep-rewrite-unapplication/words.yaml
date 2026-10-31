@@ -1,0 +1,42 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: forward-synthesis
+# Deliberately red against the original C# oracle: xpuma is hand-derived.
+# muma, xuma, xmuma, puma, and xpuua record the original oracle where it agrees.
+# Forward derivation: root XMUMA = xmuma; m -> p / x_ changes the first m;
+# the remaining uma has no preceding x and stays unchanged, yielding xpuma.
+# No morphological rules or head-feature checks participate in this derivation.
+# Machine fix proposal: branch fix/hc-strrep-unapplication, commit a873d60d.
+# Upstream proposal: https://github.com/sillsdev/machine/pull/538
+language: StrRepRewriteUnapplication
+inspired_by: ["synthetic featureless literal rewrite"]
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: xpuma
+    note: Hand-derived forward synthesis of XMUMA; original oracle loses this analysis.
+    parses:
+      - signature: "XMUMA|xpuma"
+        rules: [rewrite]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+  - word: muma
+    note: No preceding x; the root remains unchanged.
+    parses:
+      - signature: "MUMA|muma"
+        rules: []
+  - word: xuma
+    note: No m target; the root remains unchanged.
+    parses:
+      - signature: "XUMA|xuma"
+        rules: []
+  - word: xmuma
+    note: The underlying root is not its surface because the post-x m must rewrite.
+    expect_fail: true
+  - word: puma
+    note: The reverse application requires a preceding x.
+    expect_fail: true
+  - word: xpuua
+    note: Only the rewritten m may widen; the untouched second m cannot disappear.
+    expect_fail: true

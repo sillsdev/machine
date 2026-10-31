@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>CircumfixReduplicationPrecedence</Name>
+    <!-- Pins census C2 (docs/conformance/circumfix-structural-composite-census.md,
+         openspec/changes/plan-construct-coverage-completion task 4.3c): ONE allomorph
+         (subCircRedup) whose RHS is SIMULTANEOUSLY circumfixing (an InsertSegments before the
+         FIRST CopyFromInput and another InsertSegments after the LAST one) AND reduplicating (the
+         SAME LHS part - p1, the whole root - is CopyFromInput'd TWICE, back to back). Before the
+         fix, `crate::emit::classify_affix`'s reduplication test ran unconditionally before
+         first_copy/last_copy were even computed, so this shape classified Role::Reduplication -
+         routing this rule to `crate::peel::ReduplicationPeeler` instead of
+         `build_structural_composites`. The peel's four scan kinds (prefix-copy, suffix-copy,
+         separator+tail-copy, separator+suffix-peel) are each one-sided surface-string matches and
+         cannot recall a surface with independent material wrapping a reduplicated span on BOTH
+         sides - so this was a genuine (not merely relabeled) recall gap. After the fix, the
+         leading-AND-trailing test runs FIRST, so this shape now classifies CircumfixPrefix and is
+         routed to `build_structural_composites` instead, which resynthesizes it correctly via the
+         real engine (pg_rules::morph::synthesize) regardless of RHS shape. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posRootC2"><Name>rootC2</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- No PhonologicalRule/MetathesisRule element at all - pure morphotactics, so requires: []
+         (mechanically derived, per the conformance-grammars skill's own note). -->
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cE"><Representations><Representation>e</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered"
+        morphologicalRules="mrCircRedup">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- ONE LHS part (p1 = the whole root), so the RHS can CopyFromInput it TWICE (the
+               census C2 reduplication trigger - the same PartRef echoed >= 2 times) while ALSO
+               leading with one InsertSegments and trailing with another - the
+               simultaneously-circumfixing-and-reduplicating shape census C2 names. -->
+          <MorphologicalRule id="mrCircRedup" requiredPartsOfSpeech="posRootC2" outputPartOfSpeech="posRootC2">
+            <Name>circRedup</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subCircRedup">
+                <MorphologicalInput>
+                  <PhoneticSequence id="p1"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments><PhoneticShape>ke</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="p1" />
+                  <CopyFromInput index="p1" />
+                  <InsertSegments><PhoneticShape>an</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>CIRCREDUP</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eRootC2" partOfSpeech="posRootC2">
+            <Allomorphs><Allomorph id="aRootC2"><PhoneticShape>tam</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOTC2</MorphemeId>
+            <Gloss>rootC2</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

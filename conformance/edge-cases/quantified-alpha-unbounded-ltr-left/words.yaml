@@ -1,0 +1,104 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# Recorded with hc.dll, Machine 18cf242f4b114b0eb9bac304b4b171ca2f499a39.
+language: quantified-alpha-unbounded-ltr-left
+inspired_by: ["synthetic repeated feature agreement"]
+sources: ["HCLoader.cs:2338-2344,2745-2770"]
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: teca
+    note: "Negative control for quantified alpha unbounded ltr left: 'teca' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tcce
+    note: "Positive witness for quantified alpha unbounded ltr left: 'tcce' must retain the declared analysis."
+    parses:
+      - signature: "ROOT2|tcce"
+        rules: ["prRtlBq"]
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tccca
+    note: "Negative control for quantified alpha unbounded ltr left: 'tccca' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: taca
+    note: "Negative control for quantified alpha unbounded ltr left: 'taca' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tcca
+    note: "Negative control for quantified alpha unbounded ltr left: 'tcca' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: te
+    note: "Negative control for quantified alpha unbounded ltr left: 'te' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: ta
+    note: "Negative control for quantified alpha unbounded ltr left: 'ta' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tace
+    note: "Positive witness for quantified alpha unbounded ltr left: 'tace' must retain the declared analysis."
+    parses:
+      - signature: "ROOT1|tace"
+        rules: ["prRtlBq"]
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tcte
+    note: "Negative control for quantified alpha unbounded ltr left: 'tcte' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tatc
+    note: "Negative control for quantified alpha unbounded ltr left: 'tatc' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tetc
+    note: "Negative control for quantified alpha unbounded ltr left: 'tetc' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tccccca
+    note: "Negative control for quantified alpha unbounded ltr left: 'tccccca' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tccccce
+    note: "Negative control for quantified alpha unbounded ltr left: 'tccccce' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tccce
+    note: "Positive witness for quantified alpha unbounded ltr left: 'tccce' must retain the declared analysis."
+    parses:
+      - signature: "ROOT3|tccce"
+        rules: ["prRtlBq"]
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: tece
+    note: "Negative control for quantified alpha unbounded ltr left: 'tece' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: ttca
+    note: "Positive witness for quantified alpha unbounded ltr left: 'ttca' must retain the declared analysis."
+    parses:
+      - signature: "MIXED|ttca"
+        rules: []
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+  - word: ttce
+    note: "Negative control for quantified alpha unbounded ltr left: 'ttce' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"

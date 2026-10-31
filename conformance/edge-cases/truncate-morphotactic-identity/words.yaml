@@ -1,0 +1,66 @@
+# oracle-provenance: founding-oracle
+language: TruncateRulesProbeIdentity
+inspired_by: ["synthetic AffixProcessRule truncation probe (Machine #480 truncate-morphotactic)"]
+sources:
+  - "Machine #480 truncate-morphotactic at fa8d9b2540962981add315d06203e928a11c1853; companion adds explicit MorphemeId values"
+  - "Combined C# oracle: Machine #556 d98d12a5d514ce589d7495c71d055830e061a418 plus Machine #500 ApplyRhs relocation at 157c031ef272d07c900db41b2d4a8852b13f64b0"
+requires: []
+fieldworks_producible: true
+words:
+  - word: sag
+    note: Bare root32 positive control.
+    parses:
+      - signature: "ROOT|sag"
+        gloss: "32"
+        rules: []
+
+  - word: sas
+    note: Bare root33 positive control; it cannot produce a or ga under these rules.
+    parses:
+      - signature: "ROOT33|sas"
+        gloss: "33"
+        rules: []
+
+  - word: a
+    note: "Two independent derivations from sag: A,B and B,A."
+    provenance: "Combined Machine #500+#506 C# identities and forward derivations"
+    parses:
+      - signature: "ROOT+B+A|a"
+        gloss: "32-3SGB-3SGA"
+        rules: [mruleTruncLead, mruleTruncTrail]
+        exercises: ["AffixProcessRule: subtraction/truncation"]
+      - signature: "ROOT+A+B|a"
+        gloss: "32-3SGA-3SGB"
+        rules: [mruleTruncTrail, mruleTruncLead]
+        exercises: ["AffixProcessRule: subtraction/truncation"]
+
+  - word: ga
+    note: "Five independent derivations from sag: A,C; C,A; A,B,C; B,A,C; B,C,A."
+    provenance: "Combined Machine #500+#506 C# identities and forward derivations"
+    parses:
+      - signature: "ROOT+B+C+A|ga"
+        gloss: "32-3SGB-3SGA-3SGC"
+        rules: [mruleTruncLead, mruleTruncTrail, mruleTruncOptIns]
+        exercises: ["AffixProcessRule: subtraction/truncation"]
+      - signature: "ROOT+A+C+B|ga"
+        gloss: "32-3SGA-3SGB-3SGC"
+        rules: [mruleTruncTrail, mruleTruncLead, mruleTruncOptIns]
+        exercises: ["AffixProcessRule: subtraction/truncation"]
+      - signature: "C+B+ROOT+A|ga"
+        gloss: "32-3SGB-3SGC-3SGA"
+        rules: [mruleTruncLead, mruleTruncOptIns, mruleTruncTrail]
+        exercises: ["AffixProcessRule: subtraction/truncation"]
+      - signature: "ROOT+C+A|ga"
+        gloss: "32-3SGA-3SGC"
+        rules: [mruleTruncTrail, mruleTruncOptIns]
+        exercises: ["AffixProcessRule: subtraction/truncation"]
+      - signature: "C+ROOT+A|ga"
+        gloss: "32-3SGC-3SGA"
+        rules: [mruleTruncOptIns, mruleTruncTrail]
+        exercises: ["AffixProcessRule: subtraction/truncation"]
+
+  - word: bag
+    note: No lexical entry or rule chain can produce bag.
+    provenance: "Impossible negative control for the explicit-ID grammar"
+    expect_fail: true
+    exercises: ["AffixProcessRule: subtraction/truncation"]

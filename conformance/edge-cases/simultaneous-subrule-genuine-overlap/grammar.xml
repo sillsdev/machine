@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>SimultaneousSubruleGenuineOverlap</Name>
+    <!-- ADR 0001's own named example, resolved: "the oracle itself is unverified for a
+         configuration (e.g. simultaneous-subrule overlap, never pinned against hc.dll)... unsupported
+         by definition". `plan-construct-coverage-completion` design.md row 6 (NEEDS-ORACLE, the ONLY
+         row with that verdict). This fixture is authored so its two `multipleApplicationOrder=
+         "simultaneous"` subrules' RIGHT ENVIRONMENTS genuinely OVERLAP (share exactly one class
+         member) — a real lowered-span intersection, not an unproven approximation
+         (`rust/crates/pg-foma/src/lower.rs`'s `spans_overlap`/`subrules_pairwise_verdict` classify
+         this shape `Refuse`, proven by this fixture's own sibling Rust test,
+         `rust/crates/pg-foma/tests/simultaneous_overlap_capability_refuses.rs`).
+
+           ncBackOrMid = {u, e}   (subrule 1's right environment: target -> b)
+           ncMidOrFront = {e, i} (subrule 2's right environment: target -> d)
+
+         Shared member: e. The two spans provably intersect at that single position — this is the
+         actual overlap witness the D3 predicate's lowered-span intersection detects, and the
+         reason no engine (Rust or C#) can be assumed correct here without independent verification:
+         nobody had ever run this shape through hc.dll before this fixture.
+
+         Two ORTHOGONAL features, fully specified for every segment (every consonant AND every vowel
+         gets an explicit value on BOTH `featVoice` and `featPlace` — an earlier bare-SegmentDefinition
+         draft with no PhonologicalFeatureSystem at all loaded but silently broke Morpher's own
+         rewrite-analysis path (raw, unrewritten roots parsed by segment identity while every
+         correctly-rewritten surface form failed to parse at all) — this two-feature,
+         fully-specified design (mirroring `rust/crates/pg-foma/tests/phase_c_simultaneous.rs`'s own
+         working `SIM_NONOVERLAP_XML` fixture) is the fix, not a cosmetic choice. `featVoice` gives
+         each consonant its own distinguishing symbol (`vless`=p, `vd1`=b, `vd2`=d) plus a single
+         shared `voc` value for every vowel (deliberately distinct from `vless`, so `ncStop` — which
+         gates only on `featVoice=vless` — can never accidentally also match a vowel); `featPlace`
+         gives each vowel its own distinguishing symbol (`front`=i, `mid`=e, `back`=u) plus a shared
+         `neutral` value for every consonant. Neither RHS pin (`ncB`/`ncD`, `featVoice` only) ever
+         constrains `featPlace`, so it still unifies trivially with either environment class, keeping
+         `self_opaquing` FALSE (verified below).
+
+         Ground truth: `hc.dll` (the C# founding oracle), NOT `pangloss` — see STAGING.md for the
+         exact invocation, build path, and pinned `machine` submodule revision this fixture's
+         `words.yaml` signatures were transcribed from. Synthetic data only; "SimultaneousSubrule..."
+         naming is construct-descriptive, never a real language name. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>V</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featVoice"><Name>voice</Name><Symbols>
+        <Symbol id="symVless">vless</Symbol><Symbol id="symVd1">vd1</Symbol><Symbol id="symVd2">vd2</Symbol><Symbol id="symVoc">voc</Symbol>
+      </Symbols></SymbolicFeature>
+      <SymbolicFeature id="featPlace"><Name>place</Name><Symbols>
+        <Symbol id="symFront">front</Symbol><Symbol id="symMid">mid</Symbol><Symbol id="symBack">back</Symbol><Symbol id="symNeutral">neutral</Symbol>
+      </Symbols></SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="t1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cp"><Representations><Representation>p</Representation></Representations><FeatureValue feature="featVoice" symbolValues="symVless" /><FeatureValue feature="featPlace" symbolValues="symNeutral" /></SegmentDefinition>
+        <SegmentDefinition id="cb"><Representations><Representation>b</Representation></Representations><FeatureValue feature="featVoice" symbolValues="symVd1" /><FeatureValue feature="featPlace" symbolValues="symNeutral" /></SegmentDefinition>
+        <SegmentDefinition id="cd"><Representations><Representation>d</Representation></Representations><FeatureValue feature="featVoice" symbolValues="symVd2" /><FeatureValue feature="featPlace" symbolValues="symNeutral" /></SegmentDefinition>
+        <SegmentDefinition id="ci"><Representations><Representation>i</Representation></Representations><FeatureValue feature="featVoice" symbolValues="symVoc" /><FeatureValue feature="featPlace" symbolValues="symFront" /></SegmentDefinition>
+        <SegmentDefinition id="ce"><Representations><Representation>e</Representation></Representations><FeatureValue feature="featVoice" symbolValues="symVoc" /><FeatureValue feature="featPlace" symbolValues="symMid" /></SegmentDefinition>
+        <SegmentDefinition id="cu"><Representations><Representation>u</Representation></Representations><FeatureValue feature="featVoice" symbolValues="symVoc" /><FeatureValue feature="featPlace" symbolValues="symBack" /></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncStop"><Name>Stop</Name><FeatureValue feature="featVoice" symbolValues="symVless" /></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncBackOrMid"><Name>BackOrMid</Name><FeatureValue feature="featPlace" symbolValues="symBack symMid" /></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncMidOrFront"><Name>MidOrFront</Name><FeatureValue feature="featPlace" symbolValues="symMid symFront" /></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncB"><Name>B</Name><FeatureValue feature="featVoice" symbolValues="symVd1" /></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncD"><Name>D</Name><FeatureValue feature="featVoice" symbolValues="symVd2" /></FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prOverlapDemo" multipleApplicationOrder="simultaneous">
+        <Name>simGenuineOverlapDemo</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncStop" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <!-- Subrule 1 (declared first): p -> b / __ {back, mid} -->
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncB" /></PhoneticSequence></PhoneticOutput>
+            <Environment><RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncBackOrMid" /></PhoneticSequence></PhoneticTemplate></RightEnvironment></Environment>
+          </PhonologicalSubrule>
+          <!-- Subrule 2 (declared second): p -> d / __ {mid, front} — shares 'mid' (e) with subrule 1 above. -->
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncD" /></PhoneticSequence></PhoneticOutput>
+            <Environment><RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncMidOrFront" /></PhoneticSequence></PhoneticTemplate></RightEnvironment></Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered" phonologicalRules="prOverlapDemo">
+        <Name>S</Name>
+        <LexicalEntries>
+          <LexicalEntry id="entryPU" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="alloPU"><PhoneticShape>pu</PhoneticShape></Allomorph></Allomorphs>
+            <Gloss>PU</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="entryPI" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="alloPI"><PhoneticShape>pi</PhoneticShape></Allomorph></Allomorphs>
+            <Gloss>PI</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="entryPE" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="alloPE"><PhoneticShape>pe</PhoneticShape></Allomorph></Allomorphs>
+            <Gloss>PE</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

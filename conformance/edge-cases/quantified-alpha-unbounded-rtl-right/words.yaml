@@ -1,0 +1,121 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# Recorded with hc.dll, Machine 18cf242f4b114b0eb9bac304b4b171ca2f499a39.
+language: quantified-alpha-unbounded-rtl-right
+inspired_by: ["synthetic repeated feature agreement"]
+sources: ["HCLoader.cs:2338-2344,2745-2770"]
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: acet
+    note: "Negative control for quantified alpha unbounded rtl right: 'acet' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: ecct
+    note: "Positive witness for quantified alpha unbounded rtl right: 'ecct' must retain the declared analysis."
+    parses:
+      - signature: "ROOT2|ecct"
+        rules: ["prRtlBq"]
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: accct
+    note: "Negative control for quantified alpha unbounded rtl right: 'accct' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: acat
+    note: "Negative control for quantified alpha unbounded rtl right: 'acat' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: acct
+    note: "Negative control for quantified alpha unbounded rtl right: 'acct' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: et
+    note: "Negative control for quantified alpha unbounded rtl right: 'et' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: at
+    note: "Negative control for quantified alpha unbounded rtl right: 'at' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: ecat
+    note: "Positive witness for quantified alpha unbounded rtl right: 'ecat' must retain the declared analysis."
+    parses:
+      - signature: "ROOT1|ecat"
+        rules: ["prRtlBq"]
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: etct
+    note: "Negative control for quantified alpha unbounded rtl right: 'etct' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: ctat
+    note: "Negative control for quantified alpha unbounded rtl right: 'ctat' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: ctet
+    note: "Negative control for quantified alpha unbounded rtl right: 'ctet' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: accccct
+    note: "Negative control for quantified alpha unbounded rtl right: 'accccct' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: eccccct
+    note: "Negative control for quantified alpha unbounded rtl right: 'eccccct' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: eccct
+    note: "Positive witness for quantified alpha unbounded rtl right: 'eccct' must retain the declared analysis."
+    parses:
+      - signature: "ROOT3|eccct"
+        rules: ["prRtlBq"]
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: ecet
+    note: "Negative control for quantified alpha unbounded rtl right: 'ecet' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: actt
+    note: "Positive witness for quantified alpha unbounded rtl right: 'actt' must retain the declared analysis."
+    parses:
+      - signature: "MIXED|actt"
+        rules: []
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"
+  - word: ectt
+    note: "Negative control for quantified alpha unbounded rtl right: 'ectt' must complete with no analysis."
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+      - "RewriteRule direction (Dir): right-to-left"

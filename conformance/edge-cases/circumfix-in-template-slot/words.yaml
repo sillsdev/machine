@@ -1,0 +1,59 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle machine-commit=caa4ddde8782557c6fb58cac57e4761ffcafc2a6 verified-date=2026-08-31
+# RECONCILED 2026-08-31: rust/tools/oracle-conformance.ps1's hc-conformance.exe self-check PASSED
+# against every word below (signature AND traced rules: both matched). Any older "NOT the C#
+# founding oracle" / "Oracle: pangloss" sentence elsewhere in this file's own header describes how
+# it was originally authored, not its current verification status -- superseded by the marker above.
+# Synthetic construct-shaped mimic -- see STAGING.md and grammar.xml's own header comment. Oracle:
+# C# founding oracle (SIL.Machine.Morphology.HermitCrab.Tool / hc.dll, via
+# machine/conformance/adapters/hc-dotnet-wrapper.sh) AND pangloss (`pg_parse::Morpher`, driven
+# directly), cross-checked to agree -- see STAGING.md's "Verification" section for both runs.
+
+language: CircumfixInTemplateSlot
+inspired_by: ["synthetic template-slot circumfix probe (not modeling any real language)"]
+sources:
+  - "template-slot circumfix containment regression"
+requires: []
+fieldworks_producible: true
+words:
+  - word: lodi
+    note: ROOT bare, no template slot filled (slotMain is optional) -- a plain control.
+    parses:
+      - signature: "ROOT|lodi"
+        rules: []
+
+  - word: talodien
+    note: >-
+      ROOT + mrCircum occupying templateMain's slotMain: leading InsertSegments("ta") + one
+      CopyFromInput + trailing InsertSegments("en") -- classifies Role::CircumfixPrefix. This is
+      the fixture's actual pin: a circumfix rule reachable ONLY through an AffixTemplate Slot, a
+      shape no existing fixture exercises. The regression pins that every backend proposes the
+      complete two-sided circumfix rather than dropping either insertion half.
+    provenance: "template-slot circumfix containment regression"
+    parses:
+      - signature: "CIRCUM+ROOT|talodien"
+        rules: [mrCircum]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: mulodi
+    note: >-
+      ROOT + mrOrdPfx occupying the SAME templateMain slot with an ORDINARY (non-discontinuous)
+      prefix -- the control proving templateMain itself is reachable and correct on every backend
+      when the occupying rule isn't a circumfix.
+    provenance: "template-slot circumfix containment regression"
+    parses:
+      - signature: "ORDPFX+ROOT|mulodi"
+        rules: [mrOrdPfx]
+
+  - word: enlodi
+    note: >-
+      Negative control: the circumfix's trailing material ("en") alone, with no matching leading
+      "ta" and no mrOrdPfx prefix either -- no subrule of any rule in templateMain's slot produces
+      this shape (a circumfix's two pieces are inseparable within one subrule application), so it
+      has no valid derivation.
+    provenance: "template-slot circumfix containment regression"
+    expect_fail: true
+    blocked_by: [mrCircum, mrOrdPfx]

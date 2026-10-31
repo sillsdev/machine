@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>NonFirstAllomorphCircumfixSelection</Name>
+    <!-- Pins census C1 (docs/conformance/circumfix-structural-composite-census.md,
+         openspec/changes/plan-construct-coverage-completion task 4.3a): one MorphologicalRule
+         ("mrMixed") declaring TWO allomorphs (MorphologicalSubrules, in document order) -
+         allomorph 0 is an ORDINARY suffix (subSuffix, "-s"), allomorph 1 is a CIRCUMFIX
+         (subCircum, "ke-...-an", leading AND trailing InsertSegments around one CopyFromInput).
+         Before the fix, `crate::emit::rule_role` classified this rule from allomorph 0 alone
+         (Role::Suffix), so `is_structural_rule` never inspected allomorph 1 at all and the
+         circumfix allomorph's own real surface (a discontinuous "wrap the root" shape, plan's own
+         "unconditionally unrepresentable" citation for the ordinary concatenative model) was never
+         reachable through `build_structural_composites` - an honest, fail-closed but real recall
+         gap that appeared/disappeared purely by which allomorph a grammar author wrote first. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posRoot"><Name>root</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- No PhonologicalRule/MetathesisRule element at all - pure morphotactics, so requires: []
+         (mechanically derived, per the conformance-grammars skill's own note). -->
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cE"><Representations><Representation>e</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered"
+        morphologicalRules="mrMixed">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- Allomorph 0 (document order): ORDINARY suffix, "-s". Alone, this would classify
+               Role::Suffix from `rule_role` (allomorph 0). -->
+          <!-- Allomorph 1 (document order): CIRCUMFIX, "ke-...-an" - leading InsertSegments,
+               one CopyFromInput, trailing InsertSegments. This is the allomorph census C1 names:
+               declared SECOND, so a first-allomorph-only classifier never sees it. -->
+          <MorphologicalRule id="mrMixed" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>mixed</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSuffix">
+                <MorphologicalInput><PhoneticSequence id="stemA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="stemA" />
+                  <InsertSegments><PhoneticShape>s</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="subCircum">
+                <MorphologicalInput><PhoneticSequence id="stemB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments><PhoneticShape>ke</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="stemB" />
+                  <InsertSegments><PhoneticShape>an</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>MIXED</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot" partOfSpeech="posRoot">
+            <Allomorphs><Allomorph id="aRoot"><PhoneticShape>mit</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT</MorphemeId>
+            <Gloss>root</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

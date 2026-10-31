@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>ExpansionInterposedOptional</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>N</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featId">
+        <Name>identity</Name>
+        <Symbols>
+          <Symbol id="fU">u</Symbol>
+          <Symbol id="fI">i</Symbol>
+          <Symbol id="fZ">z</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="segU">
+          <Representations><Representation>u</Representation></Representations>
+          <FeatureValue feature="featId" symbolValues="fU" />
+        </SegmentDefinition>
+        <SegmentDefinition id="segI">
+          <Representations><Representation>i</Representation></Representations>
+          <FeatureValue feature="featId" symbolValues="fI" />
+        </SegmentDefinition>
+        <SegmentDefinition id="segZ">
+          <Representations><Representation>z</Representation></Representations>
+          <FeatureValue feature="featId" symbolValues="fZ" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prExpand">
+        <Name>expand u to ii</Name>
+        <PhoneticInput>
+          <PhoneticSequence><Segment segment="segU" /></PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <Segment segment="segI" />
+                <Segment segment="segI" />
+              </PhoneticSequence>
+            </PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <PhonologicalRule id="prDelete">
+        <Name>delete z between i segments</Name>
+        <PhoneticInput>
+          <PhoneticSequence><Segment segment="segZ" /></PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput />
+            <Environment>
+              <LeftEnvironment>
+                <PhoneticTemplate>
+                  <PhoneticSequence><Segment segment="segI" /></PhoneticSequence>
+                </PhoneticTemplate>
+              </LeftEnvironment>
+              <RightEnvironment>
+                <PhoneticTemplate>
+                  <PhoneticSequence><Segment segment="segI" /></PhoneticSequence>
+                </PhoneticTemplate>
+              </RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" phonologicalRules="prExpand prDelete">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="entryU" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="alloU"><PhoneticShape>u</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT</MorphemeId>
+            <Gloss>root</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

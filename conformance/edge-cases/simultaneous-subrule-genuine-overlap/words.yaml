@@ -1,0 +1,114 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# Synthetic construct-shaped mimic -- see STAGING.md and grammar.xml's own header comment.
+#
+# ORACLE: the C# FOUNDING ORACLE (hc.dll), not pangloss. This is the FIRST fixture in this repo whose
+# ground truth comes from `SIL.Machine.Morphology.HermitCrab.Tool` rather than from this repo's own
+# Rust engine, and that is the entire reason it exists: ADR 0001
+# (`docs/adr/0001-honest-capability-boundary.md`) names simultaneous-subrule overlap BY HAND as its
+# example of a configuration where "the oracle itself is unverified... never pinned against hc.dll",
+# and `plan-construct-coverage-completion` design.md row 6 is the only NEEDS-ORACLE verdict in the
+# whole table. Every signature below is transcribed verbatim from hc.dll's own batch output, and was
+# then confirmed byte-identical against `pg_parse::Morpher` -- see STAGING.md's "Verification"
+# section for both commands and the exact outputs.
+
+language: SimultaneousSubruleGenuineOverlap
+inspired_by: ["synthetic simultaneous-subrule overlap probe (not modeling any real language)"]
+sources:
+  - "docs/adr/0001-honest-capability-boundary.md (simultaneous-subrule overlap, named as the unverified-oracle example)"
+  - "openspec/changes/plan-construct-coverage-completion design.md row 6 (SimultaneousRewrite, NEEDS-ORACLE) and tasks.md 5.2"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  # ---- The discriminating pair: this is what actually verifies overlap RESOLUTION -------------
+  # Root PE ("pe") sits at the one position where BOTH subrules match: subrule 1 rewrites p -> b
+  # before {back, mid} and subrule 2 rewrites p -> d before {mid, front}, and both contain the mid
+  # vowel "e". So the surface depends entirely on which subrule wins the overlap. hc.dll resolves it
+  # to subrule 1 (declared first), giving "be" and NOT "de" -- and pg_parse::Morpher agrees exactly.
+  # Agreement on this PAIR is the real evidence: a shared no-analysis on the underlying form alone
+  # would be consistent with both engines simply failing on overlap, whereas "be analyzes AND de does
+  # not" pins the resolution order itself.
+  - word: be
+    note: >-
+      PE with the overlapping position resolved by subrule 1 (p -> b before mid "e"). The positive
+      half of the discriminating pair -- hc.dll and pg_parse::Morpher both analyze it.
+    provenance: "hc.dll batch output, verbatim (ADR 0001's named unverified-oracle configuration)"
+    parses:
+      - signature: "|be"
+        rules: [prOverlapDemo]
+        exercises:
+          - "RewriteRule Simultaneous"
+
+  - word: de
+    note: >-
+      The SAME overlapping position resolved the other way (p -> d before mid "e") -- structurally
+      unreachable, because subrule 1 wins. The negative half of the discriminating pair: if subrule 2
+      had won the overlap instead, this would analyze and "be" would not. Both engines reject it.
+    provenance: "hc.dll batch output, verbatim (ADR 0001's named unverified-oracle configuration)"
+    expect_fail: true
+    blocked_by: [prOverlapDemo]
+
+  # ---- Non-overlapping controls: each subrule alone, at a position only it matches -----------
+  - word: bu
+    note: >-
+      PU via subrule 1 only (p -> b before back "u"; subrule 2's class does not contain "u"). A
+      single-subrule control, so a regression in overlap handling does not silently take the ordinary
+      case with it.
+    provenance: "hc.dll batch output, verbatim"
+    parses:
+      - signature: "|bu"
+        rules: [prOverlapDemo]
+        exercises:
+          - "RewriteRule Simultaneous"
+
+  - word: di
+    note: >-
+      PI via subrule 2 only (p -> d before front "i"; subrule 1's class does not contain "i"). The
+      mirror control, proving subrule 2 is genuinely live and not dead code that overlap resolution
+      merely happens to shadow.
+    provenance: "hc.dll batch output, verbatim"
+    parses:
+      - signature: "|di"
+        rules: [prOverlapDemo]
+        exercises:
+          - "RewriteRule Simultaneous"
+
+  # ---- Underlying forms never surface: the rule is obligatory wherever its focus matches -----
+  - word: pu
+    note: The underlying shape of PU. Obligatory rewriting means it can never be a valid surface.
+    provenance: "hc.dll batch output, verbatim"
+    expect_fail: true
+    blocked_by: [prOverlapDemo]
+
+  - word: pi
+    note: The underlying shape of PI, likewise never a valid surface.
+    provenance: "hc.dll batch output, verbatim"
+    expect_fail: true
+    blocked_by: [prOverlapDemo]
+
+  - word: pe
+    note: >-
+      The underlying shape of PE -- the overlapping root itself. Never a valid surface either, which
+      is why the "be"/"de" pair above rather than this word is what verifies overlap resolution.
+    provenance: "hc.dll batch output, verbatim"
+    expect_fail: true
+    blocked_by: [prOverlapDemo]
+
+  # ---- Wrong-output controls: right vowel, wrong consonant for that vowel's subrule ----------
+  - word: bi
+    note: >-
+      Subrule 1's output "b" in front of "i", which only subrule 2's class admits. No derivation
+      produces it.
+    provenance: "hc.dll batch output, verbatim"
+    expect_fail: true
+    blocked_by: [prOverlapDemo]
+
+  - word: du
+    note: >-
+      Subrule 2's output "d" in front of "u", which only subrule 1's class admits. The mirror
+      wrong-output control.
+    provenance: "hc.dll batch output, verbatim"
+    expect_fail: true
+    blocked_by: [prOverlapDemo]

@@ -1,0 +1,65 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle machine-commit=25ddf914c0edb739a4445f9a088f7e06492a808d verified-date=2026-09-02
+# rust/tools/oracle-conformance.ps1 -Scope local: hc-conformance.exe self-check PASSED (every
+# word's signature matched; no rules-attribution mismatch either).
+language: PatternRootRequiredEnvironment
+inspired_by: ["synthetic probe for TunedSurfaceProbed's collect_roots regex route (pg-foma emit.rs), not modeling any real language"]
+sources:
+  - "rust/crates/pg-foma/src/emit.rs (collect_roots' pattern_regex_body gate, eager_route_drops_root_spellings)"
+  - "rust/crates/pg-foma/src/capability.rs (EagerRouteDropsRootSpellingsCheck / surface-probe.root-spelling-cap)"
+requires: []
+fieldworks_producible: true
+words:
+  - word: tik
+    note: >-
+      Bare literal root TIK (posV), no rule applied -- trivially valid, unrelated to ePattern
+      (the grammar's other lexical item, a guess-only lexical pattern, never participates in
+      ordinary lookup).
+    parses:
+      - signature: "TIK|tik"
+        gloss: tik
+        rules: []
+
+  - word: tikus
+    note: >-
+      TIK + PAST ("-us", unconstrained suffix rule mrPast).
+    parses:
+      - signature: "TIK+PAST|tikus"
+        gloss: tik-PAST
+        rules: [mrPast]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: bon
+    note: >-
+      Bare literal root BON (posV), no rule applied.
+    parses:
+      - signature: "BON|bon"
+        gloss: bon
+        rules: []
+
+  - word: bonus
+    note: >-
+      BON + PAST.
+    parses:
+      - signature: "BON+PAST|bonus"
+        gloss: bon-PAST
+        rules: [mrPast]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: zim
+    note: >-
+      Negative control: no lexical entry's surface matches any segmentation of "zim" (not TIK,
+      BON, or the PAST suffix's output shape), and the grammar's only other lexical item is the
+      guess-only pattern ePattern, which never fires in ordinary (non-guess) lookup -- zero
+      analyses.
+    expect_fail: true
+
+  - word: tikbon
+    note: >-
+      Negative control: concatenation of the two ordinary roots with no CompoundingRule declared
+      to join them, and "bon" is not the PAST suffix's output shape -- zero analyses.
+    expect_fail: true

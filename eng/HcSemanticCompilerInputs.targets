@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <PanGlossCompilerInputProtocol>hc-semantic-msbuild/v1</PanGlossCompilerInputProtocol>
+  </PropertyGroup>
+
+  <Target Name="_PanGlossCaptureCompilerInputs"
+          DependsOnTargets="ResolveReferences;ResolveKeySource;SetWin32ManifestProperties;FindReferenceAssembliesForReferences;BeforeCompile;CoreCompile" />
+</Project>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Synthetic translation of RewriteRuleTests.EpenthesisRules' final rule1/rule2 setup. Both
+     rules are empty-LHS iterative epentheses here. Rule 1 inserts a back-rounded o after u and
+     before a vowel; its bounded u-only context prevents self-feeding. Rule 2 deliberately carries
+     a two-vowel left context so adjacent sites overlap: this exposes the cursor distinction while
+     retaining the C# test's t-between-vowels environment. -->
+<HermitCrabInput>
+  <Language>
+    <Name>IterativeEpenthesisCascade</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posFirst"><Name>first</Name></PartOfSpeech>
+      <PartOfSpeech id="posSecond"><Name>second</Name></PartOfSpeech>
+      <PartOfSpeech id="posBoth"><Name>both</Name></PartOfSpeech>
+      <PartOfSpeech id="posOver"><Name>over</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="consP">+</Symbol><Symbol id="consM">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featVoc"><Name>voc</Name><Symbols><Symbol id="vocP">+</Symbol><Symbol id="vocM">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featHigh"><Name>high</Name><Symbols><Symbol id="highP">+</Symbol><Symbol id="highM">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featBack"><Name>back</Name><Symbols><Symbol id="backP">+</Symbol><Symbol id="backM">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featRound"><Name>round</Name><Symbols><Symbol id="roundP">+</Symbol><Symbol id="roundM">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featPlace"><Name>place</Name><Symbols><Symbol id="placeD">d</Symbol><Symbol id="placeT">t</Symbol><Symbol id="placeV">vowel</Symbol></Symbols></SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="table1"><Name>Main</Name><SegmentDefinitions>
+      <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations><FeatureValue feature="featCons" symbolValues="consP" /><FeatureValue feature="featVoc" symbolValues="vocM" /><FeatureValue feature="featHigh" symbolValues="highM" /><FeatureValue feature="featBack" symbolValues="backM" /><FeatureValue feature="featRound" symbolValues="roundM" /><FeatureValue feature="featPlace" symbolValues="placeD" /></SegmentDefinition>
+      <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations><FeatureValue feature="featCons" symbolValues="consP" /><FeatureValue feature="featVoc" symbolValues="vocM" /><FeatureValue feature="featHigh" symbolValues="highM" /><FeatureValue feature="featBack" symbolValues="backM" /><FeatureValue feature="featRound" symbolValues="roundM" /><FeatureValue feature="featPlace" symbolValues="placeT" /></SegmentDefinition>
+      <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations><FeatureValue feature="featCons" symbolValues="consM" /><FeatureValue feature="featVoc" symbolValues="vocP" /><FeatureValue feature="featHigh" symbolValues="highM" /><FeatureValue feature="featBack" symbolValues="backP" /><FeatureValue feature="featRound" symbolValues="roundM" /><FeatureValue feature="featPlace" symbolValues="placeV" /></SegmentDefinition>
+      <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations><FeatureValue feature="featCons" symbolValues="consM" /><FeatureValue feature="featVoc" symbolValues="vocP" /><FeatureValue feature="featHigh" symbolValues="highP" /><FeatureValue feature="featBack" symbolValues="backM" /><FeatureValue feature="featRound" symbolValues="roundM" /><FeatureValue feature="featPlace" symbolValues="placeV" /></SegmentDefinition>
+      <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations><FeatureValue feature="featCons" symbolValues="consM" /><FeatureValue feature="featVoc" symbolValues="vocP" /><FeatureValue feature="featHigh" symbolValues="highP" /><FeatureValue feature="featBack" symbolValues="backP" /><FeatureValue feature="featRound" symbolValues="roundP" /><FeatureValue feature="featPlace" symbolValues="placeV" /></SegmentDefinition>
+      <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations><FeatureValue feature="featCons" symbolValues="consM" /><FeatureValue feature="featVoc" symbolValues="vocP" /><FeatureValue feature="featHigh" symbolValues="highM" /><FeatureValue feature="featBack" symbolValues="backP" /><FeatureValue feature="featRound" symbolValues="roundP" /><FeatureValue feature="featPlace" symbolValues="placeV" /></SegmentDefinition>
+    </SegmentDefinitions></CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncVowel"><Name>Vowel</Name><FeatureValue feature="featCons" symbolValues="consM" /><FeatureValue feature="featVoc" symbolValues="vocP" /></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncU"><Name>U</Name><FeatureValue feature="featCons" symbolValues="consM" /><FeatureValue feature="featVoc" symbolValues="vocP" /><FeatureValue feature="featHigh" symbolValues="highP" /><FeatureValue feature="featBack" symbolValues="backP" /><FeatureValue feature="featRound" symbolValues="roundP" /></FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prRule1">
+        <Name>backRoundInsertion</Name>
+        <PhoneticInput />
+        <PhonologicalSubrules><PhonologicalSubrule requiredPartsOfSpeech="posFirst posBoth posOver">
+          <PhoneticOutput><PhoneticSequence><Segment segment="cO" /></PhoneticSequence></PhoneticOutput>
+          <Environment>
+            <LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncU" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment>
+            <RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncVowel" /></PhoneticSequence></PhoneticTemplate></RightEnvironment>
+          </Environment>
+        </PhonologicalSubrule></PhonologicalSubrules>
+      </PhonologicalRule>
+      <PhonologicalRule id="prRule2">
+        <Name>tBetweenVowels</Name>
+        <PhoneticInput />
+        <PhonologicalSubrules><PhonologicalSubrule requiredPartsOfSpeech="posSecond posBoth posOver">
+          <PhoneticOutput><PhoneticSequence><Segment segment="cT" /></PhoneticSequence></PhoneticOutput>
+          <Environment>
+            <LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncVowel" /><SimpleContext naturalClass="ncVowel" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment>
+            <RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncVowel" /></PhoneticSequence></PhoneticTemplate></RightEnvironment>
+          </Environment>
+        </PhonologicalSubrule></PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata><Stratum characterDefinitionTable="table1" phonologicalRules="prRule1 prRule2"><Name>Main</Name><LexicalEntries>
+      <LexicalEntry id="eFirst" partOfSpeech="posFirst"><Allomorphs><Allomorph id="aFirst"><PhoneticShape>uaa</PhoneticShape></Allomorph></Allomorphs><MorphemeId>FIRST</MorphemeId><Gloss>first-control</Gloss></LexicalEntry>
+      <LexicalEntry id="eSecond" partOfSpeech="posSecond"><Allomorphs><Allomorph id="aSecond"><PhoneticShape>uaa</PhoneticShape></Allomorph></Allomorphs><MorphemeId>SECOND</MorphemeId><Gloss>second-control</Gloss></LexicalEntry>
+      <LexicalEntry id="eBoth" partOfSpeech="posBoth"><Allomorphs><Allomorph id="aBoth"><PhoneticShape>uaa</PhoneticShape></Allomorph></Allomorphs><MorphemeId>BOTH</MorphemeId><Gloss>both-rules</Gloss></LexicalEntry>
+      <LexicalEntry id="eOver" partOfSpeech="posOver"><Allomorphs><Allomorph id="aOver"><PhoneticShape>uaaa</PhoneticShape></Allomorph></Allomorphs><MorphemeId>OVER</MorphemeId><Gloss>overlap-negative</Gloss></LexicalEntry>
+    </LexicalEntries></Stratum></Strata>
+  </Language>
+</HermitCrabInput>

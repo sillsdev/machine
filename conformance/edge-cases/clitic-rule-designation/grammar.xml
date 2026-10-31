@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>CliticRuleDesignation</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>V</Name></PartOfSpeech>
+      <PartOfSpeech id="posN"><Name>N</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cG"><Representations><Representation>g</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cZ"><Representations><Representation>z</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrEnc mrPlain">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrPast">
+            <Name>Past suffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPast">
+                <MorphologicalInput><PhoneticSequence id="stemPast"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemPast" /><InsertSegments><PhoneticShape>d</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PAST</MorphemeId>
+          </MorphologicalRule>
+          <!-- isCliticRule="true" outside the Clitics stratum: may follow the final verb template. -->
+          <MorphologicalRule id="mrEnc" requiredPartsOfSpeech="posV" isCliticRule="true">
+            <Name>Enclitic</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subEnc">
+                <MorphologicalInput><PhoneticSequence id="stemEnc"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemEnc" /><InsertSegments><PhoneticShape>s</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>ENC</MorphemeId>
+          </MorphologicalRule>
+          <!-- No isCliticRule, not in Clitics: an ordinary rule, refused after the final template. -->
+          <MorphologicalRule id="mrPlain" requiredPartsOfSpeech="posV">
+            <Name>Plain suffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPlain">
+                <MorphologicalInput><PhoneticSequence id="stemPlain"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemPlain" /><InsertSegments><PhoneticShape>k</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PLAIN</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrNf">
+            <Name>Non-final suffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subNf">
+                <MorphologicalInput><PhoneticSequence id="stemNf"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemNf" /><InsertSegments><PhoneticShape>pu</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>NF</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posV">
+            <Name>verbTemplate</Name>
+            <Slot morphologicalRules="mrPast"><Name>pastSlot</Name></Slot>
+          </AffixTemplate>
+          <AffixTemplate requiredPartsOfSpeech="posN" final="false">
+            <Name>nounNonFinal</Name>
+            <Slot morphologicalRules="mrNf"><Name>nfSlot</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eSag" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aSag"><PhoneticShape>sag</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SAG</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eKol" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aKol"><PhoneticShape>kol</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>KOL</MorphemeId>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrNotClitic mrDefaultClitic">
+        <Name>Clitics</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- isCliticRule="false" overrides the Clitics stratum's default. -->
+          <MorphologicalRule id="mrNotClitic" requiredPartsOfSpeech="posV" isCliticRule="false">
+            <Name>Non-clitic suffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subNotClitic">
+                <MorphologicalInput><PhoneticSequence id="stemNotClitic"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemNotClitic" /><InsertSegments><PhoneticShape>t</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>NOTCL</MorphemeId>
+          </MorphologicalRule>
+          <!-- No isCliticRule: a clitic because its stratum is named Clitics. -->
+          <MorphologicalRule id="mrDefaultClitic" requiredPartsOfSpeech="posV">
+            <Name>Default clitic</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subDefaultClitic">
+                <MorphologicalInput><PhoneticSequence id="stemDefaultClitic"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemDefaultClitic" /><InsertSegments><PhoneticShape>z</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>DEFCL</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrPl">
+            <Name>Plural</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPl">
+                <MorphologicalInput><PhoneticSequence id="stemPl"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemPl" /><InsertSegments><PhoneticShape>li</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PL</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <!-- All-optional final template: completes nounNonFinal from the earlier stratum. -->
+          <AffixTemplate requiredPartsOfSpeech="posN">
+            <Name>nounClose</Name>
+            <Slot optional="true" morphologicalRules="mrPl"><Name>plSlot</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

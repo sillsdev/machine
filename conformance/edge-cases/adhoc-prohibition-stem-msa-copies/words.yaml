@@ -1,0 +1,60 @@
+# oracle-provenance: founding-oracle machine-commit=aab4c59819adb7b366915e09df2fb28c62b8c03a verified-date=2026-10-31
+# Replayed on hc.dll at Machine aab4c598 (see README.md): the rows below are the oracle's own output.
+# Synthetic; no real language. The grammar is the per-copy form HCLoader emits for a stem entry whose
+# one allomorph carries two MoStemMsas (Verb first, Noun second): one AllomorphCoOccurrenceRule per
+# copy (HCLoader.LoadAllomorphCoOccurrenceRules, HCLoader.cs:2163-2189). A loader that keeps one
+# allomorph per allomorph identity wires the prohibition to the last (Noun) copy only and still parses
+# tada/taba through the Verb copy.
+language: AdhocProhibitionStemMsaCopies
+inspired_by: ["a stem entry with a Verb MSA and a Noun MSA compiles to two lexical entries; an ad hoc allomorph prohibition names the one allomorph, and HCLoader attaches it to every copy (and to every copy on the rest side)"]
+sources: ["HCLoader.cs:2163-2189 (LoadAllomorphCoOccurrenceRules)"]
+requires: []
+fieldworks_producible: true
+words:
+  - word: da
+    note: >-
+      Control: bare stem da parses as both of its MSAs, Noun and Verb.
+    parses:
+      - signature: "DAN|da"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+      - signature: "DAV|da"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: ba
+    note: >-
+      Control: bare stem ba parses as both of its MSAs.
+    parses:
+      - signature: "BAN|ba"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+      - signature: "BAV|ba"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: ga
+    note: >-
+      Control: stem ga, which has no prohibition, parses as both of its MSAs.
+    parses:
+      - signature: "GAN|ga"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+      - signature: "GAV|ga"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: taga
+    note: >-
+      Control: the Verb-only prefix ta- attaches to the Verb copy of ga (no prohibition on ga); the Noun copy is refused by the prefix's Verb requirement.
+    parses:
+      - signature: "TA+GAV|taga"
+        rules: [mrTa]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: tada
+    note: >-
+      Prefix first: the prohibition ta- ~ da is declared on the prefix allomorph with both stem copies on the rest side. The only candidate is prefix + Verb copy of da, which is excluded, so the word has no analysis.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: taba
+    note: >-
+      Stem first: the prohibition ba ~ ta- is declared on each stem copy (Verb and Noun) with the prefix allomorph on the rest side. The only candidate is prefix + Verb copy of ba, which is excluded, so the word has no analysis.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]

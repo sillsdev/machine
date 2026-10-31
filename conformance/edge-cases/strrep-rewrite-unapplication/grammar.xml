@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>StrRepRewriteUnapplication</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="N"><Name>N</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="table">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="m"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="p"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="x"><Representations><Representation>x</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="u"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="a"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="rewrite">
+        <Name>m to p after x</Name>
+        <PhoneticInput><PhoneticSequence><Segment segment="m" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="p" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <LeftEnvironment><PhoneticTemplate><PhoneticSequence><Segment segment="x" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="table" morphologicalRuleOrder="unordered" phonologicalRules="rewrite">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="entryMuma" partOfSpeech="N"><Allomorphs><Allomorph id="muma"><PhoneticShape>muma</PhoneticShape></Allomorph></Allomorphs><MorphemeId>MUMA</MorphemeId></LexicalEntry>
+          <LexicalEntry id="entryXuma" partOfSpeech="N"><Allomorphs><Allomorph id="xuma"><PhoneticShape>xuma</PhoneticShape></Allomorph></Allomorphs><MorphemeId>XUMA</MorphemeId></LexicalEntry>
+          <LexicalEntry id="entryXmuma" partOfSpeech="N"><Allomorphs><Allomorph id="xmuma"><PhoneticShape>xmuma</PhoneticShape></Allomorph></Allomorphs><MorphemeId>XMUMA</MorphemeId></LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

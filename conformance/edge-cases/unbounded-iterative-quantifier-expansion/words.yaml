@@ -1,0 +1,99 @@
+# oracle-provenance: founding-oracle machine-source=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# Graduation rechecks complete word/status/signature multiplicities and rule traces.
+# Earlier provenance comments below describe the original authoring history.
+# original oracle-provenance: founding-oracle
+# Synthetic construct-shaped mimic -- see STAGING.md and grammar.xml's own header comment. Verified
+# against the C# founding oracle (hc.dll, via hc-conformance.exe self-check): signatures match
+# exactly; `rules:` fields below are transcribed from the oracle's own trace output.
+#
+# Authoring note (G2a discipline, `conformance-staging/edge-cases/mpr-gated-exception`'s own fix for
+# the identical symptom, re-confirmed while authoring `right-to-left-bounded-quantifier-rewrite`):
+# every segment carries a fully-unique feature bundle so no phonological-subrule rewrite collapses
+# feature-identical segments into a bracketed alternates class instead of the literal input string.
+
+language: UnboundedIterativeQuantifierExpansion
+inspired_by: ["synthetic unbounded-iterative-quantifier rewrite probe (not modeling any real language)"]
+sources:
+  - "docs/conformance/representative-typology-basis.md S1.2.6 (Quantifier pattern -- genuinely unbounded quantifier)"
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: ect
+    note: >-
+      ROOT1's correctly-rewritten surface form: underlying "act", the sole "a" is followed by
+      EXACTLY 1 consonant ("c") then the trigger "t" -- the min=1 boundary of the unbounded
+      OptionalSegmentSequence (min="1" max="-1"), the load-bearing witness that the lower bound is
+      genuinely reachable.
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.6"
+    parses:
+      - signature: "ROOT1|ect"
+        rules: [prIterUnbounded]
+        exercises:
+          - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+
+  - word: ecct
+    note: >-
+      ROOT2's correctly-rewritten surface form: underlying "acct", the sole "a" is followed by 2
+      consonants ("cc") then the trigger "t" -- one past the min boundary, distinguishing genuine
+      "1 or more" behavior from an accidental "exactly 1" compile.
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.6"
+    parses:
+      - signature: "ROOT2|ecct"
+        rules: [prIterUnbounded]
+        exercises:
+          - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+
+  - word: eccccct
+    note: >-
+      ROOT3's correctly-rewritten surface form: underlying "accccct", the sole "a" is followed by 5
+      consonants ("ccccc") then the trigger "t" -- the load-bearing GENUINE-unboundedness witness:
+      a compile that used a finite cutoff in place of the unbounded semantics would secretly cap this
+      rule's own repetition count at some small number and fail exactly here, not at the min/min+1
+      boundary alone. Models the scalar/iconic-copying
+      typological pattern this fixture's own S1.2.6 citation describes: degree of copying is not
+      fixed at one extra repetition.
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.6"
+    parses:
+      - signature: "ROOT3|eccccct"
+        rules: [prIterUnbounded]
+        exercises:
+          - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+
+  - word: at
+    note: >-
+      ROOT4's own surface form, UNCHANGED from its own underlying shape: "a" is followed
+      IMMEDIATELY by the trigger "t" with ZERO intervening consonants -- below the quantifier's own
+      min=1, so the environment genuinely fails to match and the obligatory rule does not fire. The
+      load-bearing negative witness that the lower bound is real (not vacuously satisfied at 0),
+      mirroring `right-to-left-bounded-quantifier-rewrite`'s own below-min control.
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.6"
+    parses:
+      - signature: "ROOT4|at"
+        rules: []
+        exercises:
+          - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+
+  - word: act
+    note: >-
+      ROOT1's own RAW underlying shape, queried directly as a surface string -- prIterUnbounded is
+      obligatory wherever its environment matches, so this exact string is NOT a valid surface form
+      for ROOT1 at all (it should have rewritten to "ect"). Proves the rule genuinely fires
+      (obligatorily), rather than being vacuously never-applicable.
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.6"
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+
+  - word: acct
+    note: ROOT2's own RAW underlying shape, queried directly -- same reasoning as "act" (should have rewritten to "ecct").
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.6"
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"
+
+  - word: accccct
+    note: ROOT3's own RAW underlying shape, queried directly -- same reasoning as "act" (should have rewritten to "eccccct"), at the same high occurrence count as the genuine-unboundedness positive witness above.
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.6"
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"

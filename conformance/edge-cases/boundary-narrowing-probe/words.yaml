@@ -1,0 +1,30 @@
+# oracle-provenance: founding-oracle machine-commit=aab4c59819adb7b366915e09df2fb28c62b8c03a
+# C# hc.dll replay; see STAGING.md.
+language: BoundaryNarrowingProbe
+inspired_by: ["synthetic boundary-initial narrowing probe"]
+sources: ["PanGloss issue 14"]
+requires: [phonology]
+fieldworks_producible: true
+words:
+  - word: nmo
+    note: "The suffix-initial b becomes m after the nasal."
+    parses:
+      - signature: "KAN+BO|nmo"
+        rules: [mrSfxBo, prPostNasal]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+          - "MorphologicalOutputAction: CopyFromInput/InsertSegments"
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+          - "Boundary markers (CharacterDefinitionTable)"
+  - word: nbo
+    note: "Obligatory narrowing blocks this spelling."
+    expect_fail: true
+    exercises:
+      - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+      - "Boundary markers (CharacterDefinitionTable)"
+  - word: n
+    note: "Bare-root control."
+    parses:
+      - signature: "KAN|n"
+        rules: []
+        exercises: []

@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>interposed-optional-multi-rhs</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN">
+        <Name>n</Name>
+      </PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featId">
+        <Name>identity</Name>
+        <Symbols>
+          <Symbol id="va">a</Symbol>
+          <Symbol id="vb">b</Symbol>
+          <Symbol id="vc">c</Symbol>
+          <Symbol id="vd">d</Symbol>
+          <Symbol id="ve">e</Symbol>
+          <Symbol id="vx">x</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="ca">
+          <Representations>
+            <Representation>a</Representation>
+          </Representations>
+          <FeatureValue feature="featId" symbolValues="va" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cb">
+          <Representations>
+            <Representation>b</Representation>
+          </Representations>
+          <FeatureValue feature="featId" symbolValues="vb" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cc">
+          <Representations>
+            <Representation>c</Representation>
+          </Representations>
+          <FeatureValue feature="featId" symbolValues="vc" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cd">
+          <Representations>
+            <Representation>d</Representation>
+          </Representations>
+          <FeatureValue feature="featId" symbolValues="vd" />
+        </SegmentDefinition>
+        <SegmentDefinition id="ce">
+          <Representations>
+            <Representation>e</Representation>
+          </Representations>
+          <FeatureValue feature="featId" symbolValues="ve" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cx">
+          <Representations>
+            <Representation>x</Representation>
+          </Representations>
+          <FeatureValue feature="featId" symbolValues="vx" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny">
+        <Name>any</Name>
+      </FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="merge">
+        <Name>merge</Name>
+        <PhoneticInput>
+          <PhoneticSequence>
+            <Segment segment="ca" />
+            <Segment segment="cb" />
+            <Segment segment="cc" />
+          </PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <Segment segment="cd" />
+                <Segment segment="ce" />
+              </PhoneticSequence>
+            </PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <PhonologicalRule id="delete">
+        <Name>delete x</Name>
+        <PhoneticInput>
+          <PhoneticSequence>
+            <Segment segment="cx" />
+          </PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput />
+            <Environment>
+              <LeftEnvironment>
+                <PhoneticTemplate>
+                  <PhoneticSequence>
+                    <Segment segment="cd" />
+                  </PhoneticSequence>
+                </PhoneticTemplate>
+              </LeftEnvironment>
+              <RightEnvironment>
+                <PhoneticTemplate>
+                  <PhoneticSequence>
+                    <Segment segment="ce" />
+                  </PhoneticSequence>
+                </PhoneticTemplate>
+              </RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" phonologicalRules="merge delete">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eAbc" partOfSpeech="posN">
+            <Allomorphs>
+              <Allomorph id="aAbc">
+                <PhoneticShape>abc</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <MorphemeId>ABC</MorphemeId>
+            <Gloss>root</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
