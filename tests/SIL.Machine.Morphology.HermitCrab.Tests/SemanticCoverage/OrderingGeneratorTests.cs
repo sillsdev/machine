@@ -10,7 +10,7 @@ namespace SIL.Machine.Morphology.HermitCrab;
 public sealed class OrderingGeneratorTests
 {
     // Number of fixtures in the measured corpus; the generator tests assert against this total.
-    private const int MeasuredCorpusFixtureCount = 144;
+    private const int MeasuredCorpusFixtureCount = 145;
 
     private static string RepositoryRoot()
     {
@@ -679,13 +679,13 @@ public sealed class OrderingGeneratorTests
         foreach (var kv in rows.GroupBy(r => r.Relation))
             TestContext.Out.WriteLine($"  {kv.Key}: {kv.Count()}");
 
-        Assert.That(rows, Has.Count.EqualTo(2013));
-        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(1766));
+        Assert.That(rows, Has.Count.EqualTo(2014));
+        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(1767));
         Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStage), Is.EqualTo(216));
         Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStratum), Is.EqualTo(31));
         Assert.That(rows.Count(r => r.Relation == DomainRelation.Disjoint), Is.EqualTo(33));
         Assert.That(rows.Count(r => r.Relation == DomainRelation.Overlaps), Is.EqualTo(163));
-        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(1817));
+        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(1818));
     }
 
     [Test]

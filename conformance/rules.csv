@@ -257,6 +257,7 @@ RecursiveEndocentricCompounding,cr1,tevimafl;maflisra;!tevimaflisra
 RewriteAnalysisFeatureNeutralization,prPtoD,d
 rewrite-default-environment,pr1,
 rewrite-default-epenthesis,pr1,bdt
+rewrite-default-full-set,pr1,bat;bdt
 rewrite-default-narrow,pr1,bt
 RightToLeftAnchorEnvironment,prRtlAnchor,aae;ae;eeae
 RightToLeftAnchorEnvironment,prSpread,eeae

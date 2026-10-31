@@ -1274,6 +1274,15 @@ edge-cases/rewrite-default-epenthesis	Interface	Stratum.characterDefinitionTable
 edge-cases/rewrite-default-epenthesis	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/rewrite-default-epenthesis	Interface	SymbolicFeature.defaultSymbol	witnessed	Evidenced
 edge-cases/rewrite-default-epenthesis	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	7 claim(s)
+edge-cases/rewrite-default-full-set	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-default-full-set	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/rewrite-default-full-set	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/rewrite-default-full-set	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-default-full-set	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-default-full-set	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-default-full-set	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/rewrite-default-full-set	Interface	SymbolicFeature.defaultSymbol	present-but-inert	Unobservable
+edge-cases/rewrite-default-full-set	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	7 claim(s)
 edge-cases/rewrite-default-narrow	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/rewrite-default-narrow	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
 edge-cases/rewrite-default-narrow	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable

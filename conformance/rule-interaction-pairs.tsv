@@ -682,6 +682,7 @@ edge-cases/recursive-endocentric-compounding	Main	Main	SameStage	MorphologicalRu
 edge-cases/rewrite-analysis-feature-neutralization	Surface	Surface	SameStage	PhonologicalRule	prPtoD	PhonologicalRule	prPtoD	Overlaps
 edge-cases/rewrite-default-environment	main	main	SameStage	PhonologicalRule	pr1	PhonologicalRule	pr1	Undetermined
 edge-cases/rewrite-default-epenthesis	main	main	SameStage	PhonologicalRule	pr1	PhonologicalRule	pr1	Undetermined
+edge-cases/rewrite-default-full-set	main	main	SameStage	PhonologicalRule	pr1	PhonologicalRule	pr1	Undetermined
 edge-cases/rewrite-default-narrow	main	main	SameStage	PhonologicalRule	pr1	PhonologicalRule	pr1	Undetermined
 edge-cases/right-to-left-anchor-environment	Main	Main	SameStage	PhonologicalRule	prRtlAnchor	PhonologicalRule	prRtlAnchor	Overlaps
 edge-cases/right-to-left-anchor-environment	Main	Main	SameStage	PhonologicalRule	prRtlAnchor	PhonologicalRule	prSpread	Overlaps

@@ -1108,6 +1108,13 @@ edge-cases/rewrite-default-epenthesis	bat	-	RewriteRule Iterative (epenthesis/de
 edge-cases/rewrite-default-epenthesis	bdt	|b[ad(aa)]t	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/rewrite-default-epenthesis	bt	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/rewrite-default-epenthesis	d	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-full-set	a	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-full-set	b	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-full-set	ba	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-full-set	bat	|b[ad(aa)]t	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-full-set	bdt	|b[ad(aa)]t	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-full-set	bt	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+edge-cases/rewrite-default-full-set	d	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/rewrite-default-narrow	a	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/rewrite-default-narrow	b	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 edge-cases/rewrite-default-narrow	ba	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-

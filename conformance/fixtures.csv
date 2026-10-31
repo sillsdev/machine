@@ -26,6 +26,7 @@ edge-cases/mpr-group-overwrite-without-realizational,edge-cases,MprGroupOverwrit
 edge-cases/process-morphology-in-place-mutation,edge-cases,ProcessMorphologyInPlaceMutation,MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
 edge-cases/rewrite-default-environment,edge-cases,rewrite-default-environment,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 edge-cases/rewrite-default-epenthesis,edge-cases,rewrite-default-epenthesis,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+edge-cases/rewrite-default-full-set,edge-cases,rewrite-default-full-set,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 edge-cases/rewrite-default-narrow,edge-cases,rewrite-default-narrow,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 edge-cases/right-to-left-anchor-environment,edge-cases,RightToLeftAnchorEnvironment,RewriteRule direction (Dir): right-to-left
 edge-cases/simultaneous-epenthesis-cascade,edge-cases,IterativeEpenthesisCascadeProbe,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
