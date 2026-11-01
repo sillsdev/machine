@@ -505,7 +505,11 @@ claim is about:
 
 - `fieldworks/project.fwdata` — a real FieldWorks project, backed out of the fixture's own
   `grammar.xml` via LibLCM (not hand-edited), and `fieldworks/WritingSystemStore/*.ldml` — the
-  writing-system definitions that project needs to open.
+  writing-system definitions that project needs to open. The `.ldml` files hold only the elements
+  that define the writing system (`identity`, `layout`, `characters`, `delimiters`, `collations`,
+  `special`); the CLDR locale data LibLCM copies in (dates, numbers, units, display names) is
+  removed because nothing reads it, and a project with the reduced files opens and projects to the
+  same HermitCrab input as the full ones.
 - `fieldworks/phonology-mutations.yaml` — a small, versioned manifest of scripted phoneme-inventory
   counterfactuals against that same project, for a consumer that wants to probe what a narrower or
   wider phoneme inventory does to the project's own FieldWorks-side projections without hand-editing
