@@ -33,11 +33,13 @@ The test fixture is `[Explicit]` and `[Category("Stress")]`, so a plain `dotnet 
 | `allomorph-list-density` | many allomorphs per morpheme | #560 (allomorph-loop cutoff) |
 | `prefix-class-density` | many prefix classes | #560 (allomorph-loop cutoff) |
 | `derivation-chain-homophone-roots` | derivation chains over homophonous roots | template replay at lookup (dead end; #490 ledger) |
-| `mpr-bantu-concord` | noun-class concord through MPR features | #570 (MPR replay) |
-| `mpr-inflection-classes` | inflection classes through MPR features | #570 (MPR replay) |
 | `env-bantu-concord` | allomorphs conditioned by environment | environment input prefilter (dead end; #490 ledger) |
 | `env-austronesian-nasal-prefix` | nasal-prefix allomorphs conditioned by environment | environment input prefilter (dead end; #490 ledger) |
 | `env-zero-allomorphs` | zero allomorphs with rare-class environments | environment input prefilter (dead end; #490 ledger) |
+
+`mpr-bantu-concord` and `mpr-inflection-classes` were removed: both need a `MorphologicalPhonologicalRuleFeatureGroup`
+and rules whose subrules require different MPR features, which a FieldWorks project cannot express, so they could not
+be kept as grammars a real project can produce.
 
 `early-lexicon-agglutinative` omits the word `polundanasak`: engines before #548 (synthesis
 filtered by the allomorphs used) trace an extra phonological rule for it that master does not, so no single expectation passes on both.
