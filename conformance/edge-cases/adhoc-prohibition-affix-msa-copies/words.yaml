@@ -47,9 +47,11 @@ words:
     note: >-
       Prefix first: the prohibition ta- ~ da is declared on each prefix copy. Both candidates (copy 1 + da, copy 2 + da) are excluded, so the word has no analysis.
     expect_fail: true
+    blocked_by: [subTa1, subTa2]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
   - word: taba
     note: >-
       Stem first: the prohibition ba ~ ta- is declared on ba once per prefix copy on the rest side. Both candidates are excluded, so the word has no analysis.
     expect_fail: true
+    blocked_by: [aBa]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]

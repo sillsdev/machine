@@ -71,9 +71,11 @@ words:
     note: >-
       Enclitic first: the prohibition is declared on the enclitic =pa (first morpheme) and names the Verb MSA of la (rest of morphemes), plus a second one naming the Noun MSA. The main stem la with =pa, as Noun and as Verb: no analysis.
     expect_fail: true
+    blocked_by: [mrPa]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
   - word: lipa
     note: >-
       The same prohibitions must also hold for the variant li, which HCLoader registers under the main Noun and Verb MSAs: no analysis. Attaching the rules to the main entry only would parse LAN+PA and LAV+PA for lipa.
     expect_fail: true
+    blocked_by: [mrPa]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]

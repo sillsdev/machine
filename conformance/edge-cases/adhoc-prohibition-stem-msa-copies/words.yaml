@@ -52,9 +52,11 @@ words:
     note: >-
       Prefix first: the prohibition ta- ~ da is declared on the prefix allomorph with both stem copies on the rest side. The only candidate is prefix + Verb copy of da, which is excluded, so the word has no analysis.
     expect_fail: true
+    blocked_by: [subTa]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
   - word: taba
     note: >-
       Stem first: the prohibition ba ~ ta- is declared on each stem copy (Verb and Noun) with the prefix allomorph on the rest side. The only candidate is prefix + Verb copy of ba, which is excluded, so the word has no analysis.
     expect_fail: true
+    blocked_by: [aBaV]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]

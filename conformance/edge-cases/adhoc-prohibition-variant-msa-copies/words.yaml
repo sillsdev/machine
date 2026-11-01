@@ -91,19 +91,23 @@ words:
     note: >-
       Stem first: the prohibition is on the main Verb MSA of da, so it holds for the main Verb copy: no analysis.
     expect_fail: true
+    blocked_by: [eDaV]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
   - word: tadi
     note: >-
       Stem first: the same prohibition must also hold for the variant di, which HCLoader registers under the main Verb MSA: no analysis. Attaching the rule to the main entry only would parse TA+DAV|tadi.
     expect_fail: true
+    blocked_by: [eDiV]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
   - word: taba
     note: >-
       Prefix first: the prohibition ta- ~ main Verb MSA of ba is declared on the prefix, one rule per rest-side copy (main ba, variant bi): no analysis.
     expect_fail: true
+    blocked_by: [mrTa]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
   - word: tabi
     note: >-
       Prefix first: the rest-side copy that is the variant bi is covered too: no analysis. Dropping the variant from the rest side would parse TA+BAV|tabi.
     expect_fail: true
+    blocked_by: [mrTa]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]

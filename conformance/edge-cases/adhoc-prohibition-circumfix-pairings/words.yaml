@@ -67,39 +67,47 @@ words:
     note: >-
       Circumfix first: the prohibition names the circumfix lexeme form, attached to the ta-...-ka pairing and to the other three; no pairing may combine with da.
     expect_fail: true
+    blocked_by: [subTaKa]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
   - word: tadaki
     note: >-
       Circumfix first: the prohibition names the circumfix lexeme form, attached to the ta-...-ki pairing and to the other three; no pairing may combine with da.
     expect_fail: true
+    blocked_by: [subTaKi]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
   - word: todaka
     note: >-
       Circumfix first: the prohibition names the circumfix lexeme form, attached to the to-...-ka pairing and to the other three; no pairing may combine with da.
     expect_fail: true
+    blocked_by: [subToKa]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
   - word: todaki
     note: >-
       Circumfix first: the prohibition names the circumfix lexeme form, attached to the to-...-ki pairing and to the other three; no pairing may combine with da.
     expect_fail: true
+    blocked_by: [subToKi]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
   - word: tabaka
     note: >-
       Stem first: ba excludes the circumfix lexeme form, one rule per pairing, so the ta-...-ka pairing (like the other three) never combines with ba.
     expect_fail: true
+    blocked_by: [aBa]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
   - word: tabaki
     note: >-
       Stem first: ba excludes the circumfix lexeme form, one rule per pairing, so the ta-...-ki pairing (like the other three) never combines with ba.
     expect_fail: true
+    blocked_by: [aBa]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
   - word: tobaka
     note: >-
       Stem first: ba excludes the circumfix lexeme form, one rule per pairing, so the to-...-ka pairing (like the other three) never combines with ba.
     expect_fail: true
+    blocked_by: [aBa]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
   - word: tobaki
     note: >-
       Stem first: ba excludes the circumfix lexeme form, one rule per pairing, so the to-...-ki pairing (like the other three) never combines with ba.
     expect_fail: true
+    blocked_by: [aBa]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]

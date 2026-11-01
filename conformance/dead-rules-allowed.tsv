@@ -13,28 +13,8 @@ edge-cases/morphotactic-attribute-breadth	subExA	Primary of an exclude Allomorph
 edge-cases/morphotactic-attribute-breadth	subExC	Named by the adjacency-variant exclude rules; "toplane" exercises the exclusion, not the allomorph.
 edge-cases/morphotactic-attribute-breadth	subExD	Named by the adjacency-variant exclude rules; "toplane" exercises the exclusion, not the allomorph.
 edge-cases/simultaneous-epenthesis-cascade	prule4	Iterative counterpart of the cascade this fixture pins; the parse crashes as expect_crash declares.
-edge-cases/adhoc-prohibition-affix-msa-copies	aBa	Ad hoc prohibition: it never fires as an applied rule, it only blocks the prohibited word (tada/taba/tadi/tabi), which has no analysis.
-edge-cases/adhoc-prohibition-affix-msa-copies	subTa1	Ad hoc prohibition: it never fires as an applied rule, it only blocks the prohibited word (tada/taba/tadi/tabi), which has no analysis.
-edge-cases/adhoc-prohibition-affix-msa-copies	subTa2	Ad hoc prohibition: it never fires as an applied rule, it only blocks the prohibited word (tada/taba/tadi/tabi), which has no analysis.
-edge-cases/adhoc-prohibition-stem-msa-copies	aBaN	Ad hoc prohibition: it never fires as an applied rule, it only blocks the prohibited word (tada/taba/tadi/tabi), which has no analysis.
-edge-cases/adhoc-prohibition-stem-msa-copies	aBaV	Ad hoc prohibition: it never fires as an applied rule, it only blocks the prohibited word (tada/taba/tadi/tabi), which has no analysis.
-edge-cases/adhoc-prohibition-stem-msa-copies	subTa	Ad hoc prohibition: it never fires as an applied rule, it only blocks the prohibited word (tada/taba/tadi/tabi), which has no analysis.
-edge-cases/adhoc-prohibition-variant-msa-copies	eDaV	Ad hoc prohibition: it never fires as an applied rule, it only blocks the prohibited word (tada/taba/tadi/tabi), which has no analysis.
-edge-cases/adhoc-prohibition-variant-msa-copies	eDiV	Ad hoc prohibition: it never fires as an applied rule, it only blocks the prohibited word (tada/taba/tadi/tabi), which has no analysis.
-edge-cases/adhoc-prohibition-affix-environment-copies	aBa	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word, which has no analysis.
-edge-cases/adhoc-prohibition-affix-environment-copies	subTa1a	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word, which has no analysis.
-edge-cases/adhoc-prohibition-affix-environment-copies	subTa1b	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word, which has no analysis.
-edge-cases/adhoc-prohibition-affix-environment-copies	subTa2a	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word, which has no analysis.
-edge-cases/adhoc-prohibition-affix-environment-copies	subTa2b	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word, which has no analysis.
-edge-cases/adhoc-prohibition-circumfix-pairings	aBa	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word, which has no analysis.
-edge-cases/adhoc-prohibition-circumfix-pairings	subTaKa	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word, which has no analysis.
-edge-cases/adhoc-prohibition-circumfix-pairings	subTaKi	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word, which has no analysis.
-edge-cases/adhoc-prohibition-circumfix-pairings	subToKa	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word, which has no analysis.
-edge-cases/adhoc-prohibition-circumfix-pairings	subToKi	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word, which has no analysis.
-edge-cases/adhoc-prohibition-allomorph-variant-control	aLiN	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word (tali), which has no analysis.
-edge-cases/adhoc-prohibition-allomorph-variant-control	aLiV	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word (tali), which has no analysis.
+edge-cases/adhoc-prohibition-stem-msa-copies	aBaN	Prohibition on the Noun copy of ba: the prefix ta- is Verb-only, so no candidate pairs it with this copy and this rule blocks no word; taba is blocked through the Verb copy aBaV.
+edge-cases/adhoc-prohibition-affix-environment-copies	subTa1a	Prohibition on the after-a environment copy of the prefix: its left context a never matches a word-initial prefix, so no candidate uses it; tada and taba are blocked through the before-consonant copies subTa1b and subTa2b.
+edge-cases/adhoc-prohibition-affix-environment-copies	subTa2a	Prohibition on the after-a environment copy of the prefix: its left context a never matches a word-initial prefix, so no candidate uses it; tada and taba are blocked through the before-consonant copies subTa1b and subTa2b.
+edge-cases/adhoc-prohibition-allomorph-variant-control	aLiN	Prohibition on the Noun copy of the variant li: the prefix ta- is Verb-only, so no candidate pairs it with this copy and this rule blocks no word; tali is blocked through the Verb copy aLiV.
 edge-cases/adhoc-prohibition-variant-enclitic-first	ePa	Entry copy of the enclitic, kept because HCLoader emits it beside the clitic rule: its prohibitions never fire here (only the rule copy mrPa blocks lapa and lipa), and no word in the fixture uses the entry copy as a stem.
-edge-cases/adhoc-prohibition-variant-main-first-enclitic	eLaN	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word (lapa/lipa), which has no analysis.
-edge-cases/adhoc-prohibition-variant-main-first-enclitic	eLaV	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word (lapa/lipa), which has no analysis.
-edge-cases/adhoc-prohibition-variant-main-first-enclitic	eLiN	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word (lapa/lipa), which has no analysis.
-edge-cases/adhoc-prohibition-variant-main-first-enclitic	eLiV	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word (lapa/lipa), which has no analysis.

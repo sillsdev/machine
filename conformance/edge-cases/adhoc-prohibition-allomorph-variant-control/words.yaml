@@ -44,4 +44,5 @@ words:
     note: >-
       Variant allomorph first: the variant li under its Verb copy is excluded with ta-: no analysis. A loader that dropped the prohibition would parse TA+LAV|tali; one that spread it to the main entry would also lose tala.
     expect_fail: true
+    blocked_by: [aLiV]
     exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
