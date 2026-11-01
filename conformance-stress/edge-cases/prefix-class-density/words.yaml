@@ -8,7 +8,8 @@
 # Prefixes are applied innermost first, so an outer prefix sees the first segment of the inner prefix.
 # Allomorph lists are ordered differently per rule, so recorded indices spread over 0..A-1. Every expected
 # parse enumerates every root and slot choice that yields the surface, so ambiguous surfaces list all analyses.
-# Confirmed against the engine with the E1 cutoff off.
+# The expected parses are engine output (master's, see conformance-stress/README.md), checked against this
+# derivation.
 language: StressBantuPrefixDensity
 inspired_by: ["synthetic Bantu noun-class and agreement prefixes written as separate environment-conditioned allomorphs"]
 sources:

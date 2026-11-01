@@ -7,8 +7,8 @@
 # (lim tum kal bon lek) and noun roots like kilim/tuma contain verb-affix material, so bare stems
 # and partly unapplied forms reach root lookup and die at the required slot.
 # For each word the parses below are every (root, slot choice) whose surface equals the word. They
-# were enumerated by a small independent script over the slot tables above, then confirmed against
-# the engine with PruneByTemplateReplay off. A word with no derivation is an expect_fail word; its
+# are engine output (master's, see conformance-stress/README.md), checked against the slot tables above.
+# A word with no derivation is an expect_fail word; its
 # blocked_by names the required-slot rule class that no analysis can supply.
 # Signature: morpheme IDs outermost first, then the root, then "|" and the surface.
 language: StressRequiredTemplateSlot
