@@ -10,7 +10,7 @@ namespace SIL.Machine.Morphology.HermitCrab;
 public sealed class OrderingGeneratorTests
 {
     // Number of fixtures in the measured corpus; the generator tests assert against this total.
-    private const int MeasuredCorpusFixtureCount = 154;
+    private const int MeasuredCorpusFixtureCount = 124;
 
     private static string RepositoryRoot()
     {
@@ -406,22 +406,21 @@ public sealed class OrderingGeneratorTests
         Assert.That(result.Reason, Does.Contain("cA"));
     }
 
-    // Real-fixture check: the prAlpha/prHighTrigger adjacent swap in edge-cases/feature-system-breadth.
-    // prAlpha's output is ncV (vowels: cI, cA); prHighTrigger's input is ncS ({cS}); the two never
-    // intersect.
+    // Real-fixture check: the prEpenthesis/prProthesis adjacent swap in languages/templatic-root-modification.
+    // The two rules' output and input domains never intersect.
     [Test]
-    public void RealFixtureFeatureSystemBreadthPrAlphaPrHighTriggerPairIsDisjointAndIdMatchesTheHandBuiltPilot()
+    public void RealFixtureTemplaticRootModificationPrEpenthesisPrProthesisPairIsDisjointAndIdMatchesTheHandBuiltPilot()
     {
         XDocument grammar = XDocument.Load(
-            Path.Combine(RepositoryRoot(), "conformance", "edge-cases", "feature-system-breadth", "grammar.xml")
+            Path.Combine(RepositoryRoot(), "conformance", "languages", "templatic-root-modification", "grammar.xml")
         );
         OrderingItem item = OrderingGenerator
-            .EnumerateAdjacentPairs(grammar, "edge-cases/feature-system-breadth")
-            .Single(i => i.MemberA == "prAlpha" && i.MemberB == "prHighTrigger");
+            .EnumerateAdjacentPairs(grammar, "languages/templatic-root-modification")
+            .Single(i => i.MemberA == "prEpenthesis" && i.MemberB == "prProthesis");
 
         Assert.That(
             item.Id,
-            Is.EqualTo("ordering:edge-cases/feature-system-breadth/phonologicalRules/prAlpha~prHighTrigger"),
+            Is.EqualTo("ordering:languages/templatic-root-modification/phonologicalRules/prEpenthesis~prProthesis"),
             "must match CoveragePilotCandidatesTests' hand-built id for the same pair"
         );
 
@@ -487,12 +486,12 @@ public sealed class OrderingGeneratorTests
         TestContext.Out.WriteLine(
             $"lists={totalLists} pairs={totalPairs} disjoint={disjoint} overlaps={overlaps} undetermined={undetermined}"
         );
-        Assert.That(totalLists, Is.EqualTo(81));
-        Assert.That(totalPairs, Is.EqualTo(222));
-        Assert.That(disjoint, Is.EqualTo(8));
-        Assert.That(overlaps, Is.EqualTo(29));
-        Assert.That(undetermined, Is.EqualTo(185));
-        Assert.That(disjoint + overlaps + undetermined, Is.EqualTo(222));
+        Assert.That(totalLists, Is.EqualTo(60));
+        Assert.That(totalPairs, Is.EqualTo(137));
+        Assert.That(disjoint, Is.EqualTo(2));
+        Assert.That(overlaps, Is.EqualTo(22));
+        Assert.That(undetermined, Is.EqualTo(113));
+        Assert.That(disjoint + overlaps + undetermined, Is.EqualTo(137));
     }
 
     [Test]
@@ -627,15 +626,15 @@ public sealed class OrderingGeneratorTests
     public void CheckStratumPairDisjointDomainsFindsAPhonologicalRuleSelfPairOverlapping()
     {
         XDocument grammar = XDocument.Load(
-            Path.Combine(RepositoryRoot(), "conformance", "edge-cases", "feature-system-breadth", "grammar.xml")
+            Path.Combine(RepositoryRoot(), "conformance", "languages", "templatic-root-modification", "grammar.xml")
         );
         StratumInteractionPair selfPair = OrderingGenerator
-            .EnumerateStratumPairs(grammar, "edge-cases/feature-system-breadth")
+            .EnumerateStratumPairs(grammar, "languages/templatic-root-modification")
             .Single(p =>
                 p.Kind == StratumPairKind.SameStage
                 && p.UnitA.Kind == StratumUnitKind.PhonologicalRule
-                && p.UnitA.Label == "prAlpha"
-                && p.UnitB.Label == "prAlpha"
+                && p.UnitA.Label == "prGeminate"
+                && p.UnitB.Label == "prGeminate"
             );
 
         DisjointDomainsCheck result = OrderingGenerator.CheckStratumPairDisjointDomains(grammar, selfPair);
@@ -649,12 +648,12 @@ public sealed class OrderingGeneratorTests
     public void CheckStratumPairDisjointDomainsAgreesWithAdjacentPairsOnTheSameRealFixturePair()
     {
         XDocument grammar = XDocument.Load(
-            Path.Combine(RepositoryRoot(), "conformance", "edge-cases", "feature-system-breadth", "grammar.xml")
+            Path.Combine(RepositoryRoot(), "conformance", "languages", "templatic-root-modification", "grammar.xml")
         );
         StratumInteractionPair pair = OrderingGenerator
-            .EnumerateStratumPairs(grammar, "edge-cases/feature-system-breadth")
+            .EnumerateStratumPairs(grammar, "languages/templatic-root-modification")
             .Single(p =>
-                p.Kind == StratumPairKind.SameStage && p.UnitA.Label == "prAlpha" && p.UnitB.Label == "prHighTrigger"
+                p.Kind == StratumPairKind.SameStage && p.UnitA.Label == "prEpenthesis" && p.UnitB.Label == "prProthesis"
             );
 
         DisjointDomainsCheck result = OrderingGenerator.CheckStratumPairDisjointDomains(grammar, pair);
@@ -679,13 +678,13 @@ public sealed class OrderingGeneratorTests
         foreach (var kv in rows.GroupBy(r => r.Relation))
             TestContext.Out.WriteLine($"  {kv.Key}: {kv.Count()}");
 
-        Assert.That(rows, Has.Count.EqualTo(2064));
-        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(1817));
-        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStage), Is.EqualTo(216));
-        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStratum), Is.EqualTo(31));
-        Assert.That(rows.Count(r => r.Relation == DomainRelation.Disjoint), Is.EqualTo(33));
-        Assert.That(rows.Count(r => r.Relation == DomainRelation.Overlaps), Is.EqualTo(163));
-        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(1868));
+        Assert.That(rows, Has.Count.EqualTo(1068));
+        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(931));
+        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStage), Is.EqualTo(107));
+        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStratum), Is.EqualTo(30));
+        Assert.That(rows.Count(r => r.Relation == DomainRelation.Disjoint), Is.EqualTo(11));
+        Assert.That(rows.Count(r => r.Relation == DomainRelation.Overlaps), Is.EqualTo(123));
+        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(934));
     }
 
     [Test]

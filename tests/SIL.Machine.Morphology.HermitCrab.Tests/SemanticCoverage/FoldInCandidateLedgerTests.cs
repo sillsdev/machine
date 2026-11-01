@@ -45,16 +45,15 @@ public sealed class FoldInCandidateLedgerTests
                 + $"surfacePresentElsewhere={surfacePresentElsewhere}"
         );
 
-        // The 135-fixture corpus adds the non-head MPR candidate alongside compound output POS.
-        Assert.That(rows, Has.Count.EqualTo(85));
-        Assert.That(interfaceEdgeCaseOnly, Is.EqualTo(3));
-        Assert.That(interfaceNeverWitnessed, Is.EqualTo(24));
-        Assert.That(surfaceEdgeCaseOnly, Is.EqualTo(50));
-        Assert.That(surfacePresentElsewhere, Is.EqualTo(8));
+        // With only four languages/ fixtures left, most interfaces are witnessed in edge-cases/ alone.
+        Assert.That(rows, Has.Count.EqualTo(59));
+        Assert.That(interfaceEdgeCaseOnly, Is.EqualTo(9));
+        Assert.That(interfaceNeverWitnessed, Is.EqualTo(19));
+        Assert.That(surfaceEdgeCaseOnly, Is.EqualTo(27));
+        Assert.That(surfacePresentElsewhere, Is.EqualTo(4));
     }
 
-    // The expanded corpus witnesses nonHeadPartsOfSpeech in compounding-non-recursive and
-    // outputPartOfSpeech in compounding-breadth.
+    // The interfaces below are witnessed by no languages/ fixture.
     [Test]
     public void InterfaceFoldInCandidatesAreTheEdgeCaseOnlyMprAndCompoundOutput()
     {
@@ -66,15 +65,21 @@ public sealed class FoldInCandidateLedgerTests
             )
             .ToArray();
 
-        Assert.That(candidates, Has.Length.EqualTo(3));
+        Assert.That(candidates, Has.Length.EqualTo(9));
         Assert.That(
             candidates.Select(r => r.Obligation),
             Is.EquivalentTo(
                 new[]
                 {
+                    "AffixTemplate.requiredPartsOfSpeech",
+                    "CompoundingRule.headProdRestrictionsMprFeatures",
                     "CompoundingRule.nonHeadPartsOfSpeech",
                     "CompoundingRule.outputPartOfSpeech",
-                    "SymbolicFeature.defaultSymbol",
+                    "LexicalEntry.ruleFeatures",
+                    "MorphologicalInput.excludedMPRFeatures",
+                    "MorphologicalInput.requiredMPRFeatures",
+                    "MorphologicalOutput.MPRFeatures",
+                    "PhonologicalSubrule.excludedMPRFeatures",
                 }
             )
         );

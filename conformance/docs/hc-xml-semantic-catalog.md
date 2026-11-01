@@ -772,8 +772,8 @@ Source and current-fixture inspection identifies at least these gaps or unproven
 - MPR group `append` is distinct from `overwrite`; current graduated grammars visibly emphasize
   overwrite and cannot transfer that evidence to append.
 - Negative alpha-variable polarity and multiple distinct alpha variables need distinct evidence.
-  Reuse of one positive variable already exists in the suffixing-vowel-harmony fixture and must not be
-  reported as absent.
+  Reuse of one positive variable existed in the suffixing-vowel-harmony fixture, since removed as not
+  FieldWorks-producible.
 - Template `final=false`, partial entries/rules, and bound roots need explicit semantic witnesses.
 - Morphological `multipleApplication=0`, values greater than one, and the upper DTD boundary need
   discriminating evidence rather than comments about default one.

@@ -36,13 +36,13 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### `edge-cases/morphotactic-attribute-breadth/grammar.xml`
 
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:407` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:417` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:424` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:472` = "posP"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:386` = "posN"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:401` = "posN"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:466` = "posP"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:406` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:416` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:423` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:471` = "posP"
+- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:385` = "posN"
+- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:400` = "posN"
+- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:465` = "posP"
 
 ## Author's prose
 

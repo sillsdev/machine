@@ -35,8 +35,8 @@ public sealed class EngineGateInventoryLedgerTests
         );
 
         Assert.That(rows, Has.Count.EqualTo(24));
-        Assert.That(witnessed, Is.EqualTo(19));
-        Assert.That(unreached, Is.EqualTo(5));
+        Assert.That(witnessed, Is.EqualTo(18));
+        Assert.That(unreached, Is.EqualTo(6));
         Assert.That(noDtdAttribute, Is.EqualTo(7));
         Assert.That(witnessed + unreached, Is.EqualTo(rows.Count));
     }
@@ -64,6 +64,7 @@ public sealed class EngineGateInventoryLedgerTests
                 new[]
                 {
                     "HeadPattern",
+                    "MaxApplicationCount",
                     "NonHeadPattern",
                     "NonHeadProdRestrictMprFeatures",
                     "NonHeadRequiredSyntacticFeatureStruct",

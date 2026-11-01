@@ -152,11 +152,6 @@ ambiguous-disagree-repeated-minus-partial-focus,ui,,CharacterDefinitionTable pat
 ambiguous-disagree-repeated-minus-partial-focus,uy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
 ambiguous-disagree-repeated-minus-partial-focus,ua,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
 ambiguous-disagree-repeated-minus-partial-focus,uu,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
-BistratalOverlappingSegmentRepresentation,des,ROOT3|des,"CharacterDefinitionTable: more than one table, one per stratum"
-BistratalOverlappingSegmentRepresentation,sed,ROOT4|sed,"CharacterDefinitionTable: more than one table, one per stratum"
-BistratalOverlappingSegmentRepresentation,basi,,"CharacterDefinitionTable: more than one table, one per stratum"
-BistratalOverlappingSegmentRepresentation,abis,,"CharacterDefinitionTable: more than one table, one per stratum"
-BistratalOverlappingSegmentRepresentation,eds,,"CharacterDefinitionTable: more than one table, one per stratum"
 BoundaryFirstInNarrowingLhs,kanmo,KAN+BO|kanmo,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 BoundaryFirstInNarrowingLhs,kanmo,KAN+BO|kanmo,Boundary markers (CharacterDefinitionTable)
 BoundaryFirstInNarrowingLhsStrrep,kanmo,KAN+BO|kanmo,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
@@ -209,14 +204,14 @@ CliticEncliticAndProclitic,zsagds,PROC+SAG+PAST+ENC|zsagds,Clitics stratum: clit
 CliticEncliticAndProclitic,zsagds,PROC+SAG+PAST+ENC|zsagds,Clitics stratum: clitic designation by stratum name alone
 CliticFlexLayoutBlockingMorphology,sagdi,SAG+PAST|sagdi,Affix template slots (obligatory/disjunctive/ordering)
 CliticFlexLayoutBlockingMorphology,sagdis,SAG+PAST+ENC|sagdis,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-CliticFlexLayoutBlockingMorphology,sagdk,,Clitic rules (isCliticRule / Clitics stratum) after a final template
+CliticFlexLayoutBlockingMorphology,sagdk,,Clitic rules (Clitics stratum) after a final template
 CliticProcliticAfterFinalTemplate,psag,PRE+SAG|psag,Affix template slots (obligatory/disjunctive/ordering)
 CliticProcliticAfterFinalTemplate,zpsag,PROC+PRE+SAG|zpsag,Clitics stratum: clitic designation by stratum name alone
 CliticProcliticAfterFinalTemplate,kpsag,,Clitics stratum: clitic designation by stratum name alone
 CliticProcliticAfterFinalTemplate,pksag,PRE+PLAINPRE+SAG|pksag,Affix template slots (obligatory/disjunctive/ordering)
 CliticRuleDesignation,sagd,SAG+PAST|sagd,Affix template slots (obligatory/disjunctive/ordering)
-CliticRuleDesignation,sagdk,,Clitic rules (isCliticRule / Clitics stratum) after a final template
-CliticRuleDesignation,sagdz,SAG+PAST+DEFCL|sagdz,Clitic rules (isCliticRule / Clitics stratum) after a final template
+CliticRuleDesignation,sagdk,,Clitic rules (Clitics stratum) after a final template
+CliticRuleDesignation,sagdz,SAG+PAST+DEFCL|sagdz,Clitic rules (Clitics stratum) after a final template
 CliticRuleDesignation,kolpu,KOL+NF|kolpu,Affix template slots (obligatory/disjunctive/ordering)
 CliticRuleDesignation,kolpuli,KOL+NF+PL|kolpuli,Affix template slots (obligatory/disjunctive/ordering)
 CliticStemEntry,sagd,SAG+PAST|sagd,Affix template slots (obligatory/disjunctive/ordering)
@@ -236,18 +231,8 @@ CompoundingNonRecursive,tikubel,HEADB+NONHEADOK|tikubel,CompoundingRule
 CompoundingNonRecursive,numobel,,CompoundingRule
 CrossStemMaterialDetermination,patoluka,PFXA+ROOT+SFX|patoluka,MPR features/groups
 CrossStemMaterialDetermination,butoluko,PFXB+ROOT+SFX|butoluko,MPR features/groups
-CrossTableRootRespelling,t,ROOT1|m,"CharacterDefinitionTable: more than one table, one per stratum"
-CrossTableRootRespelling,t,ROOT1|m,CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)
-CrossTableRootRespelling,t,ROOT3|t,"CharacterDefinitionTable: more than one table, one per stratum"
-CrossTableRootRespelling,tu,ROOT1+SUF|m,"CharacterDefinitionTable: more than one table, one per stratum"
-CrossTableRootRespelling,tu,ROOT1+SUF|m,CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)
-CrossTableRootRespelling,tu,ROOT3+SUF|tu,"CharacterDefinitionTable: more than one table, one per stratum"
-CrossTableRootRespelling,q,,"CharacterDefinitionTable: more than one table, one per stratum"
-CrossTableRootRespelling,m,,"CharacterDefinitionTable: more than one table, one per stratum"
-CrossTableRootRespelling,s,,"CharacterDefinitionTable: more than one table, one per stratum"
 PathologicalDeepOptionalAffixNesting,k,K|k,Affix template slots (obligatory/disjunctive/ordering)
 PathologicalDeepOptionalAffixNesting,xxxxxxxxxxxxk,P12+P11+P10+P9+P8+P7+P6+P5+P4+P3+P2+P1+K|xxxxxxxxxxxxk,Affix template slots (obligatory/disjunctive/ordering)
-DefaultSymbolAfterMerge,f,ROOT|f,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 DeletionReapplications,tuki,TUIIKI|tuki,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 DeletionReduplicationExceptionComposite,menulik,NPFX+TULIK|menulik,RewriteRule direction (Dir): left-to-right
 DeletionReduplicationExceptionComposite,tuliktulik,RDPL+TULIK|tuliktulik,AffixProcessRule: reduplication (ReduplicationHint)
@@ -289,41 +274,7 @@ DisjunctiveRecheckProbe,grey,|grey,Disjunctive allomorphs / free-fluctuation
 EpenthesisFedMerge,bd,ROOT|bd,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 ExpansionInterposedOptional,ii,ROOT|ii,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 ExpansionOverlappingTargets,kaaa,KAA1|kaaa,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-FeatureGatingBreadth,kal,KAL|kal,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-FeatureGatingBreadth,kalka,KAL+AGR|kalka,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-FeatureGatingBreadth,tun,TUN|tun,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-FeatureGatingBreadth,tunka,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-FeatureGatingBreadth,mol,MOL|mol,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-FeatureGatingBreadth,molka,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-FeatureGatingBreadth,kalid,KAL+PAST|kalid,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-FeatureGatingBreadth,kalidka,,Affix template slots (obligatory/disjunctive/ordering)
-FeatureGatingBreadth,nal,NAL|nal,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-FeatureGatingBreadth,nalno,NAL+LOUD|nalno,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-FeatureGatingBreadth,nalnomu,NAL+LOUD+EMPH|nalnomu,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-FeatureGatingBreadth,kalkano,KAL+AGR+LOUD|kalkano,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-FeatureGatingBreadth,kalnoka,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-FeatureGatingBreadth,kalmuid,KAL+EMPH+PAST|kalmuid,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-FeatureGatingBreadth,kalidmu,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 FeatureRuleBeforeMerge,butbut,ROOT|butbut,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-FeatureSystemBreadth,ik,AK|ik,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-FeatureSystemBreadth,ak,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-FeatureSystemBreadth,at,AT|at,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
-FeatureSystemBreadth,sal,SAL|sal,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
-FeatureSystemBreadth,isk,ASK|isk,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
-FeatureSystemBreadth,ask,,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
-FeatureSystemBreadth,it,TI|it,MetathesisRule
-FeatureSystemBreadth,ti,,MetathesisRule
-FeatureSystemBreadth,ikt,TI+SUF|ikt,MetathesisRule
-FeatureSystemBreadth,ikt,TIK|ikt,MetathesisRule
-FeatureSystemBreadth,itk,,MetathesisRule
-FeatureSystemBreadth,tik,,MetathesisRule
-FeatureSystemBreadth,ka,KA|ka,MetathesisRule
-FeatureSystemBreadth,tkl,,MetathesisRule
-FeatureSystemBreadth,tlk,TKL|tlk,MetathesisRule
-FeatureSystemBreadth,ktl,,MetathesisRule
-FeatureSystemBreadth,ts,TS|ts,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
-FeatureSystemBreadth,salk,,AffixProcessRule: prefix/suffix/circumfix/infix
-FeatureSystemBreadth,tal,,Element deactivation (isActive) across loader collections
 FinalTemplateMergeKey,sagdss,SAG+FINAL+TEMPLATE+NOM|sagdss,Affix template slots (obligatory/disjunctive/ordering)
 FinalTemplatePartialDiscriminators,dakfa,DAK+FINTAGA|dakfa,Affix template slots (obligatory/disjunctive/ordering)
 FinalTemplatePartialRoot,dakfa,DAK+FINX|dakfa,Affix template slots (obligatory/disjunctive/ordering)
@@ -355,28 +306,6 @@ LiteralHashAffixContext,ara,PFX_AR+ROOT_A|ara,AffixProcessRule: prefix/suffix/ci
 LiteralHashAffixContext,ra,PFX_R+ROOT_A|ra,AffixProcessRule: prefix/suffix/circumfix/infix
 LiteralHashAffixContext,raa,PFX_RA+ROOT_A|raa,AffixProcessRule: prefix/suffix/circumfix/infix
 LiteralHashAffixContext,ar,ROOT_A+SFX_R|ar,AffixProcessRule: prefix/suffix/circumfix/infix
-N2-DefaultSymbol,bat,|bat,Boundary markers (CharacterDefinitionTable)
-N2-DefaultSymbol,bdt,,Boundary markers (CharacterDefinitionTable)
-N1-IsActive,kat,|kat,Boundary markers (CharacterDefinitionTable)
-N1-IsActive,sod,|sod,Boundary markers (CharacterDefinitionTable)
-IsActiveBreadth,kul,KUL|kul,Element deactivation (isActive) across loader collections
-IsActiveBreadth,takul,TA+KUL|takul,Element deactivation (isActive) across loader collections
-IsActiveBreadth,tatakul,,Element deactivation (isActive) across loader collections
-IsActiveBreadth,tatatakul,,Element deactivation (isActive) across loader collections
-IsActiveBreadth,mukul,,Element deactivation (isActive) across loader collections
-IsActiveBreadth,pekul,,Element deactivation (isActive) across loader collections
-IsActiveBreadth,kol,,Element deactivation (isActive) across loader collections
-IsActiveBreadth,mep,,Element deactivation (isActive) across loader collections
-IsActiveBreadth,qot,,Element deactivation (isActive) across loader collections
-IsActiveBreadth,zal,,Element deactivation (isActive) across loader collections
-IsActiveBreadth,qokul,,Element deactivation (isActive) across loader collections
-IsActiveBreadth,qekul,,Element deactivation (isActive) across loader collections
-IsActiveBreadth,qukul,,Element deactivation (isActive) across loader collections
-IsActiveBreadth,mo+kul,MO+KUL|mo+?kul,Element deactivation (isActive) across loader collections
-IsActiveBreadth,kul=,,Element deactivation (isActive) across loader collections
-IsActiveBreadth,tup,,Element deactivation (isActive) across loader collections
-IsActiveBreadth,put,,Element deactivation (isActive) across loader collections
-IsActiveBreadth,otkul,,Element deactivation (isActive) across loader collections
 N3-PatternShapes,bat,|b[ae]t,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bet,|b[ae]t,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bit,,Boundary markers (CharacterDefinitionTable)
@@ -392,7 +321,6 @@ MergeSubrulesPosSimultaneousTemplate,Gs,TA_V+S|Gs,RewriteSubruleDef gating: requ
 MergeSubrulesPosSimultaneousTemplate,Gs,TA_V+S|Gs,Affix template slots (obligatory/disjunctive/ordering)
 MergeThenMetathesis,aca,ATSA|aca,MetathesisRule
 MergeThenMetathesis,aca,ATSA|aca,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-MetathesisComparisonCrash,ti,,MetathesisRule
 MorphotacticAttributeBreadth,topdori,,MPR features/groups
 MorphotacticAttributeBreadth,topdo,TOP+CONFEREXCL|topdo,MPR features/groups
 MorphotacticAttributeBreadth,topri,TOP+EXCLREADER|topri,MPR features/groups
@@ -423,31 +351,10 @@ MorphotacticAttributeBreadth,pogli,POG+POGAFX|pogli,Affix template slots (obliga
 MorphotacticAttributeBreadth,pogti,POG+PO|pogti,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
 MorphotacticAttributeBreadth,pogliti,POG+POGAFX+PO|pogliti,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
 Ranavu,menulik,NPFX+TULIK|menulik,RewriteRule direction (Dir): left-to-right
-MprGroupOverwriteWithoutRealizational,udof,THEMEA+DOF|udof,MPR features/groups
-MprGroupOverwriteWithoutRealizational,wudof,THEMEB+THEMEA+DOF|wudof,MPR features/groups
-MprGroupOverwriteWithoutRealizational,udofq,THEMEA+DOF+ENDC|udofq,MPR features/groups
-MprGroupOverwriteWithoutRealizational,wudofq,,MPR features/groups
-MprOverwriteOrderDependence,dabo,DABO|dabo,MPR features/groups
-MprOverwriteOrderDependence,femo,FEMO|femo,MPR features/groups
-MprOverwriteOrderDependence,daboxayu,DABO+SETX+SETY|daboxayu,MPR features/groups
-MprOverwriteOrderDependence,daboyuxa,DABO+SETY+SETX|daboyuxa,MPR features/groups
-MprOverwriteOrderDependence,daboxayuzi,,MPR features/groups
-MprOverwriteOrderDependence,daboyuxazi,DABO+SETY+SETX+GATEX|daboyuxazi,MPR features/groups
-MprOverwriteOrderDependence,femopiqu,FEMO+SETP+SETQ|femopiqu,MPR features/groups
-MprOverwriteOrderDependence,femoqupi,FEMO+SETQ+SETP|femoqupi,MPR features/groups
-MprOverwriteOrderDependence,femopiquvo,FEMO+SETP+SETQ+GATEPQ|femopiquvo,MPR features/groups
-MprOverwriteOrderDependence,femoqupivo,FEMO+SETQ+SETP+GATEPQ|femoqupivo,MPR features/groups
-MultiTableMetathesisSharedRepresentation,xw,ROOT2|xw,MetathesisRule
-MultiTableMetathesisSharedRepresentation,xw,ROOT2|xw,"CharacterDefinitionTable: more than one table, one per stratum"
-MultiTableMetathesisSharedRepresentation,wx,,MetathesisRule
-MultiTableMetathesisSharedRepresentation,xm,ROOT1|xm,MetathesisRule
-MultiTableMetathesisSharedRepresentation,xm,ROOT1|xm,"CharacterDefinitionTable: more than one table, one per stratum"
-MultiTableMetathesisSharedRepresentation,mx,,MetathesisRule
-MultiTableMetathesisSharedRepresentation,z,,"CharacterDefinitionTable: more than one table, one per stratum"
 NonCliticAfterFinalTemplateLayout,sagd,SAG+PAST|sagd,Affix template slots (obligatory/disjunctive/ordering)
-NonCliticAfterFinalTemplateLayout,sagds,SAG+PAST+ENC|sagds,Clitic rules (isCliticRule / Clitics stratum) after a final template
-NonCliticAfterFinalTemplateLayout,sagdk,,Clitic rules (isCliticRule / Clitics stratum) after a final template
-NonCliticAfterFinalTemplateLayout,kolk,KOL+DERIV|kolk,Clitic rules (isCliticRule / Clitics stratum) after a final template
+NonCliticAfterFinalTemplateLayout,sagds,SAG+PAST+ENC|sagds,Clitic rules (Clitics stratum) after a final template
+NonCliticAfterFinalTemplateLayout,sagdk,,Clitic rules (Clitics stratum) after a final template
+NonCliticAfterFinalTemplateLayout,kolk,KOL+DERIV|kolk,Clitic rules (Clitics stratum) after a final template
 nullable-disagree-bounded-ltr-left,ii,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
 nullable-disagree-bounded-ltr-left,iy,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
 nullable-disagree-bounded-ltr-left,ia,AU|ia,CharacterDefinitionTable pattern shapes: optional group / Kleene star
@@ -1148,50 +1055,12 @@ quantified-alpha-unbounded-zero-right,accct,ROOT3|accct,CharacterDefinitionTable
 quantified-alpha-unbounded-zero-right,eccct,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
 quantified-alpha-unbounded-zero-right,acat,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
 quantified-alpha-unbounded-zero-right,ecat,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
-ReduplicationNoProposalRoute,tata,ROOT+RED|tata,AffixProcessRule: reduplication (ReduplicationHint)
 RecursiveEndocentricCompounding,tevi,ROOT1|tevi,CompoundingRule
 RecursiveEndocentricCompounding,mafl,ROOT2|mafl,CompoundingRule
 RecursiveEndocentricCompounding,isra,ROOT3|isra,CompoundingRule
 RecursiveEndocentricCompounding,tevimafl,ROOT1+ROOT2|tevimafl,CompoundingRule
 RecursiveEndocentricCompounding,maflisra,ROOT2+ROOT3|maflisra,CompoundingRule
 RecursiveEndocentricCompounding,tevimaflisra,,CompoundingRule
-RewriteAnalysisFeatureNeutralization,d,ROOT1|b,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
-RewriteAnalysisFeatureNeutralization,d,ROOT1|b,"CharacterDefinitionTable: more than one table, one per stratum"
-RewriteAnalysisFeatureNeutralization,d,ROOT1|b,CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)
-RewriteAnalysisFeatureNeutralization,d,ROOT2|d,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
-RewriteAnalysisFeatureNeutralization,d,ROOT2|d,"CharacterDefinitionTable: more than one table, one per stratum"
-RewriteAnalysisFeatureNeutralization,n,ROOT4|n,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
-RewriteAnalysisFeatureNeutralization,p,,"CharacterDefinitionTable: more than one table, one per stratum"
-RewriteAnalysisFeatureNeutralization,b,,"CharacterDefinitionTable: more than one table, one per stratum"
-RewriteAnalysisFeatureNeutralization,bp,,"CharacterDefinitionTable: more than one table, one per stratum"
-rewrite-default-environment,bat,|bat,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-environment,bdt,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-environment,bt,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-environment,ba,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-environment,b,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-environment,a,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-environment,d,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-epenthesis,bat,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-epenthesis,bdt,|b[ad(aa)]t,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-epenthesis,bt,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-epenthesis,ba,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-epenthesis,b,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-epenthesis,a,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-epenthesis,d,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-full-set,bat,|b[ad(aa)]t,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-full-set,bdt,|b[ad(aa)]t,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-full-set,bt,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-full-set,ba,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-full-set,b,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-full-set,a,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-full-set,d,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-narrow,bat,|bat,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-narrow,bdt,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-narrow,bt,|bt,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-narrow,ba,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-narrow,b,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-narrow,a,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-rewrite-default-narrow,d,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 RightToLeftAnchorEnvironment,aae,ROOT1|aae,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,ae,ROOT2|ae,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,aaa,,RewriteRule direction (Dir): right-to-left
@@ -1209,31 +1078,12 @@ RightToLeftBoundedQuantifierRewrite,accct,ROOT3|accct,RewriteRule direction (Dir
 RightToLeftBoundedQuantifierRewrite,accct,ROOT3|accct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
 RightToLeftBoundedQuantifierRewrite,acat,,RewriteRule direction (Dir): right-to-left
 RightToLeftBoundedQuantifierRewrite,acct,,RewriteRule direction (Dir): right-to-left
-RightToLeftCrossTableSegmentsEnvironment,ey,ROOT1|ey,RewriteRule direction (Dir): right-to-left
-RightToLeftCrossTableSegmentsEnvironment,a,ROOT2|a,RewriteRule direction (Dir): right-to-left
-RightToLeftCrossTableSegmentsEnvironment,ay,,RewriteRule direction (Dir): right-to-left
-RightToLeftCrossTableSegmentsEnvironment,e,,RewriteRule direction (Dir): right-to-left
-RightToLeftCrossTableSegmentsEnvironment,y,,RewriteRule direction (Dir): right-to-left
 RightToLeftMetathesisReversal,sq,ROOT1|sq,MetathesisRule
 RightToLeftMetathesisReversal,tr,ROOT2|tr,MetathesisRule
 RightToLeftMetathesisReversal,qs,,MetathesisRule
 RightToLeftMetathesisReversal,rt,,MetathesisRule
 RightToLeftMetathesisReversal,sr,,MetathesisRule
 RightToLeftMetathesisReversal,tq,,MetathesisRule
-RightToLeftSegmentsEnvironment,ey,ROOT1|ey,RewriteRule direction (Dir): right-to-left
-RightToLeftSegmentsEnvironment,a,ROOT2|a,RewriteRule direction (Dir): right-to-left
-RightToLeftSegmentsEnvironment,ay,,RewriteRule direction (Dir): right-to-left
-RightToLeftSegmentsEnvironment,e,,RewriteRule direction (Dir): right-to-left
-RightToLeftSegmentsEnvironment,y,,RewriteRule direction (Dir): right-to-left
-SegmentNaturalClassTableBinding,g,ROOT1|z,"CharacterDefinitionTable: more than one table, one per stratum"
-SegmentNaturalClassTableBinding,g,ROOT1|z,CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)
-SegmentNaturalClassTableBinding,g,ROOT1|z,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
-SegmentNaturalClassTableBinding,g,ROOT2|g,"CharacterDefinitionTable: more than one table, one per stratum"
-SegmentNaturalClassTableBinding,g,ROOT2|g,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
-SegmentNaturalClassTableBinding,k,,"CharacterDefinitionTable: more than one table, one per stratum"
-SegmentNaturalClassTableBinding,k,,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
-SegmentNaturalClassTableBinding,z,,"CharacterDefinitionTable: more than one table, one per stratum"
-SegmentNaturalClassTableBinding,gk,,"CharacterDefinitionTable: more than one table, one per stratum"
 SharedTemplateUnconstrainedSuffix,mivd,NROOT+IVERB+PAST|mivd,Affix template slots (obligatory/disjunctive/ordering)
 SimultaneousExpansionTerminates,biiiibiiii,ROOT|biiiibiiii,RewriteRule Simultaneous
 SimultaneousFeeding,gigugu,GIGI|gigugu,RewriteRule Simultaneous
@@ -1269,11 +1119,6 @@ StrRepIdentityProbe,ipat,,NaturalClass: Segments vs FeatureNaturalClass/SegmentN
 StrRepRewriteUnapplication,xpuma,XMUMA|xpuma,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 SubruleMorphosyntacticGating,pat,ROOT1|pat,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
 SubruleMorphosyntacticGating,bat,ROOT1+DERIVE|bat,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
-SynthesisStratumRenderStaleTable,j,ROOTCROSS|,"CharacterDefinitionTable: more than one table, one per stratum"
-SynthesisStratumRenderStaleTable,j,ROOTCROSS|,CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)
-SynthesisStratumRenderStaleTable,k,ROOTSAME|k,"CharacterDefinitionTable: more than one table, one per stratum"
-SynthesisStratumRenderStaleTable,w,,"CharacterDefinitionTable: more than one table, one per stratum"
-SynthesisStratumRenderStaleTable,i,,"CharacterDefinitionTable: more than one table, one per stratum"
 Mbalantic,pakolosa,PFXA+KOLO+SFXA|pakolosa,Affix template slots (obligatory/disjunctive/ordering)
 TruncateRulesProbe,sag,|sag,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,sas,|sas,AffixProcessRule: subtraction/truncation
@@ -1306,10 +1151,6 @@ TruncateSubsumptionProbe,gag,X+C+ROOTAG+B|gag,AffixProcessRule: subtraction/trun
 TwoMergesCascadeEnv,teK,TAK+SFX|teK,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 TwoMergesCascadeEnv,teK,TAK+SFX|teK,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
 TwoMergesCascadeEnv,teK,TAK+SFX|teK,Boundary markers (CharacterDefinitionTable)
-TwoTableSharedRepresentationRecall,y,ROOT1|,"CharacterDefinitionTable: more than one table, one per stratum"
-TwoTableSharedRepresentationRecall,x,,"CharacterDefinitionTable: more than one table, one per stratum"
-TwoTableSharedRepresentationRecall,z,,"CharacterDefinitionTable: more than one table, one per stratum"
-TwoTableSharedRepresentationRecall,q,ROOT2|q,"CharacterDefinitionTable: more than one table, one per stratum"
 UnboundedIterativeQuantifierExpansion,ect,ROOT1|ect,CharacterDefinitionTable pattern shapes: optional group / Kleene star
 UnboundedIterativeQuantifierExpansion,ecct,ROOT2|ecct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
 UnboundedIterativeQuantifierExpansion,eccccct,ROOT3|eccccct,CharacterDefinitionTable pattern shapes: optional group / Kleene star
@@ -1321,60 +1162,6 @@ WordBoundaryAffixRewrite,ta,PFX_R+ROOT_A|ta,RewriteRule Iterative (epenthesis/de
 WordBoundaryAffixRewrite,ta,ROOT_RA|ta,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 WordBoundaryAffixRewrite,taa,PFX_RA+ROOT_A|taa,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 WordBoundaryAffixRewrite,at,ROOT_A+SFX_R|at,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-FusionalRealizationalMorphology,mun,STEM|mun,Stem names
-FusionalRealizationalMorphology,muno,,Stem names
-FusionalRealizationalMorphology,muns,,Stem names
-FusionalRealizationalMorphology,munt,,Stem names
-FusionalRealizationalMorphology,mano,STEM+P1|mano,Stem names
-FusionalRealizationalMorphology,mans,STEM+P2|mans,Stem names
-FusionalRealizationalMorphology,mant,,Stem names
-FusionalRealizationalMorphology,man,,Stem names
-FusionalRealizationalMorphology,mino,STEM+P1|mino,Stem names
-FusionalRealizationalMorphology,mins,,Stem names
-FusionalRealizationalMorphology,mint,STEM+P3|mint,Stem names
-FusionalRealizationalMorphology,min,,Stem names
-FusionalRealizationalMorphology,ferid,FER+RPAST|ferid,RealizationalAffixProcessRule
-FusionalRealizationalMorphology,feres,FER+TENSE|feres,RealizationalAffixProcessRule
-FusionalRealizationalMorphology,feresid,,RealizationalAffixProcessRule
-FusionalRealizationalMorphology,tul,TUL|tul,RealizationalAffixProcessRule
-FusionalRealizationalMorphology,ducit,,RealizationalAffixProcessRule
-FusionalRealizationalMorphology,ferit,FER+PAST2|ferit,RealizationalAffixProcessRule
-FusionalRealizationalMorphology,ducunt,DUC+PL2|ducunt,RealizationalAffixProcessRule
-FusionalRealizationalMorphology,gelobt,GET+LOB|gelobt,AffixProcessRule: prefix/suffix/circumfix/infix
-FusionalRealizationalMorphology,lobh,LOB+S3|lobh,AffixProcessRule: prefix/suffix/circumfix/infix
-FusionalRealizationalMorphology,gelobth,GET+LOB+S3|gelobth,AffixProcessRule: prefix/suffix/circumfix/infix
-FusionalRealizationalMorphology,gelobthh,,AffixProcessRule: prefix/suffix/circumfix/infix
-FusionalRealizationalMorphology,vinc,VIC+PRESSTEM|vinc,AffixProcessRule: prefix/suffix/circumfix/infix
-FusionalRealizationalMorphology,pannox,PAN+NOXN|pan+?nox,CompoundingRule
-FusionalRealizationalMorphology,pannox,PAN+NOXV|pan+?nox,CompoundingRule
-FusionalRealizationalMorphology,benox,BEPFX1+NOXV|benox,AffixProcessRule: prefix/suffix/circumfix/infix
-FusionalRealizationalMorphology,panbenox,,CompoundingRule
-FusionalRealizationalMorphology,pandex,,CompoundingRule
-FusionalRealizationalMorphology,lexdom,LEX+DOMN|lex+?dom,CompoundingRule
-FusionalRealizationalMorphology,lexdom,LEX+DOMV|lex+?dom,CompoundingRule
-FusionalRealizationalMorphology,lexbedom,LEX+BEPFX2+DOMV|lex+?bedom,CompoundingRule
-FusionalRealizationalMorphology,lexbex,,CompoundingRule
-FusionalRealizationalMorphology,gofz,GOF+ENDZ|gofz,MPR features/groups
-FusionalRealizationalMorphology,ygofz,,MPR features/groups
-FusionalRealizationalMorphology,xped,THEMEX+PED|xped,MPR features/groups
-FusionalRealizationalMorphology,yxped,THEMEY+THEMEX+PED|yxped,MPR features/groups
-FusionalRealizationalMorphology,xpedz,THEMEX+PED+ENDZ|xpedz,MPR features/groups
-FusionalRealizationalMorphology,yxpedz,,MPR features/groups
-FusionalRealizationalMorphology,katw,KAT+ENDW|katw,MPR features/groups
-FusionalRealizationalMorphology,sodw,,MPR features/groups
-FusionalRealizationalMorphology,limw,,MPR features/groups
-FusionalRealizationalMorphology,kath,,MPR features/groups
-FusionalRealizationalMorphology,sodh,SOD+ENDH|sodh,MPR features/groups
-FusionalRealizationalMorphology,limh,,MPR features/groups
-FusionalRealizationalMorphology,gofzw,GOF+ENDZ+ENDW|gofzw,MPR features/groups
-FusionalRealizationalMorphology,gofwz,,MPR features/groups
-FusionalRealizationalMorphology,gofwh,GOF+ENDW+ENDH|gofwh,MPR features/groups
-FusionalRealizationalMorphology,gofhw,,MPR features/groups
-FusionalRealizationalMorphology,sang,SING+ABLAUT|sang,MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
-FusionalRealizationalMorphology,mitlav,MIT+LAV|mit+?lav,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
-FusionalRealizationalMorphology,ficlav,FIC+LAV|fic+?lav,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
-FusionalRealizationalMorphology,seclav,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
-FusionalRealizationalMorphology,mitlavlav,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 MetathesisPhaseIsolation,idil,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 MetathesisPhaseIsolation,nui,NIU|nui,MetathesisRule
 MetathesisPhaseIsolation,niu,,MetathesisRule
@@ -1436,16 +1223,6 @@ PolysyntheticStratalDerivationChain,matu,,RewriteRule Iterative (epenthesis/dele
 PolysyntheticStratalDerivationChain,uui,MDC3|uui,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 PolysyntheticStratalDerivationChain,uuu,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 PolysyntheticStratalDerivationChain,utui,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-PrefixalDiscontinuousSlotDependency,shiyidkal,SBJ+PRF+CLF+KAL|shiyidkal,Affix template slots (obligatory/disjunctive/ordering)
-PrefixalDiscontinuousSlotDependency,niyidtan,SBJ+PRF+CLF+TAN|niyidtan,Affix template slots (obligatory/disjunctive/ordering)
-PrefixalDiscontinuousSlotDependency,bishiyidkal,OBJ+SBJ+PRF+CLF+KAL|bishiyidkal,Affix template slots (obligatory/disjunctive/ordering)
-PrefixalDiscontinuousSlotDependency,bishiwodkal,,Affix template slots (obligatory/disjunctive/ordering)
-PrefixalDiscontinuousSlotDependency,yidkal,,Affix template slots (obligatory/disjunctive/ordering)
-PrefixalDiscontinuousSlotDependency,kal,,Affix template slots (obligatory/disjunctive/ordering)
-PrefixalDiscontinuousSlotDependency,shiwodkal,SBJ+IMPF+CLF+KAL|shiwodkal,Affix template slots (obligatory/disjunctive/ordering)
-PrefixalDiscontinuousSlotDependency,gabishiyidkal,ADVA+OBJ+SBJ+PRF+CLF+KAL|gabishiyidkal,Affix template slots (obligatory/disjunctive/ordering)
-PrefixalDiscontinuousSlotDependency,hogabishiyidkal,ADVB+ADVA+OBJ+SBJ+PRF+CLF+KAL|hogabishiyidkal,Affix template slots (obligatory/disjunctive/ordering)
-PrefixalDiscontinuousSlotDependency,gahobishiyidkal,,Affix template slots (obligatory/disjunctive/ordering)
 SuffixingEvidentialAdjacencyChain,tupay,TUPA+1SG|tupay,Affix template slots (obligatory/disjunctive/ordering)
 SuffixingEvidentialAdjacencyChain,tupay,TUPA2+1SG|tupay,Affix template slots (obligatory/disjunctive/ordering)
 SuffixingEvidentialAdjacencyChain,sipuy,SIPU+1SG|sipuy,Affix template slots (obligatory/disjunctive/ordering)
@@ -1469,97 +1246,14 @@ SuffixingEvidentialAdjacencyChain,walakniwas,WALAK+1SG+MIR|walakniwas,MorphemeCo
 SuffixingEvidentialAdjacencyChain,walaknichikwas,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
 SuffixingEvidentialAdjacencyChain,siputukumi,SIPU+1PL.INCL+DIR|siputukumi,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
 SuffixingEvidentialAdjacencyChain,siputukuchikmi,SIPU+1PL.INCL+PL+DIR|siputuku(ch)ikmi,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-SuffixingEvidentialAdjacencyChain,siputuku,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,siputuku,SIPU+1PL.INCL|siputuku,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,siputukusi,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
 SuffixingEvidentialAdjacencyChain,sipulupami,SIPU+2PL+DIR|sipulupami,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
 SuffixingEvidentialAdjacencyChain,sipulupachikmi,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,sipulupasi,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
 SuffixingEvidentialAdjacencyChain,walaknkichikmi,WALAK+2SG+PL+DIR|walaknki(ch)ikmi,Affix template slots (obligatory/disjunctive/ordering)
 SuffixingEvidentialAdjacencyChain,walakchik,,Affix template slots (obligatory/disjunctive/ordering)
 SuffixingEvidentialAdjacencyChain,walaknkicha,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-SuffixingExtensionSlotOrdering,mbe,,MPR features/groups
-SuffixingExtensionSlotOrdering,nbael,,MPR features/groups
-SuffixingExtensionSlotOrdering,npael,PPO+PHDESTROY|npael,MPR features/groups
-SuffixingExtensionSlotOrdering,nba,PPO|nba,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
-SuffixingExtensionSlotOrdering,npa,,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
-SuffixingExtensionSlotOrdering,lisez,PHXROOT+PHXSRC|lisez,MPR features/groups
-SuffixingExtensionSlotOrdering,mba,PAV|mba,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-SuffixingExtensionSlotOrdering,mpa,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-SuffixingExtensionSlotOrdering,limaile,LIM+RPAST|limaile,RealizationalAffixProcessRule
-SuffixingExtensionSlotOrdering,limape,LIM+TENSE|limape,RealizationalAffixProcessRule
-SuffixingExtensionSlotOrdering,limapeile,,RealizationalAffixProcessRule
-SuffixingExtensionSlotOrdering,xkib,EXTX+KIB|xkib,MPR features/groups
-SuffixingExtensionSlotOrdering,yxkib,EXTY+EXTX+KIB|yxkib,MPR features/groups
-SuffixingExtensionSlotOrdering,xkibz,EXTX+KIB+ENDZ|xkibz,MPR features/groups
-SuffixingExtensionSlotOrdering,yxkibz,,MPR features/groups
-SuffixingExtensionSlotOrdering,kibw,KIB+ENDW|kibw,MPR features/groups
-SuffixingExtensionSlotOrdering,belw,,MPR features/groups
-SuffixingExtensionSlotOrdering,nalw,,MPR features/groups
-SuffixingExtensionSlotOrdering,kibh,,MPR features/groups
-SuffixingExtensionSlotOrdering,belh,BEL+ENDH|belh,MPR features/groups
-SuffixingExtensionSlotOrdering,nalh,,MPR features/groups
-SuffixingExtensionSlotOrdering,sekzw,SEK+ENDZ+ENDW|sekzw,MPR features/groups
-SuffixingExtensionSlotOrdering,sekwz,,MPR features/groups
-SuffixingExtensionSlotOrdering,sekwh,SEK+ENDW+ENDH|sekwh,MPR features/groups
-SuffixingExtensionSlotOrdering,sekhw,,MPR features/groups
-SuffixingExtensionSlotOrdering,kimbiakimbia,KIMB+RED|kimbiakimbia,AffixProcessRule: reduplication (ReduplicationHint)
-SuffixingExtensionSlotOrdering,pambam,PAM+RED|pambam,AffixProcessRule: reduplication (ReduplicationHint)
-SuffixingExtensionSlotOrdering,pambam,PAM+RED|pambam,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-SuffixingExtensionSlotOrdering,pampam,,AffixProcessRule: reduplication (ReduplicationHint)
-SuffixingExtensionSlotOrdering,andika,AND+FV|andika,Affix template slots (obligatory/disjunctive/ordering)
-SuffixingExtensionSlotOrdering,andik,,Affix template slots (obligatory/disjunctive/ordering)
-SuffixingExtensionSlotOrdering,andikisha,AND+CAUS+FV|andikisha,Affix template slots (obligatory/disjunctive/ordering)
-SuffixingExtensionSlotOrdering,andikila,AND+APPL+FV|andikila,Affix template slots (obligatory/disjunctive/ordering)
-SuffixingExtensionSlotOrdering,andikishila,AND+CAUS+APPL+FV|andikishila,Affix template slots (obligatory/disjunctive/ordering)
-SuffixingExtensionSlotOrdering,andikilisha,AND+APPL+CAUS+FV|andikilisha,Affix template slots (obligatory/disjunctive/ordering)
-SuffixingExtensionSlotOrdering,dabep,DAB+NUMPL|dabep,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-SuffixingExtensionSlotOrdering,dabepez,DAB+NUMPL+AGR|dabepez,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-SuffixingExtensionSlotOrdering,dabez,DAB+AGR|dabez,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-SuffixingExtensionSlotOrdering,kes,KES|kes,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-SuffixingExtensionSlotOrdering,kesez,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-SuffixingExtensionSlotOrdering,kesepez,KES+NUMPL+AGR|kesepez,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-SuffixingExtensionSlotOrdering,siliz,SIL+RECURSUF|siliz,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-SuffixingExtensionSlotOrdering,siliziz,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-SuffixingExtensionSlotOrdering,daleh,DAL+STEMREQ|daleh,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-SuffixingExtensionSlotOrdering,daheh,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-SuffixingExtensionSlotOrdering,dalizeh,DAL+RECURSUF+STEMREQ|dalizeh,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-SuffixingExtensionSlotOrdering,dalehiz,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-SuffixingExtensionSlotOrdering,zimed,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-SuffixingExtensionSlotOrdering,zamed,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-SuffixingVowelHarmony,semitide,SEMIT+PAST|semitide,Affix template slots (obligatory/disjunctive/ordering)
-SuffixingVowelHarmony,semitide,SEMIT+PAST|semitide,RewriteRule Simultaneous
-SuffixingVowelHarmony,semitile,SEMIT+PRES|semitile,Affix template slots (obligatory/disjunctive/ordering)
-SuffixingVowelHarmony,semitile,SEMIT+PRES|semitile,RewriteRule Simultaneous
-SuffixingVowelHarmony,semitideler,SEMIT+PAST+PL|semitideler,Affix template slots (obligatory/disjunctive/ordering)
-SuffixingVowelHarmony,kutagida,KUTAK+PAST|kutagida,Affix template slots (obligatory/disjunctive/ordering)
-SuffixingVowelHarmony,kutagida,KUTAK+PAST|kutagida,RewriteRule Simultaneous
-SuffixingVowelHarmony,kutagida,KUTAK+PAST|kutagida,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-SuffixingVowelHarmony,kutagida,KUTAK+PAST|kutagida,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
-SuffixingVowelHarmony,kutagida,KUTAK+PAST|kutagida,Boundary markers (CharacterDefinitionTable)
-SuffixingVowelHarmony,kutagila,KUTAK+PRES|kutagila,Affix template slots (obligatory/disjunctive/ordering)
-SuffixingVowelHarmony,kutagila,KUTAK+PRES|kutagila,RewriteRule Simultaneous
-SuffixingVowelHarmony,kutagila,KUTAK+PRES|kutagila,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-SuffixingVowelHarmony,kutagila,KUTAK+PRES|kutagila,Boundary markers (CharacterDefinitionTable)
-SuffixingVowelHarmony,kutak,,Affix template slots (obligatory/disjunctive/ordering)
-SuffixingVowelHarmony,kutakler,,Affix template slots (obligatory/disjunctive/ordering)
-SuffixingVowelHarmony,unitide,UNT+PAST|unitide,RewriteRule Simultaneous
-SuffixingVowelHarmony,unitide,UNT+PAST|unitide,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-SuffixingVowelHarmony,untda,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-SuffixingVowelHarmony,guan,GAN+INTS|guan,AffixProcessRule: prefix/suffix/circumfix/infix
-SuffixingVowelHarmony,etemik,,AffixProcessRule: prefix/suffix/circumfix/infix
-SuffixingVowelHarmony,esalik,,AffixProcessRule: prefix/suffix/circumfix/infix
-SuffixingVowelHarmony,duii,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-SuffixingVowelHarmony,duy,DUII|duy,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-SuffixingVowelHarmony,sueeb,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-SuffixingVowelHarmony,sueb,SUEEB|sueb,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-SuffixingVowelHarmony,satun,SAT+ALPHA|satun,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
-SuffixingVowelHarmony,setin,SET+ALPHA|setin,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
-SuffixingVowelHarmony,kalut,KALT|kalut,RewriteRule Simultaneous
-SuffixingVowelHarmony,kalut,KALT|kalut,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
-SuffixingVowelHarmony,kalit,,RewriteRule Simultaneous
-SuffixingVowelHarmony,kalit,,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
-SuffixingVowelHarmony,kalutun,KALT+ALPHA|kalutun,RewriteRule Simultaneous
-SuffixingVowelHarmony,kalutun,KALT+ALPHA|kalutun,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
-SuffixingVowelHarmony,kalitin,,RewriteRule Simultaneous
-SuffixingVowelHarmony,kalitin,,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
 TemplaticRootModification,katabit,KTB+P1SG|katabit,RewriteRule Simultaneous
 TemplaticRootModification,katabit,KTB+P1SG|katabit,MorphologicalOutputAction: CopyFromInput/InsertSegments
 TemplaticRootModification,katabt,,RewriteRule Simultaneous

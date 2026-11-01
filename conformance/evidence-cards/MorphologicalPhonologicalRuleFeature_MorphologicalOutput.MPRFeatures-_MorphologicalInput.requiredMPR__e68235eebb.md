@@ -17,11 +17,11 @@ no mutator sits between the write and the read: a compounding non-head drop (the
 
 **Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: languages/fusional-realizational-morphology declares a CompoundingRule -- SynthesisCompoundingRule.ApplySubrule (SynthesisCompoundingRule.cs:236) builds output from the head alone, so the non-head's entire MprFeatureSet is dropped unconditionally whenever this rule applies with the writer's word as non-head; which word actually plays non-head, and word-level witness of the drop, are not checked here
+Ledger evidence: no exercising fixture declares a CompoundingRule -- the drop mechanism (SynthesisCompoundingRule.cs:236) cannot fire in any exercising fixture as authored
 
 ## Fixture and word
 
-- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/fusional-realizational-morphology` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
+- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.
 
 ## Exact mutation and before/after parse
 
@@ -29,22 +29,11 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`MorphologicalOutput.MPRFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed MPRFeatures from 5 <MorphologicalOutput> element(s)", example: 'ygofz': ok::- -> ok::THEMEY+GOF+ENDZ|ygofz
-- Reader (`MorphologicalInput.requiredMPRFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed requiredMPRFeatures from 3 <MorphologicalInput> element(s)", example: 'ygofz': ok::- -> ok::THEMEY+GOF+ENDZ|ygofz
+No fixture is identified for this cell, so no witness row can be looked up.
 
 ## Grammar citations
 
-### `languages/fusional-realizational-morphology/grammar.xml`
-
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:215` = "mprConjA"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:452` = "mprCompReq"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:457` = "mprCompReq"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:607` = "mprPedA"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:617` = "mprPedB"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:626` = "mprPedA"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:637` = "mprConjA mprConjB"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:647` = "mprConjC mprConjD"
-
+No fixture is identified for this cell, so no `grammar.xml` lines can be cited.
 ## Author's prose
 
 - No prose recorded: no claim, and no word is identified for this cell.

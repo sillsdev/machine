@@ -53,7 +53,7 @@ public sealed class CoveragePilotCandidatesTests
             Directory.Delete(_scratchDirectory, recursive: true);
     }
 
-    // Candidate 1: word counter-example, parse -> no-parse ('takul': ok::TA+KUL|takul -> ok::-).
+    // Candidate 1: word counter-example, parse -> no-parse ('taga': ok::TA1+GA|taga;TA2+GA|taga -> ok::-).
     [Test]
     public void Candidate1AffixTemplatesElementRemovesAParse()
     {
@@ -61,7 +61,7 @@ public sealed class CoveragePilotCandidatesTests
             "dtd:element/AffixTemplates",
             CoverageItemKind.Surface,
             "dtd-element",
-            "edge-cases/loader-isactive-breadth"
+            "edge-cases/adhoc-prohibition-affix-environment-copies"
         );
         Fixture fixture = FindFixture(item.Fixture);
         IReadOnlyList<string> baseline = CounterfactualGate.ComputeBaseline(fixture);
@@ -166,7 +166,7 @@ public sealed class CoveragePilotCandidatesTests
     [Test]
     public void Candidate4OrderingItemProvesTheDataModelAgainstAHandBuiltSwap()
     {
-        Fixture fixture = FindFixture("edge-cases/feature-system-breadth");
+        Fixture fixture = FindFixture("languages/templatic-root-modification");
         string[] words = fixture.Words.Words.Select(w => w.Word).ToArray();
         Directory.CreateDirectory(_scratchDirectory);
         IReadOnlyList<string> baseline = CounterfactualGate.EvaluateOneGrammar(
@@ -181,8 +181,8 @@ public sealed class CoveragePilotCandidatesTests
             .FirstOrDefault(a => a is not null);
         Assert.That(rules, Is.Not.Null);
         string original = rules!.Value;
-        Assert.That(original, Does.Contain("prAlpha prHighTrigger"), "pins the adjacency this item swaps");
-        rules.Value = original.Replace("prAlpha prHighTrigger", "prHighTrigger prAlpha");
+        Assert.That(original, Does.Contain("prEpenthesis prProthesis"), "pins the adjacency this item swaps");
+        rules.Value = original.Replace("prEpenthesis prProthesis", "prProthesis prEpenthesis");
 
         // No need to place a local HermitCrabInput.dtd copy beside the mutant:
         // XmlLanguageLoader.ResourceXmlResolver resolves that filename to an embedded resource
@@ -192,10 +192,10 @@ public sealed class CoveragePilotCandidatesTests
         IReadOnlyList<string> mutated = CounterfactualGate.EvaluateOneGrammar(mutatedPath, WriteWordsFile(words));
 
         var item = new CoverageItem(
-            "ordering:edge-cases/feature-system-breadth/phonologicalRules/prAlpha~prHighTrigger",
+            "ordering:languages/templatic-root-modification/phonologicalRules/prEpenthesis~prProthesis",
             CoverageItemKind.Ordering,
             "adjacent-transposition",
-            "edge-cases/feature-system-breadth"
+            "languages/templatic-root-modification"
         );
 
         int diffIndex = Enumerable.Range(0, words.Length).FirstOrDefault(i => baseline[i] != mutated[i], -1);
@@ -210,7 +210,7 @@ public sealed class CoveragePilotCandidatesTests
                 baseline[diffIndex],
                 CounterexampleKind.Word,
                 mutated[diffIndex],
-                "swapped prAlpha and prHighTrigger's declared order in phonologicalRules",
+                "swapped prEpenthesis and prProthesis's declared order in phonologicalRules",
                 CounterfactualVerdict.Evidenced
             );
             gate = CoverageCompletenessGate.Evaluate(new[] { item }, new[] { evidence }, Array.Empty<Proof>());
@@ -224,7 +224,7 @@ public sealed class CoveragePilotCandidatesTests
                 .EnumerateAdjacentPairs(unswapped, item.Fixture)
                 .Single(candidate => candidate.Id == item.Id);
             Proof? proof = OrderingProofs.TryBuild(unswapped, orderingItem);
-            Assert.That(proof, Is.Not.Null, "prAlpha's output and prHighTrigger's input must recompute Disjoint");
+            Assert.That(proof, Is.Not.Null, "prEpenthesis's output and prProthesis's input must recompute Disjoint");
 
             gate = CoverageCompletenessGate.Evaluate(
                 new[] { item },

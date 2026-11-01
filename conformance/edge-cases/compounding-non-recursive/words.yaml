@@ -16,9 +16,10 @@ fieldworks_producible_notes: >-
   MSA, the features in an exceptionFeatures-shaped group (matchType all, outputType overwrite,
   HCLoader.cs:168-192), and an Unordered stratum (HCLoader.cs:227). Removed 2026-09-16 as
   unproducible: the SUBRULE-level HeadMorphologicalInput requiredMPRFeatures gate (never set by
-  either compounding loader, HCLoader.cs:1898-1910/1959-1998; pinned upstream by
-  languages/fusional-realizational-morphology), the custom append-policy groups (pinned upstream by
-  edge-cases/mpr-overwrite-order-dependence), and morphologicalRuleOrder="linear".
+  either compounding loader, HCLoader.cs:1898-1910/1959-1998; it was pinned upstream by
+  languages/fusional-realizational-morphology, since removed), the custom append-policy groups (they
+  were pinned by edge-cases/mpr-overwrite-order-dependence, since removed), and
+  morphologicalRuleOrder="linear".
 words:
   - word: fasu
     note: headA bare root, no compounding -- a plain control.
@@ -83,8 +84,8 @@ words:
       The second positive witness: headB (tiku) carries only mpr2, the OTHER member of the
       {mpr1,mpr2} all-type group, so the flat overlap is pinned on both members rather than on one
       lucky feature. Until 2026-09-16 this word was expect_fail through a SUBRULE-level
-      requiredMPRFeatures gate FieldWorks cannot build; that gate is pinned upstream by
-      languages/fusional-realizational-morphology (mitlav/ficlav) and was removed here.
+      requiredMPRFeatures gate FieldWorks cannot build; that gate was pinned upstream by
+      languages/fusional-realizational-morphology (mitlav/ficlav, since removed) and was removed here.
     provenance: "openspec/changes/cover-compounding design.md D4: rule-level fields are group-unaware"
     parses:
       - signature: "HEADB+NONHEADOK|tikubel"

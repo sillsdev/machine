@@ -96,7 +96,6 @@ public sealed class CoverageCompletenessGateTests
     }
 
     [TestCase("languages/suffixing-evidential-adjacency-chain", "person", "number", TemplateMaskedProofs.Kind)]
-    [TestCase("edge-cases/feature-system-breadth", "prHighTrigger", "mtSwap", NeverFiresProofs.Kind)]
     [TestCase(
         "edge-cases/mpr-gated-exception",
         "prNasalAssimBilabial",

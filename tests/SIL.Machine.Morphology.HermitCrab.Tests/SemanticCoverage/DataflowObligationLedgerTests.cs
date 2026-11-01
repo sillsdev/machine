@@ -40,15 +40,15 @@ public sealed class DataflowObligationLedgerTests
         );
 
         // Pins the obligation-cell count and its split by obligation kind and satisfaction state.
-        Assert.That(rows, Has.Count.EqualTo(348));
-        Assert.That(mcDc, Is.EqualTo(160));
-        Assert.That(conditionExtension, Is.EqualTo(6));
-        Assert.That(mutator, Is.EqualTo(182));
+        Assert.That(rows, Has.Count.EqualTo(290));
+        Assert.That(mcDc, Is.EqualTo(132));
+        Assert.That(conditionExtension, Is.EqualTo(2));
+        Assert.That(mutator, Is.EqualTo(156));
         Assert.That(satisfied + notSatisfied + unknown, Is.EqualTo(rows.Count));
 
-        Assert.That(satisfied, Is.EqualTo(9));
-        Assert.That(notSatisfied, Is.EqualTo(120));
-        Assert.That(unknown, Is.EqualTo(219));
+        Assert.That(satisfied, Is.EqualTo(6));
+        Assert.That(notSatisfied, Is.EqualTo(136));
+        Assert.That(unknown, Is.EqualTo(148));
     }
 
     [Test]
@@ -60,8 +60,8 @@ public sealed class DataflowObligationLedgerTests
 
         (string ClassName, int ExpectedCells)[] expected =
         {
-            ("Blocking", 80),
-            ("Overwrite", 48),
+            ("Blocking", 66),
+            ("Overwrite", 36),
             ("PosPriorityUnion", 30),
             ("CompoundingNonHeadDrop", 24),
         };
@@ -110,14 +110,13 @@ public sealed class DataflowObligationLedgerTests
         IReadOnlyList<DataflowObligationLedger.Row> rows = DataflowObligationLedger.Compute(root);
         DataflowObligationLedger.Row[] satisfied = rows.Where(r => r.Status == ObligationStatus.Satisfied).ToArray();
 
-        Assert.That(satisfied, Has.Length.EqualTo(9));
+        Assert.That(satisfied, Has.Length.EqualTo(6));
         Assert.That(
             satisfied.Select(r => (r.WriterElement, r.WriterAttribute, r.ReaderElement, r.ReaderAttribute, r.Role)),
             Is.EquivalentTo(
                 new[]
                 {
                     ("LexicalEntry", "ruleFeatures", "MorphologicalInput", "excludedMPRFeatures", "PresentGatedForm"),
-                    ("LexicalEntry", "ruleFeatures", "PhonologicalSubrule", "excludedMPRFeatures", "PresentGatedForm"),
                     ("LexicalEntry", "partOfSpeech", "MorphologicalRule", "requiredPartsOfSpeech", "AbsentGatedForm"),
                     ("LexicalEntry", "partOfSpeech", "PhonologicalSubrule", "requiredPartsOfSpeech", "AbsentGatedForm"),
                     (
@@ -130,23 +129,9 @@ public sealed class DataflowObligationLedgerTests
                     (
                         "MorphologicalOutput",
                         "MPRFeatures",
-                        "MorphologicalInput",
-                        "requiredMPRFeatures",
-                        "AbsentGatedForm"
-                    ),
-                    (
-                        "MorphologicalOutput",
-                        "MPRFeatures",
                         "PhonologicalSubrule",
                         "excludedMPRFeatures",
                         "PresentGatedForm"
-                    ),
-                    (
-                        "MorphologicalOutput",
-                        "MPRFeatures",
-                        "PhonologicalSubrule",
-                        "requiredMPRFeatures",
-                        "AbsentGatedForm"
                     ),
                     (
                         "CompoundingRule",

@@ -20,8 +20,8 @@ Pins a formerly unmeasured containment hole identified during backend-routing re
 fixture puts a genuinely circumfix-shaped `MorphologicalRule` (a subrule whose output is
 `[InsertSegments, CopyFromInput, InsertSegments]`, classifying `Role::CircumfixPrefix` per
 `crate::emit::rule_role`/`classify_affix`) inside an `<AffixTemplate>` `<Slot>`:
-`suffixing-vowel-harmony` keeps its own circumfix off-template, on a different part of speech, and
-`fusional-realizational-morphology`'s `mrCircumfixGeT` is loose/unordered at the Stratum level,
+`suffixing-vowel-harmony (since removed)` keeps its own circumfix off-template, on a different part of speech, and
+`fusional-realizational-morphology (since removed)`'s `mrCircumfixGeT` is loose/unordered at the Stratum level,
 never template-referenced. This fixture's `mrCircum` is reachable ONLY through
 `templateMain`'s `slotMain` (deliberately NOT listed in the Stratum's own `morphologicalRules=`
 attribute — `template-category-sharing`'s own proven finding is that Slot membership alone does

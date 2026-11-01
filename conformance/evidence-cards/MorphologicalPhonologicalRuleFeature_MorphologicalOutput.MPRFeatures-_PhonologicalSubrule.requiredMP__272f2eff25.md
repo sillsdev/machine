@@ -15,41 +15,29 @@ the payload is ABSENT and the gated form IS blocked.
 
 ## Machine status
 
-**Satisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
+**NotSatisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: paired witness: severing writer and reader both flip 'nbael' from failed to successful parse in languages/suffixing-extension-slot-ordering (conformance/interface-witness.tsv)
+Ledger evidence: chain unexercised: no fixture sets writer and reader to a shared id (conformance/interaction-chains.tsv)
 
 ## Fixture and word
 
-- Claimed by word **'nbael'** in `languages/suffixing-extension-slot-ordering` (a `claimed_cells` entry in `words.yaml`).
+- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.
 
 ## Exact mutation and before/after parse
 
-### Author's claim (languages/suffixing-extension-slot-ordering / 'nbael')
-
-- Severing: either mrPhonoDestroy's own MorphologicalOutput.MPRFeatures="mprPhY" write (the writer) or prPhonoReq's own PhonologicalSubrule.requiredMPRFeatures="mprPhX" gate (the reader) -- severing either alone unblocks this word
-- Before: `ok::-`
-- After: `ok::PPO+PHDESTROY|nbael`
+No `claimed_cells` entry recorded an author-reviewed severing/before/after for this cell.
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`MorphologicalOutput.MPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed MPRFeatures from 4 <MorphologicalOutput> element(s)", example: 'nbael': ok::- -> ok::PPO+PHDESTROY|nbael
-- Reader (`PhonologicalSubrule.requiredMPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed requiredMPRFeatures from 1 <PhonologicalSubrule> element(s)", example: 'nbael': ok::- -> ok::PPO+PHDESTROY|nbael
+No fixture is identified for this cell, so no witness row can be looked up.
 
 ## Grammar citations
 
-### `languages/suffixing-extension-slot-ordering/grammar.xml`
-
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:396` = "mprExtA"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:406` = "mprExtB"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:577` = "mprPhY"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:595` = "mprPhX"
-- Reader (gate declared here) `PhonologicalSubrule.requiredMPRFeatures`: `grammar.xml:334` = "mprPhX"
-
+No fixture is identified for this cell, so no `grammar.xml` lines can be cited.
 ## Author's prose
 
-- `proof:` (claimed_cells, 'nbael' in languages/suffixing-extension-slot-ordering): nbael is PPO (lexically preset with mprPhX) run through mrPhonoDestroy then prPhonoReq's phonological gate; with both constructs intact, mrPhonoDestroy's write triggers PhonoGroup's overwrite semantics (MprFeatureSet.AddOutput) and drops PPO's preset mprPhX before prPhonoReq's gate is ever checked, so this has zero parses. Removing either the writer (mrPhonoDestroy's own MorphologicalOutput.MPRFeatures, so the overwrite-triggering write never happens) or the reader (prPhonoReq's requiredMPRFeatures, so the gate no longer needs mprPhX) lets the mutation fire anyway, producing PPO+PHDESTROY|nbael -- the AbsentGatedForm arm: the required feature is ABSENT (from the derivation's accumulated state, though never from PPO's own declaration) and the rule's requirement GATES on it.
+- No prose recorded: no claim, and no word is identified for this cell.
 
 ## `distinct_from` counterpart
 
-- 'nbael' in languages/suffixing-extension-slot-ordering: `distinct_from` **'npael'** (expect_fail=False) vs. this word (expect_fail=True).
+No claim exists for this cell, so no `distinct_from` counterpart is recorded.

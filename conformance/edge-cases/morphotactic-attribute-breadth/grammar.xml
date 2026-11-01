@@ -30,7 +30,7 @@
 
      Repetition is the reason this fixture exists at all. multipleApplication has NO effect on a rule
      reached through an AffixTemplate slot, because a template applies each slot once (established
-     against the C# oracle in edge-cases/loader-isactive-breadth). Every repeatable rule here is
+     against the C# oracle in the since-removed edge-cases/loader-isactive-breadth). Every repeatable rule here is
      therefore listed on the Stratum's own morphologicalRules attribute instead, where the cap is
      observable: mrRep0 must never apply, and mrRep2 must apply at most twice. Those two boundaries
      are what the ledger's remaining multipleApplication values are quotiented against.
@@ -70,10 +70,9 @@
            surface: MorphologicalPhonologicalRuleFeatureGroup.features is "Yes" in
            fieldworks-producibility.tsv but had no witnessing fixture before this one. What is lost:
            outputType="append" itself. HCLoader never sets Output away from Overwrite, so append
-           semantics have no FieldWorks-producible fixture anywhere in this suite; see
-           conformance/docs/engine-only-fixture-retirement.md for where that construct's own coverage
-           now lives (mpr-group-overwrite-without-realizational / mpr-overwrite-order-dependence,
-           both still engine-only). -->
+           semantics have no FieldWorks-producible fixture anywhere in this suite; the two engine-only
+           fixtures that exercised it were removed (see conformance/docs/engine-only-fixture-retirement.md),
+           so this suite no longer exercises append at all. -->
       <MorphologicalPhonologicalRuleFeatureGroup matchType="all" features="mprA mprB">
         <Name>exceptionFeatures</Name>
       </MorphologicalPhonologicalRuleFeatureGroup>

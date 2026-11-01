@@ -11,23 +11,6 @@
 #
 # Format: one surface ID per line. Blank lines and lines starting with "#" are ignored.
 
-# The inactive PhonologicalFeatureSystem in edge-cases/loader-isactive is observed by the grammar
-# LOADING at all rather than by a failing word: were it loaded, "voi" would resolve against the wrong
-# block and the whole grammar would fail. Distinguishing "a decoy that would change the result" from
-# "a decoy nothing reads" requires per-construct counterfactuals, which do not exist in this repo yet
-# (plan Task 5, CounterfactualGenerator). Until then this is honestly presence, not evidence.
-dtd:enum/PhonologicalFeatureSystem/isActive/no
-
-# The six decoys in edge-cases/loader-isactive-breadth that no word targets. Each is declared so the
-# enumerated value exists on that element; removing its isActive="no" would change no result in that
-# fixture, which the grammar's own header states. They are waived rather than counted so the headline
-# number matches the prose. Giving each a discriminating word is the fix; see grammar.xml's header for
-# what such a word would have to observe.
-dtd:enum/CharacterDefinitionTable/isActive/no
-dtd:enum/Family/isActive/no
-dtd:enum/FeatureNaturalClass/isActive/no
-dtd:enum/MorphologicalPhonologicalRuleFeature/isActive/no
-
 # Two inactive declarations in edge-cases/morphotactic-attribute-breadth that no word can observe.
 # Each would need a word combining two roots, and that fixture has no compounding rule: unconstrained
 # head/non-head patterns made the analyser non-terminating there (the C# oracle did not finish in ten
@@ -39,18 +22,3 @@ dtd:enum/MorphologicalPhonologicalRuleFeature/isActive/no
 # presence-only, and semantic-coverage-baseline.txt's own "todo" line reflects that.)
 dtd:enum/AllomorphCoOccurrenceRule/isActive/no
 dtd:enum/MorphemeCoOccurrenceRule/isActive/no
-
-# Three inactive declarations in edge-cases/feature-system-breadth that are deliberately referenced by
-# nothing, because a reference would dangle when the declaration is correctly dropped, and that same
-# absence leaves no word able to observe them.
-dtd:enum/ComplexFeature/isActive/no
-dtd:enum/SegmentNaturalClass/isActive/no
-dtd:enum/SymbolicFeature/isActive/no
-
-
-
-# edge-cases/feature-system-breadth discriminates this with a feature-value bracket that consults the
-# decoy, and the counterfactual sweep evidences it. The trace grader only credits a deactivated
-# declaration that a word names in neutralizes:, and the discriminating word here is a positive
-# parse rather than a failure, so it cannot carry that key.
-dtd:enum/FeatureValue/isActive/no

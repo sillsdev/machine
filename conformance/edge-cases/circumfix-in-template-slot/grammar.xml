@@ -7,8 +7,8 @@
          no existing fixture exercises: a MorphologicalRule whose subrule output is
          [InsertSegments, CopyFromInput, InsertSegments] (classifies Role::CircumfixPrefix per
          `crate::emit::rule_role`/`classify_affix`), referenced FROM an <AffixTemplate> <Slot>,
-         not applied loose at the Stratum level. `suffixing-vowel-harmony` keeps its own circumfix
-         off-template on a different POS, and `fusional-realizational-morphology`'s mrCircumfixGeT
+         not applied loose at the Stratum level. `suffixing-vowel-harmony (since removed)` keeps its own circumfix
+         off-template on a different POS, and `fusional-realizational-morphology (since removed)`'s mrCircumfixGeT
          is loose/unordered, so neither reaches this shape.
 
          The regression asserts that template-slot emission preserves both circumfix insertions.

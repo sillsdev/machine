@@ -17,11 +17,11 @@ a mutator sits between the write and the read: a part-of-speech priority-union c
 
 **Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: languages/suffixing-extension-slot-ordering declares 16 outputPartOfSpeech-bearing MorphologicalRule/CompoundingRule element(s) -- SynthesisAffixProcessRule.cs:181-182/SynthesisCompoundingRule.cs:181-182's unconditional PriorityUnion gives each one a chance to clobber POS before this reader's gate; which element actually intervenes, and word-level witness of an actual clobber, are not checked here
+Ledger evidence: structurally hazardous: languages/metathesis-phase-isolation declares 10 outputPartOfSpeech-bearing MorphologicalRule/CompoundingRule element(s) -- SynthesisAffixProcessRule.cs:181-182/SynthesisCompoundingRule.cs:181-182's unconditional PriorityUnion gives each one a chance to clobber POS before this reader's gate; which element actually intervenes, and word-level witness of an actual clobber, are not checked here
 
 ## Fixture and word
 
-- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/suffixing-extension-slot-ordering` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
+- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/metathesis-phase-isolation` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
 
 ## Exact mutation and before/after parse
 
@@ -29,33 +29,25 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`MorphologicalRule.outputPartOfSpeech` in `languages/suffixing-extension-slot-ordering`): verdict=Unobservable, mutation="removed outputPartOfSpeech from 16 <MorphologicalRule> element(s)"
-- Reader (`PhonologicalSubrule.requiredPartsOfSpeech` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 4 <PhonologicalSubrule> element(s)", example: 'mbe': ok::- -> ok::PPE|mbe
+- Writer (`MorphologicalRule.outputPartOfSpeech` in `languages/metathesis-phase-isolation`): verdict=Unobservable, mutation="removed outputPartOfSpeech from 10 <MorphologicalRule> element(s)"
+- Reader (`PhonologicalSubrule.requiredPartsOfSpeech` in `languages/metathesis-phase-isolation`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 2 <PhonologicalSubrule> element(s)", example: 'idil': ok::- -> ok::ADIL|idil
 
 ## Grammar citations
 
-### `languages/suffixing-extension-slot-ordering/grammar.xml`
+### `languages/metathesis-phase-isolation/grammar.xml`
 
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:368` = "posV2"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:391` = "posV3"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:401` = "posV3"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:411` = "posV3"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:422` = "posV3"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:432` = "posV3"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:447` = "posV5"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:459` = "posV4"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:469` = "posV4"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:479` = "posV4"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:495` = "posV6"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:507` = "posV6"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:523` = "posV7"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:536` = "posV7"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:572` = "posV3req"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:590` = "posV3req"
-- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:308` = "posV"
-- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:317` = "posV5"
-- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:334` = "posV3req"
-- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:349` = "posV3excl"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:271` = "posComplexMeta"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:296` = "posNotUnapplied"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:335` = "posInfix"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:353` = "posCircum"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:368` = "posRedup"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:386` = "posRedup"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:402` = "posRedup"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:424` = "posTrunc"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:440` = "posLnk"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:453` = "posNonContig"
+- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:206` = "posNonContig"
+- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:224` = "posRedup"
 
 ## Author's prose
 

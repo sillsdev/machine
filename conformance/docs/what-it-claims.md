@@ -5,6 +5,11 @@ names the file it came from so you can recompute it.
 
 ## The claim
 
+> Status after the retirement of the 27 fixtures no FieldWorks project can produce (see
+> `engine-only-fixture-retirement.md`): the gate table in the next section and the gate-arm row of
+> the four-layer table were refreshed. The other figures in the narrative below were measured on the
+> 151-fixture corpus and have not been recomputed; take the current values from the ledgers they cite.
+
 **An engine that produces the expected parse for every case in this suite has correctly implemented
 every construct the suite demonstrably covers — where "demonstrably covers" means: removing the
 construct changes a parse.**
@@ -28,8 +33,8 @@ and that the Blocked arm's failure is attributable to the gate, not to a rule th
 | gates | 24 |
 | obligations (gates × 2 arms) | 48 |
 | worth covering (`xml_reachable`=Yes and `flex_producible`=Yes) | 44 |
-| arms evidenced | **18** (11 Blocked, 7 Control) |
-| gates with *both* arms evidenced | **7** (`ExcludedMprFeatures`, `HeadProdRestrictMprFeatures`, `HeadRequiredSyntacticFeatureStruct`, `NonPartialRuleProhibitedAfterFinalTemplate`, `NonPartialRuleRequiredAfterNonFinalTemplate`, `RequiredMprFeatures`, `RequiredSyntacticFeatureStruct`) |
+| arms evidenced | **16** (10 Blocked, 6 Control) |
+| gates with *both* arms evidenced | **6** (`ExcludedMprFeatures`, `HeadProdRestrictMprFeatures`, `HeadRequiredSyntacticFeatureStruct`, `NonPartialRuleRequiredAfterNonFinalTemplate`, `RequiredMprFeatures`, `RequiredSyntacticFeatureStruct`) |
 
 **Why this ledger, not `dataflow-obligations.tsv`, is now the primary claim.** The older ledger
 enumerates four MC/DC arms per writer/reader chain but its generator can certify at most one of them
@@ -49,7 +54,7 @@ treatment for the 40 chains `interaction-chains.tsv` derives from the DTD — an
 its tests are going away. `gate-obligations.tsv` answers a different, now-primary question: whether
 each of the engine's 24 own decision points is independently shown to matter. Read
 `how-it-is-computed.md`'s gate-obligations section for the full mechanics, including exactly which
-18 obligations are evidenced today and why the rest are not (a corpus gap the current fixtures never
+16 obligations are evidenced today and why the rest are not (a corpus gap the current fixtures never
 trigger, a construct FieldWorks' HCLoader can never produce, an element-content gate with no
 severance primitive built yet, or a rule element `GrammarRuleIndex` cannot resolve to a fired-rule
 id for the Control arm) — every one of those reasons is named in the row's own evidence text, never
@@ -70,7 +75,7 @@ ledger, not this one, is the number to cite as the suite's primary claim.
 | Interface edges | 60 declared, 44 present | **19** | `interface-inventory.tsv`, `interface-witness.tsv` |
 | Interaction chains | 40 declared, 26 exercised | **9** paired | `interaction-chains.tsv` |
 | Obligation cells | 346 enumerated, 18 worth covering | **9** | `dataflow-obligations.tsv`, `fieldworks-producibility.tsv` |
-| Gate arms (MC/DC) | 48, 44 worth covering | **18** | `gate-obligations.tsv` |
+| Gate arms (MC/DC) | 48, 44 worth covering | **16** | `gate-obligations.tsv` |
 
 Each layer is stricter than the one above, so the numbers fall as the demand rises. The unit layer
 asks "does this knob do anything." The cell layer asks "is there a named word whose parse flips when

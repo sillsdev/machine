@@ -100,7 +100,7 @@ subset it claims to support.
 
 ```
 conformance/
-  languages/<name>/    grammar.xml + words.yaml   -- 8 typologically-selected synthetic languages
+  languages/<name>/    grammar.xml + words.yaml   -- 4 typologically-selected synthetic languages
   edge-cases/<name>/   grammar.xml + words.yaml   -- focused micro-grammars for things no shared grammar hosts
   coverage.csv         GENERATED: language x word x construct
   rules.csv            GENERATED: language x grammar rule id x exercising words
@@ -155,18 +155,14 @@ Signatures are authored-and-verified, never blindly
 regenerated — self-check FAILs on mismatch; `--propose` prints a patch for a human to accept, never
 writes. Full schema: `schema/words.schema.json`.
 
-## The eight languages
+## The four languages
 
 | Directory | Grammar name | Simulates |
 |---|---|---|
-| `suffixing-vowel-harmony` | SuffixingVowelHarmony | Long-distance backness harmony, long agglutinative suffix chains, consonant-gradation allomorphy |
 | `templatic-root-modification` | TemplaticRootModification | Templatic root-and-pattern morphology, stem names, OCP co-occurrence, simultaneous rewrite |
-| `suffixing-extension-slot-ordering` | SuffixingExtensionSlotOrdering | Realizational rules, MPR groups, verbal reduplication, post-nasal mutation, CARP-style extension ordering |
 | `metathesis-phase-isolation` | MetathesisPhaseIsolation | Infix, circumfix, reduplication, metathesis, subtractive truncation |
 | `polysynthetic-stratal-derivation-chain` | PolysyntheticStratalDerivationChain | Derivation-then-inflection recursion across strata, incorporation-style compounding, guessed stems |
 | `suffixing-evidential-adjacency-chain` | SuffixingEvidentialAdjacencyChain | Evidential suffix chain, morpheme-adjacency co-occurrence, `requires: []` — the XAmple-eligible, phonology-free grammar |
-| `prefixal-discontinuous-slot-dependency` | PrefixalDiscontinuousSlotDependency | Left-edge position-class template, fused/discontinuous slot dependencies |
-| `fusional-realizational-morphology` | FusionalRealizationalMorphology | Inflection classes, syncretism, ablaut as sole exponent, realizational blocking/suppletion |
 
 Each is a dense, synthetic grammar (invented lexemes and segment inventories, no orthographic claim
 about any real language) where ordinary words exercise several constructs at once, rather than a
@@ -339,12 +335,12 @@ The cheap path, in order of preference:
 1. **Add a word.** One `words.yaml` entry (word + `note` + `parses` + `provenance`) in the language
    whose grammar already covers the territory. No harness or grammar changes.
 2. **Extend a grammar** when no existing language's grammar can express the trigger but the
-   phenomenon is typologically plausible for one of the eight (e.g. a new backness-harmony
-   interaction belongs in `suffixing-vowel-harmony`).
+   phenomenon is typologically plausible for one of the four (e.g. a new evidential-chain
+   interaction belongs in `suffixing-evidential-adjacency-chain`).
 3. **Add an edge-case** when the pin is engine-internal or too specific to embed naturalistically
    (an XML-loader quirk, a crash, a rule shape no real grammar would contain).
 4. **Add a new `languages/` member** only for genuinely new typological territory not covered by any
-   of the eight, not for an incremental variant of one that already exists.
+   of the four, not for an incremental variant of one that already exists.
 
 ## See also
 

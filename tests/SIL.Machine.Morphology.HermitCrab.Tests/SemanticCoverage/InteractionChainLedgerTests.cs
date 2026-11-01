@@ -47,29 +47,24 @@ public sealed class InteractionChainLedgerTests
             );
         }
 
-        Assert.That(junctions, Has.Count.EqualTo(3));
+        Assert.That(junctions, Has.Count.EqualTo(2));
         Assert.That(
             junctions.Select(j => j.PayloadType),
-            Is.EquivalentTo(new[] { "MorphologicalPhonologicalRuleFeature", "PartOfSpeech", "StemName" })
+            Is.EquivalentTo(new[] { "MorphologicalPhonologicalRuleFeature", "PartOfSpeech" })
         );
 
         ChainJunction mprFeature = junctions.Single(j => j.PayloadType == "MorphologicalPhonologicalRuleFeature");
         Assert.That(mprFeature.Writers, Has.Count.EqualTo(3));
-        Assert.That(mprFeature.Readers, Has.Count.EqualTo(8));
+        Assert.That(mprFeature.Readers, Has.Count.EqualTo(6));
 
         ChainJunction partOfSpeech = junctions.Single(j => j.PayloadType == "PartOfSpeech");
         Assert.That(partOfSpeech.Writers, Has.Count.EqualTo(3));
         Assert.That(partOfSpeech.Readers, Has.Count.EqualTo(5));
 
-        ChainJunction stemName = junctions.Single(j => j.PayloadType == "StemName");
-        Assert.That(stemName.Writers, Has.Count.EqualTo(1));
-        Assert.That(stemName.Readers, Has.Count.EqualTo(1));
-
-        Assert.That(rows, Has.Count.EqualTo(40));
-        Assert.That(exercised, Is.EqualTo(26));
-        Assert.That(rows.Count - exercised, Is.EqualTo(14));
-        // The added compounding-non-recursive fixture confirms a fifth hazardous interface chain.
-        Assert.That(hazardous, Is.EqualTo(5));
+        Assert.That(rows, Has.Count.EqualTo(33));
+        Assert.That(exercised, Is.EqualTo(18));
+        Assert.That(rows.Count - exercised, Is.EqualTo(15));
+        Assert.That(hazardous, Is.EqualTo(2));
 
         InteractionChainLedger.Row[] hazards = rows.Where(r => r.Hazardous).ToArray();
 
@@ -79,15 +74,12 @@ public sealed class InteractionChainLedgerTests
                 new[]
                 {
                     ("LexicalEntry", "ruleFeatures", "CompoundingRule"),
-                    ("LexicalEntry", "ruleFeatures", "MorphologicalInput"),
-                    ("LexicalEntry", "ruleFeatures", "PhonologicalSubrule"),
                     ("MorphologicalOutput", "MPRFeatures", "MorphologicalInput"),
-                    ("MorphologicalOutput", "MPRFeatures", "PhonologicalSubrule"),
                 }
             )
         );
         Assert.That(hazards.All(h => h.PayloadType == "MorphologicalPhonologicalRuleFeature"), Is.True);
-        Assert.That(hazards.Count(h => h.ReaderAttribute == "requiredMPRFeatures"), Is.EqualTo(4));
+        Assert.That(hazards.Count(h => h.ReaderAttribute == "requiredMPRFeatures"), Is.EqualTo(1));
         Assert.That(
             hazards.Single(h => h.ReaderElement == "CompoundingRule").ReaderAttribute,
             Is.EqualTo("headProdRestrictionsMprFeatures")
@@ -100,7 +92,7 @@ public sealed class InteractionChainLedgerTests
             hazards
                 .Single(h => h.WriterElement == "MorphologicalOutput" && h.ReaderElement == "MorphologicalInput")
                 .ExercisingFixtures,
-            Contains.Item("edge-cases/mpr-overwrite-order-dependence")
+            Contains.Item("edge-cases/cross-stem-material-determination")
         );
     }
 

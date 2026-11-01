@@ -127,8 +127,7 @@ without `expect_crash` set, that is always a fail; if `expect_crash` is set and 
 normal result instead of crashing, that is *also* a fail, even though the engine's behavior is
 arguably better than the oracle's — `PROTOCOL.md` section 2 is explicit that this pins an
 implementation limitation of the founding oracle, not a linguistic fact. Two fixtures do this today
-(`edge-cases/metathesis-comparison-crash`, `edge-cases/simultaneous-epenthesis-cascade`, per the
-manifest's `expectedCrash` field), and each keeps its `words.txt` to a single word, since nothing
+(`edge-cases/simultaneous-epenthesis-cascade` today, per the manifest's `expectedCrash` field), and it keeps its `words.txt` to a single word, since nothing
 after a crash is ever reached.
 
 One more fixture-level field: `budget_ms`, present only on
@@ -155,34 +154,27 @@ signature multiset does not dedupe).
 The corpus is split into two directories that answer different questions, and the split is
 deliberate rather than a filing convenience.
 
-**`languages/`** holds 8 dense, synthetic grammars, each simulating a distinct typological profile —
+**`languages/`** holds 4 dense, synthetic grammars, each simulating a distinct typological profile —
 invented lexemes and segment inventories, no orthographic claim about any real language — where
 ordinary words exercise several constructs at once rather than probing one mechanism in isolation:
 
 | Directory | Simulates |
 |---|---|
-| `suffixing-vowel-harmony` | Long-distance backness harmony, long agglutinative suffix chains, consonant-gradation allomorphy |
 | `templatic-root-modification` | Templatic root-and-pattern morphology, stem names, OCP co-occurrence, simultaneous rewrite |
-| `suffixing-extension-slot-ordering` | Realizational rules, MPR groups, verbal reduplication, post-nasal mutation, CARP-style extension ordering |
 | `metathesis-phase-isolation` | Infix, circumfix, reduplication, metathesis, subtractive truncation |
 | `polysynthetic-stratal-derivation-chain` | Derivation-then-inflection recursion across strata, incorporation-style compounding, guessed stems |
 | `suffixing-evidential-adjacency-chain` | Evidential suffix chain, morpheme-adjacency co-occurrence, phonology-free |
-| `prefixal-discontinuous-slot-dependency` | Left-edge position-class template, fused/discontinuous slot dependencies |
-| `fusional-realizational-morphology` | Inflection classes, syncretism, ablaut as sole exponent, realizational blocking/suppletion |
 
 (Table per `conformance/README.md`.) `how-it-is-computed.md` shows why this half of the split matters
 beyond typological breadth: of the interfaces the whole corpus actually exercises, the large majority
-are reached by one of these eight, not by a fabricated fixture — realistic grammars carry most of the
+are reached by one of the languages, not by a fabricated fixture — realistic grammars carry most of the
 suite's real evidentiary weight, and the fabricated half exists for what realistic grammars cannot
 host.
 
 **`edge-cases/`** holds 25 micro-grammars for things no shared, realistic grammar can host
-faithfully: loader/XML-semantics probes (`loader-isactive`, `loader-pattern-shapes`,
-`loader-default-symbol`), an `expect_crash` pin, a `budget_ms` pathological stress case, and
+faithfully: loader/XML-semantics probes (`loader-pattern-shapes`), an `expect_crash` pin, a `budget_ms` pathological stress case, and
 allomorphy/rewrite pins whose exact rule shape a naturalistic grammar wouldn't contain (e.g.
-`mpr-gated-exception`'s deliberately-isolated MPR-feature exclusion, or
-`metathesis-comparison-crash`, reduced down from a larger fixture specifically to isolate one
-engine-internal comparison defect). Each is deliberately narrow — most declare `requires: []` or a
+`mpr-gated-exception`'s deliberately-isolated MPR-feature exclusion). Each is deliberately narrow — most declare `requires: []` or a
 short, purpose-built grammar — because its entire job is to pin one specific hazard cleanly, not to
 read as a plausible grammar.
 

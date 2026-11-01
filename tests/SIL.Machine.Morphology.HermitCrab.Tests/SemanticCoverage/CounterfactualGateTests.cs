@@ -225,26 +225,6 @@ public sealed class CounterfactualGateTests
     }
 
     [Test]
-    public void AMutantChildThatOverflowsTheStackReportsAResourceLimit()
-    {
-        // Without its required MPR features, one of this fixture's words recurses until the stack overflows;
-        // the loader accepts the grammar.
-        Fixture fixture = Fixture
-            .DiscoverAll(Path.Combine(RepositoryRoot(), "conformance"))
-            .Single(f => f.Id == "languages/suffixing-extension-slot-ordering");
-        XDocument mutant = XDocument.Load(fixture.GrammarPath);
-        foreach (XElement input in mutant.Descendants("MorphologicalInput"))
-            input.Attribute("requiredMPRFeatures")?.Remove();
-        Directory.CreateDirectory(_scratchDirectory);
-        string mutatedPath = Path.Combine(_scratchDirectory, "overflowing.xml");
-        mutant.Save(mutatedPath);
-
-        string[] words = fixture.Words.Words.Select(word => word.Word).ToArray();
-
-        Assert.Throws<StackLimitExceededException>(() => CounterfactualGate.EvaluateWithTimeout(mutatedPath, words));
-    }
-
-    [Test]
     public void AMutantChildThatFailsForAnotherReasonIsNotARejection()
     {
         Directory.CreateDirectory(_scratchDirectory);
@@ -569,37 +549,41 @@ public sealed class CounterfactualGateTests
         Assert.That(second.Delta, Is.EqualTo(first.Delta));
     }
 
-    // redupMorphType's alphabetically-first sibling "implicit" is a no-op on this fixture, but the
-    // untried "prefix" sibling swaps the morph order -- the proven false-negative this fixes.
+    // adjacency's alphabetically-first sibling "adjacentToLeft" is a no-op for walakntan, but the untried
+    // "adjacentToRight" sibling makes it parse -- the proven false-negative this fixes.
     [Test]
     public void ASurfaceWhoseFirstSiblingIsANoOpButALaterSiblingDiscriminatesIsEvidenced()
     {
         string root = RepositoryRoot();
-        string fixtureDirectory = Path.Combine(root, "conformance", "languages", "suffixing-extension-slot-ordering");
-        var words = new WordsYaml { Language = "SuffixingExtensionSlotOrdering" };
-        words.Words.Add(new WordEntry { Word = "kimbiakimbia" });
-        var fixture = new Fixture("languages/suffixing-extension-slot-ordering", fixtureDirectory, words);
+        string fixtureDirectory = Path.Combine(
+            root,
+            "conformance",
+            "languages",
+            "suffixing-evidential-adjacency-chain"
+        );
+        var words = new WordsYaml { Language = "SuffixingEvidentialAdjacencyChain" };
+        words.Words.Add(new WordEntry { Word = "walakntan" });
+        var fixture = new Fixture("languages/suffixing-evidential-adjacency-chain", fixtureDirectory, words);
 
         IReadOnlyList<string> baseline = CounterfactualGate.ComputeBaseline(fixture);
-        Assert.That(
-            baseline,
-            Is.EqualTo(new[] { "ok::KIMB+RED|kimbiakimbia" }),
-            "pins the baseline this test reasons from"
-        );
+        Assert.That(baseline, Is.EqualTo(new[] { "ok::-" }), "pins the baseline this test reasons from");
 
         CounterfactualResult result = CounterfactualGate.Evaluate(
             fixture,
-            "dtd:enum/MorphologicalOutput/redupMorphType/suffix",
+            "dtd:enum/MorphemeCoOccurrenceRule/adjacency/somewhereToLeft",
             Inventory(),
             baseline,
             _scratchDirectory
         );
 
         Assert.That(result.Verdict, Is.EqualTo(CounterfactualVerdict.Evidenced));
-        Assert.That(result.Mutation, Does.Contain("to \"prefix\""), "the discriminating sibling must be named");
-        Assert.That(result.Delta, Does.Contain("sibling \"prefix\""));
-        Assert.That(result.Delta, Does.Contain("KIMB+RED"));
-        Assert.That(result.Delta, Does.Contain("RED+KIMB"));
+        Assert.That(
+            result.Mutation,
+            Does.Contain("to \"adjacentToRight\""),
+            "the discriminating sibling must be named"
+        );
+        Assert.That(result.Delta, Does.Contain("sibling \"adjacentToRight\""));
+        Assert.That(result.Delta, Does.Contain("WALAK+3SG+ASSUM"));
     }
 
     [Test]

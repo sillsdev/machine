@@ -15,13 +15,13 @@ a mutator sits between the write and the read: a compounding non-head drop (the 
 
 ## Machine status
 
-**Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
+**NotSatisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: languages/fusional-realizational-morphology declares a CompoundingRule -- SynthesisCompoundingRule.ApplySubrule (SynthesisCompoundingRule.cs:236) builds output from the head alone, so the non-head's entire MprFeatureSet is dropped unconditionally whenever this rule applies with the writer's word as non-head; which word actually plays non-head, and word-level witness of the drop, are not checked here
+Ledger evidence: chain unexercised: no fixture sets writer and reader to a shared id (conformance/interaction-chains.tsv)
 
 ## Fixture and word
 
-- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/fusional-realizational-morphology` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
+- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.
 
 ## Exact mutation and before/after parse
 
@@ -29,23 +29,11 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`LexicalEntry.ruleFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed ruleFeatures from 6 <LexicalEntry> element(s)", example: 'ducit': ok::- -> ok::DUC+PAST2|ducit
-- Reader (`MorphologicalInput.requiredMPRFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed requiredMPRFeatures from 3 <MorphologicalInput> element(s)", example: 'ygofz': ok::- -> ok::THEMEY+GOF+ENDZ|ygofz
+No fixture is identified for this cell, so no witness row can be looked up.
 
 ## Grammar citations
 
-### `languages/fusional-realizational-morphology/grammar.xml`
-
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:496` = "mprSuppletivePast"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:569` = "mprCompReq mprSubA"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:574` = "mprCompReq"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:664` = "mprConjA mprConjB"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:669` = "mprConjA mprConjC"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:682` = "mprPedA mprConjA mprConjB mprConjC"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:626` = "mprPedA"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:637` = "mprConjA mprConjB"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:647` = "mprConjC mprConjD"
-
+No fixture is identified for this cell, so no `grammar.xml` lines can be cited.
 ## Author's prose
 
 - No prose recorded: no claim, and no word is identified for this cell.

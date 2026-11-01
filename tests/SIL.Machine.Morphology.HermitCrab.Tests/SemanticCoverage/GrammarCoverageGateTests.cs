@@ -154,7 +154,7 @@ public sealed class GrammarCoverageGateTests
     private const int ObservableSurfaces = 268;
     private const int GeneratedSurfaces = 1069;
 
-    private const int TraceFloor = 68;
+    private const int TraceFloor = 61;
 
     [Test]
     public void TheMeasuredDenominatorIsPinned()

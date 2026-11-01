@@ -23,7 +23,7 @@ words:
     parses:
       - signature: "SAG+PAST+ENC|sagds"
         rules: [mrPast, mrEnc]
-        exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+        exercises: ["Clitic rules (Clitics stratum) after a final template"]
 
   - word: sagdk
     note: >-
@@ -31,7 +31,7 @@ words:
       it after the final template.
     expect_fail: true
     blocked_by: [mrDeriv]
-    exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+    exercises: ["Clitic rules (Clitics stratum) after a final template"]
 
   - word: kolk
     note: >-
@@ -39,4 +39,4 @@ words:
     parses:
       - signature: "KOL+DERIV|kolk"
         rules: [mrDeriv]
-        exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+        exercises: ["Clitic rules (Clitics stratum) after a final template"]

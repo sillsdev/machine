@@ -22,13 +22,13 @@ words:
       Control: mrPlain is not in Clitics, so it may not follow the final template.
     expect_fail: true
     blocked_by: [mrPlain]
-    exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+    exercises: ["Clitic rules (Clitics stratum) after a final template"]
   - word: sagdz
     note: mrDefaultClitic is a clitic because its stratum is named Clitics.
     parses:
       - signature: "SAG+PAST+DEFCL|sagdz"
         rules: [mrPast, mrDefaultClitic]
-        exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+        exercises: ["Clitic rules (Clitics stratum) after a final template"]
   - word: kol
     note: The non-final noun template's only slot is obligatory, so the bare root is not a word.
     expect_fail: true

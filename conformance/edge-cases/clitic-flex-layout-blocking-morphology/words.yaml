@@ -37,4 +37,4 @@ words:
       so the ordinary rule mrPlain is refused.
     expect_fail: true
     blocked_by: [mrPlain]
-    exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+    exercises: ["Clitic rules (Clitics stratum) after a final template"]

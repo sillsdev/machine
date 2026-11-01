@@ -42,9 +42,9 @@ public sealed class GateObligationLedgerTests
         Assert.That(gates, Is.EqualTo(24));
         Assert.That(worthCovering, Is.EqualTo(44));
         Assert.That(evidenced + notEvidenced, Is.EqualTo(rows.Count));
-        Assert.That(evidenced, Is.EqualTo(18));
-        Assert.That(blockedEvidenced, Is.EqualTo(11));
-        Assert.That(controlEvidenced, Is.EqualTo(7));
+        Assert.That(evidenced, Is.EqualTo(16));
+        Assert.That(blockedEvidenced, Is.EqualTo(10));
+        Assert.That(controlEvidenced, Is.EqualTo(6));
     }
 
     [Test]
@@ -131,7 +131,7 @@ public sealed class GateObligationLedgerTests
     }
 
     [Test]
-    public void EvidencedRowsAreExactlyTheseEighteenAndEachCarriesAFixtureAndWord()
+    public void EvidencedRowsAreExactlyTheseSixteenAndEachCarriesAFixtureAndWord()
     {
         string root = RepositoryRoot();
         IReadOnlyList<GateObligationLedger.Row> rows = GateObligationLedger.Read(root);
@@ -150,8 +150,6 @@ public sealed class GateObligationLedgerTests
                     ("HeadProdRestrictMprFeatures", "Control"),
                     ("HeadRequiredSyntacticFeatureStruct", "Blocked"),
                     ("HeadRequiredSyntacticFeatureStruct", "Control"),
-                    ("NonPartialRuleProhibitedAfterFinalTemplate", "Blocked"),
-                    ("NonPartialRuleProhibitedAfterFinalTemplate", "Control"),
                     ("NonPartialRuleRequiredAfterNonFinalTemplate", "Blocked"),
                     ("NonPartialRuleRequiredAfterNonFinalTemplate", "Control"),
                     ("PartialParse", "Blocked"),
@@ -167,7 +165,7 @@ public sealed class GateObligationLedgerTests
     }
 
     [Test]
-    public void SevenGatesHaveBothArmsEvidenced()
+    public void SixGatesHaveBothArmsEvidenced()
     {
         string root = RepositoryRoot();
         IReadOnlyList<GateObligationLedger.Row> rows = GateObligationLedger.Read(root);
@@ -186,7 +184,6 @@ public sealed class GateObligationLedgerTests
                     "ExcludedMprFeatures",
                     "HeadProdRestrictMprFeatures",
                     "HeadRequiredSyntacticFeatureStruct",
-                    "NonPartialRuleProhibitedAfterFinalTemplate",
                     "NonPartialRuleRequiredAfterNonFinalTemplate",
                     "RequiredMprFeatures",
                     "RequiredSyntacticFeatureStruct",

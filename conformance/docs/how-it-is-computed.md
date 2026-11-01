@@ -33,6 +33,9 @@ AffixTemplate  requiredPartsOfSpeech  languages/suffixing-extension-slot-orderin
 AffixTemplate  requiredPartsOfSpeech  languages/suffixing-vowel-harmony                    Evidenced
 ```
 
+(The two `Evidenced` fixtures above were later removed as not FieldWorks-producible; the example is
+kept as the measurement it was.)
+
 — and changes one in the other two, where a specific named word's signature flips from a real parse
 to none once the attribute is gone. Both kinds of fixture *declare* the attribute; only the second
 kind *witnesses* it. Every layer below is built to keep that distinction visible rather than collapse
@@ -202,10 +205,10 @@ speaks to the *analysis* (unapplication) direction — every chain in layer 3 an
 is derived and judged in the synthesis direction only. Order dependence under an unordered stratum is
 also outside what any of these four layers can express at all, existentially quantified criteria being
 satisfied by one witnessed interleaving even when a second, unwitnessed one would fail — that hazard
-class is pinned only by a hand-crafted fixture (`edge-cases/mpr-overwrite-order-dependence`), never by
-a ledger.
+class was pinned only by a hand-crafted fixture (`edge-cases/mpr-overwrite-order-dependence`, since
+removed as not FieldWorks-producible), never by a ledger, and has no fixture now.
 
-## A second denominator: engine gates, not DTD attribute pairs — 24 gates, 19 witnessed
+## A second denominator: engine gates, not DTD attribute pairs — 24 gates, 18 witnessed
 
 Every layer above is keyed to the DTD: an attribute, or a pair of attributes joined by a payload
 type. `conformance/engine-gate-inventory.tsv` is keyed to something else entirely —
@@ -281,10 +284,11 @@ scale.
 grammar.xml attribute values and inferring what "should" fire — the same standard `TraceRuleAttributor`
 and `FailureRuleAttributor` already hold this suite's rule-level attribution to.
 
-**19 of 24 gates are `Witnessed`.** The 5 that are not are each a specific, named corpus gap, not "the
+**18 of 24 gates are `Witnessed`.** The 6 that are not are each a specific, named corpus gap, not "the
 suite is thin" in the abstract — see `EngineGateInventoryLedgerTests.UnreachedGatesAreTheKnownCorpusGaps`
 for the exact list: the head and non-head compounding pattern gates, two non-head compounding feature
-gates, and `ObligatorySyntacticFeatures`.
+gates, `ObligatorySyntacticFeatures`, and `MaxApplicationCount` (its only fixtures were removed with the
+fixtures no FieldWorks project can produce).
 ## A third constraint layer: what a real FieldWorks project can produce
 
 Everything above measures two layers: what the HC **engine** does, and what HC's XML/DTD can
@@ -350,8 +354,8 @@ must be `type="exclude"`; a fixture's committed ground truth must not depend on
 and `Environments` is producible only on a subrule whose output is a single literal-form affix —
 `RootAllomorph`, paired circumfix, or single-piece `Form` — never a genuinely discontinuous
 multi-piece process-rule output),
-fixture by fixture — naming which fixtures are HC-engine-only regression
-tests rather than evidence of FieldWorks-facing coverage.
+fixture by fixture. The suite now keeps only fixtures marked `true`; the HC-engine-only (`false`)
+fixtures were removed, so the field records a verdict that every remaining fixture passes.
 
 **Method.** Every verdict required reading the whole of `HCLoader.cs` (~2,510 non-blank lines (2,837 total)) and tracing each
 subject to the specific runtime property it would need to set on this repo's own engine classes,
@@ -448,7 +452,7 @@ An obligation is `worth_covering` only when both are `Yes` — 22 of 24 gates (4
 today. A gate that IS worth covering can still be `NotEvidenced` for reasons that have nothing to do
 with either layer, and each is named distinctly rather than collapsed together:
 
-- **Unreached in the current corpus.** 4 of the 5 `Unreached` gates from `engine-gate-inventory.tsv`
+- **Unreached in the current corpus.** 5 of the 6 `Unreached` gates from `engine-gate-inventory.tsv`
   are worth covering but no fixture triggers them at all yet (the fifth, `ObligatorySyntacticFeatures`,
   is also `flex_producible=No`, so it is excluded before reaching this check). No candidate word
   exists to evidence either arm from, so both are `NotEvidenced` naming the corpus gap directly.
@@ -469,8 +473,8 @@ with either layer, and each is named distinctly rather than collapsed together:
   is not one of the three `GrammarRuleIndex` can resolve. `HeadProdRestrictMprFeatures` is the one
   gate whose blocking attribute (`CompoundingRule.headProdRestrictionsMprFeatures`) sits directly on
   a `CompoundingRule` element and has both arms `Evidenced`. Contrast it against `BoundRoot`'s
-  `Allomorph`-rooted Control arm; `GateObligationLedgerTests.SevenGatesHaveBothArmsEvidenced` pins
-  the full set of seven gates with both arms evidenced.
+  `Allomorph`-rooted Control arm; `GateObligationLedgerTests.SixGatesHaveBothArmsEvidenced` pins
+  the full set of six gates with both arms evidenced.
 
 **Where the severance evidence comes from.** For every DTD attribute that is also an `IDREF`/`IDREFS`
 attribute (`interface-inventory.tsv`'s own scope), `GateObligationLedger` reads the already-computed

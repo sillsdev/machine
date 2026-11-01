@@ -19,7 +19,6 @@ Stratum (Linear/Unordered rule order)
 AffixProcessRule: prefix/suffix/circumfix/infix
 AffixProcessRule: reduplication (ReduplicationHint)
 AffixProcessRule: subtraction/truncation
-RealizationalAffixProcessRule
 CompoundingRule
 MorphologicalOutputAction: CopyFromInput/InsertSegments
 MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
@@ -30,12 +29,10 @@ RewriteRule direction (Dir): right-to-left
 RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
 MetathesisRule
 Affix template slots (obligatory/disjunctive/ordering)
-Clitic rules (isCliticRule / Clitics stratum) after a final template
+Clitic rules (Clitics stratum) after a final template
 Clitics stratum: clitic designation by stratum name alone
 NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 Boundary markers (CharacterDefinitionTable)
-CharacterDefinitionTable: more than one table, one per stratum
-CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)
 MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
 MPR features/groups
 Guesser/LexicalGuess

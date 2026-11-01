@@ -10,7 +10,7 @@
          from the non-head MSA, and the features in an exceptionFeatures-shaped group. The former
          SUBRULE-level requiredMPRFeatures gate and append-policy groups were removed 2026-09-16 as
          unproducible (HCLoader.cs:168-192, 1898-1910); upstream fusional-realizational-morphology
-         pins the subrule gate. See STAGING.md. -->
+         (since removed) pinned the subrule gate. See STAGING.md. -->
     <PartsOfSpeech>
       <PartOfSpeech id="posHead"><Name>head</Name></PartOfSpeech>
       <PartOfSpeech id="posOther"><Name>other</Name></PartOfSpeech>

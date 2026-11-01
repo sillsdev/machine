@@ -15,9 +15,9 @@ no mutator sits between the write and the read: blocking (Word.CheckBlocking reb
 
 ## Machine status
 
-**Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
+**NotSatisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: no exercising fixture declares >=2 LexicalEntry sharing a family under the same Stratum -- Word.CheckBlocking (Word.cs:475-477) requires LexEntry.Family != null, so blocking cannot fire in any exercising fixture as authored
+Ledger evidence: chain unexercised: no fixture sets writer and reader to a shared id (conformance/interaction-chains.tsv)
 
 ## Fixture and word
 

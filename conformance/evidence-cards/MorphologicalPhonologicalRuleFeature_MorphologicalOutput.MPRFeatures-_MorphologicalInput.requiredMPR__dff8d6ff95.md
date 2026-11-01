@@ -17,11 +17,11 @@ no mutator sits between the write and the read: blocking (Word.CheckBlocking reb
 
 **Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: languages/suffixing-extension-slot-ordering declares >=2 LexicalEntry sharing a family under the same Stratum (Word.CheckBlocking's family+stratum precondition, Word.cs:475-485); FeatureStruct subsumption and word-level witness of an actual block are not checked here
+Ledger evidence: no exercising fixture declares >=2 LexicalEntry sharing a family under the same Stratum -- Word.CheckBlocking (Word.cs:475-477) requires LexEntry.Family != null, so blocking cannot fire in any exercising fixture as authored
 
 ## Fixture and word
 
-- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/suffixing-extension-slot-ordering` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
+- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.
 
 ## Exact mutation and before/after parse
 
@@ -29,22 +29,11 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`MorphologicalOutput.MPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed MPRFeatures from 4 <MorphologicalOutput> element(s)", example: 'nbael': ok::- -> ok::PPO+PHDESTROY|nbael
-- Reader (`MorphologicalInput.requiredMPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=Timeout, mutation="removed requiredMPRFeatures from 4 <MorphologicalInput> element(s)"
+No fixture is identified for this cell, so no witness row can be looked up.
 
 ## Grammar citations
 
-### `languages/suffixing-extension-slot-ordering/grammar.xml`
-
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:396` = "mprExtA"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:406` = "mprExtB"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:577` = "mprPhY"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:595` = "mprPhX"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:415` = "mprExtA"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:426` = "mprConcA mprConcB"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:436` = "mprConcC mprConcD"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:559` = "mprRRealTest"
-
+No fixture is identified for this cell, so no `grammar.xml` lines can be cited.
 ## Author's prose
 
 - No prose recorded: no claim, and no word is identified for this cell.

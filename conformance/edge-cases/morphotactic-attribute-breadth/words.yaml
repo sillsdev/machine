@@ -75,9 +75,9 @@
 #     five could not be, because restoring any of them would reintroduce the non-producible
 #     construct that carried them and undo this fixture's own conversion.
 #   - outputType="append" specifically (see above) -- no fixture in this suite has a producible
-#     substitute for it; conformance/edge-cases/mpr-group-overwrite-without-realizational and
-#     conformance/edge-cases/mpr-overwrite-order-dependence remain the only fixtures exercising it,
-#     both still fieldworks_producible: false.
+#     substitute for it. The two fixtures that exercised it, mpr-group-overwrite-without-realizational
+#     and mpr-overwrite-order-dependence, were fieldworks_producible: false and have been removed
+#     (conformance/docs/engine-only-fixture-retirement.md), so nothing here exercises it now.
 #
 # COVERAGE.CSV REGRESSION, FOUND AND FIXED separately from the conversion itself: the conversion (and
 # its later WIP expansion) never re-added per-word/per-parse "exercises:" tags, so every word in this

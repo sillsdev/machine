@@ -559,9 +559,9 @@ Add-Verdict "loader-gap" "MetathesisSwitchPositionInversion" "No" @(
     "in its RightSwitch cell. Composed with HCLoader's inversion, the always-earlier group ends up " +
     "bound to HC's RightSwitchName and the always-later group to LeftSwitchName -- so a " +
     "FieldWorks-authored MetathesisRule can never have its leftSwitch name the structurally earlier " +
-    "of its two pattern groups. That is exactly the shape edge-cases/metathesis-comparison-crash " +
-    "pins (a C# array-comparison-invariant crash, fixed upstream by sillsdev/machine#471), so the " +
-    "crash it regression-tests is unreachable from a real FieldWorks project."
+    "of its two pattern groups. That is the shape behind the C# array-comparison-invariant crash " +
+    "fixed upstream by sillsdev/machine#471, so that crash is unreachable from a real FieldWorks " +
+    "project (the fixture that pinned it, edge-cases/metathesis-comparison-crash, has been removed)."
 )
 
 Add-Verdict "loader-gap" "LexicalPatternRootAllomorph" "Yes" @(

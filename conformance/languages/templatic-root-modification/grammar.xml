@@ -4,7 +4,7 @@
   <Language>
     <Name>TemplaticRootModification</Name>
     <PartsOfSpeech>
-      <!-- One POS per demo section, deliberately - the same isolation discipline fusional-realizational-morphology's
+      <!-- One POS per demo section, deliberately - the same isolation discipline fusional-realizational-morphology's (since removed)
            posAblautV/posN1/posV1/posN2/posV2 established: this grammar packs FIVE phonological rules
            (prEpenthesis, prProthesis, prSimulFeeding, prIterFeedingControl, prGeminate) into one
            stratum, and every one of them is scoped via requiredPartsOfSpeech on its own
@@ -12,7 +12,7 @@
            Without this, e.g. prEpenthesis's unconditional C_C-seam trigger would also fire inside
            mrFormII's derived output, and prSimulFeeding/prIterFeedingControl (identical Lhs/Env,
            differing only by multipleApplicationOrder) would both attempt every word in the grammar -
-           exactly the cross-construct collision suffixing-vowel-harmony/fusional-realizational-morphology's own headers warn
+           exactly the cross-construct collision suffixing-vowel-harmony (since removed)/fusional-realizational-morphology's own headers warn
            about. -->
       <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
       <PartOfSpeech id="posFormII"><Name>vFormII</Name></PartOfSpeech>
@@ -24,8 +24,8 @@
       <PartOfSpeech id="posGeminate"><Name>vGeminate</Name></PartOfSpeech>
     </PartsOfSpeech>
     <!-- A fully-specified PhonologicalFeatureSystem, EVERY segment given an explicit value for EVERY
-         feature (the G2a finding, restated in suffixing-vowel-harmony/words.yaml's header and
-         fusional-realizational-morphology/grammar.xml's own comment): mrFormII's InsertSimpleContext, mrPassive's
+         feature (the G2a finding, restated in suffixing-vowel-harmony/words.yaml's (since removed) header and
+         fusional-realizational-morphology/grammar.xml's (since removed) own comment): mrFormII's InsertSimpleContext, mrPassive's
          ModifyFromInput, and prSimulFeeding/prIterFeedingControl's HighVowel->BackRnd subrules all
          CHANGE or introduce a segment's identity via a FeatureNaturalClass, so every segment needs a
          unique, fully-specified feature bundle or self-check's analysis-direction reversal finds zero
@@ -59,7 +59,7 @@
     <HeadFeatures>
       <!-- realizational/stem-name (templatic root-and-pattern stem grades): the HLK ("go") root's
            three templatic stem alternants are selected by this feature, mirroring
-           fusional-realizational-morphology's StemName mechanism exactly (see that grammar's own
+           fusional-realizational-morphology's (since removed) StemName mechanism exactly (see that grammar's own
            StemNames comment) but modeling a genuinely-attested typological phenomenon: a
            perfective/imperfective stem-vowel alternation inside one paradigm is a real synchronic
            stem suppletion pattern, cited directly by sources below. -->
@@ -73,7 +73,7 @@
       </SymbolicFeature>
     </HeadFeatures>
     <!-- One StemName per templatic alternant of HLK, overlapping on "perf" - the same region-
-         difference-algebra proof fusional-realizational-morphology's snP1P2/snP1P3 pins, here
+         difference-algebra proof fusional-realizational-morphology's (since removed) snP1P2/snP1P3 pins, here
          modeling a perfective/imperfective stem alternation instead of principal-parts suppletion. -->
     <StemNames>
       <StemName id="snImpfPerf" partsOfSpeech="posStemName">
@@ -224,7 +224,7 @@
       <SegmentNaturalClass id="ncD"><Name>TargetD</Name><Segment segment="cD" /></SegmentNaturalClass>
     </NaturalClasses>
     <PhonologicalRuleDefinitions>
-      <!-- rewrite/simultaneous-epenthesis (+ suffixing-vowel-harmony's own precedent, reused here for a
+      <!-- rewrite/simultaneous-epenthesis (+ suffixing-vowel-harmony's (since removed) own precedent, reused here for a
            second grammar): obligatory linking vowel at any C_C seam, Simultaneous mode (every seam in
            a longer cluster gets its own "i" in one pass, not a re-scanned cascade). Scoped to posV
            only, so it fires exclusively on the KTB person-suffix paradigm below and never on any

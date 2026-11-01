@@ -50,6 +50,10 @@ rows.
 
 ## The six fixtures
 
+Status after the FieldWorks-producibility cleanup: the four upstream fixtures below were all
+`fieldworks_producible: false` and have been removed from `conformance/`, so only the two PanGloss rows
+remain measurable from this repository. The table is kept as the founding record.
+
 | Root | Fixture | `linear` declaration | Measured outcome |
 |---|---|---|---|
 | upstream (`machine/conformance`) | `languages/fusional-realizational-morphology` | explicit, on the `MprGroups` stratum only (the `Main` stratum is already `unordered`) | **Dependent** — 4/63 words gain a spurious parse: `ygofz`, `yxpedz`, `gofwz`, `gofhw` |
@@ -151,7 +155,9 @@ emit the constructs, not whether invented lexemes resemble a natural language. T
 fixture's earlier `false` note cited only its synthetic status; that is not an unsupported construct,
 so the corrected metadata remains `true`.
 
-## What this does NOT mean for the other fixtures marked `false`
+## What this did NOT mean for the other fixtures marked `false`
+
+(Historical: every fixture named in this section has since been removed.)
 
 `edge-cases/mpr-group-overwrite-without-realizational`, `languages/fusional-realizational-morphology`,
 and `languages/suffixing-extension-slot-ordering` are each already `fieldworks_producible: false` for

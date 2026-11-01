@@ -9,88 +9,62 @@
 #   NeverWitnessed                   interface layer only: present somewhere, witnessed
 #                                    nowhere -- not a fold-in target, a named gap
 layer	obligation	category	detail
-Surface	dtd:element/AssignedFootFeatures	PresentInLanguageGrammarAlready	recorded best evidence: edge-cases/compounding-breadth; also structurally present in a languages/* grammar
+Surface	dtd:element/AlphaVariables	EdgeCaseOnly	recorded best evidence: edge-cases/alpha-variable-name-collision; no languages/* grammar contains this surface at all
+Surface	dtd:element/AssignedFootFeatures	EdgeCaseOnly	recorded best evidence: edge-cases/compounding-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:element/BoundaryMarker	PresentInLanguageGrammarAlready	recorded best evidence: edge-cases/boundary-first-in-narrowing-lhs; also structurally present in a languages/* grammar
-Surface	dtd:element/ExcludedEnvironments	EdgeCaseOnly	recorded best evidence: edge-cases/feature-system-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:element/HeadRequiredFootFeatures	EdgeCaseOnly	recorded best evidence: edge-cases/compounding-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:element/HeadRequiredHeadFeatures	EdgeCaseOnly	recorded best evidence: edge-cases/compounding-breadth; no languages/* grammar contains this surface at all
+Surface	dtd:element/MorphologicalPhonologicalRuleFeatureGroup	EdgeCaseOnly	recorded best evidence: edge-cases/morphotactic-attribute-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:element/NonHeadRequiredFootFeatures	EdgeCaseOnly	recorded best evidence: edge-cases/compounding-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:element/NonHeadRequiredHeadFeatures	EdgeCaseOnly	recorded best evidence: edge-cases/compounding-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:element/PhoneticSequence	PresentInLanguageGrammarAlready	recorded best evidence: edge-cases/alpha-variable-name-collision; also structurally present in a languages/* grammar
-Surface	dtd:element/RequiredFootFeatures	PresentInLanguageGrammarAlready	recorded best evidence: edge-cases/feature-gating-breadth; also structurally present in a languages/* grammar
-Surface	dtd:element/Segments	EdgeCaseOnly	recorded best evidence: edge-cases/right-to-left-cross-table-segments-environment; no languages/* grammar contains this surface at all
+Surface	dtd:element/RequiredHeadFeatures	EdgeCaseOnly	recorded best evidence: edge-cases/chained-output-feature-override-loss; no languages/* grammar contains this surface at all
+Surface	dtd:element/Segments	EdgeCaseOnly	recorded best evidence: edge-cases/strrep-identity; no languages/* grammar contains this surface at all
 Surface	dtd:element/SimpleContext	PresentInLanguageGrammarAlready	recorded best evidence: edge-cases/alpha-variable-name-collision; also structurally present in a languages/* grammar
 Surface	dtd:enum/AffixTemplate/final/false	EdgeCaseOnly	recorded best evidence: edge-cases/final-template-merge-key; no languages/* grammar contains this surface at all
 Surface	dtd:enum/AffixTemplate/final/true	EdgeCaseOnly	recorded best evidence: edge-cases/clitic-enclitic-and-proclitic; no languages/* grammar contains this surface at all
-Surface	dtd:enum/AffixTemplate/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/AffixTemplate/isActive/yes	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/Allomorph/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/Allomorph/isActive/yes	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/Allomorph/isBound/false	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/Allomorph/isBound/true	EdgeCaseOnly	recorded best evidence: edge-cases/morphotactic-attribute-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/AllomorphCoOccurrenceRule/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/morphotactic-attribute-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/AlphaVariable/polarity/minus	EdgeCaseOnly	recorded best evidence: edge-cases/alpha-variable-name-collision; no languages/* grammar contains this surface at all
-Surface	dtd:enum/AlphaVariable/polarity/plus	PresentInLanguageGrammarAlready	recorded best evidence: edge-cases/alpha-variable-name-collision; also structurally present in a languages/* grammar
-Surface	dtd:enum/BoundaryDefinition/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/CharacterDefinitionTable/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/ComplexFeature/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/feature-system-breadth; no languages/* grammar contains this surface at all
+Surface	dtd:enum/AlphaVariable/polarity/plus	EdgeCaseOnly	recorded best evidence: edge-cases/alpha-variable-name-collision; no languages/* grammar contains this surface at all
 Surface	dtd:enum/CompoundingRule/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/compounding-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/CompoundingRule/multipleApplication/0	EdgeCaseOnly	recorded best evidence: edge-cases/compounding-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/CompoundingRule/multipleApplication/9	EdgeCaseOnly	recorded best evidence: edge-cases/recursive-endocentric-compounding; no languages/* grammar contains this surface at all
-Surface	dtd:enum/Family/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/FeatureNaturalClass/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/feature-system-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/FeatureValue/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/feature-system-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/LexicalEntry/isActive/yes	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/LexicalEntry/partial/false	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/LexicalEntry/partial/true	EdgeCaseOnly	recorded best evidence: edge-cases/final-template-partial-root; no languages/* grammar contains this surface at all
-Surface	dtd:enum/MetathesisRule/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/feature-system-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/MetathesisRule/multipleApplicationOrder/rightToLeftIterative	EdgeCaseOnly	recorded best evidence: edge-cases/feature-system-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/MorphemeCoOccurrenceRule/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/morphotactic-attribute-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/MorphologicalPhonologicalRuleFeature/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/outputType/append	EdgeCaseOnly	recorded best evidence: edge-cases/mpr-overwrite-order-dependence; no languages/* grammar contains this surface at all
-Surface	dtd:enum/MorphologicalRule/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/MorphologicalRule/isActive/yes	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/MorphologicalRule/isCliticRule/false	EdgeCaseOnly	recorded best evidence: edge-cases/clitic-rule-designation; no languages/* grammar contains this surface at all
-Surface	dtd:enum/MorphologicalRule/isCliticRule/true	EdgeCaseOnly	recorded best evidence: edge-cases/clitic-rule-designation; no languages/* grammar contains this surface at all
 Surface	dtd:enum/MorphologicalRule/multipleApplication/0	EdgeCaseOnly	recorded best evidence: edge-cases/morphotactic-attribute-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/MorphologicalRule/multipleApplication/2	EdgeCaseOnly	recorded best evidence: edge-cases/morphotactic-attribute-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/MorphologicalRule/partial/true	EdgeCaseOnly	recorded best evidence: edge-cases/final-template-partial-discriminators; no languages/* grammar contains this surface at all
-Surface	dtd:enum/MorphologicalSubrule/isActive/yes	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/PhoneticTemplate/finalBoundaryCondition/true	PresentInLanguageGrammarAlready	recorded best evidence: edge-cases/deletion-reinserted-feature-unapply; also structurally present in a languages/* grammar
 Surface	dtd:enum/PhonologicalRule/multipleApplicationOrder/rightToLeftIterative	EdgeCaseOnly	recorded best evidence: edge-cases/right-to-left-anchor-environment; no languages/* grammar contains this surface at all
-Surface	dtd:enum/PhonologicalSubrule/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/feature-system-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/SegmentDefinition/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/SegmentNaturalClass/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/feature-system-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/Slot/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/Slot/isActive/yes	EdgeCaseOnly	recorded best evidence: edge-cases/loader-isactive-breadth; no languages/* grammar contains this surface at all
 Surface	dtd:enum/Stratum/isActive/yes	EdgeCaseOnly	recorded best evidence: edge-cases/final-template-partial-discriminators; no languages/* grammar contains this surface at all
-Surface	dtd:enum/SymbolicFeature/isActive/no	EdgeCaseOnly	recorded best evidence: edge-cases/feature-system-breadth; no languages/* grammar contains this surface at all
-Surface	dtd:enum/VariableFeature/name/%CE%B1	PresentInLanguageGrammarAlready	recorded best evidence: edge-cases/alpha-variable-name-collision; also structurally present in a languages/* grammar
+Surface	dtd:enum/VariableFeature/name/%CE%B1	EdgeCaseOnly	recorded best evidence: edge-cases/alpha-variable-name-collision; no languages/* grammar contains this surface at all
 Surface	dtd:enum/VariableFeature/name/%CE%B2	EdgeCaseOnly	recorded best evidence: edge-cases/alpha-variable-name-collision; no languages/* grammar contains this surface at all
-Interface	AllomorphCoOccurrenceRule.otherAllomorphs	NeverWitnessed	present in 7 fixture(s), witnessed by none
-Interface	AllomorphCoOccurrenceRule.primaryAllomorph	NeverWitnessed	present in 7 fixture(s), witnessed by none
-Interface	AlphaVariable.variableFeature	NeverWitnessed	present in 39 fixture(s), witnessed by none
+Interface	AffixTemplate.requiredPartsOfSpeech	EdgeCaseOnly	witnessed only by: edge-cases/final-template-merge-key,edge-cases/merge-subrules-pos-ltr-template,edge-cases/merge-subrules-pos-rtl-template,edge-cases/merge-subrules-pos-simultaneous-template,edge-cases/morphotactic-attribute-breadth,edge-cases/non-clitic-after-final-template-layout,edge-cases/shared-template-unconstrained-suffix
+Interface	AllomorphCoOccurrenceRule.otherAllomorphs	NeverWitnessed	present in 6 fixture(s), witnessed by none
+Interface	AllomorphCoOccurrenceRule.primaryAllomorph	NeverWitnessed	present in 6 fixture(s), witnessed by none
+Interface	AlphaVariable.variableFeature	NeverWitnessed	present in 37 fixture(s), witnessed by none
 Interface	BoundaryMarker.boundary	NeverWitnessed	present in 9 fixture(s), witnessed by none
+Interface	CompoundingRule.headProdRestrictionsMprFeatures	EdgeCaseOnly	witnessed only by: edge-cases/compounding-non-recursive
 Interface	CompoundingRule.nonHeadPartsOfSpeech	EdgeCaseOnly	witnessed only by: edge-cases/compounding-non-recursive
-Interface	CompoundingRule.outputObligatoryFeatures	NeverWitnessed	present in 1 fixture(s), witnessed by none
 Interface	CompoundingRule.outputPartOfSpeech	EdgeCaseOnly	witnessed only by: edge-cases/compounding-breadth
-Interface	CopyFromInput.index	NeverWitnessed	present in 80 fixture(s), witnessed by none
-Interface	FeatureValue.feature	NeverWitnessed	present in 103 fixture(s), witnessed by none
-Interface	FeatureValue.symbolValues	NeverWitnessed	present in 103 fixture(s), witnessed by none
-Interface	HeadMorphologicalInput.excludedMPRFeatures	NeverWitnessed	present in 1 fixture(s), witnessed by none
-Interface	HeadMorphologicalInput.requiredMPRFeatures	NeverWitnessed	present in 1 fixture(s), witnessed by none
-Interface	MetathesisRule.leftSwitch	NeverWitnessed	present in 6 fixture(s), witnessed by none
-Interface	MetathesisRule.rightSwitch	NeverWitnessed	present in 6 fixture(s), witnessed by none
-Interface	ModifyFromInput.index	NeverWitnessed	present in 4 fixture(s), witnessed by none
-Interface	MorphemeCoOccurrenceRule.otherMorphemes	NeverWitnessed	present in 6 fixture(s), witnessed by none
-Interface	MorphemeCoOccurrenceRule.primaryMorpheme	NeverWitnessed	present in 6 fixture(s), witnessed by none
-Interface	MorphologicalPhonologicalRuleFeatureGroup.features	NeverWitnessed	present in 7 fixture(s), witnessed by none
-Interface	MorphologicalRule.outputObligatoryFeatures	NeverWitnessed	present in 1 fixture(s), witnessed by none
-Interface	Segment.segment	NeverWitnessed	present in 99 fixture(s), witnessed by none
-Interface	Segments.characterDefinitionTable	NeverWitnessed	present in 2 fixture(s), witnessed by none
-Interface	SimpleContext.naturalClass	NeverWitnessed	present in 146 fixture(s), witnessed by none
-Interface	Slot.morphologicalRules	NeverWitnessed	present in 35 fixture(s), witnessed by none
-Interface	StemName.partsOfSpeech	NeverWitnessed	present in 4 fixture(s), witnessed by none
-Interface	Stratum.characterDefinitionTable	NeverWitnessed	present in 154 fixture(s), witnessed by none
-Interface	SymbolicFeature.defaultSymbol	EdgeCaseOnly	witnessed only by: edge-cases/rewrite-default-epenthesis
-Interface	VariableFeature.phonologicalFeature	NeverWitnessed	present in 39 fixture(s), witnessed by none
+Interface	CopyFromInput.index	NeverWitnessed	present in 66 fixture(s), witnessed by none
+Interface	FeatureValue.feature	NeverWitnessed	present in 82 fixture(s), witnessed by none
+Interface	FeatureValue.symbolValues	NeverWitnessed	present in 82 fixture(s), witnessed by none
+Interface	LexicalEntry.ruleFeatures	EdgeCaseOnly	witnessed only by: edge-cases/compounding-non-recursive,edge-cases/deletion-reduplication-exception-composite,edge-cases/mpr-gated-exception
+Interface	MetathesisRule.leftSwitch	NeverWitnessed	present in 3 fixture(s), witnessed by none
+Interface	MetathesisRule.rightSwitch	NeverWitnessed	present in 3 fixture(s), witnessed by none
+Interface	ModifyFromInput.index	NeverWitnessed	present in 3 fixture(s), witnessed by none
+Interface	MorphemeCoOccurrenceRule.otherMorphemes	NeverWitnessed	present in 4 fixture(s), witnessed by none
+Interface	MorphemeCoOccurrenceRule.primaryMorpheme	NeverWitnessed	present in 4 fixture(s), witnessed by none
+Interface	MorphologicalInput.excludedMPRFeatures	EdgeCaseOnly	witnessed only by: edge-cases/deletion-reduplication-exception-composite,edge-cases/morphotactic-attribute-breadth,edge-cases/mpr-gated-exception
+Interface	MorphologicalInput.requiredMPRFeatures	EdgeCaseOnly	witnessed only by: edge-cases/cross-stem-material-determination,edge-cases/morphotactic-attribute-breadth
+Interface	MorphologicalOutput.MPRFeatures	EdgeCaseOnly	witnessed only by: edge-cases/cross-stem-material-determination,edge-cases/morphotactic-attribute-breadth,edge-cases/mpr-gated-exception
+Interface	MorphologicalPhonologicalRuleFeatureGroup.features	NeverWitnessed	present in 3 fixture(s), witnessed by none
+Interface	PhonologicalSubrule.excludedMPRFeatures	EdgeCaseOnly	witnessed only by: edge-cases/mpr-gated-exception
+Interface	Segment.segment	NeverWitnessed	present in 87 fixture(s), witnessed by none
+Interface	SimpleContext.naturalClass	NeverWitnessed	present in 118 fixture(s), witnessed by none
+Interface	Slot.morphologicalRules	NeverWitnessed	present in 29 fixture(s), witnessed by none
+Interface	StemName.partsOfSpeech	NeverWitnessed	present in 2 fixture(s), witnessed by none
+Interface	Stratum.characterDefinitionTable	NeverWitnessed	present in 124 fixture(s), witnessed by none
+Interface	VariableFeature.phonologicalFeature	NeverWitnessed	present in 37 fixture(s), witnessed by none

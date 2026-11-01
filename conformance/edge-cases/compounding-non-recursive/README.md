@@ -43,9 +43,10 @@ overwrite; HCLoader.cs:168-192) and an Unordered stratum (HCLoader.cs:227). Thre
 fixture used to carry cannot come from a FieldWorks project and were removed: the SUBRULE-level
 `HeadMorphologicalInput requiredMPRFeatures` gate (never set by either compounding loader,
 HCLoader.cs:1898-1910/1959-1998), the two custom `outputType="append"` groups, and
-`morphologicalRuleOrder="linear"`. The group-AWARE subrule gate that made `tikubel` fail is pinned
-upstream by `languages/fusional-realizational-morphology` (`mitlav`/`ficlav`); append-versus-
-overwrite is pinned upstream by `edge-cases/mpr-overwrite-order-dependence`. `tikubel` therefore
+`morphologicalRuleOrder="linear"`. The group-AWARE subrule gate that made `tikubel` fail was pinned
+upstream by `languages/fusional-realizational-morphology` (`mitlav`/`ficlav`) and append-versus-
+overwrite by `edge-cases/mpr-overwrite-order-dependence`; both fixtures have since been removed as
+not FieldWorks-producible, so neither is pinned in this suite now. `tikubel` therefore
 flipped from `expect_fail` to a positive witness — the C# oracle's own ground truth for the new
 grammar, not a regression.
 

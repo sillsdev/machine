@@ -27,7 +27,7 @@
 # COVERAGE LOST, NAMED PLAINLY: CompoundingSubrule@isActive="no" (per-subrule deactivation) is no
 # longer exercised by ANY fixture in this corpus, producible or not -- grep-confirmed the only other
 # occurrence of "CompoundingSubrule isActive" in conformance/ was this one. It is not duplicated by
-# edge-cases/loader-isactive-breadth's own isActive census (that grammar has no CompoundingRule at
+# edge-cases/loader-isactive-breadth's (since removed) own isActive census (that grammar has no CompoundingRule at
 # all) or by any other fixture. CompoundingRule@isActive="no" itself (crDecoy, above) is unaffected
 # and stays covered by kaptu.
 

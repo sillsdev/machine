@@ -17,11 +17,11 @@ no mutator sits between the write and the read: a part-of-speech priority-union 
 
 **Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: languages/fusional-realizational-morphology declares 18 outputPartOfSpeech-bearing MorphologicalRule/CompoundingRule element(s) -- SynthesisAffixProcessRule.cs:181-182/SynthesisCompoundingRule.cs:181-182's unconditional PriorityUnion gives each one a chance to clobber POS before this reader's gate; which element actually intervenes, and word-level witness of an actual clobber, are not checked here
+Ledger evidence: structurally hazardous: edge-cases/compounding-breadth declares 4 outputPartOfSpeech-bearing MorphologicalRule/CompoundingRule element(s) -- SynthesisAffixProcessRule.cs:181-182/SynthesisCompoundingRule.cs:181-182's unconditional PriorityUnion gives each one a chance to clobber POS before this reader's gate; which element actually intervenes, and word-level witness of an actual clobber, are not checked here
 
 ## Fixture and word
 
-- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/fusional-realizational-morphology` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
+- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `edge-cases/compounding-breadth` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
 
 ## Exact mutation and before/after parse
 
@@ -29,38 +29,22 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`LexicalEntry.partOfSpeech` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed partOfSpeech from 22 <LexicalEntry> element(s)", example: 'mint': ok::STEM+P3|mint -> ok::MIT+PRESSTEM|mint;STEM+P3|mint
-- Reader (`CompoundingRule.nonHeadPartsOfSpeech` in `languages/fusional-realizational-morphology`): verdict=Unobservable, mutation="removed nonHeadPartsOfSpeech from 3 <CompoundingRule> element(s)"
+- Writer (`LexicalEntry.partOfSpeech` in `edge-cases/compounding-breadth`): verdict=Unobservable, mutation="removed partOfSpeech from 6 <LexicalEntry> element(s)"
+- Reader (`CompoundingRule.nonHeadPartsOfSpeech` in `edge-cases/compounding-breadth`): verdict=Unobservable, mutation="removed nonHeadPartsOfSpeech from 3 <CompoundingRule> element(s)"
 
 ## Grammar citations
 
-### `languages/fusional-realizational-morphology/grammar.xml`
+### `edge-cases/compounding-breadth/grammar.xml`
 
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:475` = "posV"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:485` = "posV"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:496` = "posV"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:501` = "posV"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:508` = "posV"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:515` = "posV"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:522` = "posN1"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:527` = "posN1"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:532` = "posV1"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:546` = "posN2"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:551` = "posN2"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:556` = "posV2"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:562` = "posAblautV"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:569` = "posCompH"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:574` = "posCompH"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:580` = "posCompH"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:585` = "posCompNH"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:656` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:664` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:669` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:674` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:682` = "posN"
-- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:368` = "posN1 posV1"
-- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:389` = "posN2"
-- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:439` = "posCompNH"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:167` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:174` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:182` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:190` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:198` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:206` = "posN"
+- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:81` = "posN"
+- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:105` = "posN"
+- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:125` = "posN"
 
 ## Author's prose
 

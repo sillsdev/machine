@@ -15,13 +15,13 @@ a mutator sits between the write and the read: blocking (Word.CheckBlocking rebu
 
 ## Machine status
 
-**Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
+**NotSatisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: languages/suffixing-extension-slot-ordering declares >=2 LexicalEntry sharing a family under the same Stratum (Word.CheckBlocking's family+stratum precondition, Word.cs:475-485); FeatureStruct subsumption and word-level witness of an actual block are not checked here
+Ledger evidence: chain unexercised: no fixture sets writer and reader to a shared id (conformance/interaction-chains.tsv)
 
 ## Fixture and word
 
-- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/suffixing-extension-slot-ordering` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
+- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.
 
 ## Exact mutation and before/after parse
 
@@ -29,22 +29,11 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`LexicalEntry.ruleFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed ruleFeatures from 7 <LexicalEntry> element(s)", example: 'mbe': ok::- -> ok::PPE|mbe
-- Reader (`PhonologicalSubrule.excludedMPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed excludedMPRFeatures from 1 <PhonologicalSubrule> element(s)", example: 'mbe': ok::- -> ok::PPE|mbe
+No fixture is identified for this cell, so no witness row can be looked up.
 
 ## Grammar citations
 
-### `languages/suffixing-extension-slot-ordering/grammar.xml`
-
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:626` = "mprConcA mprConcB"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:631` = "mprConcA mprConcC"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:654` = "mprPhX"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:659` = "mprPhExcl"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:667` = "mprExtA mprConcA mprConcB mprConcC"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:730` = "mprRRealTest"
-- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:736` = "mprRRealTest"
-- Reader (gate declared here) `PhonologicalSubrule.excludedMPRFeatures`: `grammar.xml:349` = "mprPhExcl"
-
+No fixture is identified for this cell, so no `grammar.xml` lines can be cited.
 ## Author's prose
 
 - No prose recorded: no claim, and no word is identified for this cell.

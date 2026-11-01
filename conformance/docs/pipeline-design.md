@@ -156,10 +156,10 @@ five it handles the shape of the whole inventory; if it handles only the first, 
 
 | # | Item | Kind | Branch exercised |
 |---|---|---|---|
-| 1 | `dtd:element/AffixTemplates` in `loader-isactive-breadth` | Surface | Word counter-example, parse to no-parse (`'takul': ok::TA+KUL\|takul -> ok::-`) |
+| 1 | `dtd:element/AffixTemplates` in `loader-isactive-breadth` (since removed) | Surface | Word counter-example, parse to no-parse (`'takul': ok::TA+KUL\|takul -> ok::-`) |
 | 2 | `dtd:element/AllomorphCoOccurrenceRules` in `morphotactic-attribute-breadth` | Surface | Word counter-example, the OTHER direction: no-parse to parse (`'sol': ok::- -> ok::SOL\|sol`) |
 | 3 | `dtd:element/AffixTemplate` in `diacritic-segments` | Surface | `counterexampleKind = LoadFailure` — the weaker class that must not blend into the headline |
-| 4 | `prAlpha`/`prHighTrigger` adjacent swap in `feature-system-breadth` | Ordering | Generated item, not DTD-derived; needs `disjoint-domains` if no delta |
+| 4 | `prAlpha`/`prHighTrigger` adjacent swap in `feature-system-breadth` (since removed) | Ordering | Generated item, not DTD-derived; needs `disjoint-domains` if no delta |
 | 5 | `dtd:enum/Stratum/cyclicity/cyclic` | Surface | The Proof branch — no evidence exists and none should be manufactured |
 
 Candidate 2 matters because a counter-example that only ever removes a parse would leave the pipeline

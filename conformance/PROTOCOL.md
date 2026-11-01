@@ -427,23 +427,18 @@ straight from a LibLCM project and has a materially narrower reach than the DTD 
 feeds. A fixture can therefore be a fully conformant, oracle-verified regression test of the engine
 and still describe a grammar shape no FieldWorks user will ever see.
 
-Every fixture's `words.yaml` front matter carries `fieldworks_producible: true|false` for exactly
-this reason, directly after `requires`:
+Every fixture's `words.yaml` front matter carries `fieldworks_producible: true`, directly after
+`requires`. The suite keeps only grammars a real FieldWorks project can produce: `true` means every
+construct the fixture's `grammar.xml` exercises has a known HCLoader code path that can emit it from
+a real project. A grammar that needs a construct with no such path is rewritten to drop it in favour
+of an equivalent FieldWorks can produce, or it is deleted; `ConformanceFixtureGateTests` fails on any
+fixture that is not `true`. The loader still parses `false` (with `fieldworks_producible_notes`) so a
+research fixture kept outside this tree can carry the verdict, but nothing under `conformance/` may.
 
-- `true` — every construct the fixture's `grammar.xml` exercises has a known HCLoader code path
-  that can emit it from a real project.
-- `false` — at least one construct the fixture exercises has no such path. `false` fixtures also
-  carry `fieldworks_producible_notes`, naming the offending construct(s) and citing the HCLoader
-  evidence (or its absence) that grounds the verdict.
-
-A `false` fixture is not deprecated and not lower quality — it stays exactly as conformance-gated as
-any other fixture, regression-testing the engine against the founding oracle precisely as designed.
-What `false` means is narrower: this fixture is **HC-engine-only**. Passing it is evidence the
-engine matches HermitCrab's own behavior; it is not evidence of FieldWorks-facing coverage, and
-citing it as such overstates what was tested. A fixture legitimately moves from `false` to `true`
-when its grammar is rewritten to drop the offending construct in favor of an equivalent FieldWorks
-can actually produce (see this suite's conversion history for a worked example) — never by relaxing
-the verdict in place.
+A fixture moves to `true` by rewriting its grammar and re-running the C# founding oracle, never by
+relaxing the verdict in place; the rewrite keeps a fixture only if the oracle's rows still hold or
+change for a reason the rules explain. See `docs/engine-only-fixture-retirement.md` for the decision
+and what it removed.
 
 The verdict is human-authored, not mechanically re-derived the way `requires` is. It rests on
 `conformance/fieldworks-producibility.tsv` (a hand-researched, point-in-time snapshot of `HCLoader.cs`

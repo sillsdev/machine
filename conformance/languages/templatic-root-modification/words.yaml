@@ -28,7 +28,7 @@
 # The remaining words reuse these same five mechanisms (KTB's person-suffix/epenthesis pair, FormII's
 # InsertSimpleContext, the OCP exclusion) on independent lexical/rule material -- the hollow-root
 # internal passive (ModifyFromInput), the HLK stem-name paradigm (StemName region algebra, mirroring
-# fusional-realizational-morphology's own mun/man/min proof exactly), the Simultaneous-vs-Iterative feeding/bleeding
+# fusional-realizational-morphology's (since removed) own mun/man/min proof exactly), the Simultaneous-vs-Iterative feeding/bleeding
 # contrast pair, word-initial prothesis, and gemination-as-expansion -- or are expect_fail words whose
 # signature is the empty set. See PROTOCOL.md section 3 for the `-`/empty-signature convention.
 #

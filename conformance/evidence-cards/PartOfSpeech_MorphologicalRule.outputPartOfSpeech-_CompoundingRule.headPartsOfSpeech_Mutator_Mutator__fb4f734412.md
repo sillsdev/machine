@@ -17,11 +17,11 @@ no mutator sits between the write and the read: a part-of-speech priority-union 
 
 **Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: languages/fusional-realizational-morphology declares 18 outputPartOfSpeech-bearing MorphologicalRule/CompoundingRule element(s) -- SynthesisAffixProcessRule.cs:181-182/SynthesisCompoundingRule.cs:181-182's unconditional PriorityUnion gives each one a chance to clobber POS before this reader's gate; which element actually intervenes, and word-level witness of an actual clobber, are not checked here
+Ledger evidence: structurally hazardous: languages/polysynthetic-stratal-derivation-chain declares 4 outputPartOfSpeech-bearing MorphologicalRule/CompoundingRule element(s) -- SynthesisAffixProcessRule.cs:181-182/SynthesisCompoundingRule.cs:181-182's unconditional PriorityUnion gives each one a chance to clobber POS before this reader's gate; which element actually intervenes, and word-level witness of an actual clobber, are not checked here
 
 ## Fixture and word
 
-- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/fusional-realizational-morphology` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
+- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/polysynthetic-stratal-derivation-chain` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
 
 ## Exact mutation and before/after parse
 
@@ -29,33 +29,19 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`MorphologicalRule.outputPartOfSpeech` in `languages/fusional-realizational-morphology`): verdict=Unobservable, mutation="removed outputPartOfSpeech from 17 <MorphologicalRule> element(s)"
-- Reader (`CompoundingRule.headPartsOfSpeech` in `languages/fusional-realizational-morphology`): verdict=Unobservable, mutation="removed headPartsOfSpeech from 3 <CompoundingRule> element(s)"
+- Writer (`MorphologicalRule.outputPartOfSpeech` in `languages/polysynthetic-stratal-derivation-chain`): verdict=Evidenced, mutation="removed outputPartOfSpeech from 4 <MorphologicalRule> element(s)", example: 'nunaliqvuq': ok::NUNA+DERIV+INFL|nunaliqvuq -> ok::-
+- Reader (`CompoundingRule.headPartsOfSpeech` in `languages/polysynthetic-stratal-derivation-chain`): verdict=Evidenced, mutation="removed headPartsOfSpeech from 2 <CompoundingRule> element(s)", example: 'silaaku': ok::- -> ok::SILA+AKU|sila+?aku;SILA+AKU|sila+?aku
 
 ## Grammar citations
 
-### `languages/fusional-realizational-morphology/grammar.xml`
+### `languages/polysynthetic-stratal-derivation-chain/grammar.xml`
 
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:210` = "posV"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:221` = "posV"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:232` = "posV"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:244` = "posV"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:288` = "posV"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:299` = "posV"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:311` = "posV"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:330` = "posV"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:344` = "posV"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:378` = "posV1"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:399` = "posV2"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:414` = "posAblautV"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:602` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:612` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:622` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:633` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:643` = "posN"
-- Reader (gate declared here) `CompoundingRule.headPartsOfSpeech`: `grammar.xml:368` = "posN1"
-- Reader (gate declared here) `CompoundingRule.headPartsOfSpeech`: `grammar.xml:389` = "posN2 posV2"
-- Reader (gate declared here) `CompoundingRule.headPartsOfSpeech`: `grammar.xml:439` = "posCompH"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:308` = "posV"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:330` = "posV1"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:353` = "posV2"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:425` = "posV"
+- Reader (gate declared here) `CompoundingRule.headPartsOfSpeech`: `grammar.xml:320` = "posN1"
+- Reader (gate declared here) `CompoundingRule.headPartsOfSpeech`: `grammar.xml:343` = "posN2 posV2"
 
 ## Author's prose
 

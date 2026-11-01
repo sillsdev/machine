@@ -40,27 +40,22 @@ public sealed class InterfaceInventoryLedgerTests
         }
 
         Assert.That(rows, Has.Count.EqualTo(60));
-        // The cross-table segment fixtures make Segments.characterDefinitionTable present.
-        Assert.That(present, Is.EqualTo(45));
-        Assert.That(rows.Count - present, Is.EqualTo(15));
-        Assert.That(typedEdges, Is.EqualTo(54));
-        Assert.That(junctions, Has.Count.EqualTo(3));
+        Assert.That(present, Is.EqualTo(36));
+        Assert.That(rows.Count - present, Is.EqualTo(24));
+        Assert.That(typedEdges, Is.EqualTo(43));
+        Assert.That(junctions, Has.Count.EqualTo(2));
         Assert.That(
             junctions.Select(j => j.TargetType),
-            Is.EquivalentTo(new[] { "MorphologicalPhonologicalRuleFeature", "PartOfSpeech", "StemName" })
+            Is.EquivalentTo(new[] { "MorphologicalPhonologicalRuleFeature", "PartOfSpeech" })
         );
 
         InterfaceJunction mprFeature = junctions.Single(j => j.TargetType == "MorphologicalPhonologicalRuleFeature");
         Assert.That(mprFeature.WriterCount, Is.EqualTo(2));
-        Assert.That(mprFeature.ReaderCount, Is.EqualTo(7));
+        Assert.That(mprFeature.ReaderCount, Is.EqualTo(4));
 
         InterfaceJunction partOfSpeech = junctions.Single(j => j.TargetType == "PartOfSpeech");
         Assert.That(partOfSpeech.WriterCount, Is.EqualTo(3));
         Assert.That(partOfSpeech.ReaderCount, Is.EqualTo(5));
-
-        InterfaceJunction stemName = junctions.Single(j => j.TargetType == "StemName");
-        Assert.That(stemName.WriterCount, Is.EqualTo(1));
-        Assert.That(stemName.ReaderCount, Is.EqualTo(1));
     }
 
     // Every present row must name at least one fixture, and every not-present row must name none --
