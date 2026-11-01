@@ -99,7 +99,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         /// <summary>
         /// True if any morpheme other than a <see cref="LexEntry"/> is partial. Analysis may prune a final
-        /// template that follows a non-template rule only when this is false.
+        /// template that follows a non-template rule only when this is false or
+        /// <see cref="AlwaysEnforceFinalTemplates"/> is set.
         /// </summary>
         public bool HasPartialRules { get; }
 
