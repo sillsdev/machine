@@ -30,7 +30,7 @@
       <!-- No Stratum-level morphologicalRules= - mrSuf is reachable only through its own
            template's Slot (same convention as edge-cases/optional-template-composite's Stratum
            comment; immaterial here with a single rule/template, kept for consistency). -->
-      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="linear">
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
           <MorphologicalRule id="mrSuf" requiredPartsOfSpeech="posN">

@@ -53,8 +53,8 @@
 #     dom/bakgi, sim/rog/simru) -- no producible substitute exists for CheckBlocking itself; this
 #     coverage is gone from the suite's producible half entirely (languages/fusional-realizational-
 #     morphology also exercises it, also staying false for this reason among others).
-#   - The Slot-adjacency ordering discriminators that depended on the removed rules (kulgimo's
-#     unblockableSlot~partialSlot, kulmoru's partialSlot~realSlot) -- the ordering-discriminator
+#   - The Slot-adjacency ordering discriminators that depended on the removed rules (kulgimo,
+#     kulmoru) -- the ordering-discriminator
 #     CONSTRUCT itself survives via topsakanabu's coDSlot~mbSlot pair, which needed no changes.
 #   - Raw DTD-enum coverage (conformance/semantic-coverage-baseline.txt), checked after this
 #     conversion by regenerating it: dtd:enum/MorphologicalRule/blockable/false,
@@ -79,18 +79,12 @@
 #     and mpr-overwrite-order-dependence, were fieldworks_producible: false and have been removed
 #     (conformance/docs/engine-only-fixture-retirement.md), so nothing here exercises it now.
 #
-# PARTIAL CONSTRUCTS REBUILT FOR HCLoader (#612). HCLoader sets IsPartial on a stem entry only when its
-# MSA has no part of speech (HCLoader.cs:757, :817), on an inflectional rule only when the rule is in
-# no slot (:1031), and on an unclassified-affix rule always (:1062); a derivational rule is never
-# partial and no rule gets an outputPartOfSpeech from a slot. The earlier grammar had a partial entry
-# with a part of speech (eNap), a partial rule in a slot (mrPartial) and a partial rule with an
-# outputPartOfSpeech (mrPO), none of which a project can produce. Now eNap has no part of speech,
-# mrPartial is the ordinary slot suffix mrMo (rename: PART to MO, partialSlot to moSlot) and mrPO
-# has no outputPartOfSpeech. Every other row held under the oracle; only kulmo's signature changed,
-# by the rename. Both partial pins survive: removing partial from eNap makes napmo parse as NAP+MO,
-# and removing it from mrPO makes pogliti lose its only parse. The MorphologicalRule@partial pin rests on
-# mrPO alone, as it did before.
-#
+# PARTIAL SHAPES. HCLoader sets partial on a stem entry only when its MSA has no part of speech
+# (HCLoader.cs:757, :817) and on a rule only outside a slot (:1031), with no outputPartOfSpeech.
+
+# napmo pins LexicalEntry partial: eNap has no part of speech, and without partial it parses as
+# NAP+MO. pogliti pins MorphologicalRule partial on mrPO alone: without it pogliti has no parse.
+
 # COVERAGE.CSV REGRESSION, FOUND AND FIXED separately from the conversion itself: the conversion (and
 # its later WIP expansion) never re-added per-word/per-parse "exercises:" tags, so every word in this
 # fixture silently stopped contributing to conformance/coverage.csv -- the whole MorphotacticAttributeBreadth

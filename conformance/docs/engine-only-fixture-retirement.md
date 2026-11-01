@@ -55,11 +55,12 @@ except where listed.
   `siputukusi` and `sipulupasi`, each shown to parse when the reportative exclude rules are
   removed. The AND-not-OR pin for #311 (`walaknkicha`, blocked by `mrEvidConjectural`) is unchanged.
 * The #612 pass over fixtures already marked `true` (no row changed except where listed):
-  * Six fixtures whose `linear` stratum lists morphological rules now say `unordered`
-    (`compounding-breadth`, `head-ambiguous-compounding`, `recursive-endocentric-compounding`,
+  * Seven fixtures whose `linear` stratum lists morphological rules or holds an affix template now
+    say `unordered`, because the engine reads the order for both (`compounding-breadth`,
+    `head-ambiguous-compounding`, `recursive-endocentric-compounding`,
     `subrule-morphosyntactic-gating`, `guesser-pattern-root-fallback`,
-    `pattern-root-required-environment`); the oracle found no change in any word.
-    `morphological-rule-order-measurement.md` has the count.
+    `pattern-root-required-environment`, `standalone-combining-mark`); the oracle found no change
+    in any word. `morphological-rule-order-measurement.md` has the count.
   * 18 fixtures dropped `outputPartOfSpeech` from every slot rule. No row changed.
   * `edge-cases/morphotactic-attribute-breadth`: the partial stem entry `eNap` lost its part of
     speech, the partial slot rule `mrPartial` became the ordinary suffix `mrMo` (so `kulmo`'s

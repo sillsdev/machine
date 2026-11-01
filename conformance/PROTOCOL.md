@@ -475,10 +475,13 @@ on takes, not on the attribute in isolation:
   founding oracle. Only if some word's found-analysis set changes — a spurious extra parse, a lost
   one, or a duplicate, never merely a different search order or timing — does the fixture's ground
   truth actually depend on the ordering, and only then is it HC-engine-only for this reason.
-  What a fixture may declare is narrower than what it may depend on. The order is read only for
-  the rules a `Stratum` lists in its own `morphologicalRules`, so a `linear` stratum that lists none
-  (its rules reached through a `Slot` only, or no rules at all) is producible as written, and a
-  stratum that lists any must say `unordered`. `FieldWorksProducibleShapeTests` enforces this.
+  What a fixture may declare is narrower than what it may depend on. The order is read for the
+  rules a `Stratum` lists in its own `morphologicalRules` and when the stratum applies its affix
+  templates (`SynthesisStratumRule` and `AnalysisStratumRule` branch on it in `ApplyTemplates`; in
+  synthesis an `unordered` stratum feeds a template's output back through the rules, which can reach
+  a further template, and a `linear` one applies it once). A `linear` stratum that lists no morphological rule and holds no
+  active `AffixTemplate` is producible as written; a stratum that has either must say `unordered`,
+  which is how HCLoader builds it. `FieldWorksProducibleShapeTests` enforces this.
 - `Environments` (`RequiredEnvironments`/`ExcludedEnvironments`) is producible only when the
   `MorphologicalSubrule` it sits on has an output expressible as a single literal-form affix — a
   `RootAllomorph`'s own environment, a paired circumfix built from two separate literal-form
@@ -504,7 +507,7 @@ in no slot (`:1031`) and have no `outputPartOfSpeech`. `FieldWorksProducibleShap
 
 Because the verdict is authored, not derived, any mechanical checker built against it may only
 prove a `true` verdict **wrong** — by finding a construct in a `true` fixture's `grammar.xml` that
-matches a `fieldworks-producibility.tsv` "No" row or one of the three checks above — never prove a
+matches a `fieldworks-producibility.tsv` "No" row or one of the mechanical checks above — never prove a
 `false` verdict wrong. A checker cannot see the absence of an HCLoader code path; it can only see
 that a construct is used, and that is sufficient to falsify `true` but never sufficient to certify
 it, since the research behind a `false` verdict is exactly the part no checker can redo by reading

@@ -180,33 +180,43 @@ What the earlier sections left open was how many of the fixtures now in `conform
 `standalone-combining-mark`, `subrule-morphosyntactic-gating`) and 47 get it from the DTD default
 (`HermitCrabInput.dtd:244`). Each of the 52 has exactly one such stratum.
 
-The order is only read for the rules a stratum lists in its own `morphologicalRules` attribute
-(`SynthesisStratumRule`, `AnalysisStratumRule`). Affix templates are applied by a separate rule, so a
-rule reachable only through a `Slot` does not depend on it. HCLoader builds its Morphology, Clitics
-and custom strata as `Unordered`, and Surface sets no order and holds no morphological rules. A
-`linear` stratum that lists no morphological rule is therefore producible; one that lists any is not.
+The order is read in two places. `SynthesisStratumRule` and `AnalysisStratumRule` switch on it for
+the rules a stratum lists in its own `morphologicalRules` attribute, and again when they apply the
+stratum's affix templates (`ApplyTemplates`). In synthesis an `unordered` stratum feeds a template's
+output back through the morphological rules, so a non-final template can chain into a later one,
+while a `linear` stratum applies the output once; analysis branches on the order in the same two
+methods. That second read happens even when the
+stratum lists no rule, so a rule reachable only through a `Slot` does depend on the order whenever
+the stratum holds a template. HCLoader builds its Morphology, Clitics and custom strata as
+`Unordered`, and Surface sets no order and holds no morphological rules or templates. A `linear`
+stratum is therefore producible only if it lists no morphological rule and holds no active affix
+template.
 
-| Of the 52 `linear` strata | Fixtures |
+| Of the 52 `linear` strata at 6b36f45c | Fixtures |
 |---|---|
-| list no morphological rule (producible as written) | 46 |
-| of those, hold a rule reachable only through a template `Slot` | 1 (`standalone-combining-mark`) |
-| list one or more morphological rules | 6 |
+| list one or more morphological rules (now `unordered`) | 6 |
+| list none but hold an affix template (now `unordered`) | 1 (`standalone-combining-mark`) |
+| list none and hold no template (producible as written) | 45 |
 
 The 6 are `compounding-breadth` (3 rules), `head-ambiguous-compounding` (2),
 `recursive-endocentric-compounding` (1), `subrule-morphosyntactic-gating` (1),
 `guesser-pattern-root-fallback` (1) and `pattern-root-required-environment` (1). The first four
-write `linear` explicitly; the last two get it from the default.
+write `linear` explicitly; the last two get it from the default. The 45 hold neither rules nor
+templates; all 45 get `linear` from the DTD default, so no fixture in the suite writes `linear`
+any more. `FieldWorksProducibleShapeTests` fails a flagged fixture that has a stratum with a listed
+rule or an active template that is not `unordered`.
 
-### Outcome of flipping the six
+### Outcome of flipping the seven
 
-Each of the six fixtures was copied to a scratch directory outside the checkout, its `Stratum` set to
-`unordered`, and the C# oracle run against the unchanged `words.yaml` with `--include-pathological`.
-All six passed with no change in any word's analysis multiset (8 of 8 runs, counting the two
-`compounding-breadth` variants). The same copies unflipped also pass 8 of 8. The check can fail: the
-`truncate-morphotactic-identity` fixture with its `unordered` stratum flipped to `linear` loses
-analyses for `a` and `ga`, as the tables above record.
+Each of the six fixtures that list rules was copied to a scratch directory outside the checkout, its
+`Stratum` set to `unordered`, and the C# oracle run against the unchanged `words.yaml` with
+`--include-pathological`. All six passed with no change in any word's analysis multiset (8 of 8
+runs, counting the two `compounding-breadth` variants). The same copies unflipped also pass 8 of 8.
+The check can fail: the `truncate-morphotactic-identity` fixture with its `unordered` stratum flipped
+to `linear` loses analyses for `a` and `ga`, as the tables above record.
 
-These six are therefore inert under the flip: their corpora never tell the two orderings apart. The
+`standalone-combining-mark` was flipped in place and its unchanged `words.yaml` still passes. Its
+template is `final` by default, so nothing chains and no word changes.
+
+These seven are therefore inert under the flip: their corpora never tell the two orderings apart. The
 checked-in grammars now declare `morphologicalRuleOrder="unordered"` and no `words.yaml` row changed.
-`standalone-combining-mark` keeps its explicit `linear` because its stratum lists no rule; its one rule
-is reached through a `Slot` only.

@@ -9,9 +9,9 @@ namespace SIL.Machine.Morphology.HermitCrab;
 /// A fixture flagged <c>fieldworks_producible: true</c> must not use a grammar shape HCLoader never
 /// writes. The flag is authored, so these checks can only prove it wrong. They
 /// cover the shapes sillsdev/machine#612 found in flagged fixtures: a slot rule with an
-/// <c>outputPartOfSpeech</c>, a <c>linear</c> stratum that holds morphological rules, a partial stem
-/// entry with a part of speech, and a partial rule that sits in a slot or has an
-/// <c>outputPartOfSpeech</c>.
+/// <c>outputPartOfSpeech</c>, a <c>linear</c> stratum that holds morphological rules or affix
+/// templates, a partial stem entry with a part of speech, and a partial rule that sits in a slot or has
+/// an <c>outputPartOfSpeech</c>.
 /// </summary>
 [TestFixture]
 public sealed class FieldWorksProducibleShapeTests
@@ -78,7 +78,7 @@ public sealed class FieldWorksProducibleShapeTests
     }
 
     [Test]
-    public void TheCheckFindsALinearStratumThatHoldsAMorphologicalRule()
+    public void TheCheckFindsALinearStratumThatHoldsAMorphologicalRuleOrATemplate()
     {
         string[] found = Scan(
             """
@@ -87,6 +87,13 @@ public sealed class FieldWorksProducibleShapeTests
             </Stratum>
             <Stratum morphologicalRuleOrder="linear" morphologicalRules="mrB">
               <MorphologicalRuleDefinitions><CompoundingRule id="mrB" /></MorphologicalRuleDefinitions>
+            </Stratum>
+            <Stratum morphologicalRuleOrder="linear">
+              <MorphologicalRuleDefinitions><MorphologicalRule id="mrSlotOnly" /></MorphologicalRuleDefinitions>
+              <AffixTemplates><AffixTemplate><Slot morphologicalRules="mrSlotOnly" /></AffixTemplate></AffixTemplates>
+            </Stratum>
+            <Stratum morphologicalRuleOrder="unordered">
+              <AffixTemplates><AffixTemplate><Slot morphologicalRules="mrSlotOnly" /></AffixTemplate></AffixTemplates>
             </Stratum>
             """
         );
@@ -98,22 +105,24 @@ public sealed class FieldWorksProducibleShapeTests
                 {
                     "stratum #1 is linear (the DTD default) but holds morphological rules mrA",
                     "stratum #2 is linear but holds morphological rules mrB",
+                    "stratum #3 is linear but holds 1 affix template(s)",
                 }
             )
         );
     }
 
     [Test]
-    public void TheCheckAllowsLinearStrataThatHoldNoMorphologicalRule()
+    public void TheCheckAllowsLinearStrataThatHoldNoActiveRuleOrTemplate()
     {
         string[] found = Scan(
             """
             <Stratum>
               <MorphologicalRuleDefinitions>
-                <MorphologicalRule id="mrSlotOnly" />
                 <MorphologicalRule id="mrInactive" isActive="no" />
               </MorphologicalRuleDefinitions>
-              <AffixTemplates><AffixTemplate><Slot morphologicalRules="mrSlotOnly" /></AffixTemplate></AffixTemplates>
+              <AffixTemplates>
+                <AffixTemplate isActive="no"><Slot morphologicalRules="mrInactive" /></AffixTemplate>
+              </AffixTemplates>
             </Stratum>
             <Stratum morphologicalRules="mrInactive">
               <MorphologicalRuleDefinitions>
@@ -216,8 +225,8 @@ public sealed class FieldWorksProducibleShapeTests
                 offences.Add($"partial stem entry {(string?)entry.Attribute("id")} has a partOfSpeech");
         }
 
-        // HCLoader builds every stratum that holds rules as Unordered, and the DTD default is linear.
-        // A rule reached only through a slot never reads the order.
+        // HCLoader builds every stratum that holds rules or templates as Unordered, and the DTD default is
+        // linear. The engine reads the order for the listed rules and when it applies templates.
         int number = 0;
         foreach (XElement stratum in doc.Descendants("Stratum"))
         {
@@ -239,12 +248,17 @@ public sealed class FieldWorksProducibleShapeTests
                     active.Add(id);
             }
 
+            string how = order is null ? "linear (the DTD default)" : "linear";
             string[] held = Split((string?)stratum.Attribute("morphologicalRules")).Where(active.Contains).ToArray();
             if (held.Length > 0)
-            {
-                string how = order is null ? "linear (the DTD default)" : "linear";
                 offences.Add($"stratum #{number} is {how} but holds morphological rules {string.Join(" ", held)}");
-            }
+
+            int templates = stratum
+                .Elements("AffixTemplates")
+                .Elements("AffixTemplate")
+                .Count(template => (string?)template.Attribute("isActive") != "no");
+            if (templates > 0)
+                offences.Add($"stratum #{number} is {how} but holds {templates} affix template(s)");
         }
 
         return offences.ToArray();
