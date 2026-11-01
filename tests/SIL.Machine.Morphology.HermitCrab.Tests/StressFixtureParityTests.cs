@@ -13,9 +13,8 @@ public sealed class StressFixtureParityTests
         string? directory = TestContext.CurrentContext.TestDirectory;
         while (directory is not null)
         {
-            string candidate = Path.Combine(directory, "conformance-stress");
-            if (Directory.Exists(candidate))
-                return candidate;
+            if (File.Exists(Path.Combine(directory, "conformance", "constructs.txt")))
+                return Path.Combine(directory, "conformance-stress");
             directory = Directory.GetParent(directory)?.FullName;
         }
 
