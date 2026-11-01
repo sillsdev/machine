@@ -561,7 +561,7 @@ Add-Verdict "loader-gap" "MetathesisSwitchPositionInversion" "No" @(
     "FieldWorks-authored MetathesisRule can never have its leftSwitch name the structurally earlier " +
     "of its two pattern groups. That is the shape behind the C# array-comparison-invariant crash " +
     "fixed upstream by sillsdev/machine#471, so that crash is unreachable from a real FieldWorks " +
-    "project (the fixture that pinned it, edge-cases/metathesis-comparison-crash, has been removed)."
+    "project."
 )
 
 Add-Verdict "loader-gap" "LexicalPatternRootAllomorph" "Yes" @(

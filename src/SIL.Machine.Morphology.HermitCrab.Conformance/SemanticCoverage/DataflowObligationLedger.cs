@@ -92,7 +92,7 @@ public enum ObligationMutatorClass
 /// <c>IsMatchExcluded</c> (MprFeatureSet.cs:46,72) are a conjunction across ungrouped features and
 /// <c>matchType="all"</c> groups, a disjunction across <c>matchType="any"</c> groups -- an n-condition
 /// boolean whenever a <c>required*</c>/<c>excludedMPRFeatures</c> value lists n>1 feature ids (real
-/// case, in a since-removed fixture: <c>requiredMPRFeatures="mprP mprQ"</c>).
+/// example: <c>requiredMPRFeatures="mprP mprQ"</c>).
 /// MC/DC over n conditions needs n+1 cases, not a fixed 2. This generator scans every MPR-payload
 /// chain's exercising fixtures for the largest observed token count and, where n>1, emits
 /// <c>ConditionExtension</c> rows on top of the floor's four, attributed to the specific fixture that
