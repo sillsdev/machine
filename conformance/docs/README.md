@@ -43,8 +43,8 @@ and its marginal return then fell to roughly nothing. Freezing it is a decision,
 that compare a checked-in ledger against a fresh recompute. These run in seconds and they are what
 stop the published numbers from quietly going stale.
 
-**Frozen, and honest as they stand.** The ledgers. They record 18 of 48 gate arms evidenced, 7 of 24
-gates with both MC/DC arms, and 8 defensible obligation cells of 18 worth covering. Those are
+**Frozen, and honest as they stand.** The ledgers. They record 16 of 48 gate arms evidenced, 6 of 24
+gates with both MC/DC arms, and 5 defensible obligation cells of 17 worth covering. Those are
 findings, not a backlog. `obligation-triage.tsv` classifies every unmet obligation by the blocker its
 own ledger records, and most of the remainder is either impossible or strained -- read it before
 assuming a number should be higher.
