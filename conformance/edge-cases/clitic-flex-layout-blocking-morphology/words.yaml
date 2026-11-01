@@ -33,7 +33,7 @@ words:
     parses:
       - signature: "SAG+PAST+ENC|sagdis"
         rules: [mrPast, prEpenthesis, mrEnc]
-        exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
+        exercises: ["RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"]
 
   - word: sagdit
     note: >-

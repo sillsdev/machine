@@ -208,7 +208,7 @@ CliticEncliticAndProclitic,sagds,SAG+PAST+ENC|sagds,Clitics stratum: clitic desi
 CliticEncliticAndProclitic,zsagds,PROC+SAG+PAST+ENC|zsagds,Clitics stratum: clitic designation by stratum name alone
 CliticEncliticAndProclitic,zsagds,PROC+SAG+PAST+ENC|zsagds,Clitics stratum: clitic designation by stratum name alone
 CliticFlexLayoutBlockingMorphology,sagdi,SAG+PAST|sagdi,Affix template slots (obligatory/disjunctive/ordering)
-CliticFlexLayoutBlockingMorphology,sagdis,SAG+PAST+ENC|sagdis,Clitic rules (isCliticRule / Clitics stratum) after a final template
+CliticFlexLayoutBlockingMorphology,sagdis,SAG+PAST+ENC|sagdis,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 CliticFlexLayoutBlockingMorphology,sagdit,SAG+PAST+NOTCL|sagdit,Clitic rules (isCliticRule / Clitics stratum) after a final template
 CliticFlexLayoutBlockingMorphology,sagdk,,Clitic rules (isCliticRule / Clitics stratum) after a final template
 CliticProcliticAfterFinalTemplate,psag,PRE+SAG|psag,Affix template slots (obligatory/disjunctive/ordering)
@@ -224,8 +224,6 @@ CliticRuleDesignation,sagdsz,SAG+PAST+ENC+DEFCL|sagdsz,Clitic rules (isCliticRul
 CliticRuleDesignation,kolpu,KOL+NF|kolpu,Affix template slots (obligatory/disjunctive/ordering)
 CliticRuleDesignation,kolpuli,KOL+NF+PL|kolpuli,Affix template slots (obligatory/disjunctive/ordering)
 CliticStemEntry,sagd,SAG+PAST|sagd,Affix template slots (obligatory/disjunctive/ordering)
-CliticStemEntry,ka,KA|ka,Clitics stratum: clitic designation by stratum name alone
-CliticStemEntry,kaz,KA+ENC|kaz,Clitics stratum: clitic designation by stratum name alone
 CompoundingBreadth,ka,KA|ka,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,tu,TU|tu,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,katu,KA+TU|katu,CompoundingRule

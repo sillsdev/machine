@@ -374,7 +374,8 @@ edge-cases/clitic-flex-layout-blocking-morphology	Interface	Stratum.characterDef
 edge-cases/clitic-flex-layout-blocking-morphology	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/clitic-flex-layout-blocking-morphology	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/clitic-flex-layout-blocking-morphology	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	1 claim(s)
-edge-cases/clitic-flex-layout-blocking-morphology	Construct	Clitic rules (isCliticRule / Clitics stratum) after a final template	claimed-confirmed	3 claim(s)
+edge-cases/clitic-flex-layout-blocking-morphology	Construct	Clitic rules (isCliticRule / Clitics stratum) after a final template	claimed-confirmed	2 claim(s)
+edge-cases/clitic-flex-layout-blocking-morphology	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	1 claim(s)
 edge-cases/clitic-proclitic-after-final-template	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/clitic-proclitic-after-final-template	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/clitic-proclitic-after-final-template	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
@@ -404,7 +405,6 @@ edge-cases/clitic-stem-entry	Interface	Slot.morphologicalRules	required-by-dtd	R
 edge-cases/clitic-stem-entry	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/clitic-stem-entry	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/clitic-stem-entry	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	1 claim(s)
-edge-cases/clitic-stem-entry	Construct	Clitics stratum: clitic designation by stratum name alone	claimed-unmapped	2 claim(s)
 edge-cases/compounding-breadth	Surface	dtd:element/AssignedFootFeatures	witnessed	Evidenced
 edge-cases/compounding-breadth	Surface	dtd:element/AssignedHeadFeatures	witnessed	Evidenced
 edge-cases/compounding-breadth	Surface	dtd:element/CompoundingRule	required-by-dtd	RequiredByDtd

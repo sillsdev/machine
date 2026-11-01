@@ -30,7 +30,6 @@ words:
     parses:
       - signature: "KA|ka"
         rules: []
-        exercises: ["Clitics stratum: clitic designation by stratum name alone"]
 
   - word: kaz
     note: >-
@@ -38,7 +37,6 @@ words:
     parses:
       - signature: "KA+ENC|kaz"
         rules: [mrEnc]
-        exercises: ["Clitics stratum: clitic designation by stratum name alone"]
 
   - word: kad
     note: >-
