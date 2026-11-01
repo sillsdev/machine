@@ -230,22 +230,24 @@ namespace SIL.Machine.Annotations
             // Several containers can share the same range while only one of them owns the children that lead to the
             // offset, so every one of them has to be tried, not just the one Find happened to return.
             Annotation<TOffset> candidate = result;
+            Annotation<TOffset> miss = candidate;
             foreach (Annotation<TOffset> tied in GetSameRange(candidate))
             {
-                if (
-                    !tied.IsLeaf
-                    && tied.Range.Contains(offset, dir)
-                    && tied.Children.FindDepthFirst(offset, dir, out Annotation<TOffset> inner)
-                )
+                if (tied.IsLeaf || !tied.Range.Contains(offset, dir))
+                    continue;
+
+                if (tied.Children.FindDepthFirst(offset, dir, out Annotation<TOffset> inner))
                 {
                     result = inner;
                     return true;
                 }
+
+                // A miss reports the result of the candidate's own children, not of another tied container.
+                if (tied == candidate)
+                    miss = inner;
             }
 
-            if (!candidate.IsLeaf && candidate.Range.Contains(offset, dir))
-                return candidate.Children.FindDepthFirst(offset, dir, out result);
-
+            result = miss;
             return false;
         }
 
