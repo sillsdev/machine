@@ -2,8 +2,7 @@
 language: StressBantuTamTemplates
 sources: []
 requires: []
-fieldworks_producible: false
-fieldworks_producible_notes: "research stress fixture; not authored through FieldWorks"
+fieldworks_producible: true
 budget_ms: 60000
 words:
   - word: horayeedagola

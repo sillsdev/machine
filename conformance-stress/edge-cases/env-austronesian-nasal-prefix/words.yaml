@@ -3,6 +3,7 @@ language: AustronesianNasalPrefixes
 inspired_by: ["Synthetic Austronesian nasal-assimilating meN- and peN- prefixes with place-conditioned allomorphs and a locative suffix with a zero allomorph (not modeling one real language)."]
 sources: []
 requires: []
+fieldworks_producible: true
 # Stress fixture for the required-environment prefilter. Null affixes insert FLEx-style boundaries;
 # expected analyses were checked against their environments and the rule order.
 budget_ms: 60000

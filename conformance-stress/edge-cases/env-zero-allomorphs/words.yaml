@@ -3,6 +3,7 @@ language: StressEnvZeroAllomorphs
 inspired_by: ["synthetic Bantu/Austronesian zero-allomorph prefix and suffix probe (not modeling any real language)"]
 sources: []
 requires: []
+fieldworks_producible: true
 # Research stress fixture for the required-environment prefilter, not registered in the conformance ledgers.
 # The zero allomorphs (indexes 0) carry a Required left environment on a rare segment class and are placed
 # first so synthesis tries them; tabun and gisam exercise the null suffix after a nasal.

@@ -3,6 +3,7 @@ language: BantuConcordAllomorphy
 inspired_by: ["Synthetic Bantu-style noun-class concord and tense allomorphy (not modeling one real language): a concord prefix with four place-conditioned allomorphs plus a fallback, a negative prefix, and a tense suffix with a zero allomorph; conditioned allomorphs precede the fallback so synthesis tries them."]
 sources: []
 requires: []
+fieldworks_producible: true
 # Stress fixture for the required-environment prefilter. Null affixes insert FLEx-style boundaries;
 # expected analyses were checked against their environments and the rule order.
 budget_ms: 60000
