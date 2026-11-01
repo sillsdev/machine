@@ -140,6 +140,15 @@ public sealed class ConformanceHarnessTests
     }
 
     [Test]
+    public void CompareRuleTraceMultisets_BracketClassMembersInDifferentOrder_Passes()
+    {
+        var expected = new (string Signature, IEnumerable<string> RuleIds)[] { ("|b[ea]t", new[] { "crLeftHead" }) };
+        var actual = new (string Signature, IEnumerable<string> RuleIds)[] { ("|b[ae]t", new[] { "crLeftHead" }) };
+
+        Assert.That(Runner.CompareRuleTraceMultisets(expected, actual), Is.Empty);
+    }
+
+    [Test]
     public void RunSelfCheck_ExpectCrashFixtureThatTimesOut_Fails()
     {
         FixtureResult result = RunSlowFixtureOverBudget("\nexpect_crash: true");

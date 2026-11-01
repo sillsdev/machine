@@ -66,13 +66,12 @@ public static class SignatureTsv
     /// unordered collection (sillsdev/machine#573).
     /// </summary>
     public static List<string> SplitComparableSignature(string signature) =>
-        SplitSignature(signature)
-            .Select(entry =>
-                BracketClass.Replace(
-                    entry,
-                    m => "[" + m.Groups[1].Value + new string(m.Groups[2].Value.OrderBy(c => c).ToArray()) + "]"
-                )
-            )
-            .OrderBy(s => s, StringComparer.Ordinal)
-            .ToList();
+        SplitSignature(signature).Select(CanonicalizeBracketClasses).OrderBy(s => s, StringComparer.Ordinal).ToList();
+
+    /// <summary>One signature entry with the members of every bracketed class sorted.</summary>
+    public static string CanonicalizeBracketClasses(string entry) =>
+        BracketClass.Replace(
+            entry,
+            m => "[" + m.Groups[1].Value + new string(m.Groups[2].Value.OrderBy(c => c).ToArray()) + "]"
+        );
 }

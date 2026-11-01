@@ -341,7 +341,7 @@ result.WordResults
             var counts = new Dictionary<(string Signature, string RuleIds), int>();
             foreach ((string signature, IEnumerable<string> ruleIds) in traces)
             {
-                var key = (signature, CanonicalRuleIds(ruleIds));
+                var key = (SignatureTsv.CanonicalizeBracketClasses(signature), CanonicalRuleIds(ruleIds));
                 counts[key] = counts.GetValueOrDefault(key) + 1;
             }
             return counts;
