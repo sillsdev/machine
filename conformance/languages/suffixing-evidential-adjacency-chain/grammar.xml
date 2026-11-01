@@ -113,9 +113,9 @@
             <MorphemeId>3SG</MorphemeId>
           </MorphologicalRule>
           <!-- Slot 1 member 4/5 (W6, cooccurrence/morpheme-adjacency): 1PL.INCL person "-tuku", a
-               4th disjunctive slot-1 member added solely to host the "somewhereToRight" adjacency
-               test: its MorphemeCoOccurrenceRules below need mrEvidDirect somewhereToRight, so
-               an intervening optional PL between this suffix and DIR does not break satisfaction. -->
+               4th disjunctive slot-1 member that hosts the "somewhereToRight" exclusions below: they
+               refuse every evidential other than mrEvidDirect anywhere to its right. mrPlural is not
+               refused, so a PL between this suffix and DIR is allowed. -->
           <MorphologicalRule id="mrPerson1PlIncl" requiredPartsOfSpeech="posV">
             <Name>person1plIncl</Name>
             <MorphologicalSubrules>
@@ -126,10 +126,9 @@
             </MorphologicalSubrules>
             <MorphemeId>1PL.INCL</MorphemeId>
           </MorphologicalRule>
-          <!-- Slot 1 member 5/5 (W6, cooccurrence/morpheme-adjacency): 2PL person "-lupa", the
-               somewhereToRight/adjacentToRight distinguishing partner of mrPerson1PlIncl: its
-               MorphemeCoOccurrenceRules need mrEvidDirect ADJACENT to its right, so the same
-               intervening PL that mrPerson1PlIncl tolerates instead breaks this one. -->
+          <!-- Slot 1 member 5/5 (W6, cooccurrence/morpheme-adjacency): 2PL person "-lupa", which hosts
+               the "adjacentToRight" exclusions below: they refuse mrPlural and every evidential other
+               than mrEvidDirect directly to its right, so a PL between this suffix and DIR is refused. -->
           <MorphologicalRule id="mrPerson2Pl" requiredPartsOfSpeech="posV">
             <Name>person2pl</Name>
             <MorphologicalSubrules>
@@ -200,10 +199,9 @@
             <MorphemeId>CONJ</MorphemeId>
           </MorphologicalRule>
           <!-- Slot 3 member 4/5 (W6, cooccurrence/morpheme-adjacency): assumptive-evidence "-tan",
-               a sibling of DIR/REP/CONJ added solely to host the "somewhereToLeft" adjacency
-               test: its MorphemeCoOccurrenceRules below need mrPerson1 SPECIFICALLY (not any
-               person) somewhereToLeft, so an intervening optional PL between PERSON and this
-               suffix does not break satisfaction - PERSON is still "somewhere" to the left. -->
+               a sibling of DIR/REP/CONJ that hosts the "somewhereToLeft" exclusions below: they refuse
+               every person other than mrPerson1 anywhere to its left. mrPlural is not refused, so a PL
+               between PERSON and this suffix is allowed. -->
           <MorphologicalRule id="mrEvidAssum" requiredPartsOfSpeech="posV">
             <Name>evidAssumptive</Name>
             <MorphologicalSubrules>
@@ -214,10 +212,9 @@
             </MorphologicalSubrules>
             <MorphemeId>ASSUM</MorphemeId>
           </MorphologicalRule>
-          <!-- Slot 3 member 5/5 (W6, cooccurrence/morpheme-adjacency): mirative-evidence "-was",
-               the somewhereToLeft/adjacentToLeft distinguishing partner of mrEvidAssum: its
-               MorphemeCoOccurrenceRules need mrPerson1 ADJACENT to its left, so the same
-               intervening PL that mrEvidAssum tolerates instead breaks this one. -->
+          <!-- Slot 3 member 5/5 (W6, cooccurrence/morpheme-adjacency): mirative-evidence "-was", which
+               hosts the "adjacentToLeft" exclusions below: they refuse mrPlural and every person other
+               than mrPerson1 directly to its left, so a PL between PERSON and this suffix is refused. -->
           <MorphologicalRule id="mrEvidMir" requiredPartsOfSpeech="posV">
             <Name>evidMirative</Name>
             <MorphologicalSubrules>
@@ -322,7 +319,8 @@
            sits left of the optional number and evidential slots, so the persons other than
            mrPerson1 are exactly the complement of mrPerson1 to the left of an evidential. To the
            right of a person the complement of mrEvidDirect also includes "no evidential at all",
-           which an exclude rule cannot refuse. -->
+           which an exclude rule cannot refuse. No word tells somewhere from adjacent apart: switching
+           every scope to the other leaves every row unchanged (see words.yaml). -->
       <!-- mrEvidAssum needs mrPerson1 somewhere to its left. -->
       <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrEvidAssum" otherMorphemes="mrPerson2" adjacency="somewhereToLeft" />
       <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrEvidAssum" otherMorphemes="mrPerson3" adjacency="somewhereToLeft" />

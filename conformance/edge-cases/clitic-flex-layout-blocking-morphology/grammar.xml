@@ -57,7 +57,7 @@
       </PhonologicalRule>
     </PhonologicalRuleDefinitions>
     <Strata>
-      <!-- A phonological rule makes this stratum blocking (Morpher.IsBlockingStratum): the final-template state resets when it ends. -->
+      <!-- A phonological rule makes this stratum blocking (Morpher.IsBlockingStratum), so the final-template state is cleared when it ends. Only a non-clitic rule in a later stratum could observe that, and none exists, so no word depends on it. -->
       <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrPast mrPlain" phonologicalRules="prEpenthesis">
         <Name>Morphology</Name>
         <MorphologicalRuleDefinitions>

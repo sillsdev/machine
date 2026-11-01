@@ -51,49 +51,56 @@
 #   9. kantancha = SING(aKanta)+3SG+CONJ: aKanta's AllomorphCoOccurrenceRule fires (subEvidConj
 #      present) -> zero parses.
 #        -> expect_fail, blocked_by: [aKanta]
-#   10. walaknitan = WALAK+1SG("-ni")+ASSUM("-tan"), adjacent -> mrEvidAssum's "somewhereToLeft"
-#       requirement on mrPerson1 is satisfied (trivially, since adjacent is also "somewhere").
+#   10. walaknitan = WALAK+1SG("-ni")+ASSUM("-tan"), adjacent: mrEvidAssum refuses every person other
+#       than mrPerson1 somewhereToLeft, and the person here is mrPerson1, so nothing is refused.
 #         -> WALAK+1SG+ASSUM|walaknitan
-#   11. walaknichiktan = WALAK+1SG+PL("-chik")+ASSUM: PL intervenes between PERSON and ASSUM, but
-#       "somewhereToLeft" only needs mrPerson1 present somewhere left, so it STILL passes.
+#   11. walaknichiktan = WALAK+1SG+PL("-chik")+ASSUM: mrEvidAssum does not refuse mrPlural, so the PL
+#       between PERSON and ASSUM changes nothing.
 #         -> WALAK+1SG+PL+ASSUM|walakni(ch)iktan
-#   12. walakniwas = WALAK+1SG+MIR("-was"), adjacent -> mrEvidMir's "adjacentToLeft" requirement on
-#       mrPerson1 is satisfied (immediately adjacent).
+#   12. walakniwas = WALAK+1SG+MIR("-was"), adjacent: mrEvidMir refuses mrPlural and every person
+#       other than mrPerson1 adjacentToLeft, and mrPerson1 is the adjacent morpheme, so nothing is
+#       refused.
 #         -> WALAK+1SG+MIR|walakniwas
-#   13. walaknichikwas = WALAK+1SG+PL+MIR: PL now sits directly between PERSON and MIR, so
-#       "adjacentToLeft" FAILS (the somewhereToLeft/adjacentToLeft distinguishing pair, vs #11) ->
-#       zero parses.
+#   13. walaknichikwas = WALAK+1SG+PL+MIR: PL sits directly left of MIR and mrEvidMir refuses mrPlural
+#       adjacentToLeft -> zero parses.
 #         -> expect_fail, blocked_by: [mrEvidMir]
-#   13b. walakntan = WALAK+3SG("-n")+ASSUM: mrPerson1 (not just any person) is required, and 3SG is
-#        not mrPerson1, so "somewhereToLeft" fails even with no PL involved at all -- guards against
-#        a no-op "somewhereToLeft" that #10/#11 alone would not catch (both keep mrPerson1 present).
+#   13b. walakntan = WALAK+3SG("-n")+ASSUM: mrEvidAssum refuses mrPerson3 somewhereToLeft -> zero
+#        parses. Guards against a no-op exclusion on mrEvidAssum, which #10/#11 alone would not catch
+#        (neither has a refused person).
 #          -> expect_fail, blocked_by: [mrEvidAssum]
-#   14. siputukumi = SIPU+1PL.INCL("-tuku")+DIR("-mi"), adjacent -> mrPerson1PlIncl's
-#       "somewhereToRight" requirement on mrEvidDirect is satisfied.
+#   14. siputukumi = SIPU+1PL.INCL("-tuku")+DIR("-mi"), adjacent: mrPerson1PlIncl refuses every
+#       evidential other than mrEvidDirect somewhereToRight, and DIR is not refused.
 #         -> SIPU+1PL.INCL+DIR|siputukumi
-#   15. siputukuchikmi = SIPU+1PL.INCL+PL+DIR: PL intervenes between the person suffix and DIR, but
-#       "somewhereToRight" only needs mrEvidDirect present somewhere right, so it STILL passes.
+#   15. siputukuchikmi = SIPU+1PL.INCL+PL+DIR: mrPerson1PlIncl does not refuse mrPlural, so the PL
+#       between the person suffix and DIR changes nothing.
 #         -> SIPU+1PL.INCL+PL+DIR|siputuku(ch)ikmi
-#   15b. siputuku = SIPU+1PL.INCL alone, no evidential at all: mrEvidDirect is absent entirely, so
-#        "somewhereToRight" fails even with no PL involved -- guards against a no-op
-#        "somewhereToRight" that #14/#15 alone would not catch (both keep mrEvidDirect present).
-#          -> expect_fail, blocked_by: [mrPerson1PlIncl]
-#   16. sipulupami = SIPU+2PL("-lupa")+DIR, adjacent -> mrPerson2Pl's "adjacentToRight" requirement
-#       on mrEvidDirect is satisfied (immediately adjacent).
+#   15b. siputuku = SIPU+1PL.INCL alone, no evidential at all: an exclude rule cannot refuse the
+#        absence of mrEvidDirect, so this word parses (see the conversion paragraph below).
+#          -> SIPU+1PL.INCL|siputuku
+#   16. sipulupami = SIPU+2PL("-lupa")+DIR, adjacent: mrPerson2Pl refuses mrPlural and every
+#       evidential other than mrEvidDirect adjacentToRight, and DIR is not refused.
 #         -> SIPU+2PL+DIR|sipulupami
-#   17. sipulupachikmi = SIPU+2PL+PL+DIR: PL now sits directly between the person suffix and DIR, so
-#       "adjacentToRight" FAILS (distinguishing pair vs #15) -> zero parses.
+#   17. sipulupachikmi = SIPU+2PL+PL+DIR: PL sits directly right of the person suffix and
+#       mrPerson2Pl refuses mrPlural adjacentToRight -> zero parses.
 #         -> expect_fail, blocked_by: [mrPerson2Pl]
 #
-# FIELDWORKS CONVERSION (exclude rules only). The four adjacency requirements above (items 10-17)
-# were MorphemeCoOccurrenceRule type="require"; HCLoader builds Exclude constraints only, so each
-# is now one single-other exclude rule per morpheme that could stand in the required position
-# (an exclude rule with several others fires only when all of them co-occur). The oracle agreed with
-# every existing row except item 15b, siputuku: an exclude rule cannot refuse the absence of
-# mrEvidDirect, so siputuku now parses. Two words were added from the engine's own output so each
-# adjacency exclude still has a negative control that does not depend on another rule: siputukusi
-# and sipulupasi (REP, which carries no co-occurrence rule). The AND-not-OR pin (walaknkicha, item
-# 4's rules on mrEvidConjectural) is unchanged.
+# FIELDWORKS CONVERSION (exclude rules only). The four adjacency rules behind items 10-17 were
+# MorphemeCoOccurrenceRule type="require"; HCLoader builds Exclude constraints only, so each is now
+# one single-other exclude rule per morpheme that could stand in the required position (an exclude
+# rule with several others fires only when all of them co-occur). The oracle agreed with every
+# existing row except item 15b, siputuku: an exclude rule cannot refuse the absence of mrEvidDirect,
+# so siputuku now parses. Two words were added from the engine's own output so each adjacency
+# exclude still has a negative control that does not depend on another rule: siputukusi and
+# sipulupasi (REP, which carries no co-occurrence rule). The AND-not-OR pin (walaknkicha, item 4's
+# rules on mrEvidConjectural) is unchanged.
+#
+# WHAT THE WORDS NO LONGER PIN: "somewhere" versus "adjacent". No word separates the two scopes.
+# Measured on the engine: switching every somewhereTo* to adjacentTo*, left only, right only or both,
+# and every adjacentTo* to somewhereTo*, leaves every row of this file unchanged. For mrEvidMir and
+# mrPerson2Pl no word can separate them, because the only morpheme that can stand between is mrPlural
+# and both rules refuse it. For mrEvidAssum a word 3SG+PL+ASSUM would (refused under somewhereToLeft,
+# parsed under adjacentToLeft), and for mrPerson1PlIncl a word 1PL.INCL+PL+REP would (refused under
+# somewhereToRight, parsed under adjacentToRight). Neither word has been added.
 
 language: SuffixingEvidentialAdjacencyChain
 inspired_by: ["suffixing evidential-marking verbal morphology with morpheme-adjacency co-occurrence constraints (typological pattern, not any specific language)"]
@@ -272,9 +279,9 @@ words:
 
   - word: walaknitan
     note: >-
-      WALAK+1SG("-ni")+ASSUM("-tan"), adjacent: mrEvidAssum (a new evidential slot-3 member) carries
-      a MorphemeCoOccurrenceRule requiring mrPerson1 "somewhereToLeft" -- satisfied here since
-      mrPerson1 is immediately to its left.
+      WALAK+1SG("-ni")+ASSUM("-tan"), adjacent: mrEvidAssum (an evidential slot-3 member) carries
+      exclude rules refusing every person other than mrPerson1 "somewhereToLeft" -- none applies
+      here, since the person is mrPerson1.
     provenance: "W6, MorphemeCoOccurrenceRule + all 5 adjacency kinds"
     parses:
       - signature: "WALAK+1SG+ASSUM|walaknitan"
@@ -286,8 +293,8 @@ words:
   - word: walaknichiktan
     note: >-
       WALAK+1SG+PL("-chik")+ASSUM: PL now intervenes between mrPerson1 and mrEvidAssum, but
-      "somewhereToLeft" only requires mrPerson1 to be present somewhere to the left, not adjacent --
-      still satisfied, unlike walaknichikwas below.
+      mrEvidAssum does not refuse mrPlural, so the word still parses, unlike walaknichikwas below.
+      It does not tell "somewhereToLeft" from "adjacentToLeft": mrPerson1 is not refused under either.
     parses:
       - signature: "WALAK+1SG+PL+ASSUM|walakni(ch)iktan"
         gloss: carry.about-1SG-PL-ASSUM
@@ -297,13 +304,12 @@ words:
 
   - word: walakntan
     note: >-
-      WALAK+3SG("-n")+ASSUM("-tan"): mrEvidAssum's MorphemeCoOccurrenceRule requires mrPerson1
-      SPECIFICALLY (not just any person) somewhereToLeft. Person here is 3SG, so mrPerson1 is
-      absent entirely, and the "somewhereToLeft" require fails regardless of adjacency -- unlike
-      walaknitan/walaknichiktan above, which both keep mrPerson1 present and only vary whether PL
-      intervenes. Without this word, a no-op "somewhereToLeft" implementation (always satisfied)
-      would go undetected, since every other word exercising mrEvidAssum already has mrPerson1
-      present. Zero parses.
+      WALAK+3SG("-n")+ASSUM("-tan"): mrEvidAssum refuses mrPerson3 "somewhereToLeft", and 3SG is
+      directly left of ASSUM here, so the word is refused. Unlike walaknitan/walaknichiktan above,
+      whose person is mrPerson1 and is not refused. Without this word, a no-op exclusion on
+      mrEvidAssum would go undetected, since every other word exercising mrEvidAssum has mrPerson1.
+      It does not tell "somewhereToLeft" from "adjacentToLeft", because 3SG is adjacent as well.
+      Zero parses.
     expect_fail: true
     blocked_by: [mrEvidAssum]
     exercises:
@@ -311,9 +317,9 @@ words:
 
   - word: walakniwas
     note: >-
-      WALAK+1SG+MIR("-was"), adjacent: mrEvidMir (the somewhereToLeft/adjacentToLeft distinguishing
-      partner of mrEvidAssum) carries a MorphemeCoOccurrenceRule requiring mrPerson1
-      "adjacentToLeft" -- satisfied here since mrPerson1 is immediately adjacent.
+      WALAK+1SG+MIR("-was"), adjacent: mrEvidMir (the "adjacentToLeft" counterpart of mrEvidAssum)
+      carries exclude rules refusing mrPlural and every person other than mrPerson1 "adjacentToLeft"
+      -- none applies here, since the adjacent morpheme is mrPerson1.
     parses:
       - signature: "WALAK+1SG+MIR|walakniwas"
         gloss: carry.about-1SG-MIR
@@ -323,10 +329,10 @@ words:
 
   - word: walaknichikwas
     note: >-
-      WALAK+1SG+PL+MIR: PL now sits directly between mrPerson1 and mrEvidMir, so "adjacentToLeft"
-      fails even though mrPerson1 is present somewhere to the left -- the distinguishing row against
-      walaknichiktan above (same PL-intervening configuration, but "somewhereToLeft" tolerates it
-      and "adjacentToLeft" does not) -- zero parses.
+      WALAK+1SG+PL+MIR: PL now sits directly between mrPerson1 and mrEvidMir, and mrEvidMir refuses
+      mrPlural "adjacentToLeft" -- zero parses. Contrast with walaknichiktan above (same
+      PL-intervening configuration, but mrEvidAssum does not refuse mrPlural). It does not tell
+      "adjacentToLeft" from "somewhereToLeft": PL is the only morpheme that can stand between.
     expect_fail: true
     blocked_by: [mrEvidMir]
     exercises:
@@ -334,9 +340,9 @@ words:
 
   - word: siputukumi
     note: >-
-      SIPU+1PL.INCL("-tuku")+DIR("-mi"), adjacent: mrPerson1PlIncl (a new 4th disjunctive slot-1
-      person member) carries a MorphemeCoOccurrenceRule requiring mrEvidDirect "somewhereToRight" --
-      satisfied here since mrEvidDirect is immediately to its right.
+      SIPU+1PL.INCL("-tuku")+DIR("-mi"), adjacent: mrPerson1PlIncl (a 4th disjunctive slot-1 person
+      member) carries exclude rules refusing every evidential other than mrEvidDirect
+      "somewhereToRight" -- none applies here, since the evidential is mrEvidDirect.
     parses:
       - signature: "SIPU+1PL.INCL+DIR|siputukumi"
         gloss: weave-1PL.INCL-DIR
@@ -347,8 +353,9 @@ words:
   - word: siputukuchikmi
     note: >-
       SIPU+1PL.INCL+PL("-chik")+DIR: PL now intervenes between mrPerson1PlIncl and mrEvidDirect, but
-      "somewhereToRight" only requires mrEvidDirect to be present somewhere to the right, not
-      adjacent -- still satisfied, unlike sipulupachikmi below.
+      mrPerson1PlIncl does not refuse mrPlural, so the word still parses, unlike sipulupachikmi
+      below. It does not tell "somewhereToRight" from "adjacentToRight": mrEvidDirect is not refused
+      under either.
     parses:
       - signature: "SIPU+1PL.INCL+PL+DIR|siputuku(ch)ikmi"
         gloss: weave-1PL.INCL-PL-DIR
@@ -358,10 +365,10 @@ words:
 
   - word: siputuku
     note: >-
-      SIPU+1PL.INCL("-tuku") alone, no evidential at all. Written as exclude rules, mrPerson1PlIncl
-      refuses only the other evidentials to its right, and an exclude rule cannot refuse the absence
-      of mrEvidDirect, so this word parses. Under the earlier require rule it had no parse; the
-      change is the one piece of "mrEvidDirect must be present" that FieldWorks cannot express.
+      SIPU+1PL.INCL("-tuku") alone, no evidential at all. mrPerson1PlIncl refuses only the other
+      evidentials to its right, and an exclude rule cannot refuse the absence of mrEvidDirect, so
+      this word parses. As a require rule ("mrEvidDirect must be present", which FieldWorks cannot
+      express) it had no parse.
     parses:
       - signature: "SIPU+1PL.INCL|siputuku"
         gloss: weave-1PL.INCL
@@ -383,9 +390,9 @@ words:
 
   - word: sipulupami
     note: >-
-      SIPU+2PL("-lupa")+DIR, adjacent: mrPerson2Pl (the somewhereToRight/adjacentToRight
-      distinguishing partner of mrPerson1PlIncl) carries a MorphemeCoOccurrenceRule requiring
-      mrEvidDirect "adjacentToRight" -- satisfied here since mrEvidDirect is immediately adjacent.
+      SIPU+2PL("-lupa")+DIR, adjacent: mrPerson2Pl (the "adjacentToRight" counterpart of
+      mrPerson1PlIncl) carries exclude rules refusing mrPlural and every evidential other than
+      mrEvidDirect "adjacentToRight" -- none applies here, since the evidential is mrEvidDirect.
     parses:
       - signature: "SIPU+2PL+DIR|sipulupami"
         gloss: weave-2PL-DIR
@@ -395,10 +402,10 @@ words:
 
   - word: sipulupachikmi
     note: >-
-      SIPU+2PL+PL+DIR: PL now sits directly between mrPerson2Pl and mrEvidDirect, so
-      "adjacentToRight" fails even though mrEvidDirect is present somewhere to the right -- the
-      distinguishing row against siputukuchikmi above (same PL-intervening configuration, but
-      "somewhereToRight" tolerates it and "adjacentToRight" does not) -- zero parses.
+      SIPU+2PL+PL+DIR: PL now sits directly between mrPerson2Pl and mrEvidDirect, and mrPerson2Pl
+      refuses mrPlural "adjacentToRight" -- zero parses. Contrast with siputukuchikmi above (same
+      PL-intervening configuration, but mrPerson1PlIncl does not refuse mrPlural). It does not tell
+      "adjacentToRight" from "somewhereToRight": PL is the only morpheme that can stand between.
     expect_fail: true
     blocked_by: [mrPerson2Pl]
     exercises:
@@ -406,10 +413,10 @@ words:
 
   - word: sipulupasi
     note: >-
-      SIPU+2PL+REP("-si"): mrPerson2Pl excludes every evidential other than mrEvidDirect, and the
-      plural, adjacentToRight, so the adjacent REP is refused (REP carries no co-occurrence rule of
-      its own). Negative control for sipulupami, which keeps
-      mrEvidDirect and so cannot detect a no-op "adjacentToRight" exclude rule. Zero parses.
+      SIPU+2PL+REP("-si"): mrPerson2Pl excludes mrPlural and every evidential other than
+      mrEvidDirect adjacentToRight, so the adjacent REP is refused (REP carries no co-occurrence
+      rule of its own). Negative control for sipulupami, which keeps mrEvidDirect and so cannot
+      detect a no-op "adjacentToRight" exclude rule. Zero parses.
     expect_fail: true
     blocked_by: [mrPerson2Pl]
     exercises:

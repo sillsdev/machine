@@ -28,7 +28,7 @@
       <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
     </NaturalClasses>
     <Strata>
-      <!-- No phonological rules and not the last stratum, so Morphology is non-blocking: the final-template state carries into Clitics, where only a clitic rule may follow. -->
+      <!-- No phonological rules and not the last stratum, so Morphology is non-blocking and the final-template state carries into Clitics. Clitics holds no non-clitic rule, so no word depends on that. -->
       <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrPast mrDeriv">
         <Name>Morphology</Name>
         <MorphologicalRuleDefinitions>

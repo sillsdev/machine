@@ -15,11 +15,16 @@
 # for `zudiua` (hc.dll built at each commit). Earlier notes said the loss survived PriorityUnion;
 # that was measured on the pre-merge research branch perf/pr494-priority-union, not on what merged.
 #
+# Observed, and all that is claimed: no parse of `zudiua` at 52d069f8, a parse at 7109531e. Issue #504
+# says the loss reproduces at 8bad1934, a descendant of 52d069f8 that does not contain 7109531e, and
+# asks for a rerun on current master; that rerun is the 7109531e result above, and #504's text has not
+# been updated for it.
+#
 # Mechanism of the original loss: analysis (un-application) walks a derivation outside-in. mrOuter's
 # own OutputHeadFeatures (tense=past) was folded onto the stem as it was un-applied and never retracted
 # before mrInner was tried next; mrInner's own OutputHeadFeatures (tense=pres) was then checked for
 # unifiability against a stem still carrying tense=past, and the check refused the whole derivation.
-# Tracked by sillsdev/machine#504.
+# Tracked by sillsdev/machine#504, which stays open for general exact feature inversion.
 #
 # Word list:
 #   zud      bare root control -- the grammar loads and the root parses unaffixed.

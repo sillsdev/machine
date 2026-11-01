@@ -1,7 +1,9 @@
 # oracle-provenance: founding-oracle machine-commit=ed5cf05d verified-date=2026-10-26
 # Expected parses are derived from the HC clitic and final-template rules (Machine #529); the engine run only confirms them.
+# The Morphology stratum is non-blocking, but no word depends on that: adding a phonological rule to it, which makes it
+# blocking, leaves every row unchanged. The words check the final-template gate within one stratum and a clitic by stratum name.
 language: NonCliticAfterFinalTemplateLayout
-inspired_by: ["synthetic FieldWorks-layout non-blocking-stratum probe, not a model of a real language"]
+inspired_by: ["synthetic FieldWorks-layout probe: a final template, a non-clitic rule and an enclitic in strata without phonological rules, not a model of a real language"]
 sources:
   - "https://github.com/sillsdev/machine/pull/529"
   - "src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/SynthesisAffixProcessRule.cs"

@@ -3,11 +3,10 @@
 <!-- Analysis-side OutputHeadFeatures override loss (HC-Rust "exact analysis feature structure"
      divergence, PanGloss branch fix/exact-analysis-fs).
 
-     This fixture PINS CURRENT C# BEHAVIOUR, a known parse LOSS, not an endorsement of it. See
-     words.yaml for the full write-up, the provenance chain (sillsdev/machine research branch
-     perf/pr494-priority-union, doc/pr494-review.md section 4, test
-     OverrideLoss_TenseFlipFlop_AddAndPriorityUnionLoseTheParse_ExactFindsIt), and the exact word
-     that demonstrates the loss.
+     This fixture is a regression pin: `zudiua` has no parse at 52d069f8 and parses at 7109531e
+     (#494). See words.yaml for the full write-up, the provenance chain (sillsdev/machine research
+     branch perf/pr494-priority-union, doc/pr494-review.md section 4, test
+     OverrideLoss_TenseFlipFlop_AddAndPriorityUnionLoseTheParse_ExactFindsIt), and the word itself.
 
      Shape: three suffix rules on one root, applied in surface order (unordered stratum, as FieldWorks builds every stratum).
        mrInner     no RequiredHeadFeatures; OutputHeadFeatures tense=pres.        suffix "-i"
