@@ -1561,7 +1561,7 @@ edge-cases/truncate-morphotactic	Interface	CopyFromInput.index	required-by-dtd	R
 edge-cases/truncate-morphotactic	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
 edge-cases/truncate-morphotactic	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
-edge-cases/truncate-morphotactic	Interface	MorphologicalRule.requiredPartsOfSpeech	witnessed	Evidenced
+edge-cases/truncate-morphotactic	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/truncate-morphotactic	Interface	Segment.segment	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
@@ -1570,8 +1570,8 @@ edge-cases/truncate-morphotactic	Construct	AffixProcessRule: subtraction/truncat
 edge-cases/truncate-morphotactic-copy-u	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic-copy-u	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic-copy-u	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
-edge-cases/truncate-morphotactic-copy-u	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
-edge-cases/truncate-morphotactic-copy-u	Interface	MorphologicalRule.requiredPartsOfSpeech	witnessed	Evidenced
+edge-cases/truncate-morphotactic-copy-u	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/truncate-morphotactic-copy-u	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/truncate-morphotactic-copy-u	Interface	Segment.segment	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic-copy-u	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic-copy-u	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
@@ -1579,8 +1579,8 @@ edge-cases/truncate-morphotactic-copy-u	Interface	Stratum.morphologicalRules	wit
 edge-cases/truncate-morphotactic-identity	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic-identity	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic-identity	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
-edge-cases/truncate-morphotactic-identity	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
-edge-cases/truncate-morphotactic-identity	Interface	MorphologicalRule.requiredPartsOfSpeech	witnessed	Evidenced
+edge-cases/truncate-morphotactic-identity	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/truncate-morphotactic-identity	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/truncate-morphotactic-identity	Interface	Segment.segment	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic-identity	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic-identity	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
