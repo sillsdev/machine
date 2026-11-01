@@ -154,6 +154,7 @@ public sealed class GrammarCoverageGateTests
     private const int ObservableSurfaces = 268;
     private const int GeneratedSurfaces = 1069;
 
+    // The measured count of trace-verified surfaces, so losing any one fails here.
     private const int TraceFloor = 61;
 
     [Test]
