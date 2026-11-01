@@ -41,6 +41,8 @@ The test fixture is `[Explicit]` and `[Category("Stress")]`, so a plain `dotnet 
 and rules whose subrules require different MPR features, which a FieldWorks project cannot express, so they could not
 be kept as grammars a real project can produce.
 
+No expected parse of `bantu-tam-fusion` uses a fusion allomorph (no signature contains an `fsub_` rule), so the parity check cannot catch a regression that wrongly prunes a fused form there; the fixture guards the plain-allomorph paths only.
+
 `early-lexicon-agglutinative` omits the word `polundanasak`: engines before #548 (synthesis
 filtered by the allomorphs used) trace an extra phonological rule for it that master does not, so no single expectation passes on both.
 `deep-derivation-trace` is not included: it measures trace memory and
