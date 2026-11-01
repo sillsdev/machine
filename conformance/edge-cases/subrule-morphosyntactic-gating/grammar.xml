@@ -49,7 +49,7 @@
       </PhonologicalRule>
     </PhonologicalRuleDefinitions>
     <Strata>
-      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="linear" morphologicalRules="mrDerive" phonologicalRules="prGate">
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered" morphologicalRules="mrDerive" phonologicalRules="prGate">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
           <MorphologicalRule id="mrDerive" outputPartOfSpeech="posDerived">

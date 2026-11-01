@@ -53,7 +53,7 @@
       </SegmentNaturalClass>
     </NaturalClasses>
     <Strata>
-      <Stratum characterDefinitionTable="t1" morphologicalRules="mrPast">
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered" morphologicalRules="mrPast">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
           <MorphologicalRule id="mrPast" requiredPartsOfSpeech="posV">

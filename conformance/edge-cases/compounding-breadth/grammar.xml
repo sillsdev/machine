@@ -70,7 +70,7 @@
       <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
     </NaturalClasses>
     <Strata>
-      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="linear" morphologicalRules="crJoin crNever crDecoy mrTplSuf">
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" morphologicalRules="crJoin crNever crDecoy mrTplSuf">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
           <!-- multipleApplication is deliberately NOT written here. Verified against the C# oracle

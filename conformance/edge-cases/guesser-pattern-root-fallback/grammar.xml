@@ -37,7 +37,7 @@
       <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
     </NaturalClasses>
     <Strata>
-      <Stratum characterDefinitionTable="t1" morphologicalRules="mrPast">
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered" morphologicalRules="mrPast">
         <Name>Morphophonemic</Name>
         <MorphologicalRuleDefinitions>
           <MorphologicalRule id="mrPast" requiredPartsOfSpeech="posV">

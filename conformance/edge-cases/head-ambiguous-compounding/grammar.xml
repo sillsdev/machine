@@ -50,7 +50,7 @@
       <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
     </NaturalClasses>
     <Strata>
-      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="linear" morphologicalRules="crLeftHead crRightHead">
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="crLeftHead crRightHead">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
           <CompoundingRule id="crLeftHead" headPartsOfSpeech="posH" nonHeadPartsOfSpeech="posN" outputPartOfSpeech="posH">

@@ -196,3 +196,17 @@ The 6 are `compounding-breadth` (3 rules), `head-ambiguous-compounding` (2),
 `recursive-endocentric-compounding` (1), `subrule-morphosyntactic-gating` (1),
 `guesser-pattern-root-fallback` (1) and `pattern-root-required-environment` (1). The first four
 write `linear` explicitly; the last two get it from the default.
+
+### Outcome of flipping the six
+
+Each of the six fixtures was copied to a scratch directory outside the checkout, its `Stratum` set to
+`unordered`, and the C# oracle run against the unchanged `words.yaml` with `--include-pathological`.
+All six passed with no change in any word's analysis multiset (8 of 8 runs, counting the two
+`compounding-breadth` variants). The same copies unflipped also pass 8 of 8. The check can fail: the
+`truncate-morphotactic-identity` fixture with its `unordered` stratum flipped to `linear` loses
+analyses for `a` and `ga`, as the tables above record.
+
+These six are therefore inert under the flip: their corpora never tell the two orderings apart. The
+checked-in grammars now declare `morphologicalRuleOrder="unordered"` and no `words.yaml` row changed.
+`standalone-combining-mark` keeps its explicit `linear` because its stratum lists no rule; its one rule
+is reached through a `Slot` only.
