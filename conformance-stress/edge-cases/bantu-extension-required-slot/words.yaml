@@ -1,7 +1,7 @@
 # kind: stress (timing and optimization parity fixture, not conformance; see conformance-stress/README.md)
 # HAND DERIVATION (see grammar.xml). Five FS-free verbal extension suffixes apply in any order in the stratum; the verb template then needs a required TAM prefix (5 fillers) with optional subject, object and final-vowel slots; the noun template needs a required class prefix. Verb and noun roots share shapes, so extension-laden nominal forms spawn verb candidates that apply extensions and then die at the required TAM slot.
 # Parses for each word are every (root, rule choice) whose surface equals the word. They are engine output (master's,
-# see conformance-stress/README.md), checked against the rule tables. Signature: morpheme IDs in surface order, then "|" and the surface.
+# see conformance-stress/README.md); no independent enumeration was run. Signature: morpheme IDs in surface order, then "|" and the surface.
 language: StressBantuExtensionRequiredSlot
 inspired_by: ["Bantu verb with stratum-level extension chain and a required TAM slot"]
 sources:

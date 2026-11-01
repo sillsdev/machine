@@ -1,7 +1,7 @@
 # kind: stress (timing and optimization parity fixture, not conformance; see conformance-stress/README.md)
 # HAND DERIVATION (see grammar.xml). Seven FS-free derivational suffixes in one unordered stratum apply to any root in any order. Verb roots and noun roots share shapes; only the verb template (required tense slot, optional person slot) applies to verbs, so every verb-root candidate for a nominal derivation applies its suffixes and then dies at the required slot.
 # Parses for each word are every (root, rule choice) whose surface equals the word. They are engine output (master's,
-# see conformance-stress/README.md), checked against the rule tables. Signature: morpheme IDs in surface order, then "|" and the surface.
+# see conformance-stress/README.md); no independent enumeration was run. Signature: morpheme IDs in surface order, then "|" and the surface.
 language: StressDerivationChainHomophoneRoots
 inspired_by: ["agglutinative suffixing language (Turkic-like): free derivational suffix chain, finite verb inflection template"]
 sources:

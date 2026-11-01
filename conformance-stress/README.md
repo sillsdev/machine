@@ -37,9 +37,10 @@ The test fixture is `[Explicit]` and `[Category("Stress")]`, so a plain `dotnet 
 | `env-austronesian-nasal-prefix` | nasal-prefix allomorphs conditioned by environment | environment input prefilter (dead end; #490 ledger) |
 | `env-zero-allomorphs` | zero allomorphs with rare-class environments | environment input prefilter (dead end; #490 ledger) |
 
-`mpr-bantu-concord` and `mpr-inflection-classes` were removed: both need a `MorphologicalPhonologicalRuleFeatureGroup`
-and rules whose subrules require different MPR features, which a FieldWorks project cannot express, so they could not
-be kept as grammars a real project can produce.
+`mpr-bantu-concord` and `mpr-inflection-classes` were removed: both used custom-named `MorphologicalPhonologicalRuleFeatureGroup`
+elements with `outputType="append"`, and HCLoader builds only three fixed groups (`inflClasses`, `exceptionFeatures`,
+`lexEntryInflTypes`) with the default overwrite output, so they could not be kept as grammars a real project can produce.
+An inflection-class benchmark can be rebuilt on the fixed `inflClasses` group, which a real project does produce.
 
 No expected parse of `bantu-tam-fusion` uses a fusion allomorph: the fixture passes unchanged (all 60 words, 32 with the same parse and 28 with none) after all 200 `fsub_*` subrules are deleted from its `grammar.xml`, because every plain subrule comes first, matches any stem, and HermitCrab applies allomorphs disjunctively. The parity check therefore cannot catch a regression that wrongly prunes a fused form there; the fixture guards the plain-allomorph paths only.
 
