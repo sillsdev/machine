@@ -83,7 +83,7 @@
                subSfxKa requires mprPfxA (written only by mrPfxA) and realizes "-ka"; subSfxKo
                requires mprPfxB and realizes "-ko". Neither can apply to a stem carrying the OTHER
                prefix's feature, so the two cross-combinations have no valid derivation at all. -->
-          <MorphologicalRule id="mrSfx" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+          <MorphologicalRule id="mrSfx" requiredPartsOfSpeech="posRoot">
             <Name>sfx</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subSfxKa">

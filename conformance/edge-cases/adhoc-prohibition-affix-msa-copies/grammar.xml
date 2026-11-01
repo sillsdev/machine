@@ -35,7 +35,7 @@
       <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
-          <MorphologicalRule id="mrTa1" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrTa1" requiredPartsOfSpeech="posV">
             <Name>mrTa1</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subTa1">
@@ -45,7 +45,7 @@
             </MorphologicalSubrules>
             <MorphemeId>TA1</MorphemeId>
           </MorphologicalRule>
-          <MorphologicalRule id="mrTa2" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrTa2" requiredPartsOfSpeech="posV">
             <Name>mrTa2</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subTa2">

@@ -43,7 +43,7 @@
       <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
-          <MorphologicalRule id="mrCirc" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrCirc" requiredPartsOfSpeech="posV">
             <Name>mrCirc</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subTaKa">

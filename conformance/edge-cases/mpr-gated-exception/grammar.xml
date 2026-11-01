@@ -215,7 +215,7 @@
             <MorphemeId>NPFX</MorphemeId>
           </MorphologicalRule>
           
-          <MorphologicalRule id="mrSuf" requiredPartsOfSpeech="posMPR" outputPartOfSpeech="posMPR">
+          <MorphologicalRule id="mrSuf" requiredPartsOfSpeech="posMPR">
             <Name>suf</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subSuf">
@@ -226,7 +226,7 @@
             <MorphemeId>SUF</MorphemeId>
           </MorphologicalRule>
           
-          <MorphologicalRule id="mrSufAlt" requiredPartsOfSpeech="posMPR" outputPartOfSpeech="posMPR">
+          <MorphologicalRule id="mrSufAlt" requiredPartsOfSpeech="posMPR">
             <Name>sufAlt</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subSufAlt">

@@ -69,7 +69,7 @@
                segment — exercises the affixed case for both diacritic-medial (año/göl) and
                diacritic-final (café/kelî) roots, since the bug affected both bare and affixed
                diacritic-bearing words alike. -->
-          <MorphologicalRule id="rPl" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+          <MorphologicalRule id="rPl" requiredPartsOfSpeech="posRoot">
             <Name>plural</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subPl">
@@ -99,7 +99,7 @@
                get one direction right and the other wrong (e.g. losing the segment's NaturalClass
                membership entirely, which would make this gate never fire; or over-matching, which
                would make it wrongly fire on año/göl too). -->
-          <MorphologicalRule id="rDim" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+          <MorphologicalRule id="rDim" requiredPartsOfSpeech="posRoot">
             <Name>diminutive</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subDim">

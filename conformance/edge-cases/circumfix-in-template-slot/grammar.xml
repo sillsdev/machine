@@ -52,7 +52,7 @@
           <!-- CIRCUMFIX allomorph: leading InsertSegments, one CopyFromInput, trailing
                InsertSegments; classifies Role::CircumfixPrefix. This is the shape no existing
                template-referencing fixture has. -->
-          <MorphologicalRule id="mrCircum" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+          <MorphologicalRule id="mrCircum" requiredPartsOfSpeech="posRoot">
             <Name>circum</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subCircum">
@@ -69,7 +69,7 @@
           <!-- ORDINARY prefix allomorph in the SAME slot; classifies Role::Prefix, not a
                circumfix. Control that templateMain itself works fine on the tuned backend when the
                occupying rule is an ordinary (non-discontinuous) affix. -->
-          <MorphologicalRule id="mrOrdPfx" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+          <MorphologicalRule id="mrOrdPfx" requiredPartsOfSpeech="posRoot">
             <Name>ordPfx</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subOrdPfx">

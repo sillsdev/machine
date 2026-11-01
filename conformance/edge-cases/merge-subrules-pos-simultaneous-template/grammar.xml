@@ -50,7 +50,7 @@
       <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" phonologicalRules="prMerge">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
-          <MorphologicalRule id="mrSfxS" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrSfxS" requiredPartsOfSpeech="posV">
             <Name>sfxS</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subSfxS">

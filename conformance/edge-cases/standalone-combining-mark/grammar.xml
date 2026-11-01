@@ -33,7 +33,7 @@
       <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="linear">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
-          <MorphologicalRule id="mrSuf" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+          <MorphologicalRule id="mrSuf" requiredPartsOfSpeech="posN">
             <Name>suf</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subSuf">

@@ -37,7 +37,7 @@
       <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
-          <MorphologicalRule id="mrP1" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrP1" requiredPartsOfSpeech="posV">
             <Name>p1</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subP1">
@@ -47,7 +47,7 @@
             </MorphologicalSubrules>
             <MorphemeId>P1</MorphemeId>
           </MorphologicalRule>
-          <MorphologicalRule id="mrP2" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrP2" requiredPartsOfSpeech="posV">
             <Name>p2</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subP2">
@@ -57,7 +57,7 @@
             </MorphologicalSubrules>
             <MorphemeId>P2</MorphemeId>
           </MorphologicalRule>
-          <MorphologicalRule id="mrP3" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrP3" requiredPartsOfSpeech="posV">
             <Name>p3</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subP3">
@@ -67,7 +67,7 @@
             </MorphologicalSubrules>
             <MorphemeId>P3</MorphemeId>
           </MorphologicalRule>
-          <MorphologicalRule id="mrP4" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrP4" requiredPartsOfSpeech="posV">
             <Name>p4</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subP4">
@@ -77,7 +77,7 @@
             </MorphologicalSubrules>
             <MorphemeId>P4</MorphemeId>
           </MorphologicalRule>
-          <MorphologicalRule id="mrP5" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrP5" requiredPartsOfSpeech="posV">
             <Name>p5</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subP5">
@@ -87,7 +87,7 @@
             </MorphologicalSubrules>
             <MorphemeId>P5</MorphemeId>
           </MorphologicalRule>
-          <MorphologicalRule id="mrP6" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrP6" requiredPartsOfSpeech="posV">
             <Name>p6</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subP6">
@@ -97,7 +97,7 @@
             </MorphologicalSubrules>
             <MorphemeId>P6</MorphemeId>
           </MorphologicalRule>
-          <MorphologicalRule id="mrP7" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrP7" requiredPartsOfSpeech="posV">
             <Name>p7</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subP7">
@@ -107,7 +107,7 @@
             </MorphologicalSubrules>
             <MorphemeId>P7</MorphemeId>
           </MorphologicalRule>
-          <MorphologicalRule id="mrP8" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrP8" requiredPartsOfSpeech="posV">
             <Name>p8</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subP8">
@@ -117,7 +117,7 @@
             </MorphologicalSubrules>
             <MorphemeId>P8</MorphemeId>
           </MorphologicalRule>
-          <MorphologicalRule id="mrP9" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrP9" requiredPartsOfSpeech="posV">
             <Name>p9</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subP9">
@@ -127,7 +127,7 @@
             </MorphologicalSubrules>
             <MorphemeId>P9</MorphemeId>
           </MorphologicalRule>
-          <MorphologicalRule id="mrP10" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrP10" requiredPartsOfSpeech="posV">
             <Name>p10</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subP10">
@@ -137,7 +137,7 @@
             </MorphologicalSubrules>
             <MorphemeId>P10</MorphemeId>
           </MorphologicalRule>
-          <MorphologicalRule id="mrP11" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrP11" requiredPartsOfSpeech="posV">
             <Name>p11</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subP11">
@@ -147,7 +147,7 @@
             </MorphologicalSubrules>
             <MorphemeId>P11</MorphemeId>
           </MorphologicalRule>
-          <MorphologicalRule id="mrP12" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrP12" requiredPartsOfSpeech="posV">
             <Name>p12</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subP12">
