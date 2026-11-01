@@ -36,7 +36,8 @@ public sealed class StressFixtureParityTests
             propose: false,
             proposeOutput: TextWriter.Null
         );
-        Assert.That(report.Failed, Is.EqualTo(0), string.Join("; ", report.Results.Select(r => r.Reason)));
-        Assert.That(report.Passed, Is.EqualTo(1));
+        string reasons = string.Join("; ", report.Results.Select(r => r.Reason));
+        Assert.That(report.Failed, Is.EqualTo(0), reasons);
+        Assert.That(report.Passed, Is.EqualTo(1), reasons);
     }
 }
