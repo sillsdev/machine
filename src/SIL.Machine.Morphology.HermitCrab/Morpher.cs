@@ -19,6 +19,8 @@ namespace SIL.Machine.Morphology.HermitCrab
     public class Morpher : IMorphologicalAnalyzer, IMorphologicalGenerator
     {
         internal bool EdgePrefilterEnabled { get; set; } = true;
+
+        // Called from analysis threads, so a handler must be thread-safe.
         internal Action EdgePrefilterRejected { get; set; }
 
         private readonly Language _lang;
