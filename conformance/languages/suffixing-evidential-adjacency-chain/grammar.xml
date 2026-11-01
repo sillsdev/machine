@@ -60,7 +60,7 @@
                subrules realize one morpheme (MorphemeId "1SG") as two allomorphs picked purely by
                the preceding root-final segment - the environment-conditioned allomorph selection
                task B calls for, done lexically (RequiredEnvironments), not via a phonological rule. -->
-          <MorphologicalRule id="mrPerson1" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrPerson1" requiredPartsOfSpeech="posV">
             <Name>person1sg</Name>
             <MorphologicalSubrules>
               <!-- post-consonant allomorph: "-ni" -->
@@ -91,7 +91,7 @@
             <MorphemeId>1SG</MorphemeId>
           </MorphologicalRule>
           <!-- Slot 1 member 2/3: 2SG, unconstrained shape "-nki". -->
-          <MorphologicalRule id="mrPerson2" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrPerson2" requiredPartsOfSpeech="posV">
             <Name>person2sg</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subPerson2">
@@ -102,7 +102,7 @@
             <MorphemeId>2SG</MorphemeId>
           </MorphologicalRule>
           <!-- Slot 1 member 3/3: 3SG, unconstrained shape "-n". -->
-          <MorphologicalRule id="mrPerson3" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrPerson3" requiredPartsOfSpeech="posV">
             <Name>person3sg</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subPerson3">
@@ -116,7 +116,7 @@
                4th disjunctive slot-1 member added solely to host the "somewhereToRight" adjacency
                test: its MorphemeCoOccurrenceRules below need mrEvidDirect somewhereToRight, so
                an intervening optional PL between this suffix and DIR does not break satisfaction. -->
-          <MorphologicalRule id="mrPerson1PlIncl" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrPerson1PlIncl" requiredPartsOfSpeech="posV">
             <Name>person1plIncl</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subPerson1PlIncl">
@@ -130,7 +130,7 @@
                somewhereToRight/adjacentToRight distinguishing partner of mrPerson1PlIncl: its
                MorphemeCoOccurrenceRules need mrEvidDirect ADJACENT to its right, so the same
                intervening PL that mrPerson1PlIncl tolerates instead breaks this one. -->
-          <MorphologicalRule id="mrPerson2Pl" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrPerson2Pl" requiredPartsOfSpeech="posV">
             <Name>person2pl</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subPerson2Pl">
@@ -141,7 +141,7 @@
             <MorphemeId>2PL</MorphemeId>
           </MorphologicalRule>
           <!-- Slot 2 (optional) sole member: plural "-chik". -->
-          <MorphologicalRule id="mrPlural" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrPlural" requiredPartsOfSpeech="posV">
             <Name>plural</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subPlural">
@@ -152,7 +152,7 @@
             <MorphemeId>PL</MorphemeId>
           </MorphologicalRule>
           <!-- Slot 3 (optional) member 1/3: direct-evidence "-mi". -->
-          <MorphologicalRule id="mrEvidDirect" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrEvidDirect" requiredPartsOfSpeech="posV">
             <Name>evidDirect</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subEvidDirect">
@@ -168,7 +168,7 @@
                conformance/allomorphy/disjunctive-recheck's eGray/eGrey precedent), two allomorphs
                with identical (empty) constraint sets never reject one another; each surface choice
                is independently valid, not a case of one "winning" over the other. -->
-          <MorphologicalRule id="mrEvidReportative" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrEvidReportative" requiredPartsOfSpeech="posV">
             <Name>evidReportative</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subEvidRepA">
@@ -189,7 +189,7 @@
                together the two pin the AND-not-OR co-occurrence semantics of history row 5
                (90dcee64, #311/LT-22156, cooccurrence/and-semantics-pin): a word is valid only if
                EVERY rule attached to a morpheme passes, not merely one of them. -->
-          <MorphologicalRule id="mrEvidConjectural" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrEvidConjectural" requiredPartsOfSpeech="posV">
             <Name>evidConjectural</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subEvidConj">
@@ -204,7 +204,7 @@
                test: its MorphemeCoOccurrenceRules below need mrPerson1 SPECIFICALLY (not any
                person) somewhereToLeft, so an intervening optional PL between PERSON and this
                suffix does not break satisfaction - PERSON is still "somewhere" to the left. -->
-          <MorphologicalRule id="mrEvidAssum" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrEvidAssum" requiredPartsOfSpeech="posV">
             <Name>evidAssumptive</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subEvidAssum">
@@ -218,7 +218,7 @@
                the somewhereToLeft/adjacentToLeft distinguishing partner of mrEvidAssum: its
                MorphemeCoOccurrenceRules need mrPerson1 ADJACENT to its left, so the same
                intervening PL that mrEvidAssum tolerates instead breaks this one. -->
-          <MorphologicalRule id="mrEvidMir" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrEvidMir" requiredPartsOfSpeech="posV">
             <Name>evidMirative</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subEvidMir">
