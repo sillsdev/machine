@@ -15,7 +15,7 @@ public enum EngineGateStatus
 
 /// <summary>
 /// The checked-in denominator for a coverage layer keyed to <see cref="FailureReason"/> -- HermitCrab's
-/// OWN enumeration of the 23 (excluding <see cref="FailureReason.None"/>) decisions it makes when
+/// OWN enumeration of the 24 (excluding <see cref="FailureReason.None"/>) decisions it makes when
 /// declining to apply or unapply something -- rather than to a DTD attribute pair, which is what every
 /// other ledger in this directory (<see cref="DataflowObligationLedger"/>, <see cref="InteractionChainLedger"/>,
 /// <see cref="InterfaceInventoryLedger"/>) is keyed to.
@@ -229,7 +229,7 @@ public static class EngineGateInventoryLedger
         writer.WriteLine(
             "# against XmlLanguageLoader.cs (see EngineGateInventoryLedger.DtdAttributes' own doc comment) and"
         );
-        writer.WriteLine("# '-' is a genuine finding for six gates, not a placeholder. triggered_by_fixtures/");
+        writer.WriteLine("# '-' is a genuine finding for seven gates, not a placeholder. triggered_by_fixtures/");
         writer.WriteLine(
             "# triggering_words/status come from EngineGateWitnessSweep, an ACTUAL traced engine run over"
         );
