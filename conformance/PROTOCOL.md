@@ -475,6 +475,10 @@ on takes, not on the attribute in isolation:
   founding oracle. Only if some word's found-analysis set changes — a spurious extra parse, a lost
   one, or a duplicate, never merely a different search order or timing — does the fixture's ground
   truth actually depend on the ordering, and only then is it HC-engine-only for this reason.
+  What a fixture may declare is narrower than what it may depend on. The order is read only for
+  the rules a `Stratum` lists in its own `morphologicalRules`, so a `linear` stratum that lists none
+  (its rules reached through a `Slot` only, or no rules at all) is producible as written, and a
+  stratum that lists any must say `unordered`. `FieldWorksProducibleShapeTests` enforces this.
 - `Environments` (`RequiredEnvironments`/`ExcludedEnvironments`) is producible only when the
   `MorphologicalSubrule` it sits on has an output expressible as a single literal-form affix — a
   `RootAllomorph`'s own environment, a paired circumfix built from two separate literal-form
@@ -491,6 +495,12 @@ on takes, not on the attribute in isolation:
   `InsertSegments`+`CopyFromInput`, but its output is a single contiguous piece (one prefix, never
   wrapped), so it is the ordinary single-piece `Form` case above and stays producible — the
   condition is discontinuous/multi-piece output, not "an environment on a subrule" in general.
+
+Three more shapes are checked mechanically because they are plain attribute facts: a rule reached
+through a `Slot` must not have an `outputPartOfSpeech` (`LoadInflAffixProcessRule` never sets one); a
+partial stem entry must have no part of speech (`HCLoader.cs:757`, `:817`); and a partial rule must be
+in no slot (`:1031`) and have no `outputPartOfSpeech`. `FieldWorksProducibleShapeTests` fails on a
+`true` fixture that brings any of them back.
 
 Because the verdict is authored, not derived, any mechanical checker built against it may only
 prove a `true` verdict **wrong** — by finding a construct in a `true` fixture's `grammar.xml` that

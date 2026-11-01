@@ -54,6 +54,18 @@ except where listed.
   an exclude rule cannot refuse the absence of a morpheme. Two negative controls were added,
   `siputukusi` and `sipulupasi`, each shown to parse when the reportative exclude rules are
   removed. The AND-not-OR pin for #311 (`walaknkicha`, blocked by `mrEvidConjectural`) is unchanged.
+* The #612 pass over fixtures already marked `true` (no row changed except where listed):
+  * Six fixtures whose `linear` stratum lists morphological rules now say `unordered`
+    (`compounding-breadth`, `head-ambiguous-compounding`, `recursive-endocentric-compounding`,
+    `subrule-morphosyntactic-gating`, `guesser-pattern-root-fallback`,
+    `pattern-root-required-environment`); the oracle found no change in any word.
+    `morphological-rule-order-measurement.md` has the count.
+  * 18 fixtures dropped `outputPartOfSpeech` from every slot rule. No row changed.
+  * `edge-cases/morphotactic-attribute-breadth`: the partial stem entry `eNap` lost its part of
+    speech, the partial slot rule `mrPartial` became the ordinary suffix `mrMo` (so `kulmo`'s
+    signature is `KUL+MO|kulmo`), and the partial stratum rule `mrPO` lost its
+    `outputPartOfSpeech`. `napmo` and `pogliti` still pin the two partial flags.
+  * `FieldWorksProducibleShapeTests` fails when a `true` fixture brings any of these shapes back.
 
 ## Deleted (27)
 
