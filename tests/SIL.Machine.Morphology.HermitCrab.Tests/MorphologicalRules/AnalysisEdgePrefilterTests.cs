@@ -2,6 +2,7 @@ using NUnit.Framework;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
+using SIL.Machine.Morphology.HermitCrab.PhonologicalRules;
 
 namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 
@@ -93,6 +94,25 @@ public class AnalysisEdgePrefilterTests : HermitCrabTestBase
             Is.EqualTo(disabled.Select(w => w.ToString()).OrderBy(s => s, StringComparer.Ordinal))
         );
     }
+
+    private static string StressFixturePath(string file) =>
+        Path.Combine(
+            AppContext.BaseDirectory,
+            "..",
+            "..",
+            "..",
+            "Research",
+            "StressFixtures",
+            "early-lexicon-agglutinative",
+            file
+        );
+
+    private static string[] ParseSignatures(Morpher morpher, string word) =>
+        morpher
+            .ParseWord(word)
+            .Select(MorpherTests.WordAnalysisSignature)
+            .OrderBy(s => s, StringComparer.Ordinal)
+            .ToArray();
 
     [Test]
     public void MismatchingEdgeSkipsMatcher()
@@ -351,5 +371,96 @@ public class AnalysisEdgePrefilterTests : HermitCrabTestBase
 
         AssertEquivalent(enabled, disabled);
         Assert.That(enabled.Any(), Is.EqualTo(matches));
+    }
+
+    [Test]
+    public void ParseWord_OptionalEdgeFromUnappliedDeletion_PrefilterMatchesFullMatcher()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var highVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Value;
+        var highFrontUnrndVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Symbol("low-")
+            .Symbol("back-")
+            .Symbol("round-")
+            .Value;
+        var deletion = new RewriteRule
+        {
+            Name = "delete_i",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value,
+        };
+        deletion.Subrules.Add(
+            new RewriteSubrule { LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value }
+        );
+        Allophonic.PhonologicalRules.Add(deletion);
+        var uSuffix = new AffixProcessRule
+        {
+            Id = "U1",
+            Name = "u_suffix",
+            Gloss = "U1",
+        };
+        uSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "u") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(uSuffix);
+
+        // Unapplying the deletion leaves an optional i after the final u, so the u suffix is reachable only
+        // by skipping an optional edge node.
+        foreach (int degree in new[] { 1, 0 })
+        {
+            var on = new Morpher(TraceManager, Language, degree);
+            var off = new Morpher(TraceManager, Language, degree) { EdgePrefilterEnabled = false };
+            foreach (string word in new[] { "puu", "pu", "pi", "bubuu" })
+            {
+                Assert.That(
+                    ParseSignatures(on, word),
+                    Is.EqualTo(ParseSignatures(off, word)),
+                    $"'{word}' degree {degree}"
+                );
+            }
+            Assert.That(ParseSignatures(on, "puu"), Is.Not.Empty);
+        }
+    }
+
+    [TestCase(1)]
+    [TestCase(0)]
+    public void ParseWord_StressFixture_PrefilterMatchesFullMatcher(int maxDegreeOfParallelism)
+    {
+        Language language = XmlLanguageLoader.Load(StressFixturePath("grammar.xml"));
+        string[] words = File.ReadAllLines(StressFixturePath("words.txt"))
+            .Where(line => line.Length > 0)
+            .Take(60)
+            .ToArray();
+        int rejected = 0;
+        var on = new Morpher(TraceManager, language, maxDegreeOfParallelism)
+        {
+            EdgePrefilterRejected = () => Interlocked.Increment(ref rejected),
+        };
+        var off = new Morpher(TraceManager, language, maxDegreeOfParallelism) { EdgePrefilterEnabled = false };
+
+        int parsed = 0;
+        foreach (string word in words)
+        {
+            string[] expected = ParseSignatures(off, word);
+            Assert.That(ParseSignatures(on, word), Is.EqualTo(expected), $"'{word}' parse differs with the prefilter");
+            if (expected.Length > 0)
+                parsed++;
+        }
+        Assert.That(parsed, Is.GreaterThan(0));
+        Assert.That(rejected, Is.GreaterThan(0));
     }
 }
