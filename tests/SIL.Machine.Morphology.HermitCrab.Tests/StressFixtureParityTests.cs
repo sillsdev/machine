@@ -32,7 +32,7 @@ public sealed class StressFixtureParityTests
         RunReport report = Runner.RunSelfCheck(
             fixtures,
             includePathological: true,
-            engineCapabilities: new HashSet<string>(StringComparer.Ordinal) { "phonology", "morpher-settings" },
+            engineCapabilities: new SelfCheckEngine().Capabilities,
             propose: false,
             proposeOutput: TextWriter.Null
         );
