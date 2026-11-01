@@ -17,7 +17,7 @@ a mutator sits between the write and the read: a part-of-speech priority-union c
 
 **Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: edge-cases/morphotactic-attribute-breadth declares 20 outputPartOfSpeech-bearing MorphologicalRule/CompoundingRule element(s) -- SynthesisAffixProcessRule.cs:181-182/SynthesisCompoundingRule.cs:181-182's unconditional PriorityUnion gives each one a chance to clobber POS before this reader's gate; which element actually intervenes, and word-level witness of an actual clobber, are not checked here
+Ledger evidence: structurally hazardous: edge-cases/morphotactic-attribute-breadth declares 6 outputPartOfSpeech-bearing MorphologicalRule/CompoundingRule element(s) -- SynthesisAffixProcessRule.cs:181-182/SynthesisCompoundingRule.cs:181-182's unconditional PriorityUnion gives each one a chance to clobber POS before this reader's gate; which element actually intervenes, and word-level witness of an actual clobber, are not checked here
 
 ## Fixture and word
 
@@ -29,7 +29,7 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`MorphologicalRule.outputPartOfSpeech` in `edge-cases/morphotactic-attribute-breadth`): verdict=Unobservable, mutation="removed outputPartOfSpeech from 20 <MorphologicalRule> element(s)"
+- Writer (`MorphologicalRule.outputPartOfSpeech` in `edge-cases/morphotactic-attribute-breadth`): verdict=Unobservable, mutation="removed outputPartOfSpeech from 6 <MorphologicalRule> element(s)"
 - Reader (`AffixTemplate.requiredPartsOfSpeech` in `edge-cases/morphotactic-attribute-breadth`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 3 <AffixTemplate> element(s)", example: 'kulpu': ok::- -> ok::KUL+NF|kulpu
 
 ## Grammar citations
@@ -38,27 +38,13 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 - Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:122` = "posN"
 - Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:134` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:145` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:157` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:172` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:183` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:194` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:205` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:224` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:257` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:268` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:285` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:296` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:307` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:325` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:336` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:358` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:369` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:439` = "posP"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:452` = "posP"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:385` = "posN"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:400` = "posN"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:465` = "posP"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:258` = "posN"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:286` = "posN"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:297` = "posN"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:308` = "posN"
+- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:386` = "posN"
+- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:401` = "posN"
+- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:467` = "posP"
 
 ## Author's prose
 

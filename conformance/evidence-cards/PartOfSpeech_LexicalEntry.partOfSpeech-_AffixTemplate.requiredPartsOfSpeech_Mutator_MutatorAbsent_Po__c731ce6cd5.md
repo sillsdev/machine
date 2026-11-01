@@ -17,7 +17,7 @@ no mutator sits between the write and the read: a part-of-speech priority-union 
 
 **Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: edge-cases/morphotactic-attribute-breadth declares 20 outputPartOfSpeech-bearing MorphologicalRule/CompoundingRule element(s) -- SynthesisAffixProcessRule.cs:181-182/SynthesisCompoundingRule.cs:181-182's unconditional PriorityUnion gives each one a chance to clobber POS before this reader's gate; which element actually intervenes, and word-level witness of an actual clobber, are not checked here
+Ledger evidence: structurally hazardous: edge-cases/morphotactic-attribute-breadth declares 6 outputPartOfSpeech-bearing MorphologicalRule/CompoundingRule element(s) -- SynthesisAffixProcessRule.cs:181-182/SynthesisCompoundingRule.cs:181-182's unconditional PriorityUnion gives each one a chance to clobber POS before this reader's gate; which element actually intervenes, and word-level witness of an actual clobber, are not checked here
 
 ## Fixture and word
 
@@ -29,20 +29,19 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`LexicalEntry.partOfSpeech` in `edge-cases/morphotactic-attribute-breadth`): verdict=Unobservable, mutation="removed partOfSpeech from 4 <LexicalEntry> element(s)"
+- Writer (`LexicalEntry.partOfSpeech` in `edge-cases/morphotactic-attribute-breadth`): verdict=Unobservable, mutation="removed partOfSpeech from 3 <LexicalEntry> element(s)"
 - Reader (`AffixTemplate.requiredPartsOfSpeech` in `edge-cases/morphotactic-attribute-breadth`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 3 <AffixTemplate> element(s)", example: 'kulpu': ok::- -> ok::KUL+NF|kulpu
 
 ## Grammar citations
 
 ### `edge-cases/morphotactic-attribute-breadth/grammar.xml`
 
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:406` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:416` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:423` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:471` = "posP"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:385` = "posN"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:400` = "posN"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:465` = "posP"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:407` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:425` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:473` = "posP"
+- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:386` = "posN"
+- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:401` = "posN"
+- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:467` = "posP"
 
 ## Author's prose
 

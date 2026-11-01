@@ -36,10 +36,10 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### `edge-cases/morphotactic-attribute-breadth/grammar.xml`
 
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:262` = "mprExclFlag"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:290` = "mprB"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:301` = "mprA"
-- Reader (gate declared here) `MorphologicalInput.excludedMPRFeatures`: `grammar.xml:272` = "mprExclFlag"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:263` = "mprExclFlag"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:291` = "mprB"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:302` = "mprA"
+- Reader (gate declared here) `MorphologicalInput.excludedMPRFeatures`: `grammar.xml:273` = "mprExclFlag"
 
 ## Author's prose
 

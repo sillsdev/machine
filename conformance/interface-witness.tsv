@@ -407,7 +407,7 @@ LexicalEntry	partOfSpeech	edge-cases/merge-subrules-pos-ltr-template	Evidenced	r
 LexicalEntry	partOfSpeech	edge-cases/merge-subrules-pos-rtl-template	Evidenced	removed partOfSpeech from 3 <LexicalEntry> element(s)	'F': ok::TA_N|F -> ok::-	F	ok::TA_N|F	Word	ok::-
 LexicalEntry	partOfSpeech	edge-cases/merge-subrules-pos-simultaneous-template	Evidenced	removed partOfSpeech from 3 <LexicalEntry> element(s)	'F': ok::TA_N|F -> ok::-	F	ok::TA_N|F	Word	ok::-
 LexicalEntry	partOfSpeech	edge-cases/merge-then-metathesis	Unobservable	removed partOfSpeech from 3 <LexicalEntry> element(s)	all 3 word(s) unchanged	-	-	None	-
-LexicalEntry	partOfSpeech	edge-cases/morphotactic-attribute-breadth	Unobservable	removed partOfSpeech from 4 <LexicalEntry> element(s)	all 29 word(s) unchanged	-	-	None	-
+LexicalEntry	partOfSpeech	edge-cases/morphotactic-attribute-breadth	Unobservable	removed partOfSpeech from 3 <LexicalEntry> element(s)	all 29 word(s) unchanged	-	-	None	-
 LexicalEntry	partOfSpeech	edge-cases/mpr-gated-exception	Unobservable	removed partOfSpeech from 5 <LexicalEntry> element(s)	all 12 word(s) unchanged	-	-	None	-
 LexicalEntry	partOfSpeech	edge-cases/non-clitic-after-final-template-layout	Evidenced	removed partOfSpeech from 2 <LexicalEntry> element(s)	'kolk': ok::KOL+DERIV|kolk -> ok::-	kolk	ok::KOL+DERIV|kolk	Word	ok::-
 LexicalEntry	partOfSpeech	edge-cases/nullable-disagree-bounded-ltr-left	Unobservable	removed partOfSpeech from 1 <LexicalEntry> element(s)	all 16 word(s) unchanged	-	-	None	-
@@ -490,12 +490,6 @@ MorphologicalOutput	MPRFeatures	edge-cases/mpr-gated-exception	Evidenced	removed
 MorphologicalPhonologicalRuleFeatureGroup	features	edge-cases/compounding-non-recursive	RequiredByDtd	removed features from 1 <MorphologicalPhonologicalRuleFeatureGroup> element(s)	XmlSchemaException: The required attribute 'features' is missing.	fasu	ok::HEADA|fasu	LoadFailure	XmlSchemaException: The required attribute 'features' is missing.
 MorphologicalPhonologicalRuleFeatureGroup	features	edge-cases/cross-stem-material-determination	RequiredByDtd	removed features from 1 <MorphologicalPhonologicalRuleFeatureGroup> element(s)	XmlSchemaException: The required attribute 'features' is missing.	tolu	ok::ROOT|tolu	LoadFailure	XmlSchemaException: The required attribute 'features' is missing.
 MorphologicalPhonologicalRuleFeatureGroup	features	edge-cases/morphotactic-attribute-breadth	RequiredByDtd	removed features from 1 <MorphologicalPhonologicalRuleFeatureGroup> element(s)	XmlSchemaException: The required attribute 'features' is missing.	topdori	ok::-	LoadFailure	XmlSchemaException: The required attribute 'features' is missing.
-MorphologicalRule	outputPartOfSpeech	edge-cases/adhoc-prohibition-affix-environment-copies	Unobservable	removed outputPartOfSpeech from 2 <MorphologicalRule> element(s)	all 6 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/adhoc-prohibition-affix-msa-copies	Unobservable	removed outputPartOfSpeech from 2 <MorphologicalRule> element(s)	all 6 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/adhoc-prohibition-allomorph-variant-control	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 4 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/adhoc-prohibition-circumfix-pairings	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 15 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/adhoc-prohibition-stem-msa-copies	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 6 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/adhoc-prohibition-variant-msa-copies	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 12 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/boundary-first-in-narrowing-lhs	Unobservable	removed outputPartOfSpeech from 2 <MorphologicalRule> element(s)	all 6 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/boundary-first-in-narrowing-lhs-strrep	Unobservable	removed outputPartOfSpeech from 2 <MorphologicalRule> element(s)	all 6 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/boundary-leftover-in-narrowing-lhs-strrep	Unobservable	removed outputPartOfSpeech from 2 <MorphologicalRule> element(s)	all 8 word(s) unchanged	-	-	None	-
@@ -504,16 +498,13 @@ MorphologicalRule	outputPartOfSpeech	edge-cases/boundary-narrowing-probe	Unobser
 MorphologicalRule	outputPartOfSpeech	edge-cases/chained-output-feature-override-loss	Unobservable	removed outputPartOfSpeech from 3 <MorphologicalRule> element(s)	all 6 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/circumfix-conditioned-halves	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 8 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/circumfix-cross-product-and-infix-drop	Unobservable	removed outputPartOfSpeech from 2 <MorphologicalRule> element(s)	all 7 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/circumfix-in-template-slot	Unobservable	removed outputPartOfSpeech from 2 <MorphologicalRule> element(s)	all 4 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/circumfix-infix-interior-action-precedence	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 2 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/circumfix-non-first-allomorph-selection	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 3 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/circumfix-reduplication-precedence	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 2 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/class-deletion-reinsertion-strrep	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 8 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/compounding-breadth	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 10 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/cross-stem-material-determination	Unobservable	removed outputPartOfSpeech from 3 <MorphologicalRule> element(s)	all 5 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/deep-optional-affix-nesting	Unobservable	removed outputPartOfSpeech from 12 <MorphologicalRule> element(s)	all 3 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/deletion-reduplication-exception-composite	Unobservable	removed outputPartOfSpeech from 4 <MorphologicalRule> element(s)	all 10 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/diacritic-segments	Unobservable	removed outputPartOfSpeech from 2 <MorphologicalRule> element(s)	all 13 word(s) unchanged	-	-	None	-
+MorphologicalRule	outputPartOfSpeech	edge-cases/cross-stem-material-determination	Unobservable	removed outputPartOfSpeech from 2 <MorphologicalRule> element(s)	all 5 word(s) unchanged	-	-	None	-
+MorphologicalRule	outputPartOfSpeech	edge-cases/deletion-reduplication-exception-composite	Unobservable	removed outputPartOfSpeech from 2 <MorphologicalRule> element(s)	all 10 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/discontinuous-morph-environment	Unobservable	removed outputPartOfSpeech from 4 <MorphologicalRule> element(s)	all 5 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/disjunctive-recheck	Unobservable	removed outputPartOfSpeech from 2 <MorphologicalRule> element(s)	all 12 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/final-template-merge-key	Evidenced	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	'sagdss': ok::SAG+FINAL+TEMPLATE+NOM|sagdss -> ok::-	sagdss	ok::SAG+FINAL+TEMPLATE+NOM|sagdss	Word	ok::-
@@ -524,15 +515,10 @@ MorphologicalRule	outputPartOfSpeech	edge-cases/free-fluctuating-allomorph-pair	
 MorphologicalRule	outputPartOfSpeech	edge-cases/guess-roots-settings	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 3 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/infix-interdigitation	Unobservable	removed outputPartOfSpeech from 3 <MorphologicalRule> element(s)	all 6 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/literal-hash-affix-context	Unobservable	removed outputPartOfSpeech from 4 <MorphologicalRule> element(s)	all 9 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/merge-subrules-pos-ltr-template	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 8 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/merge-subrules-pos-rtl-template	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 8 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/merge-subrules-pos-simultaneous-template	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 8 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/morphotactic-attribute-breadth	Unobservable	removed outputPartOfSpeech from 20 <MorphologicalRule> element(s)	all 29 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/mpr-gated-exception	Unobservable	removed outputPartOfSpeech from 4 <MorphologicalRule> element(s)	all 12 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/optional-template-composite	Unobservable	removed outputPartOfSpeech from 7 <MorphologicalRule> element(s)	all 11 word(s) unchanged	-	-	None	-
+MorphologicalRule	outputPartOfSpeech	edge-cases/morphotactic-attribute-breadth	Unobservable	removed outputPartOfSpeech from 6 <MorphologicalRule> element(s)	all 29 word(s) unchanged	-	-	None	-
+MorphologicalRule	outputPartOfSpeech	edge-cases/mpr-gated-exception	Unobservable	removed outputPartOfSpeech from 2 <MorphologicalRule> element(s)	all 12 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/process-morphology-in-place-mutation	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 3 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/shared-template-unconstrained-suffix	Evidenced	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	'mivd': ok::NROOT+IVERB+PAST|mivd -> ok::-	mivd	ok::NROOT+IVERB+PAST|mivd	Word	ok::-
-MorphologicalRule	outputPartOfSpeech	edge-cases/standalone-combining-mark	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 4 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/stem-name-restricted-root-allomorph	Unobservable	removed outputPartOfSpeech from 2 <MorphologicalRule> element(s)	all 6 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/strrep-identity	Unobservable	removed outputPartOfSpeech from 2 <MorphologicalRule> element(s)	all 12 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/subrule-morphosyntactic-gating	Evidenced	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	'pat': ok::ROOT1|pat -> ok::ROOT1+DERIVE|pat;ROOT1|pat	pat	ok::ROOT1|pat	Word	ok::ROOT1+DERIVE|pat;ROOT1|pat

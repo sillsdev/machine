@@ -52,7 +52,6 @@ edge-cases/adhoc-prohibition-affix-environment-copies	Interface	AllomorphCoOccur
 edge-cases/adhoc-prohibition-affix-environment-copies	Interface	AllomorphCoOccurrenceRule.primaryAllomorph	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-affix-environment-copies	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-affix-environment-copies	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
-edge-cases/adhoc-prohibition-affix-environment-copies	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
 edge-cases/adhoc-prohibition-affix-environment-copies	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/adhoc-prohibition-affix-environment-copies	Interface	Segment.segment	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-affix-environment-copies	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
@@ -64,7 +63,6 @@ edge-cases/adhoc-prohibition-affix-msa-copies	Interface	AllomorphCoOccurrenceRul
 edge-cases/adhoc-prohibition-affix-msa-copies	Interface	AllomorphCoOccurrenceRule.primaryAllomorph	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-affix-msa-copies	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-affix-msa-copies	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
-edge-cases/adhoc-prohibition-affix-msa-copies	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
 edge-cases/adhoc-prohibition-affix-msa-copies	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/adhoc-prohibition-affix-msa-copies	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-affix-msa-copies	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
@@ -75,7 +73,6 @@ edge-cases/adhoc-prohibition-allomorph-variant-control	Interface	AllomorphCoOccu
 edge-cases/adhoc-prohibition-allomorph-variant-control	Interface	AllomorphCoOccurrenceRule.primaryAllomorph	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-allomorph-variant-control	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-allomorph-variant-control	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
-edge-cases/adhoc-prohibition-allomorph-variant-control	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
 edge-cases/adhoc-prohibition-allomorph-variant-control	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/adhoc-prohibition-allomorph-variant-control	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-allomorph-variant-control	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
@@ -86,7 +83,6 @@ edge-cases/adhoc-prohibition-circumfix-pairings	Interface	AllomorphCoOccurrenceR
 edge-cases/adhoc-prohibition-circumfix-pairings	Interface	AllomorphCoOccurrenceRule.primaryAllomorph	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-circumfix-pairings	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-circumfix-pairings	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
-edge-cases/adhoc-prohibition-circumfix-pairings	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
 edge-cases/adhoc-prohibition-circumfix-pairings	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/adhoc-prohibition-circumfix-pairings	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-circumfix-pairings	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
@@ -97,7 +93,6 @@ edge-cases/adhoc-prohibition-stem-msa-copies	Interface	AllomorphCoOccurrenceRule
 edge-cases/adhoc-prohibition-stem-msa-copies	Interface	AllomorphCoOccurrenceRule.primaryAllomorph	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-stem-msa-copies	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-stem-msa-copies	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
-edge-cases/adhoc-prohibition-stem-msa-copies	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
 edge-cases/adhoc-prohibition-stem-msa-copies	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/adhoc-prohibition-stem-msa-copies	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-stem-msa-copies	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
@@ -128,7 +123,6 @@ edge-cases/adhoc-prohibition-variant-msa-copies	Interface	CopyFromInput.index	re
 edge-cases/adhoc-prohibition-variant-msa-copies	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
 edge-cases/adhoc-prohibition-variant-msa-copies	Interface	MorphemeCoOccurrenceRule.otherMorphemes	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-variant-msa-copies	Interface	MorphemeCoOccurrenceRule.primaryMorpheme	required-by-dtd	RequiredByDtd
-edge-cases/adhoc-prohibition-variant-msa-copies	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
 edge-cases/adhoc-prohibition-variant-msa-copies	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/adhoc-prohibition-variant-msa-copies	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-variant-msa-copies	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
@@ -310,7 +304,6 @@ edge-cases/circumfix-cross-product-and-infix-drop	Construct	AffixProcessRule: pr
 edge-cases/circumfix-in-template-slot	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/circumfix-in-template-slot	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/circumfix-in-template-slot	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
-edge-cases/circumfix-in-template-slot	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
 edge-cases/circumfix-in-template-slot	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/circumfix-in-template-slot	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/circumfix-in-template-slot	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
@@ -458,7 +451,6 @@ edge-cases/cross-stem-material-determination	Construct	MPR features/groups	claim
 edge-cases/deep-optional-affix-nesting	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/deep-optional-affix-nesting	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/deep-optional-affix-nesting	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
-edge-cases/deep-optional-affix-nesting	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
 edge-cases/deep-optional-affix-nesting	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/deep-optional-affix-nesting	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/deep-optional-affix-nesting	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
@@ -504,7 +496,6 @@ edge-cases/deletion-reinserted-feature-unapply	Construct	RewriteRule Iterative (
 edge-cases/diacritic-segments	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/diacritic-segments	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/diacritic-segments	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
-edge-cases/diacritic-segments	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
 edge-cases/diacritic-segments	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/diacritic-segments	Interface	Segment.segment	required-by-dtd	RequiredByDtd
 edge-cases/diacritic-segments	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
@@ -706,7 +697,6 @@ edge-cases/merge-subrules-pos-ltr-template	Interface	CopyFromInput.index	require
 edge-cases/merge-subrules-pos-ltr-template	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/merge-subrules-pos-ltr-template	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
 edge-cases/merge-subrules-pos-ltr-template	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
-edge-cases/merge-subrules-pos-ltr-template	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
 edge-cases/merge-subrules-pos-ltr-template	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/merge-subrules-pos-ltr-template	Interface	PhonologicalSubrule.requiredPartsOfSpeech	witnessed	Evidenced
 edge-cases/merge-subrules-pos-ltr-template	Interface	Segment.segment	required-by-dtd	RequiredByDtd
@@ -722,7 +712,6 @@ edge-cases/merge-subrules-pos-rtl-template	Interface	CopyFromInput.index	require
 edge-cases/merge-subrules-pos-rtl-template	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/merge-subrules-pos-rtl-template	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
 edge-cases/merge-subrules-pos-rtl-template	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
-edge-cases/merge-subrules-pos-rtl-template	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
 edge-cases/merge-subrules-pos-rtl-template	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/merge-subrules-pos-rtl-template	Interface	PhonologicalSubrule.requiredPartsOfSpeech	witnessed	Evidenced
 edge-cases/merge-subrules-pos-rtl-template	Interface	Segment.segment	required-by-dtd	RequiredByDtd
@@ -738,7 +727,6 @@ edge-cases/merge-subrules-pos-simultaneous-template	Interface	CopyFromInput.inde
 edge-cases/merge-subrules-pos-simultaneous-template	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/merge-subrules-pos-simultaneous-template	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
 edge-cases/merge-subrules-pos-simultaneous-template	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
-edge-cases/merge-subrules-pos-simultaneous-template	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
 edge-cases/merge-subrules-pos-simultaneous-template	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/merge-subrules-pos-simultaneous-template	Interface	PhonologicalSubrule.requiredPartsOfSpeech	witnessed	Evidenced
 edge-cases/merge-subrules-pos-simultaneous-template	Interface	Segment.segment	required-by-dtd	RequiredByDtd
@@ -786,11 +774,11 @@ edge-cases/morphotactic-attribute-breadth	Interface	SimpleContext.naturalClass	r
 edge-cases/morphotactic-attribute-breadth	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Interface	Stratum.morphologicalRules	witnessed	Evidenced
-edge-cases/morphotactic-attribute-breadth	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	4 claim(s)
+edge-cases/morphotactic-attribute-breadth	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	5 claim(s)
 edge-cases/morphotactic-attribute-breadth	Construct	Disjunctive allomorphs / free-fluctuation	claimed-unmapped	1 claim(s)
 edge-cases/morphotactic-attribute-breadth	Construct	MPR features/groups	claimed-unmapped	6 claim(s)
 edge-cases/morphotactic-attribute-breadth	Construct	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	claimed-confirmed	6 claim(s)
-edge-cases/morphotactic-attribute-breadth	Construct	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	claimed-contradicted	12 claim(s)
+edge-cases/morphotactic-attribute-breadth	Construct	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	claimed-contradicted	11 claim(s)
 edge-cases/mpr-gated-exception	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/mpr-gated-exception	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/mpr-gated-exception	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
@@ -916,7 +904,6 @@ edge-cases/nullable-disagree-unbounded-rtl-right	Construct	RewriteRule direction
 edge-cases/optional-template-composite	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/optional-template-composite	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/optional-template-composite	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
-edge-cases/optional-template-composite	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
 edge-cases/optional-template-composite	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/optional-template-composite	Interface	Segment.segment	required-by-dtd	RequiredByDtd
 edge-cases/optional-template-composite	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
@@ -1244,7 +1231,6 @@ edge-cases/simultaneous-subrule-genuine-overlap	Construct	RewriteRule Simultaneo
 edge-cases/standalone-combining-mark	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/standalone-combining-mark	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/standalone-combining-mark	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
-edge-cases/standalone-combining-mark	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
 edge-cases/standalone-combining-mark	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/standalone-combining-mark	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/standalone-combining-mark	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd

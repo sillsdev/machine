@@ -329,7 +329,7 @@ MorphotacticAttributeBreadth,kulde,KUL+TWICE|kulde,Ordinary/realizational rule c
 MorphotacticAttributeBreadth,kuldede,KUL+TWICE|kuldede,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
 MorphotacticAttributeBreadth,kuldedede,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
 MorphotacticAttributeBreadth,kulba,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-MorphotacticAttributeBreadth,kulmo,KUL+PART|kulmo,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+MorphotacticAttributeBreadth,kulmo,KUL+MO|kulmo,Affix template slots (obligatory/disjunctive/ordering)
 MorphotacticAttributeBreadth,nap,NAP|nap,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
 MorphotacticAttributeBreadth,napmo,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
 MorphotacticAttributeBreadth,kur,,Disjunctive allomorphs / free-fluctuation

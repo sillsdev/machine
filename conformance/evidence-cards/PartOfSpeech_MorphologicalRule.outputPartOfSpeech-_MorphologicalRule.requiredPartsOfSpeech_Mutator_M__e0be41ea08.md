@@ -17,11 +17,11 @@ no mutator sits between the write and the read: a part-of-speech priority-union 
 
 **Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: edge-cases/morphotactic-attribute-breadth declares 20 outputPartOfSpeech-bearing MorphologicalRule/CompoundingRule element(s) -- SynthesisAffixProcessRule.cs:181-182/SynthesisCompoundingRule.cs:181-182's unconditional PriorityUnion gives each one a chance to clobber POS before this reader's gate; which element actually intervenes, and word-level witness of an actual clobber, are not checked here
+Ledger evidence: structurally hazardous: languages/metathesis-phase-isolation declares 10 outputPartOfSpeech-bearing MorphologicalRule/CompoundingRule element(s) -- SynthesisAffixProcessRule.cs:181-182/SynthesisCompoundingRule.cs:181-182's unconditional PriorityUnion gives each one a chance to clobber POS before this reader's gate; which element actually intervenes, and word-level witness of an actual clobber, are not checked here
 
 ## Fixture and word
 
-- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `edge-cases/morphotactic-attribute-breadth` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
+- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/metathesis-phase-isolation` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
 
 ## Exact mutation and before/after parse
 
@@ -29,53 +29,33 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`MorphologicalRule.outputPartOfSpeech` in `edge-cases/morphotactic-attribute-breadth`): verdict=Unobservable, mutation="removed outputPartOfSpeech from 20 <MorphologicalRule> element(s)"
-- Reader (`MorphologicalRule.requiredPartsOfSpeech` in `edge-cases/morphotactic-attribute-breadth`): verdict=Unobservable, mutation="removed requiredPartsOfSpeech from 20 <MorphologicalRule> element(s)"
+- Writer (`MorphologicalRule.outputPartOfSpeech` in `languages/metathesis-phase-isolation`): verdict=Unobservable, mutation="removed outputPartOfSpeech from 10 <MorphologicalRule> element(s)"
+- Reader (`MorphologicalRule.requiredPartsOfSpeech` in `languages/metathesis-phase-isolation`): verdict=Unobservable, mutation="removed requiredPartsOfSpeech from 10 <MorphologicalRule> element(s)"
 
 ## Grammar citations
 
-### `edge-cases/morphotactic-attribute-breadth/grammar.xml`
+### `languages/metathesis-phase-isolation/grammar.xml`
 
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:122` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:134` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:145` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:157` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:172` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:183` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:194` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:205` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:224` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:257` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:268` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:285` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:296` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:307` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:325` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:336` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:358` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:369` = "posN"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:439` = "posP"
-- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:452` = "posP"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:122` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:134` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:145` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:157` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:172` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:183` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:194` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:205` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:224` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:257` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:268` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:285` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:296` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:307` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:325` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:336` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:358` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:369` = "posN"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:439` = "posP"
-- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:452` = "posP"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:271` = "posComplexMeta"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:296` = "posNotUnapplied"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:335` = "posInfix"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:353` = "posCircum"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:368` = "posRedup"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:386` = "posRedup"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:402` = "posRedup"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:424` = "posTrunc"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:440` = "posLnk"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:453` = "posNonContig"
+- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:271` = "posComplexMeta"
+- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:296` = "posNotUnapplied"
+- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:335` = "posInfix"
+- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:353` = "posCircum"
+- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:368` = "posRedup"
+- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:386` = "posRedup"
+- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:402` = "posRedup"
+- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:424` = "posTrunc"
+- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:440` = "posLnk"
+- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:453` = "posNonContig"
 
 ## Author's prose
 

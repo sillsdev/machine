@@ -337,7 +337,7 @@ edge-cases/morphotactic-attribute-breadth	kuldedede	-	Ordinary/realizational rul
 edge-cases/morphotactic-attribute-breadth	kulgagego	-	MPR features/groups	Unmapped	-
 edge-cases/morphotactic-attribute-breadth	kulgago	KUL+GRPB+GRPREQ|kulgago	MPR features/groups	Unmapped	-
 edge-cases/morphotactic-attribute-breadth	kulge	KUL+GRPA|kulge	MPR features/groups	Unmapped	-
-edge-cases/morphotactic-attribute-breadth	kulmo	KUL+PART|kulmo	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	Contradicted	requiredStemName
+edge-cases/morphotactic-attribute-breadth	kulmo	KUL+MO|kulmo	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/morphotactic-attribute-breadth	kulpu	-	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/morphotactic-attribute-breadth	kur	-	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/morphotactic-attribute-breadth	nap	NAP|nap	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	Contradicted	requiredStemName
