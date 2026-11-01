@@ -6,11 +6,7 @@ sources:
   - "https://github.com/sillsdev/machine/pull/522"
   - "tests/SIL.Machine.Morphology.HermitCrab.Tests/AffixTemplateTests.cs: FinalTemplateInLowerStratum_ParsesWhenUpperAnalysesDifferOnlyInFinalTemplateState"
 requires: [morpher-settings]
-fieldworks_producible: false
-fieldworks_producible_notes: >-
-  A non-final template in a stratum that also holds an ordinary rule, feeding a final template in a
-  lower non-blocking stratum, is a shape FieldWorks can emit; the fixture is kept engine-only until
-  an xample-projector witness is built.
+fieldworks_producible: true
 morpher:
   MergeAnalyses: true
 words:
