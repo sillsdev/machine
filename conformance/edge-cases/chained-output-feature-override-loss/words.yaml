@@ -11,8 +11,9 @@
 # History: the fixture was written red, before the fix. Under master's earlier Add semantics the
 # oracle returned no analysis of `zudiua`; it has parsed since #494 (7109531e, "Change Add to
 # PriorityUnion") merged, checked by running this fixture against master at 52d069f8 (red) and
-# 7109531e (green). Earlier notes said the loss survived PriorityUnion; that was measured on the
-# pre-merge research branch perf/pr494-priority-union, not on what merged.
+# 7109531e (green); the same two runs on the unordered stratum below give the same red and green
+# for `zudiua` (hc.dll built at each commit). Earlier notes said the loss survived PriorityUnion;
+# that was measured on the pre-merge research branch perf/pr494-priority-union, not on what merged.
 #
 # Mechanism of the original loss: analysis (un-application) walks a derivation outside-in. mrOuter's
 # own OutputHeadFeatures (tense=past) was folded onto the stem as it was un-applied and never retracted
@@ -47,14 +48,7 @@ sources:
   - "perf/pr494-priority-union:docs/pr494-review.md (section 4, OverrideLoss_TenseFlipFlop)"
   - "PanGloss rust/crates/pg-parse/tests/exact_analysis_fs_recall.rs (fix/exact-analysis-fs branch)"
 requires: []
-fieldworks_producible: false
-fieldworks_producible_notes: >-
-  MorphologicalRuleOrder: HCLoader hardcodes Unordered at every Stratum it builds (HCLoader.cs:227,
-  230,374) and can never emit `linear`. This fixture declares its Stratum `morphologicalRuleOrder=
-  "linear"` (grammar.xml) so the three-suffix chain is unambiguous by construction; not re-verified
-  against an `unordered` re-run since the point under test (analysis-side feature bookkeeping, not
-  morphotactic ordering) does not depend on that declaration either way. Follows the same precedent
-  and citation as edge-cases/feature-gating-breadth.
+fieldworks_producible: true
 words:
   - word: zud
     note: Bare root, unaffixed, untensed. Control that the grammar loads and the root parses on its own.

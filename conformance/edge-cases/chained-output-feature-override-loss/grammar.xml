@@ -9,7 +9,7 @@
      OverrideLoss_TenseFlipFlop_AddAndPriorityUnionLoseTheParse_ExactFindsIt), and the exact word
      that demonstrates the loss.
 
-     Shape: three suffix rules on one root, applied in strict list order (Linear stratum).
+     Shape: three suffix rules on one root, applied in surface order (unordered stratum, as FieldWorks builds every stratum).
        mrInner     no RequiredHeadFeatures; OutputHeadFeatures tense=pres.        suffix "-i"
        mrOuter     no RequiredHeadFeatures; OutputHeadFeatures tense=past.        suffix "-u"
        mrOutermost RequiredHeadFeatures tense=past; no OutputHeadFeatures.        suffix "-a"
@@ -47,7 +47,7 @@
       <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
     </NaturalClasses>
     <Strata>
-      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="linear"
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered"
                morphologicalRules="mrInner mrOuter mrOutermost">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
