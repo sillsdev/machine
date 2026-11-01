@@ -59,7 +59,7 @@ except where listed.
 
 Grammar needs two character tables, a custom or append-mode MPR feature group, a non-default
 `SymbolicFeature.defaultSymbol`, an `isActive="no"` the loader never filters, a
-`RealizationalRule`, a family, a discriminating `requiredMPRFeatures` per subrule, or a metathesis
+`RealizationalRule`, a family, a discriminating `requiredMPRFeatures` per subrule of a non-inflectional rule, or a metathesis
 switch order the loader cannot emit. None of these could be converted without losing the
 fixture's premise.
 

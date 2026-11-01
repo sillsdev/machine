@@ -348,7 +348,7 @@ recorded the same hand-curated way because, like the other four, it names neithe
 A `fieldworks_producible: true|false` field on each conformance fixture's own `words.yaml` front
 matter (`conformance/PROTOCOL.md`'s dedicated section) applies this same ledger, plus five
 usage-level checks a per-row TSV entry cannot express on its own (a template-slot rule may not set
-MPR features; `requiredMPRFeatures` must be identical across a rule's subrules; co-occurrence rules
+MPR features; `requiredMPRFeatures` must be identical across the subrules of a non-inflectional rule (an inflectional rule's allomorphs each add their own inflection classes); co-occurrence rules
 must be `type="exclude"`; a fixture's committed ground truth must not depend on
 `MorphologicalRuleOrder: linear`, established by measurement rather than by the declaration alone;
 and `Environments` is producible only on a subrule whose output is a single literal-form affix —

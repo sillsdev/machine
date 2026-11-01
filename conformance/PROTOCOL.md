@@ -453,10 +453,14 @@ on takes, not on the attribute in isolation:
   `LoadInflAffixProcessRule` never sets `MorphologicalOutput`'s MPR features on an inflectional
   rule — so a template-slot rule that writes MPR features cannot come from FieldWorks even though
   the same write is producible on a stratum-level (non-templated) rule.
-- `requiredMPRFeatures` must be identical across every subrule of one rule: HCLoader computes a
-  single `requiredMprFeatures` list per MSA and applies it to every subrule alike, so two subrules
-  of the same rule with *different* required MPR features cannot come from FieldWorks even though
-  the attribute itself is ordinarily producible.
+- `requiredMPRFeatures` must be identical across every subrule of one rule that is not inflectional:
+  a derivational rule gets a single per-MSA list from `FromProdRestrictRC` applied to every
+  subrule alike (`HCLoader.cs:1017`), and an unclassified or clitic rule gets none, so two subrules
+  of the same such rule with *different* required MPR features cannot come from FieldWorks even
+  though the attribute itself is ordinarily producible. An inflectional rule (an `IMoInflAffMsa`,
+  which includes every template-slot rule) adds the same kind of per-MSA list (`HCLoader.cs:1050`)
+  and also each allomorph's own inflection classes (`HCLoader.cs:1118`, `:1145`, `:1172`), so its
+  subrules may differ.
 - A `MorphemeCoOccurrenceRule`/`AllomorphCoOccurrenceRule` must be `type="exclude"`: HCLoader's two
   co-occurrence loaders build `Exclude` constraints only, sourced from LibLCM repositories that are
   prohibition-only by name, so `type="require"` has no FieldWorks equivalent regardless of how
