@@ -34,10 +34,7 @@ public sealed class ConstructClaimCorroborationTests
             $"rows={rows.Count} confirmed={confirmed} contradicted={contradicted} unmapped={unmapped}"
         );
 
-        // Pins the ledger row count and its confirmed/contradicted/unmapped split. #612 moved one row from
-        // contradicted to unmapped: morphotactic-attribute-breadth's kulmo no longer exercises the partial
-        // rule it was tagged for (that rule is now the ordinary suffix mrMo), so it carries the
-        // template-slot tag instead.
+        // Pins the ledger row count and its confirmed/contradicted/unmapped split.
         Assert.That(rows, Has.Count.EqualTo(1278));
         Assert.That(confirmed, Is.EqualTo(749));
         Assert.That(contradicted, Is.EqualTo(11));

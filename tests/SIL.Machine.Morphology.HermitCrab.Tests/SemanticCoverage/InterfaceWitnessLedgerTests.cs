@@ -43,9 +43,6 @@ public sealed class InterfaceWitnessLedgerTests
         );
 
         // Pins the number of present interface/fixture pairs and how they split by witness status.
-        // #612 removed 14 present pairs, all Unobservable: 14 fixtures had MorphologicalRule.outputPartOfSpeech
-        // only on slot rules, so the pair is gone. Four more keep it on stratum-level rules and
-        // morphotactic-attribute-breadth also lost a LexicalEntry.partOfSpeech element; those rows stay.
         Assert.That(rows, Has.Count.EqualTo(1125));
         Assert.That(evidenced, Is.EqualTo(184));
         Assert.That(requiredByDtd, Is.EqualTo(639));

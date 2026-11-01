@@ -7,7 +7,7 @@ namespace SIL.Machine.Morphology.HermitCrab;
 
 /// <summary>
 /// A fixture flagged <c>fieldworks_producible: true</c> must not use a grammar shape HCLoader never
-/// writes (PROTOCOL.md section 9). The flag is authored, so these checks can only prove it wrong. They
+/// writes. The flag is authored, so these checks can only prove it wrong. They
 /// cover the shapes sillsdev/machine#612 found in flagged fixtures: a slot rule with an
 /// <c>outputPartOfSpeech</c>, a <c>linear</c> stratum that holds morphological rules, a partial stem
 /// entry with a part of speech, and a partial rule that sits in a slot or has an
@@ -216,9 +216,8 @@ public sealed class FieldWorksProducibleShapeTests
                 offences.Add($"partial stem entry {(string?)entry.Attribute("id")} has a partOfSpeech");
         }
 
-        // HCLoader builds Morphology, Clitics and custom strata as Unordered, and Surface holds no
-        // morphological rules, so a stratum that lists active rules must say unordered; the DTD
-        // default is linear. A rule reachable only through a slot never reads the order.
+        // HCLoader builds every stratum that holds rules as Unordered, and the DTD default is linear.
+        // A rule reached only through a slot never reads the order.
         int number = 0;
         foreach (XElement stratum in doc.Descendants("Stratum"))
         {
