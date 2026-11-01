@@ -7,10 +7,7 @@ sources:
   - "src/SIL.Machine.Morphology.HermitCrab/AnalysisAffixTemplateRule.cs"
   - "src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/SynthesisAffixProcessRule.cs"
 requires: [morpher-settings]
-fieldworks_producible: false
-fieldworks_producible_notes: >-
-  Final affix templates over ordinary rules with output POS are HC-engine-only here; see
-  final-template-partial-discriminators for the same rationale.
+fieldworks_producible: true
 morpher:
   MakePartialsFinal: false
 words:

@@ -31,7 +31,7 @@
       >
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
-          <MorphologicalRule id="mrPfxA" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrPfxA" requiredPartsOfSpeech="posV">
             <Name>pfxA</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subPfxA">
@@ -41,7 +41,7 @@
             </MorphologicalSubrules>
             <MorphemeId>PFXA</MorphemeId>
           </MorphologicalRule>
-          <MorphologicalRule id="mrSfxA" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrSfxA" requiredPartsOfSpeech="posV">
             <Name>sfxA</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subSfxA">
@@ -51,7 +51,7 @@
             </MorphologicalSubrules>
             <MorphemeId>SFXA</MorphemeId>
           </MorphologicalRule>
-          <MorphologicalRule id="mrPfxB" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrPfxB" requiredPartsOfSpeech="posV">
             <Name>pfxB</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subPfxB">
@@ -61,7 +61,7 @@
             </MorphologicalSubrules>
             <MorphemeId>PFXB</MorphemeId>
           </MorphologicalRule>
-          <MorphologicalRule id="mrSfxB" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+          <MorphologicalRule id="mrSfxB" requiredPartsOfSpeech="posV">
             <Name>sfxB</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subSfxB">

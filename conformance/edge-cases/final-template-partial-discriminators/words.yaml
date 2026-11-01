@@ -6,14 +6,7 @@ sources:
   - "https://github.com/sillsdev/machine/issues/507"
   - "src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/SynthesisStratumRule.cs"
 requires: [morpher-settings]
-fieldworks_producible: false
-fieldworks_producible_notes: >-
-  Partial ordinary rules mrGate2Partial/mrGate3Partial set outputPartOfSpeech, but FieldWorks
-  HCLoader.LoadInflAffixProcessRule and LoadUnclassifiedAffixProcessRule (HCLoader.cs:976-1030)
-  set IsPartial without setting OutSyntacticFeatureStruct. Template-only tag rules also set
-  outputPartOfSpeech; LoadAffixTemplate (1672-1735) obtains inflectional rules from IMoInflAffMsa,
-  and LoadInflAffixProcessRule does not set output syntactic features. These combined usages
-  are HC-engine-only, even though partial rules and output POS are individually producible.
+fieldworks_producible: true
 morpher:
   MakePartialsFinal: false
 words:

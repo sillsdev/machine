@@ -28,7 +28,7 @@
       <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" isActive="yes">
         <Name>Lower</Name>
         <LexicalEntries>
-          <LexicalEntry id="ePak" partOfSpeech="posX" partial="true">
+          <LexicalEntry id="ePak" partial="true">
             <Allomorphs>
               <Allomorph id="aPak"><PhoneticShape>pak</PhoneticShape></Allomorph>
             </Allomorphs>
@@ -41,7 +41,7 @@
                morphologicalRules="mrGateX mrGateY" isActive="yes">
         <Name>Upper</Name>
         <MorphologicalRuleDefinitions>
-          <MorphologicalRule id="mrFinX" requiredPartsOfSpeech="posX" outputPartOfSpeech="posX">
+          <MorphologicalRule id="mrFinX" requiredPartsOfSpeech="posX">
             <Name>FinX</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subFinX">
@@ -63,7 +63,7 @@
             <MorphemeId>GATEX</MorphemeId>
             <Gloss>gatex</Gloss>
           </MorphologicalRule>
-          <MorphologicalRule id="mrFinY" requiredPartsOfSpeech="posY" outputPartOfSpeech="posY">
+          <MorphologicalRule id="mrFinY" requiredPartsOfSpeech="posY">
             <Name>FinY</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subFinY">
@@ -104,7 +104,7 @@
             <MorphemeId>DAK</MorphemeId>
             <Gloss>dak</Gloss>
           </LexicalEntry>
-          <LexicalEntry id="ePib" partOfSpeech="posY" partial="true">
+          <LexicalEntry id="ePib" partial="true">
             <Allomorphs>
               <Allomorph id="aPib"><PhoneticShape>pib</PhoneticShape></Allomorph>
             </Allomorphs>

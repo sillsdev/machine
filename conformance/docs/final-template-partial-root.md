@@ -19,5 +19,10 @@ The expected rows pass with the lexical-entry half of `Morpher.IsPartial` remove
 prune on for this grammar. Reaching a partial-rule-dependent parse needs a partial rule, which is
 covered by `final-template-partial-discriminators` (`pilfbvb`).
 
+The partial entries PAK and PIB carry no part of speech, and the slot rules carry no
+`outputPartOfSpeech`: FieldWorks marks a stem entry partial only when its MSA has no part of speech
+(`HCLoader.cs` `LoadLexEntry`), and its inflectional rule loader never sets an output part of
+speech. Dropping both left every expected row unchanged.
+
 Not covered: lexical-pattern guesses (their entries are already pruned by design, see
 `Morpher.LexicalGuess`) and inflectional-family stem substitution.

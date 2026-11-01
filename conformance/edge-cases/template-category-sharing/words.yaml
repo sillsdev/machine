@@ -6,12 +6,7 @@ sources:
   - "https://github.com/sillsdev/machine/issues/505"
   - "src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/SynthesisStratumRule.cs"
 requires: []
-fieldworks_producible: false
-fieldworks_producible_notes: >-
-  All four template-slot rules explicitly set outputPartOfSpeech. FieldWorks HCLoader.LoadAffixTemplate
-  (HCLoader.cs:1672-1735) obtains slot rules from IMoInflAffMsa; LoadInflAffixProcessRule
-  (976-1006) sets required syntactic features but never OutSyntacticFeatureStruct. The ordinary
-  derivational loader can set output POS, but that does not provide a path for these slot-only rules.
+fieldworks_producible: true
 words:
   - word: kolo
     note: KOLO bare root, no affixes -- a plain control.

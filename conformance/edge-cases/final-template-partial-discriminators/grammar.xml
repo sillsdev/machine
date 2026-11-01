@@ -35,7 +35,7 @@
                isActive="yes">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
-          <MorphologicalRule id="mrFinTagA" requiredPartsOfSpeech="posX" outputPartOfSpeech="posX">
+          <MorphologicalRule id="mrFinTagA" requiredPartsOfSpeech="posX">
             <Name>finTagA</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subFinTagA">
@@ -46,7 +46,7 @@
             <MorphemeId>FINTAGA</MorphemeId>
             <Gloss>fintaga</Gloss>
           </MorphologicalRule>
-          <MorphologicalRule id="mrNonFinTagA" requiredPartsOfSpeech="posX" outputPartOfSpeech="posX">
+          <MorphologicalRule id="mrNonFinTagA" requiredPartsOfSpeech="posX">
             <Name>nonFinTagA</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subNonFinTagA">
@@ -68,7 +68,7 @@
             <MorphemeId>GATE1</MorphemeId>
             <Gloss>gate1</Gloss>
           </MorphologicalRule>
-          <MorphologicalRule id="mrFinTagB" requiredPartsOfSpeech="posY" outputPartOfSpeech="posY">
+          <MorphologicalRule id="mrFinTagB" requiredPartsOfSpeech="posY">
             <Name>finTagB</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subFinTagB">
@@ -79,7 +79,7 @@
             <MorphemeId>FINTAGB</MorphemeId>
             <Gloss>fintagb</Gloss>
           </MorphologicalRule>
-          <MorphologicalRule id="mrNonFinTagB" requiredPartsOfSpeech="posY" outputPartOfSpeech="posY">
+          <MorphologicalRule id="mrNonFinTagB" requiredPartsOfSpeech="posY">
             <Name>nonFinTagB</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subNonFinTagB">
@@ -90,7 +90,7 @@
             <MorphemeId>NONFINTAGB</MorphemeId>
             <Gloss>nonfintagb</Gloss>
           </MorphologicalRule>
-          <MorphologicalRule id="mrGate2Partial" partial="true" requiredPartsOfSpeech="posY" outputPartOfSpeech="posY">
+          <MorphologicalRule id="mrGate2Partial" partial="true" requiredPartsOfSpeech="posY">
             <Name>gate2Partial</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subGate2Partial">
@@ -112,7 +112,7 @@
             <MorphemeId>GATE2COMPLETE</MorphemeId>
             <Gloss>gate2complete</Gloss>
           </MorphologicalRule>
-          <MorphologicalRule id="mrGate3Partial" partial="true" requiredPartsOfSpeech="posZ" outputPartOfSpeech="posZ">
+          <MorphologicalRule id="mrGate3Partial" partial="true" requiredPartsOfSpeech="posZ">
             <Name>gate3Partial</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subGate3Partial">
@@ -123,7 +123,7 @@
             <MorphemeId>GATE3PARTIAL</MorphemeId>
             <Gloss>gate3partial</Gloss>
           </MorphologicalRule>
-          <MorphologicalRule id="mrZTagSlot" requiredPartsOfSpeech="posZ" outputPartOfSpeech="posZ">
+          <MorphologicalRule id="mrZTagSlot" requiredPartsOfSpeech="posZ">
             <Name>zTagSlot</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subZTagSlot">
