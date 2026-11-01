@@ -224,6 +224,46 @@ public sealed class CounterfactualGateTests
         Assert.Throws<GrammarRejectedException>(() => CounterfactualGate.EvaluateWithTimeout(mutatedPath, ["a"]));
     }
 
+    // Only the classification is tested: the child overflows on a grammar the loader cannot produce, and
+    // a child's main-thread stack size is not settable through its environment.
+    [Test]
+    public void AMutantChildThatOverflowsTheStackReportsAResourceLimit()
+    {
+        const string Stderr = "Stack overflow.\n   at SIL.Machine.Annotations.Range`1.Equals(Range`1)\n   at X.Y()";
+
+        var thrown = Assert.Throws<StackLimitExceededException>(() =>
+            CounterfactualGate.ThrowIfChildFailed(134, Stderr + "\n")
+        );
+
+        Assert.That(
+            thrown,
+            Is.InstanceOf<TimeoutException>(),
+            "a resource limit is a timeout, never a harness failure"
+        );
+        Assert.That(thrown!.Message, Does.StartWith("Stack overflow."));
+    }
+
+    [Test]
+    public void AChildFailureIsClassifiedByExitCodeAndStderr()
+    {
+        Assert.That(() => CounterfactualGate.ThrowIfChildFailed(0, ""), Throws.Nothing);
+        Assert.Throws<MemoryLimitExceededException>(() =>
+            CounterfactualGate.ThrowIfChildFailed(CounterfactualGate.MemoryLimitExitCode, "out of memory")
+        );
+        Assert.Throws<GrammarRejectedException>(() =>
+            CounterfactualGate.ThrowIfChildFailed(CounterfactualGate.GrammarRejectedExitCode, "bad grammar")
+        );
+        Assert.Throws<InvalidOperationException>(
+            () => CounterfactualGate.ThrowIfChildFailed(134, "Fatal error. Something else aborted."),
+            "an abort that is not a stack overflow is the harness's failure"
+        );
+        Assert.Throws<InvalidOperationException>(() => CounterfactualGate.ThrowIfChildFailed(1, "crash"));
+        Assert.Throws<GrammarRejectedException>(
+            () => CounterfactualGate.ThrowIfChildFailed(CounterfactualGate.GrammarRejectedExitCode, "Stack overflow."),
+            "a refusal exit code wins over the stderr text"
+        );
+    }
+
     [Test]
     public void AMutantChildThatFailsForAnotherReasonIsNotARejection()
     {

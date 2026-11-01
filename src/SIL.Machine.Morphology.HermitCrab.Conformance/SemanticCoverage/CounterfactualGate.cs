@@ -257,14 +257,7 @@ public static class CounterfactualGate
 
             string output = outputTask.GetAwaiter().GetResult();
             string error = ExtractWordTimings(errorTask.GetAwaiter().GetResult(), onTimed);
-            if (child.ExitCode == MemoryLimitExitCode)
-                throw new MemoryLimitExceededException(error.Trim());
-            if (child.ExitCode == GrammarRejectedExitCode)
-                throw new GrammarRejectedException(error.Trim());
-            if (error.StartsWith(StackOverflowPrefix, StringComparison.Ordinal))
-                throw new StackLimitExceededException(error.Trim());
-            if (child.ExitCode != 0)
-                throw new InvalidOperationException($"mutant child exited {child.ExitCode}: {error.Trim()}");
+            ThrowIfChildFailed(child.ExitCode, error);
             return output
                 .Split('\n', StringSplitOptions.RemoveEmptyEntries)
                 .Select(line => line.TrimEnd('\r'))
@@ -275,6 +268,24 @@ public static class CounterfactualGate
             if (File.Exists(wordsPath))
                 File.Delete(wordsPath);
         }
+    }
+
+    /// <summary>
+    /// Turns a finished mutant child's exit code and timing-free stderr into the exception that names what
+    /// went wrong. A memory or stack limit is a <see cref="TimeoutException"/>, a refused grammar is
+    /// evidence, and any other failure is the harness's. The runtime aborts a stack overflow with a signal
+    /// exit code, so the first stderr line is the only reliable sign of one.
+    /// </summary>
+    internal static void ThrowIfChildFailed(int exitCode, string error)
+    {
+        if (exitCode == MemoryLimitExitCode)
+            throw new MemoryLimitExceededException(error.Trim());
+        if (exitCode == GrammarRejectedExitCode)
+            throw new GrammarRejectedException(error.Trim());
+        if (error.StartsWith(StackOverflowPrefix, StringComparison.Ordinal))
+            throw new StackLimitExceededException(error.Trim());
+        if (exitCode != 0)
+            throw new InvalidOperationException($"mutant child exited {exitCode}: {error.Trim()}");
     }
 
     /// <summary>
