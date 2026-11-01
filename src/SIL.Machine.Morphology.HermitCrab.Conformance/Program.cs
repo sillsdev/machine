@@ -413,7 +413,7 @@ internal class Program
             .ToArray();
         string[] changed = freshById
             .Keys.Intersect(checkedInById.Keys, StringComparer.Ordinal)
-            .Where(id => freshById[id] != checkedInById[id])
+            .Where(id => !SemanticCoverage.CounterfactualLedger.AreEqual(freshById[id], checkedInById[id]))
             .OrderBy(id => id, StringComparer.Ordinal)
             .ToArray();
 

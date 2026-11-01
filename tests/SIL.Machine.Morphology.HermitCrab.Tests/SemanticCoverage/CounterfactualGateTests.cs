@@ -696,6 +696,45 @@ public sealed class CounterfactualGateTests
         Assert.That(best3, Is.EqualTo(requiredToLoad), "a load failure outranks a timeout");
     }
 
+    [Test]
+    public void ResultsThatDifferOnlyInTheWitnessListInstanceAreEqual()
+    {
+        static CounterfactualResult Make(IReadOnlyList<string>? witnesses) =>
+            new(
+                "s",
+                "fx-a",
+                CounterfactualVerdict.Evidenced,
+                "m",
+                "d",
+                ExampleWord: "w",
+                ExampleOutcome: "ok::A|w",
+                CounterexampleKind: CounterexampleKind.Word,
+                CounterexampleOutcome: "ok::-",
+                WitnessingFixtures: witnesses
+            );
+
+        CounterfactualResult fromSweep = Make(new[] { "fx-a", "fx-b" });
+        CounterfactualResult fromRead = Make("fx-a,fx-b".Split(','));
+
+        Assert.That(fromSweep == fromRead, Is.False, "the record's own equality compares the list by reference");
+        Assert.That(CounterfactualLedger.AreEqual(fromSweep, fromRead), Is.True);
+        Assert.That(
+            CounterfactualLedger.AreEqual(fromSweep, fromRead with { WitnessingFixtures = new[] { "fx-a" } }),
+            Is.False,
+            "a different witness set is a change"
+        );
+        Assert.That(
+            CounterfactualLedger.AreEqual(fromSweep, fromRead with { Delta = "other" }),
+            Is.False,
+            "a different delta is a change"
+        );
+        Assert.That(
+            CounterfactualLedger.AreEqual(Make(null), Make(new[] { "fx-a" })),
+            Is.True,
+            "a null witness set is written as the one fixture the result names"
+        );
+    }
+
     // Recomputes the whole sweep, so it costs minutes and is excluded from the default suite; the
     // counterfactual-coverage workflow is what runs it.
     [Test]
@@ -720,7 +759,7 @@ public sealed class CounterfactualGateTests
             .ToArray();
         string[] changed = freshById
             .Keys.Intersect(checkedInById.Keys, StringComparer.Ordinal)
-            .Where(id => freshById[id] != checkedInById[id])
+            .Where(id => !CounterfactualLedger.AreEqual(freshById[id], checkedInById[id]))
             .OrderBy(id => id, StringComparer.Ordinal)
             .ToArray();
 
@@ -739,7 +778,13 @@ public sealed class CounterfactualGateTests
             Assert.That(
                 changed,
                 Is.Empty,
-                $"changed verdicts; regenerate with --write-counterfactual after checking why:\n  {string.Join("\n  ", changed)}"
+                "changed verdicts; regenerate with --write-counterfactual after checking why:\n"
+                    + string.Join(
+                        "\n",
+                        changed.Select(id =>
+                            $"  {id}\n    checked in: {CounterfactualLedger.Describe(checkedInById[id])}\n    fresh:      {CounterfactualLedger.Describe(freshById[id])}"
+                        )
+                    )
             );
         });
     }

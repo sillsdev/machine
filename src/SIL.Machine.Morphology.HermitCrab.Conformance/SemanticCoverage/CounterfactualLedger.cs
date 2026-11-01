@@ -292,6 +292,34 @@ public static class CounterfactualLedger
 
     private const string NullField = "-";
 
+    /// <summary>
+    /// Compares two results field by field, with <see cref="CounterfactualResult.WitnessingFixtures"/>
+    /// compared as a sequence: the record's own equality compares that list by reference, so a result
+    /// from <see cref="Sweep"/> never equals the one <see cref="Read"/> returns for the same ledger line.
+    /// </summary>
+    public static bool AreEqual(CounterfactualResult left, CounterfactualResult right)
+    {
+        ArgumentNullException.ThrowIfNull(left);
+        ArgumentNullException.ThrowIfNull(right);
+        return left with { WitnessingFixtures = null } == right with { WitnessingFixtures = null }
+            && Witnesses(left).SequenceEqual(Witnesses(right), StringComparer.Ordinal);
+    }
+
+    /// <summary>Every field of a result on one line, for a failure message that shows both sides of a change.</summary>
+    public static string Describe(CounterfactualResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        return $"verdict={result.Verdict} fixture={result.FixtureId} mutation={result.Mutation} delta={result.Delta} "
+            + $"example={result.ExampleWord ?? NullField}/{result.ExampleOutcome ?? NullField} "
+            + $"counterexample={result.CounterexampleKind}/{result.CounterexampleOutcome ?? NullField} "
+            + $"witnessed_by={string.Join(",", Witnesses(result))}";
+    }
+
+    // A null set is written as the one fixture the result names (see Write), so it means that.
+    // Neither Sweep nor Read ever produces null or an empty set.
+    private static IReadOnlyList<string> Witnesses(CounterfactualResult result) =>
+        result.WitnessingFixtures ?? new[] { result.FixtureId };
+
     public static void Write(string repositoryRoot, IReadOnlyList<CounterfactualResult> entries)
     {
         string path = Path.Combine(repositoryRoot, RelativePath.Replace('/', Path.DirectorySeparatorChar));
@@ -337,7 +365,7 @@ public static class CounterfactualLedger
                     r.ExampleOutcome ?? NullField,
                     r.CounterexampleKind,
                     r.CounterexampleOutcome ?? NullField,
-                    string.Join(",", r.WitnessingFixtures ?? new[] { r.FixtureId })
+                    string.Join(",", Witnesses(r))
                 )
             );
         }
