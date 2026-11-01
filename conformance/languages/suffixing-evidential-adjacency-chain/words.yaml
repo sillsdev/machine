@@ -84,6 +84,16 @@
 #   17. sipulupachikmi = SIPU+2PL+PL+DIR: PL now sits directly between the person suffix and DIR, so
 #       "adjacentToRight" FAILS (distinguishing pair vs #15) -> zero parses.
 #         -> expect_fail, blocked_by: [mrPerson2Pl]
+#
+# FIELDWORKS CONVERSION (exclude rules only). The four adjacency requirements above (items 10-17)
+# were MorphemeCoOccurrenceRule type="require"; HCLoader builds Exclude constraints only, so each
+# is now one single-other exclude rule per morpheme that could stand in the required position
+# (an exclude rule with several others fires only when all of them co-occur). The oracle agreed with
+# every existing row except item 15b, siputuku: an exclude rule cannot refuse the absence of
+# mrEvidDirect, so siputuku now parses. Two words were added from the engine's own output so each
+# adjacency exclude still has a negative control that does not depend on another rule: siputukusi
+# and sipulupasi (REP, which carries no co-occurrence rule). The AND-not-OR pin (walaknkicha, item
+# 4's rules on mrEvidConjectural) is unchanged.
 
 language: SuffixingEvidentialAdjacencyChain
 inspired_by: ["suffixing evidential-marking verbal morphology with morpheme-adjacency co-occurrence constraints (typological pattern, not any specific language)"]
@@ -92,11 +102,7 @@ sources:
   - "typological literature on verbal morphology and evidentiality"
   - "Aikhenvald, Evidentiality (2004)"
 requires: []
-fieldworks_producible: false
-fieldworks_producible_notes: >-
-  Four MorphemeCoOccurrenceRule type="require" elements; HCLoader's only co-occurrence loader
-  (LoadMorphemeCoOccurrenceRules, HCLoader.cs:2213-2239) builds Exclude constraints only, sourced
-  from a prohibition-only LibLCM repository -- "require" adjacency has no FieldWorks equivalent.
+fieldworks_producible: true
 words:
   - word: tupay
     note: >-
@@ -352,13 +358,24 @@ words:
 
   - word: siputuku
     note: >-
-      SIPU+1PL.INCL("-tuku") alone, no evidential at all: mrPerson1PlIncl's
-      MorphemeCoOccurrenceRule requires mrEvidDirect somewhereToRight, but no evidential slot is
-      filled here, so mrEvidDirect is absent entirely and the "somewhereToRight" require fails
-      regardless of adjacency -- unlike siputukumi/siputukuchikmi above, which both keep
-      mrEvidDirect present and only vary whether PL intervenes. Without this word, a no-op
-      "somewhereToRight" implementation (always satisfied) would go undetected, since every other
-      word exercising mrPerson1PlIncl already has mrEvidDirect present. Zero parses.
+      SIPU+1PL.INCL("-tuku") alone, no evidential at all. Written as exclude rules, mrPerson1PlIncl
+      refuses only the other evidentials to its right, and an exclude rule cannot refuse the absence
+      of mrEvidDirect, so this word parses. Under the earlier require rule it had no parse; the
+      change is the one piece of "mrEvidDirect must be present" that FieldWorks cannot express.
+    parses:
+      - signature: "SIPU+1PL.INCL|siputuku"
+        gloss: weave-1PL.INCL
+        rules: [mrPerson1PlIncl]
+        exercises:
+          - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: siputukusi
+    note: >-
+      SIPU+1PL.INCL+REP("-si"): mrPerson1PlIncl excludes every evidential other than mrEvidDirect
+      somewhereToRight, so REP to its right is refused (REP carries no co-occurrence rule of its own,
+      so mrPerson1PlIncl's rule is the only reason). This is the negative control for
+      siputukumi/siputukuchikmi, which keep mrEvidDirect and so cannot detect a no-op
+      "somewhereToRight" exclude rule. Zero parses.
     expect_fail: true
     blocked_by: [mrPerson1PlIncl]
     exercises:
@@ -382,6 +399,17 @@ words:
       "adjacentToRight" fails even though mrEvidDirect is present somewhere to the right -- the
       distinguishing row against siputukuchikmi above (same PL-intervening configuration, but
       "somewhereToRight" tolerates it and "adjacentToRight" does not) -- zero parses.
+    expect_fail: true
+    blocked_by: [mrPerson2Pl]
+    exercises:
+      - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: sipulupasi
+    note: >-
+      SIPU+2PL+REP("-si"): mrPerson2Pl excludes every evidential other than mrEvidDirect, and the
+      plural, adjacentToRight, so the adjacent REP is refused (REP carries no co-occurrence rule of
+      its own). Negative control for sipulupami, which keeps
+      mrEvidDirect and so cannot detect a no-op "adjacentToRight" exclude rule. Zero parses.
     expect_fail: true
     blocked_by: [mrPerson2Pl]
     exercises:

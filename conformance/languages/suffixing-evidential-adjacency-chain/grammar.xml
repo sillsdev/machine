@@ -114,7 +114,7 @@
           </MorphologicalRule>
           <!-- Slot 1 member 4/5 (W6, cooccurrence/morpheme-adjacency): 1PL.INCL person "-tuku", a
                4th disjunctive slot-1 member added solely to host the "somewhereToRight" adjacency
-               test: its MorphemeCoOccurrenceRule below requires mrEvidDirect somewhereToRight, so
+               test: its MorphemeCoOccurrenceRules below need mrEvidDirect somewhereToRight, so
                an intervening optional PL between this suffix and DIR does not break satisfaction. -->
           <MorphologicalRule id="mrPerson1PlIncl" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
             <Name>person1plIncl</Name>
@@ -128,7 +128,7 @@
           </MorphologicalRule>
           <!-- Slot 1 member 5/5 (W6, cooccurrence/morpheme-adjacency): 2PL person "-lupa", the
                somewhereToRight/adjacentToRight distinguishing partner of mrPerson1PlIncl: its
-               MorphemeCoOccurrenceRule requires mrEvidDirect ADJACENT to its right, so the same
+               MorphemeCoOccurrenceRules need mrEvidDirect ADJACENT to its right, so the same
                intervening PL that mrPerson1PlIncl tolerates instead breaks this one. -->
           <MorphologicalRule id="mrPerson2Pl" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
             <Name>person2pl</Name>
@@ -201,7 +201,7 @@
           </MorphologicalRule>
           <!-- Slot 3 member 4/5 (W6, cooccurrence/morpheme-adjacency): assumptive-evidence "-tan",
                a sibling of DIR/REP/CONJ added solely to host the "somewhereToLeft" adjacency
-               test: its MorphemeCoOccurrenceRule below requires mrPerson1 SPECIFICALLY (not any
+               test: its MorphemeCoOccurrenceRules below need mrPerson1 SPECIFICALLY (not any
                person) somewhereToLeft, so an intervening optional PL between PERSON and this
                suffix does not break satisfaction - PERSON is still "somewhere" to the left. -->
           <MorphologicalRule id="mrEvidAssum" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
@@ -216,7 +216,7 @@
           </MorphologicalRule>
           <!-- Slot 3 member 5/5 (W6, cooccurrence/morpheme-adjacency): mirative-evidence "-was",
                the somewhereToLeft/adjacentToLeft distinguishing partner of mrEvidAssum: its
-               MorphemeCoOccurrenceRule requires mrPerson1 ADJACENT to its left, so the same
+               MorphemeCoOccurrenceRules need mrPerson1 ADJACENT to its left, so the same
                intervening PL that mrEvidAssum tolerates instead breaks this one. -->
           <MorphologicalRule id="mrEvidMir" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
             <Name>evidMirative</Name>
@@ -313,14 +313,38 @@
            behavior by itself; it exists only to prove the AND, not OR, combination. -->
       <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrEvidConjectural" otherMorphemes="eTupa2" adjacency="anywhere" />
       <!-- W6, cooccurrence/morpheme-adjacency: the other 4 MorphCoOccurrenceAdjacency kinds
-           (mrEvidConjectural's rule above already exercises "anywhere"). Each pairs a dedicated
-           slot-1/slot-3 member (added above) with mrPerson1/mrEvidDirect as its "other" morpheme,
-           exploiting this template's own ROOT-PERSON-[PL]-EVID linear order so the optional PL
-           slot is the intervening morph that distinguishes "somewhere" from "adjacent". -->
-      <MorphemeCoOccurrenceRule isActive="yes" type="require" primaryMorpheme="mrEvidAssum" otherMorphemes="mrPerson1" adjacency="somewhereToLeft" />
-      <MorphemeCoOccurrenceRule isActive="yes" type="require" primaryMorpheme="mrEvidMir" otherMorphemes="mrPerson1" adjacency="adjacentToLeft" />
-      <MorphemeCoOccurrenceRule isActive="yes" type="require" primaryMorpheme="mrPerson1PlIncl" otherMorphemes="mrEvidDirect" adjacency="somewhereToRight" />
-      <MorphemeCoOccurrenceRule isActive="yes" type="require" primaryMorpheme="mrPerson2Pl" otherMorphemes="mrEvidDirect" adjacency="adjacentToRight" />
+           (mrEvidConjectural's rule above already exercises "anywhere"). FieldWorks can only
+           build exclude constraints (HCLoader.LoadMorphemeCoOccurrenceRules), and an exclude rule
+           with several other morphemes fires only when ALL of them co-occur, so each requirement
+           "X needs Y at adjacency A" is written as one single-other exclude rule per morpheme that
+           could stand where Y is required instead; every rule on a morpheme must pass (the
+           AND-not-OR semantics pinned by mrEvidConjectural). The person slot is obligatory and
+           sits left of the optional number and evidential slots, so the persons other than
+           mrPerson1 are exactly the complement of mrPerson1 to the left of an evidential. To the
+           right of a person the complement of mrEvidDirect also includes "no evidential at all",
+           which an exclude rule cannot refuse. -->
+      <!-- mrEvidAssum needs mrPerson1 somewhere to its left. -->
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrEvidAssum" otherMorphemes="mrPerson2" adjacency="somewhereToLeft" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrEvidAssum" otherMorphemes="mrPerson3" adjacency="somewhereToLeft" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrEvidAssum" otherMorphemes="mrPerson1PlIncl" adjacency="somewhereToLeft" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrEvidAssum" otherMorphemes="mrPerson2Pl" adjacency="somewhereToLeft" />
+      <!-- mrEvidMir needs mrPerson1 immediately to its left, so no other person and no plural there. -->
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrEvidMir" otherMorphemes="mrPerson2" adjacency="adjacentToLeft" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrEvidMir" otherMorphemes="mrPerson3" adjacency="adjacentToLeft" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrEvidMir" otherMorphemes="mrPerson1PlIncl" adjacency="adjacentToLeft" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrEvidMir" otherMorphemes="mrPerson2Pl" adjacency="adjacentToLeft" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrEvidMir" otherMorphemes="mrPlural" adjacency="adjacentToLeft" />
+      <!-- mrPerson1PlIncl needs mrEvidDirect somewhere to its right. -->
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrPerson1PlIncl" otherMorphemes="mrEvidReportative" adjacency="somewhereToRight" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrPerson1PlIncl" otherMorphemes="mrEvidConjectural" adjacency="somewhereToRight" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrPerson1PlIncl" otherMorphemes="mrEvidAssum" adjacency="somewhereToRight" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrPerson1PlIncl" otherMorphemes="mrEvidMir" adjacency="somewhereToRight" />
+      <!-- mrPerson2Pl needs mrEvidDirect immediately to its right, so no plural and no other evidential there. -->
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrPerson2Pl" otherMorphemes="mrPlural" adjacency="adjacentToRight" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrPerson2Pl" otherMorphemes="mrEvidReportative" adjacency="adjacentToRight" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrPerson2Pl" otherMorphemes="mrEvidConjectural" adjacency="adjacentToRight" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrPerson2Pl" otherMorphemes="mrEvidAssum" adjacency="adjacentToRight" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrPerson2Pl" otherMorphemes="mrEvidMir" adjacency="adjacentToRight" />
     </MorphemeCoOccurrenceRules>
     <AllomorphCoOccurrenceRules>
       <!-- W6, cooccurrence/allomorph-basic: attached to aKanta ONLY (see eTaki's LexicalEntry
