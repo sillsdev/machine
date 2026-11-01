@@ -147,6 +147,7 @@ dtd:enum/Slot/isActive/yes	dtd-default
 dtd:enum/Slot/optional/false	dtd-default
 dtd:enum/Stratum/cyclicity/noncyclic	dtd-default
 dtd:enum/Stratum/isActive/no	todo
+dtd:enum/Stratum/morphologicalRuleOrder/linear	dtd-default
 dtd:enum/Stratum/phonologicalRuleOrder/linear	dtd-default
 dtd:enum/SymbolicFeature/isActive/no	todo
 dtd:enum/SymbolicFeature/isActive/yes	dtd-default

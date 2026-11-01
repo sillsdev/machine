@@ -13,7 +13,6 @@ dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/matchType/any	Unresolved
 dtd:enum/MorphologicalPhonologicalRuleFeatureGroup/outputType/overwrite	Unresolved
 dtd:enum/PhonologicalRule/multipleApplicationOrder/leftToRightIterative	Unresolved
 dtd:enum/Stratum/cyclicity/cyclic	Rejected
-dtd:enum/Stratum/morphologicalRuleOrder/linear	Unresolved
 dtd:enum/Stratum/phonologicalRuleOrder/simultaneous	Rejected
 ordering:edge-cases/expansion-interposed-optional/phonologicalRules/prExpand~prDelete	Unresolved
 ordering:edge-cases/interposed-optional-multi-rhs/phonologicalRules/merge~delete	Unresolved
