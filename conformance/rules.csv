@@ -11,6 +11,9 @@ AdhocProhibitionAffixMsaCopies,mrTa1,taga
 AdhocProhibitionAffixMsaCopies,mrTa2,taga
 AdhocProhibitionAffixMsaCopies,subTa1,
 AdhocProhibitionAffixMsaCopies,subTa2,
+AdhocProhibitionAllomorphVariantControl,aLiN,
+AdhocProhibitionAllomorphVariantControl,aLiV,
+AdhocProhibitionAllomorphVariantControl,mrTa,tala
 AdhocProhibitionCircumfixPairings,aBa,
 AdhocProhibitionCircumfixPairings,mrCirc,tagaka;tagaki;togaka;togaki
 AdhocProhibitionCircumfixPairings,subTaKa,
@@ -21,6 +24,15 @@ AdhocProhibitionStemMsaCopies,aBaN,
 AdhocProhibitionStemMsaCopies,aBaV,
 AdhocProhibitionStemMsaCopies,mrTa,taga
 AdhocProhibitionStemMsaCopies,subTa,
+AdhocProhibitionVariantEncliticFirst,ePa,
+AdhocProhibitionVariantEncliticFirst,mrPa,tapa
+AdhocProhibitionVariantEncliticFirst,mrRa,lara;lira
+AdhocProhibitionVariantMainFirstEnclitic,eLaN,
+AdhocProhibitionVariantMainFirstEnclitic,eLaV,
+AdhocProhibitionVariantMainFirstEnclitic,eLiN,
+AdhocProhibitionVariantMainFirstEnclitic,eLiV,
+AdhocProhibitionVariantMainFirstEnclitic,mrPa,tapa
+AdhocProhibitionVariantMainFirstEnclitic,mrRa,lara;lira
 AdhocProhibitionVariantMsaCopies,eDaV,
 AdhocProhibitionVariantMsaCopies,eDiV,
 AdhocProhibitionVariantMsaCopies,mrTa,taga;tagi

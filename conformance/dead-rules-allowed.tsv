@@ -39,3 +39,10 @@ edge-cases/adhoc-prohibition-circumfix-pairings	subTaKa	Ad hoc prohibition or pa
 edge-cases/adhoc-prohibition-circumfix-pairings	subTaKi	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word, which has no analysis.
 edge-cases/adhoc-prohibition-circumfix-pairings	subToKa	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word, which has no analysis.
 edge-cases/adhoc-prohibition-circumfix-pairings	subToKi	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word, which has no analysis.
+edge-cases/adhoc-prohibition-allomorph-variant-control	aLiN	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word (tali), which has no analysis.
+edge-cases/adhoc-prohibition-allomorph-variant-control	aLiV	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word (tali), which has no analysis.
+edge-cases/adhoc-prohibition-variant-enclitic-first	ePa	Entry copy of the enclitic, kept because HCLoader emits it beside the clitic rule: its prohibitions never fire here (only the rule copy mrPa blocks lapa and lipa), and no word in the fixture uses the entry copy as a stem.
+edge-cases/adhoc-prohibition-variant-main-first-enclitic	eLaN	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word (lapa/lipa), which has no analysis.
+edge-cases/adhoc-prohibition-variant-main-first-enclitic	eLaV	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word (lapa/lipa), which has no analysis.
+edge-cases/adhoc-prohibition-variant-main-first-enclitic	eLiN	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word (lapa/lipa), which has no analysis.
+edge-cases/adhoc-prohibition-variant-main-first-enclitic	eLiV	Ad hoc prohibition or pairing copy: it never fires as an applied rule, it only blocks the prohibited word (lapa/lipa), which has no analysis.

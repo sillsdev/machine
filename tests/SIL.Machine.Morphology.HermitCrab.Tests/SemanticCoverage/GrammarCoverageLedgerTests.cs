@@ -36,11 +36,11 @@ public sealed class GrammarCoverageLedgerTests
         );
 
         // Pins the ledger row count, the number of distinct fixtures it covers, and the row count per kind.
-        Assert.That(rows, Has.Count.EqualTo(1800));
-        Assert.That(distinctFixtures, Is.EqualTo(151));
+        Assert.That(rows, Has.Count.EqualTo(1827));
+        Assert.That(distinctFixtures, Is.EqualTo(154));
         Assert.That(surface, Is.EqualTo(181));
-        Assert.That(@interface, Is.EqualTo(1369));
-        Assert.That(construct, Is.EqualTo(250));
+        Assert.That(@interface, Is.EqualTo(1393));
+        Assert.That(construct, Is.EqualTo(253));
     }
 
     [Test]

@@ -1,0 +1,47 @@
+# oracle-provenance: founding-oracle machine-commit=aab4c59819adb7b366915e09df2fb28c62b8c03a verified-date=2026-10-31
+# Replayed on hc.dll at Machine aab4c598 (see STAGING.md): the rows below are the oracle's own output.
+# Synthetic; no real language. The grammar is the per-copy form HCLoader emits for a stem entry with two MoStemMsas
+# (Verb, Noun) and a variant entry that borrows both: the variant is loaded once per main MSA, each copy with its
+# own allomorph object (HCLoader.cs:782-852), and the one MoAlloAdhocProhib [variant allomorph, ta-] becomes one
+# AllomorphCoOccurrenceRule per variant copy (LoadAllomorphCoOccurrenceRules, HCLoader.cs:2212-2236).
+# This is the control for the morpheme-kind variant cases: an allomorph prohibition names the variant's own
+# allomorph, so it never reaches the main entry's allomorph la.
+# The variant copies carry the main entry's morpheme names, so only the shape tells la from li.
+language: AdhocProhibitionAllomorphVariantControl
+inspired_by: ["an allomorph prohibition on a variant entry's allomorph must not reach the main entry that shares its MSAs"]
+sources: ["HCLoader.cs:782-852 (LoadLexEntryOfVariant)", "HCLoader.cs:2212-2236 (LoadAllomorphCoOccurrenceRules)"]
+requires: []
+fieldworks_producible: true
+words:
+  - word: la
+    note: >-
+      Control: bare main stem la parses as both MSAs of the main entry, Noun and Verb.
+    parses:
+      - signature: "LAN|la"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+      - signature: "LAV|la"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: li
+    note: >-
+      Control: bare its variant li parses as both MSAs of the main entry, Noun and Verb.
+    parses:
+      - signature: "LAN|li"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+      - signature: "LAV|li"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: tala
+    note: >-
+      Control: the prohibition names the variant allomorph only, so the Verb-only prefix still attaches to the main stem la.
+    parses:
+      - signature: "TA+LAV|tala"
+        rules: [mrTa]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: tali
+    note: >-
+      Variant allomorph first: the variant li under its Verb copy is excluded with ta-: no analysis. A loader that dropped the prohibition would parse TA+LAV|tali; one that spread it to the main entry would also lose tala.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]

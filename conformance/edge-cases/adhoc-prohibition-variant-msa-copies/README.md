@@ -9,7 +9,7 @@ Synthetic. An ad hoc MORPHEME prohibition on the Verb MSA of a stem entry that h
 - `tada`, `tadi`: stem-first prohibition on the main Verb MSA: no analysis for main or variant.
 - `taba`, `tabi`: prefix-first prohibition, one rule per rest-side copy (main, variant): no analysis.
 
-Not covered: enclitic directions (the projector's author subset has no clitic morph types) and the allomorph-kind variant control.
+Enclitic directions and the allomorph-kind variant control are pinned by `adhoc-prohibition-variant-enclitic-first`, `adhoc-prohibition-variant-main-first-enclitic` and `adhoc-prohibition-allomorph-variant-control`.
 
 ## Oracle
 

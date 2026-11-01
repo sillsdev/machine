@@ -1,0 +1,79 @@
+# oracle-provenance: founding-oracle machine-commit=aab4c59819adb7b366915e09df2fb28c62b8c03a verified-date=2026-10-31
+# Replayed on hc.dll at Machine aab4c598 (see STAGING.md): the rows below are the oracle's own output.
+# Synthetic; no real language. The grammar is the per-copy form HCLoader emits for an enclitic entry (a clitic
+# rule of the Clitics stratum, without a part of speech, plus a stem entry copy) and a stem entry with two MoStemMsas (Verb, Noun) and a
+# variant entry that borrows both: the variant is loaded once per main MSA under the MAIN entry's MSA
+# (HCLoader.cs:782-852) and the two FieldWorks prohibitions become one rule per cross-product choice of copies: each of the four stem copies (main and variant, Verb and Noun) against the enclitic's rule copy and stem copy
+# (LoadMorphemeCoOccurrenceRules, HCLoader.cs:2262-2290). A loader that covered the main entry only still parses
+# the variant (lipa); one that skipped the enclitic's rule copy still parses both.
+# The variant copies carry the main entry's morpheme names, so only the shape tells la from li.
+language: AdhocProhibitionVariantMainFirstEnclitic
+inspired_by: ["a morpheme prohibition that names an enclitic as the rest of morphemes must hold for the variant entries that borrow the stem MSA it starts from"]
+sources: ["HCLoader.cs:782-852 (LoadLexEntryOfVariant)", "HCLoader.cs:2262-2290 (LoadMorphemeCoOccurrenceRules)"]
+requires: []
+fieldworks_producible: true
+words:
+  - word: la
+    note: >-
+      Control: bare main stem la parses as both MSAs of the main entry, Noun and Verb.
+    parses:
+      - signature: "LAN|la"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+      - signature: "LAV|la"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: li
+    note: >-
+      Control: bare its variant li parses as both MSAs of the main entry, Noun and Verb.
+    parses:
+      - signature: "LAN|li"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+      - signature: "LAV|li"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: lara
+    note: >-
+      Control: the enclitic =ra has no prohibition, so it attaches to the main stem as Noun and Verb.
+    parses:
+      - signature: "LAN+RA|lara"
+        rules: [mrRa]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+      - signature: "LAV+RA|lara"
+        rules: [mrRa]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: lira
+    note: >-
+      Control: =ra attaches to the variant li too.
+    parses:
+      - signature: "LAN+RA|lira"
+        rules: [mrRa]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+      - signature: "LAV+RA|lira"
+        rules: [mrRa]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: ta
+    note: >-
+      Control: the stem ta, named by no prohibition, parses bare.
+    parses:
+      - signature: "TA|ta"
+        rules: []
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: tapa
+    note: >-
+      Control: the enclitic =pa attaches to a stem no prohibition names, so the clitic rule mrPa is live and the zeros for lapa and lipa come from the prohibition, not from =pa failing to attach.
+    parses:
+      - signature: "TA+PA|tapa"
+        rules: [mrPa]
+        exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: lapa
+    note: >-
+      Main first: the prohibition is declared on the Verb MSA of la (first morpheme) and names the enclitic =pa (rest of morphemes), plus a second one on its Noun MSA. The main stem la with =pa, as Noun and as Verb: no analysis.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]
+  - word: lipa
+    note: >-
+      The same prohibitions must also hold for the variant li, which HCLoader registers under the main Noun and Verb MSAs: no analysis. Attaching the rules to the main entry only would parse LAN+PA and LAV+PA for lipa.
+    expect_fail: true
+    exercises: ["MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"]

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>AdhocProhibitionVariantEncliticFirst</Name>
+    <!--
+      Ad hoc MORPHEME prohibition whose first morpheme is an ENCLITIC and whose rest is the main entry's Verb MSA,
+      plus a second prohibition on its Noun MSA, over a stem that has a variant entry.
+      In FieldWorks the stem la has two MoStemMsas (Verb first, Noun second), its variant li is an entry with no
+      senses and no MSAs and one variant LexEntryRef whose component is la, and the enclitics =pa and =ra are
+      entries of the enclitic morph type with one Verb MoStemMsa each. HCLoader loads li once per main MSA under
+      the MAIN entry's MSA (LoadLexEntryOfVariant, HCLoader.cs:782-852) and loads each enclitic twice: as a
+      clitic MorphologicalRule (no part of speech, applied from the Clitics stratum's rule list, so it follows the
+      stem whatever its part of speech) and as a stem entry copy. The one FieldWorks MoMorphAdhocProhib below
+      therefore becomes one MorphemeCoOccurrenceRule per cross-product choice of copies on each side
+      (LoadMorphemeCoOccurrenceRules, HCLoader.cs:2262-2290). The grammar is that per-copy form: the
+      enclitic's rule copy and stem entry copy sit in a second stratum named Clitics (HCLoader.cs:243-244,
+      300-305), which is what makes the rule a clitic; no isCliticRule attribute is set. HCLoader makes three
+      strata (Morphology, Clitics, Surface); this grammar has two, Main and Clitics, and Surface would hold no rule.
+      ra is the unprohibited enclitic control, and the stem ta, named by no prohibition, proves that pa attaches.
+      Direction: enclitic first. mrPa and ePa each exclude all four stem copies (eLaV, eLiV, eLaN, eLiN).
+      lapa and lipa must have no analysis; lara and lira parse as Noun and Verb; tapa parses once.
+    -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
+      <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="t1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cR"><Representations><Representation>r</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eLaV" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aLaV"><PhoneticShape>la</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>LAV</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eLaN" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aLaN"><PhoneticShape>la</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>LAN</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eLiV" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aLiV"><PhoneticShape>li</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>LAV</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eLiN" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aLiN"><PhoneticShape>li</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>LAN</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eTa" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aTa"><PhoneticShape>ta</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TA</MorphemeId>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <Stratum characterDefinitionTable="t1" morphologicalRuleOrder="unordered" morphologicalRules="mrPa mrRa">
+        <Name>Clitics</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrPa">
+            <Name>mrPa</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPa">
+                <MorphologicalInput><PhoneticSequence id="stem_subPa"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stem_subPa" /><InsertSegments><PhoneticShape>pa</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PA</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrRa">
+            <Name>mrRa</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subRa">
+                <MorphologicalInput><PhoneticSequence id="stem_subRa"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stem_subRa" /><InsertSegments><PhoneticShape>ra</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>RA</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="ePa" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aPa"><PhoneticShape>pa</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>PA</MorphemeId>
+          </LexicalEntry>
+          <LexicalEntry id="eRa" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aRa"><PhoneticShape>ra</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>RA</MorphemeId>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+    <MorphemeCoOccurrenceRules>
+      <MorphemeCoOccurrenceRule type="exclude" primaryMorpheme="ePa" otherMorphemes="eLaV" adjacency="anywhere" />
+      <MorphemeCoOccurrenceRule type="exclude" primaryMorpheme="ePa" otherMorphemes="eLiV" adjacency="anywhere" />
+      <MorphemeCoOccurrenceRule type="exclude" primaryMorpheme="ePa" otherMorphemes="eLaN" adjacency="anywhere" />
+      <MorphemeCoOccurrenceRule type="exclude" primaryMorpheme="ePa" otherMorphemes="eLiN" adjacency="anywhere" />
+      <MorphemeCoOccurrenceRule type="exclude" primaryMorpheme="mrPa" otherMorphemes="eLaV" adjacency="anywhere" />
+      <MorphemeCoOccurrenceRule type="exclude" primaryMorpheme="mrPa" otherMorphemes="eLiV" adjacency="anywhere" />
+      <MorphemeCoOccurrenceRule type="exclude" primaryMorpheme="mrPa" otherMorphemes="eLaN" adjacency="anywhere" />
+      <MorphemeCoOccurrenceRule type="exclude" primaryMorpheme="mrPa" otherMorphemes="eLiN" adjacency="anywhere" />
+    </MorphemeCoOccurrenceRules>
+  </Language>
+</HermitCrabInput>
