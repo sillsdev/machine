@@ -170,3 +170,29 @@ reason each is HC-engine-only; it does not mean their `false` marks rest on this
 reader should not read their notes as incomplete for omitting it. `edge-cases/feature-gating-breadth`
 is the only upstream fixture whose own `fieldworks_producible_notes` cites `morphologicalRuleOrder` as
 its reason, because it is the only one of the four with no other disqualifying construct.
+
+## Every `linear` stratum in the suite (#612)
+
+What the earlier sections left open was how many of the fixtures now in `conformance/` still declare
+`linear` and whether it can matter. At 6b36f45c, 52 of the 127 fixtures have a `Stratum` whose
+`morphologicalRuleOrder` is `linear`: 5 write it explicitly
+(`compounding-breadth`, `head-ambiguous-compounding`, `recursive-endocentric-compounding`,
+`standalone-combining-mark`, `subrule-morphosyntactic-gating`) and 47 get it from the DTD default
+(`HermitCrabInput.dtd:244`). Each of the 52 has exactly one such stratum.
+
+The order is only read for the rules a stratum lists in its own `morphologicalRules` attribute
+(`SynthesisStratumRule`, `AnalysisStratumRule`). Affix templates are applied by a separate rule, so a
+rule reachable only through a `Slot` does not depend on it. HCLoader builds its Morphology, Clitics
+and custom strata as `Unordered`, and Surface sets no order and holds no morphological rules. A
+`linear` stratum that lists no morphological rule is therefore producible; one that lists any is not.
+
+| Of the 52 `linear` strata | Fixtures |
+|---|---|
+| list no morphological rule (producible as written) | 46 |
+| of those, hold a rule reachable only through a template `Slot` | 1 (`standalone-combining-mark`) |
+| list one or more morphological rules | 6 |
+
+The 6 are `compounding-breadth` (3 rules), `head-ambiguous-compounding` (2),
+`recursive-endocentric-compounding` (1), `subrule-morphosyntactic-gating` (1),
+`guesser-pattern-root-fallback` (1) and `pattern-root-required-environment` (1). The first four
+write `linear` explicitly; the last two get it from the default.
