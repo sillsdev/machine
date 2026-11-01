@@ -16,7 +16,8 @@ CONVERT / DELETE / KEEP-ENGINE-ONLY. No fixture is kept engine-only any more.
 |---|---|
 | Before | 151 |
 | Deleted | 27 |
-| After | 124 (120 `edge-cases/`, 4 `languages/`), every one `fieldworks_producible: true` |
+| After the deletion | 124 (120 `edge-cases/`, 4 `languages/`), every one `fieldworks_producible: true` |
+| After rebasing onto the three ad hoc prohibition enclitic fixtures | 127 (123 `edge-cases/`, 4 `languages/`) |
 
 Counts after the change come from `conformance/generated/hc-conformance-manifest.v1.json`
 (`--check-manifest`), not from this table.

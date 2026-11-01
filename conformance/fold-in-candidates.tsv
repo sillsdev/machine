@@ -41,30 +41,30 @@ Surface	dtd:enum/Stratum/isActive/yes	EdgeCaseOnly	recorded best evidence: edge-
 Surface	dtd:enum/VariableFeature/name/%CE%B1	EdgeCaseOnly	recorded best evidence: edge-cases/alpha-variable-name-collision; no languages/* grammar contains this surface at all
 Surface	dtd:enum/VariableFeature/name/%CE%B2	EdgeCaseOnly	recorded best evidence: edge-cases/alpha-variable-name-collision; no languages/* grammar contains this surface at all
 Interface	AffixTemplate.requiredPartsOfSpeech	EdgeCaseOnly	witnessed only by: edge-cases/final-template-merge-key,edge-cases/merge-subrules-pos-ltr-template,edge-cases/merge-subrules-pos-rtl-template,edge-cases/merge-subrules-pos-simultaneous-template,edge-cases/morphotactic-attribute-breadth,edge-cases/non-clitic-after-final-template-layout,edge-cases/shared-template-unconstrained-suffix
-Interface	AllomorphCoOccurrenceRule.otherAllomorphs	NeverWitnessed	present in 6 fixture(s), witnessed by none
-Interface	AllomorphCoOccurrenceRule.primaryAllomorph	NeverWitnessed	present in 6 fixture(s), witnessed by none
+Interface	AllomorphCoOccurrenceRule.otherAllomorphs	NeverWitnessed	present in 7 fixture(s), witnessed by none
+Interface	AllomorphCoOccurrenceRule.primaryAllomorph	NeverWitnessed	present in 7 fixture(s), witnessed by none
 Interface	AlphaVariable.variableFeature	NeverWitnessed	present in 37 fixture(s), witnessed by none
 Interface	BoundaryMarker.boundary	NeverWitnessed	present in 9 fixture(s), witnessed by none
 Interface	CompoundingRule.headProdRestrictionsMprFeatures	EdgeCaseOnly	witnessed only by: edge-cases/compounding-non-recursive
 Interface	CompoundingRule.nonHeadPartsOfSpeech	EdgeCaseOnly	witnessed only by: edge-cases/compounding-non-recursive
 Interface	CompoundingRule.outputPartOfSpeech	EdgeCaseOnly	witnessed only by: edge-cases/compounding-breadth
-Interface	CopyFromInput.index	NeverWitnessed	present in 66 fixture(s), witnessed by none
+Interface	CopyFromInput.index	NeverWitnessed	present in 69 fixture(s), witnessed by none
 Interface	FeatureValue.feature	NeverWitnessed	present in 82 fixture(s), witnessed by none
 Interface	FeatureValue.symbolValues	NeverWitnessed	present in 82 fixture(s), witnessed by none
 Interface	LexicalEntry.ruleFeatures	EdgeCaseOnly	witnessed only by: edge-cases/compounding-non-recursive,edge-cases/deletion-reduplication-exception-composite,edge-cases/mpr-gated-exception
 Interface	MetathesisRule.leftSwitch	NeverWitnessed	present in 3 fixture(s), witnessed by none
 Interface	MetathesisRule.rightSwitch	NeverWitnessed	present in 3 fixture(s), witnessed by none
 Interface	ModifyFromInput.index	NeverWitnessed	present in 3 fixture(s), witnessed by none
-Interface	MorphemeCoOccurrenceRule.otherMorphemes	NeverWitnessed	present in 4 fixture(s), witnessed by none
-Interface	MorphemeCoOccurrenceRule.primaryMorpheme	NeverWitnessed	present in 4 fixture(s), witnessed by none
+Interface	MorphemeCoOccurrenceRule.otherMorphemes	NeverWitnessed	present in 6 fixture(s), witnessed by none
+Interface	MorphemeCoOccurrenceRule.primaryMorpheme	NeverWitnessed	present in 6 fixture(s), witnessed by none
 Interface	MorphologicalInput.excludedMPRFeatures	EdgeCaseOnly	witnessed only by: edge-cases/deletion-reduplication-exception-composite,edge-cases/morphotactic-attribute-breadth,edge-cases/mpr-gated-exception
 Interface	MorphologicalInput.requiredMPRFeatures	EdgeCaseOnly	witnessed only by: edge-cases/cross-stem-material-determination,edge-cases/morphotactic-attribute-breadth
 Interface	MorphologicalOutput.MPRFeatures	EdgeCaseOnly	witnessed only by: edge-cases/cross-stem-material-determination,edge-cases/morphotactic-attribute-breadth,edge-cases/mpr-gated-exception
 Interface	MorphologicalPhonologicalRuleFeatureGroup.features	NeverWitnessed	present in 3 fixture(s), witnessed by none
 Interface	PhonologicalSubrule.excludedMPRFeatures	EdgeCaseOnly	witnessed only by: edge-cases/mpr-gated-exception
 Interface	Segment.segment	NeverWitnessed	present in 87 fixture(s), witnessed by none
-Interface	SimpleContext.naturalClass	NeverWitnessed	present in 118 fixture(s), witnessed by none
-Interface	Slot.morphologicalRules	NeverWitnessed	present in 29 fixture(s), witnessed by none
+Interface	SimpleContext.naturalClass	NeverWitnessed	present in 121 fixture(s), witnessed by none
+Interface	Slot.morphologicalRules	NeverWitnessed	present in 30 fixture(s), witnessed by none
 Interface	StemName.partsOfSpeech	NeverWitnessed	present in 2 fixture(s), witnessed by none
-Interface	Stratum.characterDefinitionTable	NeverWitnessed	present in 124 fixture(s), witnessed by none
+Interface	Stratum.characterDefinitionTable	NeverWitnessed	present in 127 fixture(s), witnessed by none
 Interface	VariableFeature.phonologicalFeature	NeverWitnessed	present in 37 fixture(s), witnessed by none

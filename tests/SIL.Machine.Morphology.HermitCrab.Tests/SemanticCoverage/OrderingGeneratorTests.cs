@@ -10,7 +10,7 @@ namespace SIL.Machine.Morphology.HermitCrab;
 public sealed class OrderingGeneratorTests
 {
     // Number of fixtures in the measured corpus; the generator tests assert against this total.
-    private const int MeasuredCorpusFixtureCount = 124;
+    private const int MeasuredCorpusFixtureCount = 127;
 
     private static string RepositoryRoot()
     {
@@ -486,12 +486,12 @@ public sealed class OrderingGeneratorTests
         TestContext.Out.WriteLine(
             $"lists={totalLists} pairs={totalPairs} disjoint={disjoint} overlaps={overlaps} undetermined={undetermined}"
         );
-        Assert.That(totalLists, Is.EqualTo(60));
-        Assert.That(totalPairs, Is.EqualTo(137));
+        Assert.That(totalLists, Is.EqualTo(62));
+        Assert.That(totalPairs, Is.EqualTo(139));
         Assert.That(disjoint, Is.EqualTo(2));
         Assert.That(overlaps, Is.EqualTo(22));
-        Assert.That(undetermined, Is.EqualTo(113));
-        Assert.That(disjoint + overlaps + undetermined, Is.EqualTo(137));
+        Assert.That(undetermined, Is.EqualTo(115));
+        Assert.That(disjoint + overlaps + undetermined, Is.EqualTo(139));
     }
 
     [Test]
@@ -678,13 +678,13 @@ public sealed class OrderingGeneratorTests
         foreach (var kv in rows.GroupBy(r => r.Relation))
             TestContext.Out.WriteLine($"  {kv.Key}: {kv.Count()}");
 
-        Assert.That(rows, Has.Count.EqualTo(1068));
-        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(931));
+        Assert.That(rows, Has.Count.EqualTo(1077));
+        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(940));
         Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStage), Is.EqualTo(107));
         Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStratum), Is.EqualTo(30));
         Assert.That(rows.Count(r => r.Relation == DomainRelation.Disjoint), Is.EqualTo(11));
         Assert.That(rows.Count(r => r.Relation == DomainRelation.Overlaps), Is.EqualTo(123));
-        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(934));
+        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(943));
     }
 
     [Test]

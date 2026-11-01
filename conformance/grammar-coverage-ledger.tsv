@@ -103,6 +103,10 @@ edge-cases/adhoc-prohibition-stem-msa-copies	Interface	SimpleContext.naturalClas
 edge-cases/adhoc-prohibition-stem-msa-copies	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-stem-msa-copies	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-stem-msa-copies	Construct	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	claimed-confirmed	9 claim(s)
+edge-cases/adhoc-prohibition-variant-enclitic-first	Surface	dtd:element/MorphemeCoOccurrenceRule	required-by-dtd	RequiredByDtd
+edge-cases/adhoc-prohibition-variant-enclitic-first	Surface	dtd:element/MorphemeCoOccurrenceRules	witnessed	Evidenced
+edge-cases/adhoc-prohibition-variant-enclitic-first	Surface	dtd:enum/MorphemeCoOccurrenceRule/adjacency/anywhere	witnessed	Evidenced
+edge-cases/adhoc-prohibition-variant-enclitic-first	Surface	dtd:enum/MorphemeCoOccurrenceRule/type/exclude	witnessed	Evidenced
 edge-cases/adhoc-prohibition-variant-enclitic-first	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-variant-enclitic-first	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
 edge-cases/adhoc-prohibition-variant-enclitic-first	Interface	MorphemeCoOccurrenceRule.otherMorphemes	required-by-dtd	RequiredByDtd
@@ -119,10 +123,6 @@ edge-cases/adhoc-prohibition-variant-main-first-enclitic	Interface	SimpleContext
 edge-cases/adhoc-prohibition-variant-main-first-enclitic	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-variant-main-first-enclitic	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/adhoc-prohibition-variant-main-first-enclitic	Construct	MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule	claimed-confirmed	12 claim(s)
-edge-cases/adhoc-prohibition-variant-msa-copies	Surface	dtd:element/MorphemeCoOccurrenceRule	required-by-dtd	RequiredByDtd
-edge-cases/adhoc-prohibition-variant-msa-copies	Surface	dtd:element/MorphemeCoOccurrenceRules	witnessed	Evidenced
-edge-cases/adhoc-prohibition-variant-msa-copies	Surface	dtd:enum/MorphemeCoOccurrenceRule/adjacency/anywhere	witnessed	Evidenced
-edge-cases/adhoc-prohibition-variant-msa-copies	Surface	dtd:enum/MorphemeCoOccurrenceRule/type/exclude	witnessed	Evidenced
 edge-cases/adhoc-prohibition-variant-msa-copies	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/adhoc-prohibition-variant-msa-copies	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/adhoc-prohibition-variant-msa-copies	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
