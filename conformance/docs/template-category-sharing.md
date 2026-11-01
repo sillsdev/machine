@@ -20,7 +20,8 @@ off: 2 passed, 0 failed, 0 skipped, 16 rows total.
 A scratch mutation adds all four affix rules to the stratum's ordinary rule list. The same expected
 rows then fail 4/6: both mixed forms gain parses, and both unmixed forms gain duplicate signatures.
 This confirms why slot-only reachability is necessary and why set-only comparisons would hide
-multiplicity changes. The original grammar remains green.
+multiplicity changes. The original grammar remains green. The mutation was re-run on the current
+grammar, which has no slot-rule `outputPartOfSpeech`, with the same result: 4 of 6 words fail.
 
 This is NOT a same-key syntactic-feature collision test, a merge-widening necessity test, or
 evidence of a memo hit. Those remain open in
