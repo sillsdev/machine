@@ -34,11 +34,14 @@ public sealed class ConstructClaimCorroborationTests
             $"rows={rows.Count} confirmed={confirmed} contradicted={contradicted} unmapped={unmapped}"
         );
 
-        // Pins the ledger row count and its confirmed/contradicted/unmapped split.
+        // Pins the ledger row count and its confirmed/contradicted/unmapped split. #612 moved one row from
+        // contradicted to unmapped: morphotactic-attribute-breadth's kulmo no longer exercises the partial
+        // rule it was tagged for (that rule is now the ordinary suffix mrMo), so it carries the
+        // template-slot tag instead.
         Assert.That(rows, Has.Count.EqualTo(1278));
         Assert.That(confirmed, Is.EqualTo(749));
-        Assert.That(contradicted, Is.EqualTo(12));
-        Assert.That(unmapped, Is.EqualTo(517));
+        Assert.That(contradicted, Is.EqualTo(11));
+        Assert.That(unmapped, Is.EqualTo(518));
     }
 
     [Test]
@@ -49,7 +52,7 @@ public sealed class ConstructClaimCorroborationTests
         ConstructClaimCorroboration.Row[] contradicted = rows.Where(r => r.Status == ConstructClaimStatus.Contradicted)
             .ToArray();
 
-        Assert.That(contradicted, Has.Length.EqualTo(12));
+        Assert.That(contradicted, Has.Length.EqualTo(11));
         Assert.That(
             contradicted.Select(r => r.Fixture).Distinct(),
             Is.EquivalentTo(new[] { "edge-cases/morphotactic-attribute-breadth" })

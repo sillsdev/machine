@@ -15,9 +15,7 @@ dtd:enum/PhonologicalRule/multipleApplicationOrder/leftToRightIterative	Unresolv
 dtd:enum/Stratum/cyclicity/cyclic	Rejected
 dtd:enum/Stratum/morphologicalRuleOrder/linear	Unresolved
 dtd:enum/Stratum/phonologicalRuleOrder/simultaneous	Rejected
-ordering:edge-cases/compounding-breadth/morphologicalRules/crJoin~crNever	Unresolved
 ordering:edge-cases/expansion-interposed-optional/phonologicalRules/prExpand~prDelete	Unresolved
-ordering:edge-cases/head-ambiguous-compounding/morphologicalRules/crLeftHead~crRightHead	Unresolved
 ordering:edge-cases/interposed-optional-multi-rhs/phonologicalRules/merge~delete	Unresolved
 ordering:edge-cases/literal-hash-affix-context/phonologicalRules/prInitial~prFinal	Unresolved
 ordering:edge-cases/morphotactic-attribute-breadth/slots/exASlot~exBSlot	Unresolved
@@ -25,7 +23,7 @@ ordering:edge-cases/morphotactic-attribute-breadth/slots/exBSlot~exCSlot	Unresol
 ordering:edge-cases/morphotactic-attribute-breadth/slots/exCSlot~exDSlot	Unresolved
 ordering:edge-cases/morphotactic-attribute-breadth/slots/exclReaderSlot~exASlot	Unresolved
 ordering:edge-cases/morphotactic-attribute-breadth/slots/mbSlot~exclReaderSlot	Unresolved
-ordering:edge-cases/morphotactic-attribute-breadth/slots/partialSlot~coASlot	Unresolved
+ordering:edge-cases/morphotactic-attribute-breadth/slots/moSlot~coASlot	Unresolved
 ordering:edge-cases/optional-template-composite/slots/t1pfx~t1sfx	Unresolved
 ordering:edge-cases/optional-template-composite/slots/t2pfx~t2mandatory	Unresolved
 ordering:edge-cases/right-to-left-anchor-environment/phonologicalRules/prRtlAnchor~prSpread	Unresolved

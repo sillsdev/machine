@@ -36,10 +36,12 @@ public sealed class GrammarCoverageLedgerTests
         );
 
         // Pins the ledger row count, the number of distinct fixtures it covers, and the row count per kind.
-        Assert.That(rows, Has.Count.EqualTo(1457));
+        // #612 removed 14 interface rows: 14 fixtures no longer carry MorphologicalRule.outputPartOfSpeech
+        // once the slot rules lose it.
+        Assert.That(rows, Has.Count.EqualTo(1443));
         Assert.That(distinctFixtures, Is.EqualTo(127));
         Assert.That(surface, Is.EqualTo(124));
-        Assert.That(@interface, Is.EqualTo(1139));
+        Assert.That(@interface, Is.EqualTo(1125));
         Assert.That(construct, Is.EqualTo(194));
     }
 
