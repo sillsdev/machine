@@ -79,6 +79,18 @@
 #     and mpr-overwrite-order-dependence, were fieldworks_producible: false and have been removed
 #     (conformance/docs/engine-only-fixture-retirement.md), so nothing here exercises it now.
 #
+# PARTIAL CONSTRUCTS REBUILT FOR HCLoader (#612). HCLoader sets IsPartial on a stem entry only when its
+# MSA has no part of speech (HCLoader.cs:757, :817), on an inflectional rule only when the rule is in
+# no slot (:1031), and on an unclassified-affix rule always (:1062); a derivational rule is never
+# partial and no rule gets an outputPartOfSpeech from a slot. The earlier grammar had a partial entry
+# with a part of speech (eNap), a partial rule in a slot (mrPartial) and a partial rule with an
+# outputPartOfSpeech (mrPO), none of which a project can produce. Now eNap has no part of speech,
+# mrPartial is the ordinary slot suffix mrMo (rename: PART to MO, partialSlot to moSlot) and mrPO
+# has no outputPartOfSpeech. Every other row held under the oracle; only kulmo's signature changed,
+# by the rename. Both partial pins survive: removing partial from eNap makes napmo parse as NAP+MO,
+# and removing it from mrPO makes pogliti lose its only parse. The MorphologicalRule@partial pin rests on
+# mrPO alone, as it did before.
+#
 # COVERAGE.CSV REGRESSION, FOUND AND FIXED separately from the conversion itself: the conversion (and
 # its later WIP expansion) never re-added per-word/per-parse "exercises:" tags, so every word in this
 # fixture silently stopped contributing to conformance/coverage.csv -- the whole MorphotacticAttributeBreadth
@@ -156,11 +168,11 @@ words:
     exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
 
   - word: kulmo
-    note: mrPartial carries partial="true", reached through finalTemplate's own slot.
+    note: mrMo is an ordinary suffix reached through finalTemplate's own slot. The control for napmo (below).
     parses:
-      - signature: "KUL+PART|kulmo"
-        rules: [mrPartial]
-        exercises: ["Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"]
+      - signature: "KUL+MO|kulmo"
+        rules: [mrMo]
+        exercises: ["Affix template slots (obligatory/disjunctive/ordering)"]
 
   - word: nap
     note: eNap carries partial="true" and still parses as a free root (no template involved at all).
@@ -171,9 +183,11 @@ words:
 
   - word: napmo
     note: >-
-      Negative control for LexicalEntry@partial="true". mrPartial attaches to kul (kulmo) but never to
+      Negative control for LexicalEntry@partial="true". mrMo attaches to kul (kulmo) but never to
       nap: a partial root is gated out of SynthesisAffixTemplatesRule's whole template loop before any
-      individual slot is even considered.
+      individual slot is even considered. eNap has no part of speech, as HCLoader makes a partial
+      stem entry, so the part of speech cannot be what refuses it: with partial="true" removed from
+      eNap the oracle parses napmo as NAP+MO.
     expect_fail: true
     neutralizes:
       - eNap

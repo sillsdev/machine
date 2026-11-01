@@ -153,17 +153,18 @@
             <MorphemeId>NF</MorphemeId>
             <Gloss>nf</Gloss>
           </MorphologicalRule>
-          <!-- partial="true": a partially specified rule. -->
-          <MorphologicalRule id="mrPartial" partial="true" requiredPartsOfSpeech="posN">
-            <Name>partialRule</Name>
+          <!-- An ordinary suffix in finalTemplate. It applies to kul (kulmo) and is refused on the partial
+               root eNap (napmo). -->
+          <MorphologicalRule id="mrMo" requiredPartsOfSpeech="posN">
+            <Name>moRule</Name>
             <MorphologicalSubrules>
-              <MorphologicalSubrule id="subPartial">
-                <MorphologicalInput><PhoneticSequence id="stemP"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
-                <MorphologicalOutput><CopyFromInput index="stemP" /><InsertSegments><PhoneticShape>mo</PhoneticShape></InsertSegments></MorphologicalOutput>
+              <MorphologicalSubrule id="subMo">
+                <MorphologicalInput><PhoneticSequence id="stemMo"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemMo" /><InsertSegments><PhoneticShape>mo</PhoneticShape></InsertSegments></MorphologicalOutput>
               </MorphologicalSubrule>
             </MorphologicalSubrules>
-            <MorphemeId>PART</MorphemeId>
-            <Gloss>part</Gloss>
+            <MorphemeId>MO</MorphemeId>
+            <Gloss>mo</Gloss>
           </MorphologicalRule>
           <!-- mrCoA/mrCoB/mrCoC/mrCoD: four isolated ordinary suffixes, kept from the pre-conversion
                grammar purely for affix-stacking and Slot-ordering coverage (topsakatana,
@@ -384,7 +385,7 @@
                bare root produced zero parses), so a final template has to exist alongside it. -->
           <AffixTemplate requiredPartsOfSpeech="posN">
             <Name>finalTemplate</Name>
-            <Slot optional="true" morphologicalRules="mrPartial"><Name>partialSlot</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrMo"><Name>moSlot</Name></Slot>
             <Slot optional="true" morphologicalRules="mrCoA"><Name>coASlot</Name></Slot>
             <Slot optional="true" morphologicalRules="mrCoB"><Name>coBSlot</Name></Slot>
             <Slot optional="true" morphologicalRules="mrCoC"><Name>coCSlot</Name></Slot>
@@ -412,8 +413,9 @@
             <MorphemeId>KUL</MorphemeId>
             <Gloss>vessel</Gloss>
           </LexicalEntry>
-          <!-- partial="true": a partially specified entry. -->
-          <LexicalEntry id="eNap" partOfSpeech="posN" partial="true">
+          <!-- partial="true" with no partOfSpeech: HCLoader sets IsPartial on a stem entry only when its
+               MSA has no part of speech (HCLoader.cs:757, :817). -->
+          <LexicalEntry id="eNap" partial="true">
             <Allomorphs>
               <Allomorph id="aNap"><PhoneticShape>nap</PhoneticShape></Allomorph>
             </Allomorphs>
@@ -449,7 +451,7 @@
           </MorphologicalRule>
           <!-- partial="true": never a member of any Slot, so it stays IsTemplateRule=false and this
                is the rule the mutation actually exercises. -->
-          <MorphologicalRule id="mrPO" partial="true" requiredPartsOfSpeech="posP" outputPartOfSpeech="posP">
+          <MorphologicalRule id="mrPO" partial="true" requiredPartsOfSpeech="posP">
             <Name>afterFinal</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subPO">
