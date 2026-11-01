@@ -28,7 +28,7 @@
       <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
     </NaturalClasses>
     <Strata>
-      <!-- No phonological rules and not the last stratum, so Morphology and Clitics are non-blocking: the final-template state carries through to Surface. -->
+      <!-- No phonological rules and not the last stratum, so Morphology is non-blocking: the final-template state carries into Clitics, where only a clitic rule may follow. -->
       <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrPast mrDeriv">
         <Name>Morphology</Name>
         <MorphologicalRuleDefinitions>
@@ -42,7 +42,7 @@
             </MorphologicalSubrules>
             <MorphemeId>PAST</MorphemeId>
           </MorphologicalRule>
-          <!-- Ordinary, non-partial, no isCliticRule: refused after the final template. -->
+          <!-- Ordinary and non-partial, and its stratum is not named Clitics: refused after the final template. -->
           <MorphologicalRule id="mrDeriv">
             <Name>Derivational suffix</Name>
             <MorphologicalSubrules>
@@ -71,7 +71,7 @@
           </LexicalEntry>
         </LexicalEntries>
       </Stratum>
-      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrEnc mrNotClitic">
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrEnc">
         <Name>Clitics</Name>
         <MorphologicalRuleDefinitions>
           <MorphologicalRule id="mrEnc">
@@ -84,34 +84,10 @@
             </MorphologicalSubrules>
             <MorphemeId>ENC</MorphemeId>
           </MorphologicalRule>
-          <!-- isCliticRule=false overrides the Clitics stratum's default. -->
-          <MorphologicalRule id="mrNotClitic" isCliticRule="false">
-            <Name>Non-clitic suffix</Name>
-            <MorphologicalSubrules>
-              <MorphologicalSubrule id="subNotClitic">
-                <MorphologicalInput><PhoneticSequence id="stemNotClitic"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
-                <MorphologicalOutput><CopyFromInput index="stemNotClitic" /><InsertSegments><PhoneticShape>t</PhoneticShape></InsertSegments></MorphologicalOutput>
-              </MorphologicalSubrule>
-            </MorphologicalSubrules>
-            <MorphemeId>NOTCL</MorphemeId>
-          </MorphologicalRule>
         </MorphologicalRuleDefinitions>
       </Stratum>
-      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrSurf">
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered">
         <Name>Surface</Name>
-        <MorphologicalRuleDefinitions>
-          <!-- An ordinary rule in the last stratum, which is blocking but entered with the final-template state still set. -->
-          <MorphologicalRule id="mrSurf">
-            <Name>Surface suffix</Name>
-            <MorphologicalSubrules>
-              <MorphologicalSubrule id="subSurf">
-                <MorphologicalInput><PhoneticSequence id="stemSurf"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
-                <MorphologicalOutput><CopyFromInput index="stemSurf" /><InsertSegments><PhoneticShape>l</PhoneticShape></InsertSegments></MorphologicalOutput>
-              </MorphologicalSubrule>
-            </MorphologicalSubrules>
-            <MorphemeId>SURF</MorphemeId>
-          </MorphologicalRule>
-        </MorphologicalRuleDefinitions>
       </Stratum>
     </Strata>
   </Language>

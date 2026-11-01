@@ -7,11 +7,7 @@ sources:
   - "src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/SynthesisAffixProcessRule.cs"
   - "src/SIL.Machine.Morphology.HermitCrab/Morpher.cs: IsBlockingStratum"
 requires: [phonology]
-fieldworks_producible: false
-fieldworks_producible_notes: >-
-  MorphologicalRule@isCliticRule: HCLoader never sets IsCliticRule, so mrNotClitic
-  (isCliticRule=false) in the Clitics stratum cannot be produced. The Morphology, Clitics, Surface
-  layout and the Morphology-stratum phonological rule otherwise follow HCLoader.
+fieldworks_producible: true
 words:
   - word: sagdi
     note: >-
@@ -34,16 +30,6 @@ words:
       - signature: "SAG+PAST+ENC|sagdis"
         rules: [mrPast, prEpenthesis, mrEnc]
         exercises: ["RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"]
-
-  - word: sagdit
-    note: >-
-      The ordinary rule isCliticRule=false follows the template because Morphology is a blocking
-      stratum, which resets the final-template state when it ends; fixture non-clitic-after-final-
-      template-layout shows the same rule refused when the stratum is non-blocking.
-    parses:
-      - signature: "SAG+PAST+NOTCL|sagdit"
-        rules: [mrPast, prEpenthesis, mrNotClitic]
-        exercises: ["Clitic rules (isCliticRule / Clitics stratum) after a final template"]
 
   - word: sagdk
     note: >-

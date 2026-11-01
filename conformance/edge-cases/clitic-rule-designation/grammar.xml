@@ -28,7 +28,7 @@
       <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
     </NaturalClasses>
     <Strata>
-      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrEnc mrPlain">
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrPlain">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
           <MorphologicalRule id="mrPast">
@@ -41,18 +41,7 @@
             </MorphologicalSubrules>
             <MorphemeId>PAST</MorphemeId>
           </MorphologicalRule>
-          <!-- isCliticRule="true" outside the Clitics stratum: may follow the final verb template. -->
-          <MorphologicalRule id="mrEnc" requiredPartsOfSpeech="posV" isCliticRule="true">
-            <Name>Enclitic</Name>
-            <MorphologicalSubrules>
-              <MorphologicalSubrule id="subEnc">
-                <MorphologicalInput><PhoneticSequence id="stemEnc"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
-                <MorphologicalOutput><CopyFromInput index="stemEnc" /><InsertSegments><PhoneticShape>s</PhoneticShape></InsertSegments></MorphologicalOutput>
-              </MorphologicalSubrule>
-            </MorphologicalSubrules>
-            <MorphemeId>ENC</MorphemeId>
-          </MorphologicalRule>
-          <!-- No isCliticRule, not in Clitics: an ordinary rule, refused after the final template. -->
+          <!-- Not in Clitics: an ordinary rule, refused after the final template. -->
           <MorphologicalRule id="mrPlain" requiredPartsOfSpeech="posV">
             <Name>Plain suffix</Name>
             <MorphologicalSubrules>
@@ -95,21 +84,10 @@
           </LexicalEntry>
         </LexicalEntries>
       </Stratum>
-      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrNotClitic mrDefaultClitic">
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="mrDefaultClitic">
         <Name>Clitics</Name>
         <MorphologicalRuleDefinitions>
-          <!-- isCliticRule="false" overrides the Clitics stratum's default. -->
-          <MorphologicalRule id="mrNotClitic" requiredPartsOfSpeech="posV" isCliticRule="false">
-            <Name>Non-clitic suffix</Name>
-            <MorphologicalSubrules>
-              <MorphologicalSubrule id="subNotClitic">
-                <MorphologicalInput><PhoneticSequence id="stemNotClitic"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
-                <MorphologicalOutput><CopyFromInput index="stemNotClitic" /><InsertSegments><PhoneticShape>t</PhoneticShape></InsertSegments></MorphologicalOutput>
-              </MorphologicalSubrule>
-            </MorphologicalSubrules>
-            <MorphemeId>NOTCL</MorphemeId>
-          </MorphologicalRule>
-          <!-- No isCliticRule: a clitic because its stratum is named Clitics. -->
+          <!-- A clitic because its stratum is named Clitics. -->
           <MorphologicalRule id="mrDefaultClitic" requiredPartsOfSpeech="posV">
             <Name>Default clitic</Name>
             <MorphologicalSubrules>
