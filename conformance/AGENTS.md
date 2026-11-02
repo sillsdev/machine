@@ -35,7 +35,7 @@ validate them.
    Read every row against the rules before you accept it. A row the oracle produces and you cannot explain
    is a finding, not a pin.
 4. Update [docs/grammars.md](docs/grammars.md): one bullet per fixture, in the group it belongs to, in the
-   form `` - `edge-cases/name`: one plain line. `` A test fails if a fixture is missing, listed twice or gone.
+   form `` - `edge-cases/name`: one short line. `` A test fails if a fixture is missing, listed twice or gone.
 5. If you ruled a construct out, add a row to the README section named in section 1 and, when the loader
    verdict changed, edit `tools/generate-fieldworks-producibility.ps1` and regenerate it
    (`pwsh conformance/tools/generate-fieldworks-producibility.ps1`). Cite the `HCLoader.cs` function and
@@ -49,9 +49,12 @@ validate them.
 ### 2a. Generated files
 
 [docs/how-it-works.md](docs/how-it-works.md) lists every generated file with its gate and cost. Each
-`--write-*` flag rewrites the file; the bare flag checks it and exits nonzero if stale. Regenerate in this
-order, with `--fixtures conformance` on each. The flags that read other ledgers find the repository root from
-the current directory; pass `--repository-root <path>` if you run from elsewhere:
+`--write-*` flag rewrites its file, and the matching bare flag checks it and exits nonzero if stale
+(`--check-manifest` checks what `--generate-manifest` writes, `--semantic-coverage` checks what
+`--write-coverage-baseline` writes, `--counterfactual` checks `--write-counterfactual`). `--coverage-report`
+rewrites `coverage.csv` and `rules.csv`. Regenerate in this order, with `--fixtures conformance` on each.
+The flags that read other ledgers find the repository root from the current directory; pass
+`--repository-root <path>` if you run from elsewhere:
 
 ```
 <hc> --fixtures conformance --generate-manifest
@@ -117,13 +120,13 @@ dotnet build tests/SIL.Machine.Morphology.HermitCrab.Tests -c Release
 <hc> --fixtures conformance --include-pathological
 <hc> --fixtures conformance --check-manifest
 <hc> --fixtures conformance --coverage-report
-git diff --exit-code -- conformance/coverage.csv conformance/rules.csv
+git diff --exit-code -- conformance/coverage.csv conformance/rules.csv   # after staging or committing any deliberate regeneration
 dotnet test tests/SIL.Machine.Morphology.HermitCrab.Tests -c Release
 ```
 
 - `./local_check.sh --agent-strict` runs the repository-wide version of the same checks. The conformance
   workflow runs the self-check, the coverage report and the `git diff` check.
-- The full HermitCrab test project takes about 14 minutes. `[Explicit]` tests do not run in it.
+- The full HermitCrab test project takes about 15 to 17 minutes. `[Explicit]` tests do not run in it.
 - If you changed `grammar.xml`, `words.yaml`, the DTD or engine behaviour, run the three ledger freshness
   tests below. Each is `[Explicit]`, so a filter by name runs it:
 
