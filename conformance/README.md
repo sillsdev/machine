@@ -325,8 +325,8 @@ protocol's section 9 holds the rule that applies these to a fixture.
 | 20 | `ExcludedEnvironments` on an allomorph | Every `AllomorphEnvironment` the loader builds is `ConstraintType.Require` (870, 1371, 1626, 1653); the file builds no `Exclude` environment. | 1 |
 | 21 | `blockable="false"` on a `MorphologicalRule` or a `CompoundingRule` | The loader never sets `Blockable`, so it keeps the engine default `true`. (A `RealizationalRule` is row 3.) | none |
 
-Rows 1 to 6, 8, 9, 10, 17 and 18 cover the 26 `No` rows of `fieldworks-producibility.tsv`
-(row 17 holds nine, row 9 five, row 10 three, row 1 two, and rows 2 to 6, 8 and 18 one each). Rows 7, 11 to 16 and 19 to 21 are
+Rows 1 to 6, 8, 9, 10, 17 and 18 cover the 26 `No` rows of `fieldworks-producibility.tsv` (row 17 holds nine,
+row 9 five, row 10 three, row 1 two, and rows 2 to 6, 8 and 18 one each). Rows 7, 11 to 16 and 19 to 21 are
 shapes that no per-attribute row can express: the usage-level and mechanical checks of the protocol's
 section 9 and the retirement record's list of what the suite no longer covers. Fixtures were deleted for
 rows 1 to 11, 19 and 20; rows 12 to 16 and 21 cost no fixture.
