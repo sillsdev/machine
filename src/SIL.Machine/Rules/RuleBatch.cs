@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
 
@@ -51,10 +52,15 @@ namespace SIL.Machine.Rules
 
         public virtual IEnumerable<TData> Apply(TData input)
         {
+            return Apply(input, results => results);
+        }
+
+        public virtual IEnumerable<TData> Apply(TData input, Func<IEnumerable<TData>, IEnumerable<TData>> filterResults)
+        {
             var output = new HashSet<TData>(_comparer);
             foreach (IRule<TData, TOffset> rule in _rules)
             {
-                output.UnionWith(rule.Apply(input));
+                output.UnionWith(filterResults(rule.Apply(input)));
                 if (_maxAlternatives > 0 && output.Count > _maxAlternatives)
                     throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
                 if (_disjunctive && output.Count > 0)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -11,7 +12,6 @@ namespace SIL.Machine.Morphology.HermitCrab
 {
     internal class AnalysisStratumRule : IRule<Word, ShapeNode>
     {
-        private readonly IEnumerable<IRule<Word, ShapeNode>> _templatesAndRules;
         private readonly RuleCascade<Word, ShapeNode> _mrulesRule;
         private readonly IRule<Word, ShapeNode> _prulesRule;
         private readonly RuleBatch<Word, ShapeNode> _templatesRule;
@@ -34,7 +34,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             IEnumerable<IRule<Word, ShapeNode>> mrules = stratum
                 .MorphologicalRules.Select(mrule => CompileMorphologicalRule(mrule, morpher))
                 .Reverse();
-            _templatesAndRules = templates.Concat(mrules);
             switch (stratum.MorphologicalRuleOrder)
             {
                 case MorphologicalRuleOrder.Linear:
@@ -138,25 +137,41 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             _prulesRule.Apply(input);
             input.Freeze();
-            IDictionary<AnalysisMergeKey, Word> wordCache = null;
+            ConcurrentDictionary<AnalysisMergeKey, Word> wordCache = null;
             // Don't merge if tracing because it messes up the tracing.
             bool mergeEquivalentAnalyses = _morpher.MergeEquivalentAnalyses && !_morpher.TraceManager.IsTracing;
-            bool applyTemplatesAndRules = false;
-            if (mergeEquivalentAnalyses && _stratum.MorphologicalRuleOrder == MorphologicalRuleOrder.Unordered)
-            {
-                applyTemplatesAndRules = true;
-                mergeEquivalentAnalyses = false;
-            }
             if (mergeEquivalentAnalyses)
-                wordCache = new Dictionary<AnalysisMergeKey, Word>();
+                wordCache = new ConcurrentDictionary<AnalysisMergeKey, Word>();
+
+            IEnumerable<Word> FilterResults(IEnumerable<Word> results)
+            {
+                foreach (Word result in results)
+                {
+                    if (mergeEquivalentAnalyses)
+                    {
+                        var key = new AnalysisMergeKey(result);
+                        Word canonicalWord = wordCache.GetOrAdd(key, result);
+                        if (!canonicalWord.ValueEquals(result))
+                        {
+                            canonicalWord.Alternatives.Add(result);
+                            continue;
+                        }
+                        wordCache[key] = result;
+                    }
+                    else
+                    {
+                        // Skip intermediate sources from phonological rules, templates, and morphological rules.
+                        result.Source = origInput;
+                    }
+                    yield return result;
+                }
+            }
 
             // AnalysisStratumRule.Apply should cover the inverse of SynthesisStratumRule.Apply.
-            IEnumerable<Word> mruleOutWords = applyTemplatesAndRules
-                ? ApplyTemplatesAndRules(input)
-                : ApplyTemplates(input).Concat(ApplyMorphologicalRules(input));
+            IEnumerable<Word> mruleOutWords = ApplyTemplates(input, FilterResults)
+                .Concat(ApplyMorphologicalRules(input, FilterResults));
             Debug.Assert(mruleOutWords != null);
 
-            var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default) { input };
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.EndUnapplyStratum(_stratum, input);
             foreach (Word mruleOutWord in mruleOutWords)
@@ -167,33 +182,26 @@ namespace SIL.Machine.Morphology.HermitCrab
                     // Stops before full enumeration because ApplyTemplates and ApplyMorphologicalRules use yield return.
                     throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
                 }
-                AnalysisMergeKey key = default;
-                if (mergeEquivalentAnalyses)
-                {
-                    // Skip intermediate sources from phonological rules, templates, and morphological rules.
-                    mruleOutWord.Source = origInput;
-                    key = new AnalysisMergeKey(mruleOutWord);
-                    if (wordCache.TryGetValue(key, out Word canonicalWord))
-                    {
-                        canonicalWord.Alternatives.Add(mruleOutWord);
-                        continue;
-                    }
-                }
-                Word newMruleOutWord = mruleOutWord;
-                // Only cache a canonical that made it into the output. Two words can have different keys yet
-                // be Word.ValueEquals (UnappliedRuleCounts also counts realizational rules, which never enter
-                // _mruleApps), and a rejected canonical would swallow every later word with its key.
-                if (output.Add(newMruleOutWord) && mergeEquivalentAnalyses)
-                    wordCache[key] = newMruleOutWord;
                 if (_morpher.TraceManager.IsTracing)
-                    _morpher.TraceManager.EndUnapplyStratum(_stratum, newMruleOutWord);
+                    _morpher.TraceManager.EndUnapplyStratum(_stratum, mruleOutWord);
             }
+            HashSet<Word> output = mergeEquivalentAnalyses
+                ? new HashSet<Word>(wordCache.Values)
+                : new HashSet<Word>(mruleOutWords, FreezableEqualityComparer<Word>.Default);
+            output.Add(input);
             return output;
         }
 
-        private IEnumerable<Word> ApplyMorphologicalRules(Word input)
+        private IEnumerable<Word> ApplyMorphologicalRules(
+            Word input,
+            Func<IEnumerable<Word>, IEnumerable<Word>> filterResults
+        )
         {
-            foreach (Word mruleOutWord in _mrulesRule.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
+            foreach (
+                Word mruleOutWord in _mrulesRule
+                    .Apply(input, filterResults)
+                    .Distinct(FreezableEqualityComparer<Word>.Default)
+            )
             {
                 switch (_stratum.MorphologicalRuleOrder)
                 {
@@ -202,7 +210,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         break;
 
                     case MorphologicalRuleOrder.Unordered:
-                        foreach (Word tempOutWord in ApplyTemplates(mruleOutWord))
+                        foreach (Word tempOutWord in ApplyTemplates(mruleOutWord, filterResults))
                             yield return tempOutWord;
                         yield return mruleOutWord;
                         break;
@@ -210,14 +218,18 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        private IEnumerable<Word> ApplyTemplates(Word input)
+        private IEnumerable<Word> ApplyTemplates(Word input, Func<IEnumerable<Word>, IEnumerable<Word>> filterResults)
         {
-            foreach (Word tempOutWord in _templatesRule.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
+            foreach (
+                Word tempOutWord in _templatesRule
+                    .Apply(input, filterResults)
+                    .Distinct(FreezableEqualityComparer<Word>.Default)
+            )
             {
                 switch (_stratum.MorphologicalRuleOrder)
                 {
                     case MorphologicalRuleOrder.Linear:
-                        foreach (Word outWord in ApplyMorphologicalRules(tempOutWord))
+                        foreach (Word outWord in ApplyMorphologicalRules(tempOutWord, filterResults))
                             yield return outWord;
                         if (!FreezableEqualityComparer<Word>.Default.Equals(input, tempOutWord))
                             yield return tempOutWord;
@@ -226,61 +238,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                     case MorphologicalRuleOrder.Unordered:
                         if (!FreezableEqualityComparer<Word>.Default.Equals(input, tempOutWord))
                         {
-                            foreach (Word outWord in ApplyMorphologicalRules(tempOutWord))
+                            foreach (Word outWord in ApplyMorphologicalRules(tempOutWord, filterResults))
                                 yield return outWord;
                             yield return tempOutWord;
                         }
                         break;
                 }
             }
-        }
-
-        private IEnumerable<Word> ApplyTemplatesAndRules(Word input)
-        {
-            var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
-            var wordCache = new Dictionary<AnalysisMergeKey, Word>();
-            var stack = new Stack<Word>();
-            stack.Push(input);
-            while (stack.Count > 0)
-            {
-                Word word = stack.Pop();
-                foreach (IRule<Word, ShapeNode> rule in _templatesAndRules)
-                {
-                    foreach (Word outWord in rule.Apply(word))
-                    {
-                        if (FreezableEqualityComparer<Word>.Default.Equals(word, outWord))
-                            continue;
-                        Word newOutWord = outWord;
-                        int wordRuleCount = word.MorphologicalRuleUnapplicationCount;
-                        int outWordRuleCount = outWord.MorphologicalRuleUnapplicationCount;
-                        if (outWord.Shape.Count() < word.Shape.Count() && outWordRuleCount != wordRuleCount)
-                        {
-                            // Remove rules that have been applied to increase sharing.
-                            // This can't produce cycles because the shape is strictly decreasing.
-                            newOutWord = outWord.Clone();
-                            for (int i = wordRuleCount; i < outWordRuleCount; i++)
-                            {
-                                newOutWord.PopUnapplied();
-                            }
-                            newOutWord.Freeze();
-                        }
-                        var key = new AnalysisMergeKey(newOutWord);
-                        if (wordCache.TryGetValue(key, out Word canonicalWord))
-                        {
-                            // Merge equivalent analyses to reduce the number of words that need to be processsed.
-                            // The merged analyses are recovered by ExpandAlternatives in SynthesisStratumRule.Apply.
-                            canonicalWord.Alternatives.Add(newOutWord);
-                        }
-                        else
-                        {
-                            wordCache[key] = newOutWord;
-                            output.Add(newOutWord);
-                            stack.Push(newOutWord);
-                        }
-                    }
-                }
-            }
-            return output;
         }
 
         internal readonly struct AnalysisMergeKey : IEquatable<AnalysisMergeKey>

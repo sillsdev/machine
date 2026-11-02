@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Extensions;
@@ -33,7 +34,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private bool _isPartial;
         private readonly Dictionary<string, HashSet<int>> _disjunctiveAllomorphIndices;
         private int _mruleAppCount = 0;
-        private readonly IList<Word> _alternatives = new List<Word>();
+        private readonly ConcurrentBag<Word> _alternatives = new ConcurrentBag<Word>();
 
         public Word(RootAllomorph rootAllomorph, FeatureStruct realizationalFS)
         {
@@ -457,7 +458,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         internal Word Source { get; set; }
 
-        internal IList<Word> Alternatives
+        internal ConcurrentBag<Word> Alternatives
         {
             get { return _alternatives; }
         }

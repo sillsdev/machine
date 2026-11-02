@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Rules
@@ -12,7 +13,10 @@ namespace SIL.Machine.Rules
         public PipelineRuleCascade(IEnumerable<IRule<TData, TOffset>> rules, IEqualityComparer<TData> comparer)
             : base(rules, comparer) { }
 
-        public override IEnumerable<TData> Apply(TData input)
+        public override IEnumerable<TData> Apply(
+            TData input,
+            Func<IEnumerable<TData>, IEnumerable<TData>> filterResults
+        )
         {
             var inputSet = new HashSet<TData>(Comparer) { input };
             HashSet<TData> outputSet = null;
@@ -24,7 +28,7 @@ namespace SIL.Machine.Rules
 
                 foreach (TData inData in inputSet)
                 {
-                    outputSet.UnionWith(ApplyRule(Rules[i], i, inData));
+                    outputSet.UnionWith(filterResults(ApplyRule(Rules[i], i, inData)));
                     CheckMaxAlternatives(outputSet.Count);
                 }
 
