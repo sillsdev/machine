@@ -292,7 +292,8 @@ them. Do not author a fixture for any of them. The `todo` lines in `semantic-cov
 table; leave them `todo`.
 
 This is a different list from the eleven surfaces above. Those no engine code path reads at all. These the
-engine does read, and FieldWorks never writes. Subcategorization (row 17) and `LexicalEntry.morphologicalRules` (row 18) are where the lists meet.
+engine does read, and FieldWorks never writes. Subcategorization (row 17) and
+`LexicalEntry.morphologicalRules` (row 18) are where the lists meet.
 
 **Where this was checked.** FieldWorks commit `620cd9903f46941ee85947615dba15c8888c8e7a`,
 `Src/LexText/ParserCore/HCLoader.cs`, which was last changed by
