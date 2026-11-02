@@ -59,11 +59,6 @@ jobs:
       # forgetting to refresh them is a CI failure. Runs after the coverage-report step (which just
       # regenerated both) and `if: always()` for the same reason as above: a dead rule and a stale
       # index are two different failures and must not collapse into one.
-      #
-      # conformance/fixtures.csv is intentionally NOT checked here: on this branch nothing
-      # regenerates it (--coverage-report only writes coverage.csv/rules.csv), so a freshness check
-      # against it would never catch drift -- it is a one-time snapshot from when it was ported, not
-      # a generated artifact.
       - name: Verify generated coverage files are fresh
         if: always()
         run: |
