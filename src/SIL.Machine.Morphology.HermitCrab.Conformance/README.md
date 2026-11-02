@@ -73,7 +73,10 @@ The suite checks in files that are computed from its fixtures. The runner only c
 template placeholders are `{grammar}`, `{words}`, `{output}` and `{morpher}`; the engine writes one row per word to
 `{output}` in the format of `batch` in `src/SIL.Machine.Morphology.HermitCrab.Tool`, as the suite's `PROTOCOL.md`
 describes. Pass `--capabilities phonology` (the default in adapter mode is none) so fixtures the engine can run are not
-skipped. For example, with a built PanGloss:
+skipped. The template is split at spaces into the program and its arguments, the same way as a line of an
+`hc --script-file`; a quote only groups words and is not passed on, so write `--grammar {grammar}`, not
+`--grammar="{grammar}"`. Each placeholder is filled in after the split, so a path with spaces still reaches the engine
+as one argument. For example, with a built PanGloss:
 
 ```
 <hc> --fixtures conformance --capabilities phonology --adapter "/path/to/pangloss batch {grammar} {words} {output}"
