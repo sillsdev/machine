@@ -329,8 +329,7 @@ section 9 and the retirement record's list of what the suite no longer covers. F
 rows 1 to 11 and 14; rows 12, 13, 15 and 16 cost no fixture.
 
 The 27 fixtures removed for these constructs, each mapped to the construct that disqualified it, are in
-[`docs/engine-only-fixture-retirement.md`](docs/engine-only-fixture-retirement.md). The last commit that
-holds them is `15ff041c403bf29af5bebee9d1f498cd5bd369bc`, the parent of `e21aae462eb492a331063535ad119b900c15271d`.
+[`docs/engine-only-fixture-retirement.md`](docs/engine-only-fixture-retirement.md).
 
 ## What the coverage numbers claim, and what they do not
 
