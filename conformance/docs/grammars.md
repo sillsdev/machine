@@ -82,7 +82,7 @@ Whole-language grammars with a realistic lexicon and several interacting process
 
 ## Compounding
 
-- `edge-cases/compounding-breadth`: head and non-head feature requirements, the repetition cap and a switched-off compounding rule, using bounded patterns (30 words).
+- `edge-cases/compounding-breadth`: head and non-head feature requirements, the repetition cap and a switched-off compounding rule, using bounded patterns (10 words, replayed under two settings variants).
 - `edge-cases/compounding-non-recursive`: one non-recursive compounding rule with head and non-head lexicon subsets chosen by licence features.
 - `edge-cases/head-ambiguous-compounding`: compounds in which either root could be the head.
 - `edge-cases/recursive-endocentric-compounding`: a compounding rule that applies to its own output.
@@ -123,7 +123,7 @@ Whole-language grammars with a realistic lexicon and several interacting process
 - `edge-cases/word-boundary-affix-rewrite`: a word-edge anchor in a rule that rewrites the edges of prefixes and roots.
 - `edge-cases/right-to-left-anchor-environment`: a spreading rule whose reach depends on the scan direction.
 - `edge-cases/right-to-left-bounded-quantifier-rewrite`: a right-to-left rewrite with a bounded repetition in its environment.
-- `edge-cases/right-to-left-metathesis-reversal`: a right-to-left metathesis with the switch groups tagged in the opposite order.
+- `edge-cases/right-to-left-metathesis-reversal`: a right-to-left metathesis where the left switch names the later group, as FieldWorks writes it.
 - `edge-cases/unbounded-iterative-quantifier-expansion`: a rewrite with an unbounded repetition in its environment, applied iteratively.
 - `edge-cases/standalone-combining-mark`: a tone mark defined as its own segment, written as a combining character.
 - `edge-cases/diacritic-segments`: roots with precomposed Latin diacritics, in the middle and at the end of the stem.
@@ -137,67 +137,68 @@ Whole-language grammars with a realistic lexicon and several interacting process
 These families repeat one pattern across rewrite direction and environment side. Each fixture has 16 or 17
 words over a small vowel set. The names say which cell they fill: `bounded` or `unbounded` is whether the
 repeated stretch has a cap, `ltr` or `rtl` is the rewrite direction, and `left` or `right` is the side
-that holds the environment.
+that holds the environment. `plain` means the environment holds no repeated stretch, and `zero` means
+the repeated stretch may occur zero times. Each bullet says what the grammar holds.
 
 ### Nullable environment with disagreeing alpha values
 
-- `edge-cases/nullable-disagree-bounded-ltr-left`
-- `edge-cases/nullable-disagree-bounded-ltr-right`
-- `edge-cases/nullable-disagree-bounded-rtl-left`
-- `edge-cases/nullable-disagree-bounded-rtl-right`
-- `edge-cases/nullable-disagree-plain-ltr-right`
-- `edge-cases/nullable-disagree-unbounded-ltr-left`
-- `edge-cases/nullable-disagree-unbounded-ltr-right`
-- `edge-cases/nullable-disagree-unbounded-rtl-left`
-- `edge-cases/nullable-disagree-unbounded-rtl-right`
+- `edge-cases/nullable-disagree-bounded-ltr-left`: an optional segment, left-to-right application, environment on the left.
+- `edge-cases/nullable-disagree-bounded-ltr-right`: an optional segment, left-to-right application, environment on the right.
+- `edge-cases/nullable-disagree-bounded-rtl-left`: an optional segment, right-to-left application, environment on the left.
+- `edge-cases/nullable-disagree-bounded-rtl-right`: an optional segment, right-to-left application, environment on the right.
+- `edge-cases/nullable-disagree-plain-ltr-right`: no environment at all, left-to-right application.
+- `edge-cases/nullable-disagree-unbounded-ltr-left`: a stretch of any length, including none, left-to-right application, environment on the left.
+- `edge-cases/nullable-disagree-unbounded-ltr-right`: a stretch of any length, including none, left-to-right application, environment on the right.
+- `edge-cases/nullable-disagree-unbounded-rtl-left`: a stretch of any length, including none, right-to-left application, environment on the left.
+- `edge-cases/nullable-disagree-unbounded-rtl-right`: a stretch of any length, including none, right-to-left application, environment on the right.
 
 Each is a back and round disagreement over a four-vowel class, with a nullable stretch in the environment
 that must still allow the rewrite at the word edge, so `ia` is the one surface word.
 
 ### Partial explicit class with disagreeing alpha values
 
-- `edge-cases/partial-class-disagree-bounded-ltr-left`
-- `edge-cases/partial-class-disagree-bounded-rtl-left`
-- `edge-cases/partial-class-disagree-bounded-rtl-right`
-- `edge-cases/partial-class-disagree-unbounded-ltr-right`
-- `edge-cases/partial-class-disagree-unbounded-rtl-left`
-- `edge-cases/partial-class-disagree-unbounded-rtl-right`
+- `edge-cases/partial-class-disagree-bounded-ltr-left`: an optional segment, left-to-right application, environment on the left.
+- `edge-cases/partial-class-disagree-bounded-rtl-left`: an optional segment, right-to-left application, environment on the left.
+- `edge-cases/partial-class-disagree-bounded-rtl-right`: an optional segment, right-to-left application, environment on the right.
+- `edge-cases/partial-class-disagree-unbounded-ltr-right`: a stretch of any length, including none, left-to-right application, environment on the right.
+- `edge-cases/partial-class-disagree-unbounded-rtl-left`: a stretch of any length, including none, right-to-left application, environment on the left.
+- `edge-cases/partial-class-disagree-unbounded-rtl-right`: a stretch of any length, including none, right-to-left application, environment on the right.
 
 Each uses an explicit vowel class that omits two of the four vowels, so the engine accepts only `ia` of the 16 words.
 
 ### Ambiguous disagreement
 
-- `edge-cases/ambiguous-disagree-feature-class-bounded-rtl`
-- `edge-cases/ambiguous-disagree-feature-class-unbounded-ltr`
-- `edge-cases/ambiguous-disagree-mixed-plus-class`
-- `edge-cases/ambiguous-disagree-repeated-minus-partial-focus`
+- `edge-cases/ambiguous-disagree-feature-class-bounded-rtl`: an optional segment, right-to-left application, environment on the right.
+- `edge-cases/ambiguous-disagree-feature-class-unbounded-ltr`: a stretch of any length, including none, left-to-right application, environment on the right.
+- `edge-cases/ambiguous-disagree-mixed-plus-class`: no environment at all, left-to-right application.
+- `edge-cases/ambiguous-disagree-repeated-minus-partial-focus`: one segment, left-to-right application, environment on the left.
 
 Each combines a minus alpha on a complete class with an agreeing occurrence on a partial class, or on a
 feature-defined class, in a bounded or unbounded environment.
 
 ### Overridden alpha
 
-- `edge-cases/overridden-alpha-bounded-ltr-left`
-- `edge-cases/overridden-alpha-bounded-rtl-left`
-- `edge-cases/overridden-alpha-plain-ltr-left`
-- `edge-cases/overridden-alpha-unbounded-ltr-left`
+- `edge-cases/overridden-alpha-bounded-ltr-left`: 1 to 2 segments, left-to-right application, environment on the left.
+- `edge-cases/overridden-alpha-bounded-rtl-left`: 1 to 2 segments, right-to-left application, environment on the left.
+- `edge-cases/overridden-alpha-plain-ltr-left`: no repeated stretch, left-to-right application, environment on the left.
+- `edge-cases/overridden-alpha-unbounded-ltr-left`: 1 or more segments, left-to-right application, environment on the left.
 
 Each neutralises a feature that an alpha variable also governs, so the engine requires `ii` from `iu`.
 
 ### Quantified alpha agreement
 
-- `edge-cases/quantified-alpha-bounded-ltr-left`
-- `edge-cases/quantified-alpha-bounded-ltr-right`
-- `edge-cases/quantified-alpha-bounded-rtl-left`
-- `edge-cases/quantified-alpha-bounded-rtl-right`
-- `edge-cases/quantified-alpha-bounded-zero-left`
-- `edge-cases/quantified-alpha-bounded-zero-right`
-- `edge-cases/quantified-alpha-unbounded-ltr-left`
-- `edge-cases/quantified-alpha-unbounded-ltr-right`
-- `edge-cases/quantified-alpha-unbounded-rtl-left`
-- `edge-cases/quantified-alpha-unbounded-rtl-right`
-- `edge-cases/quantified-alpha-unbounded-zero-left`
-- `edge-cases/quantified-alpha-unbounded-zero-right`
+- `edge-cases/quantified-alpha-bounded-ltr-left`: exactly 2 segments, left-to-right application, environment on the left.
+- `edge-cases/quantified-alpha-bounded-ltr-right`: exactly 2 segments, left-to-right application, environment on the right.
+- `edge-cases/quantified-alpha-bounded-rtl-left`: exactly 2 segments, right-to-left application, environment on the left.
+- `edge-cases/quantified-alpha-bounded-rtl-right`: exactly 2 segments, right-to-left application, environment on the right.
+- `edge-cases/quantified-alpha-bounded-zero-left`: up to 2 segments, including none, left-to-right application, environment on the left.
+- `edge-cases/quantified-alpha-bounded-zero-right`: up to 2 segments, including none, left-to-right application, environment on the right.
+- `edge-cases/quantified-alpha-unbounded-ltr-left`: 2 or more segments, left-to-right application, environment on the left.
+- `edge-cases/quantified-alpha-unbounded-ltr-right`: 2 or more segments, left-to-right application, environment on the right.
+- `edge-cases/quantified-alpha-unbounded-rtl-left`: 2 or more segments, right-to-left application, environment on the left.
+- `edge-cases/quantified-alpha-unbounded-rtl-right`: 2 or more segments, right-to-left application, environment on the right.
+- `edge-cases/quantified-alpha-unbounded-zero-left`: a stretch of any length, including none, left-to-right application, environment on the left.
+- `edge-cases/quantified-alpha-unbounded-zero-right`: a stretch of any length, including none, left-to-right application, environment on the right.
 
-Each repeats a segment in the environment with an alpha value that must agree across the repetition; the
-`zero` cells allow no repetition at the word edge.
+Each repeats a segment in the environment with an alpha value that must agree across the repetition. In
+the `zero` cells the stretch may also be empty.
