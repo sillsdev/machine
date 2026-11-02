@@ -58,3 +58,7 @@ tests/SIL.Machine.Tests/Corpora/TestData/pretranslations.json
 
 # Local, generated review summaries
 .review/
+
+# The conformance suite, cloned here at the commit in conformance.commit by the build
+/conformance/
+/conformance.tmp-*/
