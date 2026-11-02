@@ -78,3 +78,5 @@ first row wins:
 
 `docs/review/devils-advocate.md` is an optional adversarial pass for a high-risk
 change. Add a nested `AGENTS.md` only when a subtree needs different rules.
+
+Changes under `conformance/` follow `conformance/AGENTS.md`, which travels with that directory.
