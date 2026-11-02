@@ -123,7 +123,10 @@ public sealed class ConformanceCommandLineTests
         string root = ConformanceManifestTests.CreateMiniSuite(FixtureId);
         try
         {
-            File.WriteAllText(Path.Combine(root, "edge-cases", "strrep-identity", "grammar.xml"), "<HermitCrabInput><broken");
+            File.WriteAllText(
+                Path.Combine(root, "edge-cases", "strrep-identity", "grammar.xml"),
+                "<HermitCrabInput><broken"
+            );
 
             (int exitCode, string _, string error) = InvokeProgram("--fixtures", root, "--check-manifest");
 
