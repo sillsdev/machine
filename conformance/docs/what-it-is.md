@@ -5,6 +5,12 @@ words with pre-computed correct answers, plus the machinery that justifies calli
 complete. `what-it-claims.md` covers the second half. This document covers the first: the fixture
 format, what a case is, and why the corpus is split into `languages/` and `edge-cases/`.
 
+The suite covers only grammars a real FieldWorks project can produce. A grammar FieldWorks cannot
+produce does not belong here, however expressible it is in the HermitCrab XML; the README section
+[what the XML can say but FieldWorks cannot, so we do not test it](../README.md#what-the-xml-can-say-but-fieldworks-cannot-so-we-do-not-test-it)
+lists those constructs. [grammars.md](grammars.md) lists every fixture with a line about what it
+exercises.
+
 ## Shape
 
 ```
@@ -20,8 +26,8 @@ conformance/
   PROTOCOL.md           the adapter contract: CLI shape, TSV format, signature algorithm
 ```
 
-Per `conformance/generated/hc-conformance-manifest.v1.json`, today that is **44 fixtures — 8 under
-`languages/`, 36 under `edge-cases/` — holding 536 words in total**, computed by summing the
+Per `conformance/generated/hc-conformance-manifest.v1.json`, today that is **127 fixtures — 4 under
+`languages/`, 123 under `edge-cases/` — holding 1227 words in total**, computed by summing the
 manifest's own `caseCount` field per fixture rather than counted by hand. Regenerate the manifest
 with `hc-conformance --generate-manifest`; `--check-manifest` fails the build if the checked-in file
 has drifted from what a fresh scan produces.

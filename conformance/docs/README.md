@@ -4,12 +4,19 @@ These documents ship **with** the fixtures. That is deliberate: a consumer recei
 `conformance/` directory and nothing else — PanGloss, the first external consumer, sparse-checks out
 exactly this path — so anything explaining the suite that lives outside it may as well not exist.
 
+The suite covers only grammars a real FieldWorks project can produce. A grammar FieldWorks cannot
+produce does not belong, however expressible it is in the XML. The constructs left out and the reason
+for each are in the README section
+[what the XML can say but FieldWorks cannot, so we do not test it](../README.md#what-the-xml-can-say-but-fieldworks-cannot-so-we-do-not-test-it).
+
 Read in this order.
 
 | | |
 |---|---|
 | [what-it-is.md](what-it-is.md) | the suite, the fixture contract, the two-file format |
+| [grammars.md](grammars.md) | every grammar in the suite, one line each, grouped by area |
 | [what-it-claims.md](what-it-claims.md) | the honest numbers, the named exceptions, and what is **not** claimed |
+| [engine-only-fixture-retirement.md](engine-only-fixture-retirement.md) | the 27 fixtures removed for needing a construct FieldWorks cannot produce, and which construct |
 | [how-it-is-computed.md](how-it-is-computed.md) | the four coverage layers and how each denominator is derived |
 | [how-it-works.md](how-it-works.md) | every ledger, its generator, its gate, and how to regenerate |
 | [decisions-and-lessons.md](decisions-and-lessons.md) | what was tried, what was wrong, and how we know |

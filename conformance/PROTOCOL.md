@@ -438,7 +438,8 @@ research fixture kept outside this tree can carry the verdict, but nothing under
 A fixture moves to `true` by rewriting its grammar and re-running the C# founding oracle, never by
 relaxing the verdict in place; the rewrite keeps a fixture only if the oracle's rows still hold or
 change for a reason the rules explain. See `docs/engine-only-fixture-retirement.md` for the decision
-and what it removed.
+and what it removed, and the README section "What the XML can say but FieldWorks cannot, so we do not
+test it" for the constructs and the `HCLoader.cs` lines that rule them out.
 
 The verdict is human-authored, not mechanically re-derived the way `requires` is. It rests on
 `conformance/fieldworks-producibility.tsv` (a hand-researched, point-in-time snapshot of `HCLoader.cs`
@@ -466,7 +467,8 @@ on takes, not on the attribute in isolation:
   prohibition-only by name, so `type="require"` has no FieldWorks equivalent regardless of how
   ordinary the surrounding rule is.
 - `MorphologicalRuleOrder` must not matter to a fixture's committed ground truth: HCLoader hardcodes
-  every `Stratum` it builds to `Unordered` (`HCLoader.cs:227,230,374`) and can never emit `linear`.
+  every `Stratum` that can hold a rule to `Unordered` (`HCLoader.cs:240,243,387`; the `Surface` stratum at 246 is
+  `linear` but empty) and can never emit `linear` for one that holds a rule.
   The check is NOT "the fixture's grammar.xml declares `linear`" — `HermitCrabInput.dtd:244` defaults
   `morphologicalRuleOrder` to `linear`, so an absent-or-explicit `linear` declaration is the ordinary
   case for most fixtures in this suite and flags nothing on its own; testing on the declaration alone

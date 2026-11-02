@@ -9,6 +9,8 @@ names the file it came from so you can recompute it.
 > `engine-only-fixture-retirement.md`): the gate table in the next section and the gate-arm row of
 > the four-layer table were refreshed. The other figures in the narrative below were measured on the
 > 151-fixture corpus and have not been recomputed; take the current values from the ledgers they cite.
+> The corpus covers only grammars a FieldWorks project can produce; the README section on what the XML
+> can say but FieldWorks cannot lists what it leaves out.
 
 **An engine that produces the expected parse for every case in this suite has correctly implemented
 every construct the suite demonstrably covers — where "demonstrably covers" means: removing the
@@ -181,7 +183,7 @@ hand-crafted fixtures:
 
 - That HermitCrab is correct. Every gate here validates the **test suite**, never the engine. An
   unwitnessed obligation is a statement about this corpus.
-- That the fixture set is minimal, or that its 33 grammars are the right 33.
+- That the fixture set is minimal, or that its grammars are the right ones.
 - That a passing engine is correct on grammars unlike these. The fixtures are synthetic and small by
   design; scale is deliberately not tested here.
 - That the hand-crafted fixtures are exhaustive for the hazards they pin. They were arrived at by

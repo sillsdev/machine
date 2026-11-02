@@ -3,17 +3,24 @@
 A general-purpose, engine-agnostic conformance test suite for what a morphological/phonological
 parser needs to get right, usable independently of this repo and of any one engine.
 
-**The goal: any grammar expressible in the HermitCrab XML, parsed correctly — with a named
-asterisk.** That is the aspiration this suite is built to reach and to measure progress toward. The
-asterisk is short, exact, and machine-proven rather than hand-waved: every surface named below is
-proven to have **no** engine consumer — the engine contains no reference to it, so no grammar can make
-it influence a parse. That single fact is recorded in two different ledgers depending on how a surface
-fails to earn a counterfactual verdict: `no-consumer` in `conformance/semantic-coverage-proofs.tsv` for
-a surface a fixture *does* declare but mutating it changes nothing, and `dead-schema` in
-`conformance/semantic-coverage-baseline.txt` for a surface no fixture ever attempts to declare because
-the engine never reads the owning element at all (recomputed by scanning
-`src/SIL.Machine.Morphology.HermitCrab` for the element name, never trusted from the ledger). Both are
-the same underlying claim — zero engine references — so both feed this one list.
+**The rule: the suite covers only grammars a real FieldWorks project can produce.** FieldWorks never
+authors HermitCrab XML; it builds a grammar from a LibLCM project through `HCLoader.cs`, and that
+loader reaches less than the XML can say. A grammar that needs something the loader never writes does
+not belong here, however expressible it is in the XML and however well the engine handles it. Every
+fixture records the verdict as `fieldworks_producible: true` in its `words.yaml`, and
+`ConformanceFixtureGateTests` fails on any fixture that does not. The constructs left out, why
+FieldWorks cannot write each one, and the 27 fixtures removed for using them are in
+[what the XML can say but FieldWorks cannot, so we do not test it](#what-the-xml-can-say-but-fieldworks-cannot-so-we-do-not-test-it).
+[`docs/grammars.md`](docs/grammars.md) lists every grammar that remains.
+
+**Surfaces no engine consumes.** Separately from that rule, the XML names eleven surfaces that no engine
+reads, so no grammar can make them change a parse. That single fact is recorded in two different
+ledgers depending on how a surface fails to earn a counterfactual verdict: `no-consumer` in
+`conformance/semantic-coverage-proofs.tsv` for a surface a fixture *does* declare but mutating it
+changes nothing, and `dead-schema` in `conformance/semantic-coverage-baseline.txt` for a surface no
+fixture ever attempts to declare because the engine never reads the owning element at all (recomputed
+by scanning `src/SIL.Machine.Morphology.HermitCrab` for the element name, never trusted from the
+ledger). Both are the same underlying claim, zero engine references, so both feed this one list.
 
 <!-- exception-surfaces:start -->
 Eleven surfaces across three feature areas are expressible in the DTD and consulted by **no** engine
@@ -34,9 +41,9 @@ code path:
   `Null`, the legal children of every `PhonologicalSubrule` describing an adjacent word's shape.
 <!-- exception-surfaces:end -->
 
-A grammar may declare any of these; the engine ignores all eleven. Those are unimplemented formalism
-features, not coverage gaps, and together they are the entire current exception list. Keeping it a
-list — rather than retreating from the claim — is what makes progress toward the goal measurable.
+A grammar may declare any of these; the engine ignores all eleven. They are unimplemented formalism
+features, not coverage gaps. This list is not the list of constructs FieldWorks cannot produce: the
+engine reads most of those, and the section named above covers them.
 `tests/SIL.Machine.Morphology.HermitCrab.Tests/SemanticCoverage/ExceptionListTests.cs` pins this list
 against both ledgers so a newly discovered `no-consumer` or `dead-schema` surface cannot silently drop
 out of it.
@@ -47,19 +54,12 @@ admits. "Complete" is currently an *accounting* claim: every inventory item carr
 status, and uncovered means listed rather than unknown. The inventory is the formalism's surfaces,
 not languages. Coverage is tracked at three levels: a surface's existence in the DTD (complete by
 construction), whether it is load-bearing (evidenced, or classified impossible to evidence with a
-reason), and interactions between surfaces (not yet enumerated) — closing that third level is what
-remains between here and the goal.
+reason), and interactions between surfaces (not yet enumerated).
 
 **Open coverage debt is tracked by exact item and resolution** in `semantic-coverage-gap-baseline.tsv`.
 These are active gaps, not accepted parity exceptions or formalism exclusions. New or changed gaps
 require explicit review and fail the gate; a row is removed when evidence or a valid proof closes its
-item. The shared fixture corpus grew from 62 to 132 fixtures (67 graduated shared grammars, two
-rule-order variants and the partial-root probe), expanding the measured inventory from 367 to 389 items. The 22 new ordering
-items initially added 12 proof-resolved items and 10 unresolved items. Targeted C# measurements then
-found real word-level counterexamples for four of those ten; six remain unresolved. All 26 prior gaps
-remain, so the current exact debt is 33 items: 30 unresolved and three rejected proofs.
-The 33rd, `PhonologicalRule/multipleApplicationOrder/leftToRightIterative`, times out: its `simultaneous`
-mutant does not terminate on `quantified-alpha-bounded-ltr-left` within 180s.
+item. Read the file for the current rows; this page states no count.
 
 **Rule order is part of the contract, not an implementation detail.** A parse runs in two passes:
 the word is **torn down** to find candidate stems, then **built back up** to check the rebuild
@@ -102,6 +102,7 @@ subset it claims to support.
 conformance/
   languages/<name>/    grammar.xml + words.yaml   -- 4 typologically-selected synthetic languages
   edge-cases/<name>/   grammar.xml + words.yaml   -- focused micro-grammars for things no shared grammar hosts
+  docs/grammars.md     one line for every fixture above; a test keeps it complete
   coverage.csv         GENERATED: language x word x construct
   rules.csv            GENERATED: language x grammar rule id x exercising words
   HermitCrabInput.dtd  the published grammar DTD (byte-identical to the library's embedded copy)
@@ -279,6 +280,58 @@ hand-copied here: two prose totals in this file have already drifted from the ma
 this file no longer states them at all -- read the manifest (`--generate-manifest`/
 `--check-manifest`), whose per-fixture `caseCount` is what those flags verify.
 
+## What the XML can say but FieldWorks cannot, so we do not test it
+
+The suite keeps only grammars a real FieldWorks project can produce (see the rule at the top). The
+constructs below are valid in `HermitCrabInput.dtd`, and the engine implements them except where a row
+says otherwise, but `HCLoader.cs` never writes them. No FieldWorks project can reach them, so a fixture
+that needs one would test the engine against input FieldWorks never sends, and the suite does not pin
+them. Do not author a fixture for any of them. The `todo` lines in `semantic-coverage-baseline.txt` for
+`Family`, `RealizationalRule`, `CharacterDefinitionTable/isActive/no`,
+`MorphologicalPhonologicalRuleFeatureGroup/outputType/append` and `isCliticRule` name constructs in this
+table; leave them `todo`.
+
+This is a different list from the eleven surfaces above. Those no engine code path reads at all. These the
+engine does read, and FieldWorks never writes. Subcategorization (row 17) and `LexicalEntry.morphologicalRules` (row 18) are where the lists meet.
+
+**Where this was checked.** FieldWorks commit `620cd9903f46941ee85947615dba15c8888c8e7a`,
+`Src/LexText/ParserCore/HCLoader.cs`, which was last changed by
+`6b8a75287221a1b5ab6d15d6f6eedc117690ef98`; LibLCM commit `d564a719b1cce16c25ebea53a537393cb757f5d1`.
+The line numbers below are for that file. `fieldworks-producibility.tsv` and its generator were written
+against an earlier revision, so their line numbers are stale; their verdicts are unchanged. The
+protocol's section 9 holds the rule that applies these to a fixture.
+
+| # | Construct | Why FieldWorks cannot produce it (`HCLoader.cs`) | Deleted fixtures |
+|---|---|---|---|
+| 1 | More than one `CharacterDefinitionTable`, or a `characterDefinitionTable` on `Segments`/`InsertSegments` (producibility rows `InsertSegments.characterDefinitionTable`, `Segments.characterDefinitionTable`) | `LoadLanguage` calls `LoadCharacterDefinitionTable` once, with `PhonemeSetsOS[0]` (217). Every stratum is built from the one `m_table` (240, 243, 246, `CreateStrata` 387), and `Segments()` (2880) reads it. | 10 |
+| 2 | `SymbolicFeature.defaultSymbol` | `LoadFeatureSystem` (2699) reads names and symbols and sets no default; the file never mentions a default symbol. | 6 |
+| 3 | `RealizationalRule` | `LoadInflAffixProcessRule` (1025) carries `// TODO: use realizational affix process rules` (1027); the loader builds no realizational rule. | 3 |
+| 4 | A custom-named or append-mode `MorphologicalPhonologicalRuleFeatureGroup` | `LoadLanguage` builds exactly three groups: `inflClasses` (181), `exceptionFeatures` (192) and `lexEntryInflTypes` (201). | 4 |
+| 5 | A metathesis whose `leftSwitch` names the earlier group (producibility row `MetathesisSwitchPositionInversion`) | `LoadMetathesisRule` (2152) sets `LeftSwitchName = "r"` and `RightSwitchName = "l"` (2171-2172) and names the groups from the structural-change indices (2183-2186). The inverted order is unreachable from the editor: `MetaRuleFormulaControl.GetNextCell` (212-226) orders the cells left environment, left switch, right switch, right environment. LibLCM stores the indices as free text (`GetStrucChangeIndices`, `OverridesLing_Lex.cs:7775`), so this is an editor guarantee, not a data-model one. | 1 |
+| 6 | `morphologicalRuleOrder="linear"` that changes a parse (producibility row `morphologicalRuleOrder`) | Every stratum that holds rules is built `Unordered`: `Morphology` (240), `Clitics` (243), each custom stratum (387). The `Surface` stratum (246) keeps the default `Linear` but holds no rule. A `linear` stratum with no listed morphological rule and no active affix template is harmless and stays allowed. | 1 |
+| 7 | `isActive="no"` on a kind the loader does not filter, and a second `PhonologicalFeatureSystem` | The loader filters `Disabled` compound rules (254), affix templates (308), phonological rules (315) and ad hoc prohibitions (355, 361), and skips an `IsAbstract` allomorph form (`IsValidRuleForm` 549 at 556, `IsValidLexEntryForm` 592 at 598). It reads no inactive state for features, feature values, natural classes, lexical entries, strata, character tables or `Properties`, and `LoadFeatureSystem` is called once (211). | 3 |
+| 8 | `LexicalEntry.family` | The file never reads a family. | 2 |
+| 9 | Obligatory output features: `CompoundingRule.outputObligatoryFeatures`, `MorphologicalRule.outputObligatoryFeatures`, `LexicalEntry.obligatoryHeadFeatures`, `LexicalEntry.obligatoryFootFeatures`, and the `ObligatorySyntacticFeatures` failure reason | The file never mentions an obligatory feature. The engine reads `outputObligatoryFeatures` (`XmlLanguageLoader` 898, 1229) but never `obligatoryHeadFeatures` or `obligatoryFootFeatures`, which are engine-dead. | 2 |
+| 10 | Head-input MPR features on a compound (`HeadMorphologicalInput.requiredMPRFeatures`, `.excludedMPRFeatures`) and `CompoundingRule.outputProdRestrictionsMprFeatures` | `LoadEndoCompoundingRule` (1891) sets only `OutMprFeatures` (1950) and the head and non-head production restrictions; `LoadExoCompoundingRule` (1971) sets `OutMprFeatures` at 2011 and 2038. Nothing sets head-input MPR features or an output production restriction. | 1 |
+| 11 | MPR output (`MPRFeatures`) from a template-slot rule | A rule reached through an `AffixTemplate` slot is inflectional. `LoadInflAffixProcessRule` (1025) sets `RequiredMprFeatures` (1050) but never `OutMprFeatures`; only `LoadDerivAffixProcessRule` (975) does (1018). | 1 |
+| 12 | Different `requiredMPRFeatures` on the subrules of one non-inflectional rule | `LoadDerivAffixProcessRule` adds one per-MSA list to every allomorph (1017); `LoadUnclassifiedAffixProcessRule` (1057) adds none. An inflectional rule also adds each allomorph's inflection classes (1118, 1145, 1172), so its subrules may differ. | none |
+| 13 | `MorphemeCoOccurrenceRule` or `AllomorphCoOccurrenceRule` with `type="require"` | `LoadAllomorphCoOccurrenceRules` (2212) builds `ConstraintType.Exclude` (2232) and `LoadMorphemeCoOccurrenceRules` (2262) builds it at 2282. | none (one language was rewritten) |
+| 14 | `RequiredEnvironments`/`ExcludedEnvironments` on a multi-piece (discontinuous) output | `.Environments.Add` appears only in `LoadRootAllomorph` (870), `LoadCircumfixAffixProcessAllomorph` (1371) and `LoadFormAffixProcessAllomorph` (1626, 1653). `LoadAffixProcessAllomorph` (1383-1488), the path for a multi-action output, never touches environments. | 1 |
+| 15 | `isCliticRule` | The loader never sets it. A rule is a clitic only because `LoadCliticAffixProcessRule` (1079) places it in the stratum named `Clitics` (243). | none (three fixtures were rewritten) |
+| 16 | A slot rule with `outputPartOfSpeech`; a partial stem entry that has a part of speech; a partial rule inside a slot or with `outputPartOfSpeech` | `LoadInflAffixProcessRule` sets no output part of speech. `IsPartial` is set on an entry only when it has no part of speech (`LoadLexEntry` 757, `LoadLexEntryOfVariant` 817), and on a rule only when it has no slot (1031). `FieldWorksProducibleShapeTests` enforces these. | none (many were rewritten) |
+| 17 | Syntactic subcategorization: the nine producibility rows `AffixTemplate.requiredSubcategorizedRules`, `CompoundingRule.headSubcategorizedRules`, `.nonHeadSubcategorizedRules`, `.outputSubcategorization`, `LexicalEntry.subcategorizations`, `MorphologicalRule.outputSubcategorization`, `.requiredSubcategorizedRules` and the two `OutputSubcategorizationOverride` attributes | The file never mentions subcategorization. The engine reads none of it either, so these are also among the eleven surfaces above. | none |
+| 18 | `LexicalEntry.morphologicalRules` | Never loaded; the engine does not read it either. | none |
+
+Rows 1 to 6, 8, 9, 10, 17 and 18 cover the 26 `No` rows of `fieldworks-producibility.tsv`
+(row 17 holds nine, row 9 five, row 10 three, row 1 two, and rows 2 to 6, 8 and 18 one each). Rows 7 and 11 to 16 are shapes
+that no per-attribute row can express: the usage-level and mechanical checks of the protocol's
+section 9 and the retirement record's list of what the suite no longer covers. Fixtures were deleted for
+rows 1 to 11 and 14; rows 12, 13, 15 and 16 cost no fixture.
+
+The 27 fixtures removed for these constructs, each mapped to the construct that disqualified it, are in
+[`docs/engine-only-fixture-retirement.md`](docs/engine-only-fixture-retirement.md). The last commit that
+holds them is `15ff041c403bf29af5bebee9d1f498cd5bd369bc`, the parent of `e21aae462eb492a331063535ad119b900c15271d`.
+
 ## What the coverage numbers claim, and what they do not
 
 Every coverage figure here is **per surface** — one DTD element, or one enumerated attribute value.
@@ -295,6 +348,12 @@ gap needs selective, named interaction coverage instead, tracked as `conformance
 
 ## Coverage philosophy
 
+The DTD is the inventory of what a grammar can name; it is not the target. The target is the set of
+grammars a FieldWorks project can produce. A DTD surface that only a grammar FieldWorks cannot produce
+could exercise stays on the `todo` list of `semantic-coverage-baseline.txt`, and nobody authors a
+fixture to close it. The list of those constructs is in
+[the section above](#what-the-xml-can-say-but-fieldworks-cannot-so-we-do-not-test-it).
+
 `constructs.txt` is the flat, cross-grammar checklist of grammar-model constructs every fixture's
 `exercises:` values are drawn from — the coverage report cross-references against it and flags both
 zero-coverage constructs and **dead rules** (a `grammar.xml` rule id no word exercises). A rule named
@@ -305,9 +364,8 @@ per parse is a verified dimension, not aspirational: self-check runs the oracle 
 FAILs if the traced rule applications diverge from the declared list. Analyses with identical
 signatures are retained: self-check compares `(signature, rule-id set)` as a multiset, so two
 equal signatures with different valid traces can match independently of result order. A missing,
-extra or incorrectly attributed trace still fails. As of this writing, 31/31
-in-scope constructs are covered (`Tracing (TraceType)` is out of scope — it was never in
-`expected.tsv`'s domain).
+extra or incorrectly attributed trace still fails. The report prints how many in-scope constructs
+are covered (`Tracing (TraceType)` is out of scope — it was never in `expected.tsv`'s domain).
 
 ## Running it
 
@@ -337,8 +395,10 @@ The cheap path, in order of preference:
 2. **Extend a grammar** when no existing language's grammar can express the trigger but the
    phenomenon is typologically plausible for one of the four (e.g. a new evidential-chain
    interaction belongs in `suffixing-evidential-adjacency-chain`).
-3. **Add an edge-case** when the pin is engine-internal or too specific to embed naturalistically
-   (an XML-loader quirk, a crash, a rule shape no real grammar would contain).
+3. **Add an edge-case** when the pin is too specific to embed naturalistically (an XML-loader quirk, a
+   crash, an unusual rule shape). It must still be a grammar FieldWorks can produce; a pin that needs
+   a construct in [the section on what FieldWorks cannot produce](#what-the-xml-can-say-but-fieldworks-cannot-so-we-do-not-test-it)
+   belongs outside this suite.
 4. **Add a new `languages/` member** only for genuinely new typological territory not covered by any
    of the four, not for an incremental variant of one that already exists.
 

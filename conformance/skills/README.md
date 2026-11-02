@@ -7,6 +7,10 @@ rather than by intuition.
 Skills live here rather than only in `.claude/skills/` because they ship with the fixtures. A
 consumer or a future maintainer receiving `conformance/` gets the instructions that produced it.
 
+Every grammar a skill touches must be one a FieldWorks project can produce. The constructs that are
+not, and why, are in the README section
+[what the XML can say but FieldWorks cannot, so we do not test it](../README.md#what-the-xml-can-say-but-fieldworks-cannot-so-we-do-not-test-it).
+
 ## The four skills
 
 | skill | role | phase |

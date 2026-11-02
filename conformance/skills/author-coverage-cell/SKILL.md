@@ -71,8 +71,9 @@ whatever makes the cell green."
 
 **The rule.** An edit is legitimate only when all three hold:
 
-1. **HCLoader demonstrably emits the construct**, cited by file and line (e.g. `HCLoader.cs:2057`
-   for `PhonologicalSubrule.RequiredMprFeatures`).
+1. **HCLoader demonstrably emits the construct**, cited by file and line (e.g. `HCLoader.cs:2106`
+   for `PhonologicalSubrule.RequiredMprFeatures`). A construct in the README section on what the XML
+   can say but FieldWorks cannot produce never qualifies, whatever the engine does with it.
 2. **Real morphology exhibits it** — the shape you are adding is a genuine, nameable linguistic
    phenomenon (a minor rule, a lexically-conditioned exception, a category-changing derivation),
    not a string manufactured to trip a check.
@@ -87,13 +88,13 @@ data only, never named after a real language, typological family in a comment on
 **The tell.** The direction of reasoning is everything. "This cell is red; if I add X the severance
 will flip" is illegitimate even if X is grammatically well-formed and even if it works — the
 grammar became a proof artifact for the cell instead of an independent thing the cell happens to
-measure. "HCLoader.cs:1873 sets a compound's output category from a field a FLEx user fills in; a compound
+measure. "HCLoader.cs:1923 sets a compound's output category from a field a FLEx user fills in; a compound
 taking a category that a later affix then checks is ordinary morphology; let me
 add that pair and see what it demonstrates" is legitimate, because the construct and its
 justification exist before any cell's colour is consulted.
 
 **Worked legitimate example.** Bucket-2 item C (`CompoundingRule.outputPartOfSpeech ->
-MorphologicalRule.requiredPartsOfSpeech`): `HCLoader.cs:1873-1876` and `:1932-1935` set the compound's
+MorphologicalRule.requiredPartsOfSpeech`): `HCLoader.cs:1923-1924` and `:1982-1983` set the compound's
 output category from `compoundRule.OverridingMsaOA/ToMsaOA.PartOfSpeechRA` -- a field a FLEx user fills
 in directly on a compound rule. A compound taking a category and a later affix checking it is ordinary
 morphology (*blackbird* is a noun, so noun plural applies). The author read
@@ -105,10 +106,10 @@ the shape to imitate: engine read first, a failed attempt kept, the grammar shap
 
 **Worked example of a citation that LOOKS legitimate and is not.** The first version of this section
 used item D (`MorphologicalOutput.MPRFeatures -> MorphologicalInput.excludedMPRFeatures`) and cited
-`HCLoader.cs:969` as the write and `HCLoader.cs:1717` as the read. An adversarial review found that
-`:1717` sits inside `foreach (ILexEntryInflType t in types)` under the comment "block slot from applying
+`HCLoader.cs:1003` as the write and `HCLoader.cs:1762` as the read. An adversarial review found that
+`:1762` sits inside `foreach (ILexEntryInflType t in types)` under the comment "block slot from applying
 to irregularly inflected forms": it populates `ExcludedMprFeatures` ONLY from
-`slot.ReferringObjects.OfType<ILexEntryInflType>()`, never from an ordinary affix's output. `:969`'s
+`slot.ReferringObjects.OfType<ILexEntryInflType>()`, never from an ordinary affix's output. `:1003`'s
 values come from `msa.ToInflectionClassRA`/`ToProdRestrictRC`. The two lines are separate mechanisms that
 share a field NAME, so the authored shape -- an ordinary rule conferring a flag an ordinary sibling
 excludes -- is not producible by FieldWorks at all.
