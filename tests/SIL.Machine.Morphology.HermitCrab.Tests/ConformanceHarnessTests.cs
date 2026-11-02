@@ -155,6 +155,43 @@ public sealed class ConformanceHarnessTests
     }
 
     [Test]
+    public void RunSelfCheck_ExpectCrashFixtureWhoseGrammarTheHarnessRejects_Fails()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"harness-failure-{Guid.NewGuid():N}");
+        string source = Path.Combine(ConformanceSuite.Root(), "edge-cases", "epenthesis-fed-merge");
+        string target = Path.Combine(root, "edge-cases", "epenthesis-fed-merge");
+        Directory.CreateDirectory(target);
+        foreach (string file in Directory.GetFiles(source))
+            File.Copy(file, Path.Combine(target, Path.GetFileName(file)));
+        string wordsPath = Path.Combine(target, "words.yaml");
+        string words = File.ReadAllText(wordsPath);
+        Assert.That(words, Does.Contain("\nwords:\n"));
+        File.WriteAllText(wordsPath, words.Replace("\nwords:\n", "\nexpect_crash: true\nwords:\n"));
+        // The engine loads this grammar, but the harness's rule index rejects two rules with one name.
+        string grammarPath = Path.Combine(target, "grammar.xml");
+        string grammar = File.ReadAllText(grammarPath);
+        Assert.That(grammar, Does.Contain("<Name>mergeTi</Name>"));
+        File.WriteAllText(grammarPath, grammar.Replace("<Name>mergeTi</Name>", "<Name>insertTiAfterBAtEnd</Name>"));
+        try
+        {
+            RunReport report = Runner.RunSelfCheck(
+                Fixture.DiscoverAll(root),
+                includePathological: true,
+                engineCapabilities: Runner.DefaultCapabilities,
+                propose: false,
+                proposeOutput: TextWriter.Null
+            );
+
+            FixtureResult result = report.Results.Single();
+            Assert.That(result.Outcome, Is.EqualTo(FixtureOutcome.Failed), result.Reason);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Test]
     public void RunAdapter_ExpectCrashFixture_FailsWhenTheEngineAlsoCrashesOnAnOrdinaryFixture()
     {
         List<Fixture> all = Fixture.DiscoverAll(ConformanceSuite.Root());
