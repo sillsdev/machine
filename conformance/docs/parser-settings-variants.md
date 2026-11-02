@@ -2,7 +2,7 @@
 
 A fixture can run the same grammar and ordered words under named `variants`. Each run has its own non-empty `morpher` block and its own complete `words` expectations. Omitted settings take engine defaults; variants do not inherit the default run's overrides. Full signature multisets and statuses are compared. Variant rows do not add semantic-coverage credit.
 
-The following observations were collected from C# HC on 2026-10-22, using commit `1836d23ccb86f1e9da123a43feb661ea76e85d0b` (harness draft atop PR #480 head `72dbd4f9bd686d1193d11cf8f908d50ffa878ba1`; the HC engine is unchanged), with `maxDegreeOfParallelism: 1`. The HC assembly SHA-256 was `2547068882BEC56873F0678922D11D7F81ED4D68B3B99DCDB71EBF5863714444`. Expected signatures were transcribed from actual `Morpher.ParseWord` results, preserving duplicates.
+The following observations were collected from C# HC on 2026-10-22, with `maxDegreeOfParallelism: 1`. The HC assembly SHA-256 was `2547068882BEC56873F0678922D11D7F81ED4D68B3B99DCDB71EBF5863714444`. Expected signatures were transcribed from actual `Morpher.ParseWord` results, preserving duplicates.
 
 | Setting | Fixture and witness | Observed result |
 | --- | --- | --- |

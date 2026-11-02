@@ -101,12 +101,13 @@ comments alone claim: those comments do not say which oracle produced the "measu
 signature finding, and this session's reproduction confirms it holds under the C# founding oracle
 specifically, not only under `pg_parse`.
 
-## Machine #480 truncation identity companions: #556-only measurement (historical)
+## Truncation identity companions: #556-only measurement (historical)
 
 The first three-companion measurement used the corrected Machine #556 library
 (`SIL.Machine.dll` SHA-256
-`b265a40a44292614f51f7a65afc445ae34dde685cb40ce8c2d2de5521a0c299d`) and the #480 C# HermitCrab
-component. Each checked-in grammar declares `morphologicalRuleOrder="unordered"`; the scratch copy
+`b265a40a44292614f51f7a65afc445ae34dde685cb40ce8c2d2de5521a0c299d`) and the C# HermitCrab
+component of the truncation grammar these three fixtures were derived from. Each checked-in grammar
+declares `morphologicalRuleOrder="unordered"`; the scratch copy
 changed that value to `linear`, leaving `words.yaml` unchanged, then ran the same C# self-check with
 `--propose --include-pathological` against the isolated fixture.
 

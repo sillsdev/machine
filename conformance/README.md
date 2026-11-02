@@ -173,8 +173,7 @@ allomorphy/rewrite pins whose exact rule shape a naturalistic grammar wouldn't c
 
 ## Truncation identity companions
 
-Three edge cases derive from the published Machine #480 truncation grammar at
-`a48b899a456b4d7165cc53e1f76d6ef5dc357dd0` (whose original grammar remains unchanged):
+Three edge cases derive from one truncation grammar, whose original stays unchanged:
 `truncate-morphotactic-identity` adds explicit `MorphemeId` labels; `truncate-morphotactic-subsumption`
 uses root `ag` plus prefix rule `X` with the original leading truncation rule `B` and insertion rule
 `C`; `truncate-morphotactic-copy-u` adds a copying suffix rule `U` to the explicit-ID A/B/C grammar.
@@ -188,14 +187,14 @@ commit `d98d12a5d514ce589d7495c71d055830e061a418` plus the Machine #500 `ApplyRh
 `b265a40a44292614f51f7a65afc445ae34dde685cb40ce8c2d2de5521a0c299d`; the combined
 `SIL.Machine.Morphology.HermitCrab.dll` SHA-256 is
 `4cd980453f51fd3cf29cf38a99f342f542e631eb23be6ba87b9433aab6c3d57f`. Reproduction is: start from
-the #480 truncation grammar; add the identity labels or stated companion rule/root; use the #556
+the truncation grammar; add the identity labels or stated companion rule/root; use the #556
 Machine library and the #500 relocation in HermitCrab's copy/annotation transfer; parse every
 `words.yaml` word; and retain every returned signature and forward trace. These source revisions,
 assembly hashes, and the recipe are the provenance; the expected rows do not depend on a temporary
 staging file.
 
-The published #480 base lacks both fixes, so its copied annotations do not satisfy these complete
-identity rows reliably. Keep the full combined-oracle multisets; do not weaken them to match the
+An engine without both fixes does not satisfy these complete identity rows reliably, because its
+copied annotations differ. Keep the full combined-oracle multisets; do not weaken them to match the
 pre-fix base output.
 
 The corrected C# traces report the same analysis features for these rows:
