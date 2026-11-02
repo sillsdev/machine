@@ -40,14 +40,21 @@ dotnet csharpier check . || failed+=(csharpier)
 dotnet build --no-restore -c Release || failed+=(build)
 dotnet test --verbosity normal || failed+=(test)
 
+# What the suite looks like before the runner steps, so edits you made to it do not read as the runner's.
+suite_state() {
+  git -C "$suite" status --porcelain --untracked-files=all 2>/dev/null
+  git -C "$suite" diff 2>/dev/null
+}
+suite_before=$(suite_state | sha1sum)
+
 # The same checks as .github/workflows/conformance.yml.
 hc_conformance=(dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance --)
 "${hc_conformance[@]}" --fixtures "$suite" --include-pathological || failed+=(conformance)
 "${hc_conformance[@]}" --fixtures "$suite/stress" --include-pathological || failed+=(conformance-stress)
 "${hc_conformance[@]}" --fixtures "$suite" --check-manifest || failed+=(manifest)
 "${hc_conformance[@]}" --fixtures "$suite" --coverage-report || failed+=(coverage-report)
-# Nothing above may have changed the suite clone.
-git -C "$suite" diff --exit-code || failed+=(suite-modified)
+# The runner steps must not have changed the suite, tracked or untracked.
+[ "$(suite_state | sha1sum)" = "$suite_before" ] || failed+=(suite-modified)
 # The pin must be on the suite's main (CI checks the same). Not checked without a network or with another suite.
 if [ -z "${HC_CONFORMANCE_SUITE:-}" ]; then
   if git -C conformance fetch --quiet origin main; then
