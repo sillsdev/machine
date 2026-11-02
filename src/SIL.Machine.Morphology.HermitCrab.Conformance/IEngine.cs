@@ -4,13 +4,12 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
 public interface IEngine
 {
-    /// <summary>A short, human-readable name for reporting (e.g. "self-check", "adapter").</summary>
+    /// <summary>A short, human-readable name for reporting (e.g. "adapter").</summary>
     string Name { get; }
 
     /// <summary>
-    /// The capability set this engine declares support for. Self-check mode always reports the
-    /// full set (it IS the reference C# oracle); an adapter's set comes from the --capabilities
-    /// flag.
+    /// The capability set this engine declares support for; an adapter's set comes from the
+    /// --capabilities flag.
     /// </summary>
     IReadOnlySet<string> Capabilities { get; }
 

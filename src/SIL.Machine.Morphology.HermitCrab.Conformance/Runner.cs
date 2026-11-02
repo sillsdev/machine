@@ -22,8 +22,8 @@ public class RunReport
 /// <summary>
 /// Runs fixtures under conformance/languages and conformance/edge-cases. Self-check mode is a
 /// custom, in-process loop (it needs per-word signature-SET comparison against words.yaml and
-/// traced-rules verification, neither of which <see cref="MaterializedRunner"/>/<see cref="SelfCheckEngine"/>
-/// does). Adapter mode instead materializes each fixture onto disk and hands it to
+/// traced-rules verification, neither of which <see cref="MaterializedRunner"/> does). Adapter mode instead
+/// materializes each fixture onto disk and hands it to
 /// <see cref="MaterializedRunner"/> + <see cref="AdapterEngine"/> -- see <see cref="FixtureMaterializer"/>.
 /// </summary>
 public static class Runner
