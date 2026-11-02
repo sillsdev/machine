@@ -1,0 +1,254 @@
+<Project>
+
+	<!--
+		Makes conformance/ a clone of the conformance suite at the commit in conformance.commit, before this project
+		builds. Every project that references this one (the HermitCrab tests) gets the suite from a plain
+		`dotnet build` or `dotnet test`. SIL.Machine, the HermitCrab library and the HermitCrab tool do not
+		reference this project and never run it.
+
+		- Already at the pinned commit: nothing is fetched and nothing is written.
+		- At another commit, after a pin bump: moved to the pinned commit, unless it has uncommitted changes, in
+		  which case the build stops and names the file.
+		- Absent: cloned into a temporary directory beside it, then renamed, so an interrupted or parallel build never
+		  leaves a half-populated suite.
+		- HC_CONFORMANCE_SUITE set: nothing here runs; the tests and the runner use that directory.
+		- At the pinned commit with local changes: a warning names them; the build goes on.
+		- No git, no network, a stalled connection (three minutes at most) or any other failure: a warning names the
+		  commands to run, and the tests fail with the same commands.
+	-->
+	<UsingTask
+		TaskName="EnsureConformanceSuite"
+		TaskFactory="RoslynCodeTaskFactory"
+		AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll"
+	>
+		<ParameterGroup>
+			<PinFile ParameterType="System.String" Required="true" />
+			<SuiteDirectory ParameterType="System.String" Required="true" />
+			<SuiteUrl ParameterType="System.String" Required="true" />
+		</ParameterGroup>
+		<Task>
+			<Using Namespace="System.Diagnostics" />
+			<Using Namespace="System.Linq" />
+			<Using Namespace="System.Text" />
+			<Using Namespace="System.Text.RegularExpressions" />
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+				string overrideDirectory = Environment.GetEnvironmentVariable("HC_CONFORMANCE_SUITE");
+				if (!string.IsNullOrWhiteSpace(overrideDirectory))
+				{
+					Log.LogMessage(MessageImportance.High, "conformance: HC_CONFORMANCE_SUITE is set, so the suite is " + overrideDirectory + " and nothing is cloned or checked.");
+					return true;
+				}
+
+				string pin = File.Exists(PinFile) ? File.ReadAllText(PinFile).Trim() : null;
+				if (pin == null || !Regex.IsMatch(pin, "^[0-9a-f]{40}$"))
+				{
+					Log.LogError("conformance: " + PinFile + " must hold one full 40-character lowercase commit SHA.");
+					return false;
+				}
+
+				string suite = Path.GetFullPath(SuiteDirectory).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+				string parent = Path.GetDirectoryName(suite);
+				string name = Path.GetFileName(suite);
+				string newLine = Environment.NewLine;
+				string clonePin = newLine + "  git clone --filter=blob:none " + SuiteUrl + " " + name + newLine + "  git -C " + name + " checkout --detach " + pin;
+				string movePin = newLine + "  git -C " + name + " fetch origin" + newLine + "  git -C " + name + " checkout --detach " + pin;
+
+				// All the network work of one build shares three minutes; git also gives up on a connection that stalls for 20 seconds.
+				DateTime deadline = DateTime.UtcNow.AddMinutes(3);
+				string stalled = "-c http.lowSpeedLimit=1000 -c http.lowSpeedTime=20 ";
+
+				Func<string, string, KeyValuePair<int, string>> git = (workingDirectory, arguments) =>
+				{
+					var startInfo = new ProcessStartInfo("git", arguments)
+					{
+						WorkingDirectory = workingDirectory,
+						UseShellExecute = false,
+						RedirectStandardOutput = true,
+						RedirectStandardError = true,
+						CreateNoWindow = true,
+					};
+					startInfo.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
+					startInfo.EnvironmentVariables["GIT_OPTIONAL_LOCKS"] = "0";
+					startInfo.EnvironmentVariables.Remove("GIT_DIR");
+					startInfo.EnvironmentVariables.Remove("GIT_WORK_TREE");
+					startInfo.EnvironmentVariables.Remove("GIT_INDEX_FILE");
+					try
+					{
+						using (Process process = Process.Start(startInfo))
+						{
+							var output = new StringBuilder();
+							var error = new StringBuilder();
+							process.OutputDataReceived += (sender, e) => { if (e.Data != null) lock (output) output.AppendLine(e.Data); };
+							process.ErrorDataReceived += (sender, e) => { if (e.Data != null) lock (error) error.AppendLine(e.Data); };
+							process.BeginOutputReadLine();
+							process.BeginErrorReadLine();
+							int limit = (int)Math.Max(10000, (deadline - DateTime.UtcNow).TotalMilliseconds);
+							if (!process.WaitForExit(limit))
+							{
+								try
+								{
+									var killTree = typeof(Process).GetMethod("Kill", new[] { typeof(bool) });
+									if (killTree != null) killTree.Invoke(process, new object[] { true });
+									else process.Kill();
+								}
+								catch (Exception) { }
+								process.WaitForExit(5000);
+								return new KeyValuePair<int, string>(-1, "git did not finish in time: git " + arguments);
+							}
+							process.WaitForExit();
+							return new KeyValuePair<int, string>(process.ExitCode, process.ExitCode == 0 ? output.ToString() : error.ToString() + output.ToString());
+						}
+					}
+					catch (Exception exception)
+					{
+						return new KeyValuePair<int, string>(-1, "git could not be run: " + exception.Message);
+					}
+				};
+
+				Action<string> deleteQuietly = path =>
+				{
+					// Git writes its object files read-only, and Windows will not delete those.
+				try
+				{
+					foreach (string file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
+						File.SetAttributes(file, FileAttributes.Normal);
+					Directory.Delete(path, true);
+				}
+					catch (IOException) { }
+					catch (UnauthorizedAccessException) { }
+				};
+
+				try
+				{
+					// A temporary clone left by an interrupted build is never reused; remove the old ones.
+					if (Directory.Exists(parent))
+					{
+						foreach (string stale in Directory.GetDirectories(parent, name + ".tmp-*"))
+						{
+							if (DateTime.UtcNow - Directory.GetCreationTimeUtc(stale) > TimeSpan.FromHours(1))
+								deleteQuietly(stale);
+						}
+					}
+
+					bool present = Directory.Exists(suite) && Directory.EnumerateFileSystemEntries(suite).Any();
+					if (present)
+					{
+						if (!Directory.Exists(Path.Combine(suite, ".git")) && !File.Exists(Path.Combine(suite, ".git")))
+						{
+							Log.LogError("conformance: " + suite + " exists but is not a git clone. Move it aside and build again, or set HC_CONFORMANCE_SUITE=<path> to use it as it is.");
+							return false;
+						}
+
+						KeyValuePair<int, string> head = git(suite, "rev-parse HEAD");
+						if (head.Key != 0)
+						{
+							Log.LogWarning("conformance: could not read the commit of " + suite + " (" + head.Value.Trim() + "). Run these two commands:" + movePin);
+							return true;
+						}
+
+						KeyValuePair<int, string> status = git(suite, "status --porcelain");
+						string[] changed = status.Key == 0
+							? status.Value.Split('\n').Select(line => line.TrimEnd('\r')).Where(line => line.Length > 3).Select(line => line.Substring(3)).ToArray()
+							: new string[0];
+
+						if (head.Value.Trim() == pin)
+						{
+							// A suite author may be testing a change, so this is a warning and the build goes on.
+							if (changed.Length > 0)
+								Log.LogWarning("conformance: " + suite + " is at the pinned commit but has " + changed.Length + " local change(s): " + string.Join(", ", changed.Take(5)) + (changed.Length > 5 ? ", ..." : "") + ". The tests and the runner use what is on disk. Discard them unless you are testing a suite change.");
+							return true;
+						}
+
+						if (changed.Length > 0)
+						{
+							Log.LogError("conformance: " + suite + " is at " + head.Value.Trim() + ", not the pinned " + pin + ", and has uncommitted changes (" + changed[0] + "), so it was left alone. Commit or discard them and build again, or set HC_CONFORMANCE_SUITE=" + suite + " to use it as it is.");
+							return false;
+						}
+
+						if (git(suite, "cat-file -e " + pin + "^{commit}").Key != 0)
+						{
+							KeyValuePair<int, string> fetch = git(suite, stalled + "fetch --quiet origin");
+							if (fetch.Key != 0)
+							{
+								Log.LogWarning("conformance: " + suite + " is not at the pinned commit and fetching it failed (" + fetch.Value.Trim() + "). Run these two commands:" + movePin);
+								return true;
+							}
+						}
+
+						KeyValuePair<int, string> checkout = git(suite, stalled + "-c advice.detachedHead=false checkout --quiet --detach " + pin);
+						if (checkout.Key != 0)
+							Log.LogWarning("conformance: could not move " + suite + " to " + pin + " (" + checkout.Value.Trim() + "). Run this command: git -C " + name + " checkout --detach " + pin);
+						else
+							Log.LogMessage(MessageImportance.High, "conformance: moved " + suite + " from " + head.Value.Trim() + " to the pinned " + pin + ".");
+						return true;
+					}
+
+					string temporary = Path.Combine(parent, name + ".tmp-" + Guid.NewGuid().ToString("N"));
+					Log.LogMessage(MessageImportance.High, "conformance: cloning " + SuiteUrl + " at " + pin + " into " + suite + ".");
+					KeyValuePair<int, string> clone = git(parent, stalled + "clone --quiet --filter=blob:none --no-checkout " + SuiteUrl + " \"" + temporary + "\"");
+					if (clone.Key == 0)
+						clone = git(temporary, stalled + "-c advice.detachedHead=false checkout --quiet --detach " + pin);
+					if (clone.Key != 0)
+					{
+						deleteQuietly(temporary);
+						Log.LogWarning("conformance: could not clone the suite (" + clone.Value.Trim() + "). Run these two commands:" + clonePin);
+						return true;
+					}
+
+					// Defender or the search indexer can hold a handle in the new tree for a moment, so retry the rename.
+					string constructs = Path.Combine(suite, "constructs.txt");
+					string renameError = "";
+					bool moved = false;
+					for (int attempt = 0; attempt < 5 && !moved; attempt++)
+					{
+						try
+						{
+							if (Directory.Exists(suite) && !Directory.EnumerateFileSystemEntries(suite).Any())
+								Directory.Delete(suite);
+							Directory.Move(temporary, suite);
+							moved = true;
+						}
+						catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
+						{
+							renameError = exception.Message;
+							if (File.Exists(constructs))
+								break;
+							System.Threading.Thread.Sleep(500);
+						}
+					}
+
+					if (!moved)
+					{
+						if (File.Exists(constructs))
+						{
+							// A parallel build finished first; its clone stands if it is at the pin.
+							deleteQuietly(temporary);
+							KeyValuePair<int, string> raced = git(suite, "rev-parse HEAD");
+							if (raced.Key != 0 || raced.Value.Trim() != pin)
+								Log.LogWarning("conformance: " + suite + " appeared during the build and is not at " + pin + ". Run these two commands:" + movePin);
+						}
+						else
+						{
+							Log.LogWarning("conformance: cloned the suite but could not rename " + temporary + " to " + suite + " (" + renameError + "). The clone is complete: rename that directory to " + name + ", or build again.");
+						}
+					}
+				}
+				catch (Exception exception)
+				{
+					Log.LogWarning("conformance: could not make " + suite + " the suite at " + pin + " (" + exception.GetType().Name + ": " + exception.Message + "). Run these two commands:" + clonePin);
+				}
+				]]>
+			</Code>
+		</Task>
+	</UsingTask>
+
+	<Target Name="EnsureConformanceSuite" BeforeTargets="BeforeBuild" Condition="'$(DesignTimeBuild)' != 'true'">
+		<EnsureConformanceSuite
+			PinFile="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..', '..', 'conformance.commit'))"
+			SuiteDirectory="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..', '..', 'conformance'))"
+			SuiteUrl="https://github.com/sillsdev/fieldworks-parser-conformance.git"
+		/>
+	</Target>
+
+</Project>
