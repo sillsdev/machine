@@ -176,7 +176,7 @@ public sealed class ConformanceManifestTests
     }
 
     /// <summary>A minimal suite carrying one real fixture, for mutation tests.</summary>
-    private static string CreateMiniSuite(string fixtureId)
+    internal static string CreateMiniSuite(string fixtureId)
     {
         string source = SuiteRoot();
         string root = Path.Combine(Path.GetTempPath(), $"hc-manifest-suite-{Guid.NewGuid():N}");

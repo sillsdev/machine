@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml;
 
 namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
@@ -224,10 +225,19 @@ internal class Program
         // Validate every fixture before comparing, so a rejected one is named rather than reported as stale.
         foreach (ManifestFixture fixture in corpus.Fixtures)
         {
-            IReadOnlyList<string> messages = GrammarValidation.Validate(
-                Path.Combine(suiteRoot, fixture.GrammarPath.Replace('/', Path.DirectorySeparatorChar)),
-                dtd
-            );
+            IReadOnlyList<string> messages;
+            try
+            {
+                messages = GrammarValidation.Validate(
+                    Path.Combine(suiteRoot, fixture.GrammarPath.Replace('/', Path.DirectorySeparatorChar)),
+                    dtd
+                );
+            }
+            catch (Exception ex) when (ex is XmlException or IOException or UnauthorizedAccessException)
+            {
+                Console.Error.WriteLine($"{fixture.FixtureId}: grammar cannot be read: {ex.Message}");
+                return 2;
+            }
             if (messages.Count != 0)
             {
                 Console.Error.WriteLine($"{fixture.FixtureId}: grammar does not validate against {corpus.DtdPath}");
