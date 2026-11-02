@@ -163,7 +163,7 @@ internal class Program
     {
         Console.WriteLine();
         Console.WriteLine(
-            $"engine: {engine.Name}, capabilities: [{string.Join(",", engine.Capabilities.OrderBy(c => c))}]"
+            $"engine: {engine.Name}, capabilities: [{string.Join(",", engine.Capabilities.OrderBy(c => c, StringComparer.Ordinal))}]"
         );
         if (report.ExcludedPathologicalCount > 0)
         {
