@@ -114,4 +114,28 @@ public sealed class ConformanceCommandLineTests
             Assert.That(Directory.Exists(inside), Is.False);
         });
     }
+
+    [Test]
+    [NonParallelizable]
+    public void CheckManifest_MalformedGrammar_NamesTheFixtureAndFails()
+    {
+        const string FixtureId = "edge-cases/strrep-identity";
+        string root = ConformanceManifestTests.CreateMiniSuite(FixtureId);
+        try
+        {
+            File.WriteAllText(Path.Combine(root, "edge-cases", "strrep-identity", "grammar.xml"), "<HermitCrabInput><broken");
+
+            (int exitCode, string _, string error) = InvokeProgram("--fixtures", root, "--check-manifest");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(exitCode, Is.EqualTo(2), error);
+                Assert.That(error, Does.Contain(FixtureId));
+            });
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
 }
