@@ -30,11 +30,32 @@ fi
 # output read through tail cannot pass off a build failure as a test pass.
 failed=()
 
+# conformance/ is the suite clone at the commit in conformance.commit; the build below clones it or moves it to the
+# pin. HC_CONFORMANCE_SUITE=<path> uses another copy.
+suite="${HC_CONFORMANCE_SUITE:-conformance}"
+
 dotnet tool restore || failed+=(tool-restore)
 dotnet restore || failed+=(restore)
 dotnet csharpier check . || failed+=(csharpier)
 dotnet build --no-restore -c Release || failed+=(build)
 dotnet test --verbosity normal || failed+=(test)
+
+# The same checks as .github/workflows/conformance.yml.
+hc_conformance=(dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance --)
+"${hc_conformance[@]}" --fixtures "$suite" --include-pathological || failed+=(conformance)
+"${hc_conformance[@]}" --fixtures "$suite/stress" --include-pathological || failed+=(conformance-stress)
+"${hc_conformance[@]}" --fixtures "$suite" --check-manifest || failed+=(manifest)
+"${hc_conformance[@]}" --fixtures "$suite" --coverage-report || failed+=(coverage-report)
+# Nothing above may have changed the suite clone.
+git -C "$suite" diff --exit-code || failed+=(suite-modified)
+# The pin must be on the suite's main (CI checks the same). Not checked without a network or with another suite.
+if [ -z "${HC_CONFORMANCE_SUITE:-}" ]; then
+  if git -C conformance fetch --quiet origin main; then
+    git -C conformance merge-base --is-ancestor "$(tr -d '[:space:]' < conformance.commit)" origin/main || failed+=(pin-not-on-main)
+  else
+    echo "local_check: could not fetch the suite's main, so the pin was not checked against it"
+  fi
+fi
 
 if [ "${#failed[@]}" -ne 0 ]; then
   echo "local_check: FAILED (${failed[*]})"
