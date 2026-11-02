@@ -66,17 +66,18 @@ except where listed.
 
 ## Deleted (27)
 
-None could be converted to a producible grammar without losing its premise. The first column is the
-fixture name; the second is the construct (README row numbers) that made it unproducible, with what the
-grammar used; the third is what it tested. A fixture may need more than one construct.
+None could be converted to a producible grammar without losing its premise, except where the doubts
+below say otherwise. The first column is the fixture name; the second is the construct (README row
+numbers) that made it unproducible, with what the grammar used; the third is what it tested. A fixture
+may need more than one construct.
 
 | Fixture | Construct (README row) | What it tested |
 |---|---|---|
 | `edge-cases/bistratal-overlapping-segment-representation` | 1: two character tables, one per stratum | whether a segment spelled differently on two strata is accepted or refused when each stratum has its own lexicon (the refusal side of shared representation) |
 | `edge-cases/cross-table-root-respelling` | 1: tables `tIn` and `tFin` | a root entered on an inner stratum surfaces spelled by the final table's segment with the same feature bundle, with no phonological rule |
 | `edge-cases/default-symbol-after-merge` | 2: a `defaultSymbol` | default-symbol matching on a segment produced by a merge rule |
-| `edge-cases/feature-gating-breadth` | 6: three words (`kalidka`, `kalnoka`, `kalidmu`) that depend on rule-list order in a `linear` stratum | head and foot feature gating in the smallest grammar that discriminates it |
-| `edge-cases/feature-system-breadth` | 7: `isActive="no"` on a symbolic feature, a complex feature, a feature value, both natural class kinds and a lexical entry | deactivation of feature-system elements, complex features, right-to-left metathesis and an alpha variable |
+| `edge-cases/feature-gating-breadth` | 6: three words (`kalidka`, `kalnoka`, `kalidmu`) that depend on rule-list order in a `linear` stratum; 19: foot features on its rules and entries | head and foot feature gating in the smallest grammar that discriminates it |
+| `edge-cases/feature-system-breadth` | 7: `isActive="no"` on a symbolic feature, a complex feature, a feature value, both natural class kinds and a lexical entry; 20: `ExcludedEnvironments` on the allomorph of `eSal` | deactivation of feature-system elements, complex features, right-to-left metathesis and an alpha variable |
 | `edge-cases/loader-default-symbol` | 2: a `defaultSymbol` | an under-specified segment counts as the default value (nasal +), so a rule that targets oral segments must not apply to it |
 | `edge-cases/loader-isactive-breadth` | 1, 7, 8: three character tables, `isActive="no"` on more than a dozen kinds, `family` twice | an inactive decoy beside the live declaration for each collection the XML loader filters |
 | `edge-cases/loader-isactive` | 7: a second, inactive `PhonologicalFeatureSystem` block | the loader uses only the active feature-system block |
@@ -97,11 +98,11 @@ grammar used; the third is what it tested. A fixture may need more than one cons
 | `edge-cases/two-table-shared-representation-recall` | 1: tables `t0` and `t1`, one per stratum | the recall side of shared representation: material threaded from one table to the other through a rule |
 | `languages/fusional-realizational-morphology` | 3, 4, 9, 10: `RealizationalRule` `rrPast`, three custom MPR groups, `outputObligatoryFeatures` on a compound, required and excluded MPR features on the compound head (`mrCompoundConstrained`) | a fusional language with realizational tense, ablaut, stem names and constrained compounding |
 | `languages/prefixal-discontinuous-slot-dependency` | 11: MPR output from the slot rule `mrModeTrans`, required by a later slot | a prefixing language where a later slot depends on an earlier, non-adjacent one |
-| `languages/suffixing-extension-slot-ordering` | 3, 4, 8, 9: two `RealizationalRule`s, four custom MPR groups, `family` on `eZam` and `eWep`, `outputObligatoryFeatures` on `mrNumPl` | verbal extension suffixes in a fixed slot order, with nasal mutation |
-| `languages/suffixing-vowel-harmony` | 14: `RequiredEnvironments` on the discontinuous rule `ruleCollective` | a suffixing language with alpha-variable vowel harmony, gradation and merges |
+| `languages/suffixing-extension-slot-ordering` | 3, 4, 8, 9, 19: two `RealizationalRule`s, four custom MPR groups, `family` on `eZam` and `eWep`, `outputObligatoryFeatures` on `mrNumPl`, foot features on `mrAgr` and an entry | verbal extension suffixes in a fixed slot order, with nasal mutation |
+| `languages/suffixing-vowel-harmony` | 16: `outputPartOfSpeech` on three slot rules, which a conversion drops. The reason first recorded, 14 (`RequiredEnvironments` on the discontinuous rule `ruleCollective`), does not hold; see the doubts | a suffixing language with alpha-variable vowel harmony, gradation and merges |
 
 Counts by row: 1 has 10 fixtures, 2 has 6, 3 has 3, 4 has 4, 5 has 1, 6 has 1, 7 has 3, 8 has 2, 9 has 2,
-10 has 1, 11 has 1, 14 has 1.
+10 has 1, 11 has 1, 19 has 2, 20 has 1. `suffixing-vowel-harmony` is counted under none: its recorded reason failed.
 
 ## Retirement doubts
 
@@ -111,11 +112,19 @@ conversions were tried on scratch copies and checked with the founding oracle.
 * `edge-cases/feature-gating-breadth`. Setting its stratum to `unordered` and marking it producible
   changes three of 15 words (`kalidka`, `kalnoka`, `kalidmu`), all `expect_fail` rows that tested only
   rule-list order. Dropping those three rows leaves the self-check passing, and the other 12 words
-  keep its head and foot feature gating (`tunka`, `molka`, `nalnomu`). Strong doubt: the fixture's
-  purpose survives.
-* `languages/suffixing-vowel-harmony`. Dropping the discontinuous rule `ruleCollective`, its stratum
-  reference, the two words only it blocked (`etemik`, `esalik`) and `outputPartOfSpeech` on the three
-  slot rules passes with 25 of 27 words. No positive word used `ruleCollective`. Strong doubt.
+  keep its head feature gating (`tunka`); `molka` and `nalnomu` test foot features, which FieldWorks
+  cannot write (README row 19), so the conversion was never producible as tried. Partial doubt: the
+  head half of the fixture's purpose survives and the foot half does not.
+* `languages/suffixing-vowel-harmony`. Its recorded reason was wrong. `ruleCollective` is one
+  `RequiredEnvironments`, right-only, on an `InsertSegments`, `CopyFromInput`, `InsertSegments` output,
+  and `LoadCircumfixAffixProcessAllomorph` writes exactly one `Require` environment on a
+  prefix-plus-suffix output, so the loader can produce that shape (README row 14). What differs is the
+  grammar's spelling: the loader writes `+` boundary markers around the stem, and its input pattern is
+  `AnyStar` where `ruleCollective` has a stem of one or more segments. A rewrite to the loader's
+  spelling was not tried, so whether `etemik` and `esalik` keep their meaning is unknown. Dropping
+  `ruleCollective`, its stratum reference, those two words and `outputPartOfSpeech` on the three slot
+  rules passes with 25 of 27 words; no positive word used `ruleCollective`. Strong doubt: the fixture
+  was probably convertible, and restoring it is an open decision.
 * `languages/suffixing-extension-slot-ordering`. Without its `RealizationalRule`s, MPR groups, `family`
   attributes and `outputObligatoryFeatures`, 48 of 56 words pass unchanged; eight differ (`nbael`,
   `npael`, `limaile`, `yxkibz`, `belh`, `sekwz`, `sekwh`, `dalehiz`) because they depend on the removed

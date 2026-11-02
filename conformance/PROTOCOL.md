@@ -484,22 +484,17 @@ on takes, not on the attribute in isolation:
   a further template, and a `linear` one applies it once). A `linear` stratum that lists no morphological rule and holds no
   active `AffixTemplate` is producible as written; a stratum that has either must say `unordered`,
   which is how HCLoader builds it. `FieldWorksProducibleShapeTests` enforces this.
-- `Environments` (`RequiredEnvironments`/`ExcludedEnvironments`) is producible only when the
-  `MorphologicalSubrule` it sits on has an output expressible as a single literal-form affix — a
-  `RootAllomorph`'s own environment, a paired circumfix built from two separate literal-form
-  allomorphs (HCLoader combines an independent prefix environment and an independent suffix
-  environment into one boundary-anchored condition), or an ordinary single-piece `Form` (a lone
-  prefix or suffix) — never a genuinely discontinuous, multi-piece process-rule output (e.g. an
-  `InsertSegments`+`CopyFromInput`+`InsertSegments` circumfix authored directly as a process rule,
-  where the SAME environment condition is checked independently at each piece: HC's own
-  per-occurrence checking on a discontinuous morph). HCLoader's generic multi-action path for a
-  rule shaped like that, `LoadAffixProcessAllomorph`, never touches `.Environments` at all — only
-  `LoadRootAllomorph`, `LoadCircumfixAffixProcessAllomorph`, and `LoadFormAffixProcessAllomorph` do.
-  Boundary case that keeps this check from being read over-broadly: `edge-cases/strrep-identity`'s
-  `msubI` also carries a `RequiredEnvironments` on a subrule built from
-  `InsertSegments`+`CopyFromInput`, but its output is a single contiguous piece (one prefix, never
-  wrapped), so it is the ordinary single-piece `Form` case above and stays producible — the
-  condition is discontinuous/multi-piece output, not "an environment on a subrule" in general.
+- `Environments` (`RequiredEnvironments`/`ExcludedEnvironments`) is producible only where
+  HCLoader writes one, and only as a required environment. It writes a `RootAllomorph`'s own
+  environment (both sides, `LoadRootAllomorph`); one environment on a circumfix, whose output is a
+  prefix piece, the stem and a suffix piece (`LoadCircumfixAffixProcessAllomorph`, left from the
+  prefix's context and right from the suffix's); a right-side environment on a lone suffix; and a
+  left-side environment on a lone prefix (`LoadFormAffixProcessAllomorph`). The other side of a
+  lone prefix or suffix becomes part of its input pattern, not an environment. It never writes an
+  `ExcludedEnvironments`, an environment on an infix or a reduplication, or one on a multi-action
+  process rule (`LoadAffixProcessAllomorph` never touches `.Environments`). A subrule shaped like the
+  circumfix, `InsertSegments`+`CopyFromInput`+`InsertSegments` with one required environment, is
+  therefore producible; HC checks the same environment at each piece of that output.
 
 Three more shapes are checked mechanically because they are plain attribute facts: a rule reached
 through a `Slot` must not have an `outputPartOfSpeech` (`LoadInflAffixProcessRule` never sets one); a
