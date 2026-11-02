@@ -14,6 +14,8 @@ namespace SIL.Machine.Morphology.HermitCrab;
 /// </summary>
 internal class BatchCommand : ConsoleCommand
 {
+    private const string UsageArguments = "<wordlist-file> <output-tsv>";
+
     private readonly HCContext _context;
     private int _startIndex;
 
@@ -23,7 +25,7 @@ internal class BatchCommand : ConsoleCommand
 
         IsCommand("batch", "Parses every word in a word list, recording a result signature and timing per word");
         SkipsCommandSummaryBeforeRunning();
-        HasAdditionalArguments(2, "<wordlist-file> <output-tsv>");
+        AllowsAnyAdditionalArguments(UsageArguments);
         HasOption("start=", "0-based line index to resume at (for crash recovery)", v => _startIndex = ParseStart(v));
     }
 
@@ -33,6 +35,19 @@ internal class BatchCommand : ConsoleCommand
         if (!int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out int start))
             throw new OptionException($"--start must be a non-negative integer, got '{value}'", "--start");
         return start;
+    }
+
+    /// <summary>
+    /// Counts the arguments here rather than with HasAdditionalArguments, which the dispatcher checks after
+    /// parsing --start. One instance serves every line of a script, so a line rejected there would leave
+    /// --start set for the next line.
+    /// </summary>
+    public override int? OverrideAfterHandlingArgumentsBeforeRun(string[] remainingArguments)
+    {
+        if (remainingArguments.Length == 2)
+            return null;
+        _startIndex = 0;
+        throw new ConsoleHelpAsException($"Invalid number of arguments - expected: {UsageArguments}");
     }
 
     public override int Run(string[] remainingArguments)
