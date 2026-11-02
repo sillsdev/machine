@@ -200,8 +200,8 @@ diff.WordResults
     /// Runs the engine for one fixture. If the manifest carries a budget, engine.Run happens on a
     /// background thread and this waits up to budget + a small margin; AdapterEngine independently
     /// plumbs the same budget into its own process timeout (so a subprocess adapter gets killed),
-    /// but self-check's in-process call has no external process to kill, so this watchdog is what
-    /// keeps a runaway self-check parse from hanging the whole harness run. If the watchdog expires,
+    /// but an in-process engine has no external process to kill, so this watchdog is what
+    /// keeps a runaway engine from hanging the whole harness run. If the watchdog expires,
     /// a TimeoutException is thrown and the background thread is simply abandoned -- this is a
     /// short-lived CLI, so a leaked runaway thread on the rare budget-blown fixture is an acceptable
     /// trade for keeping this shape simple.

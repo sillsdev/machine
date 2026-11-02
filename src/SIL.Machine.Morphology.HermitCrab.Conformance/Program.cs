@@ -109,23 +109,23 @@ internal class Program
             return RunCoverageReport(fixtures, fixturesRoot, constructsPath, coverageOutput);
         }
 
-        IEngine engine;
+        RunReport report;
+        string engineName;
+        IReadOnlySet<string> engineCapabilities;
         if (adapterTemplate != null)
         {
-            HashSet<string> capabilities = ParseCapabilities(capabilitiesArg ?? "");
-            engine = new AdapterEngine(adapterTemplate, capabilities);
+            var engine = new AdapterEngine(adapterTemplate, ParseCapabilities(capabilitiesArg ?? ""));
+            report = Runner.RunAdapter(fixtures, engine, includePathological);
+            engineName = engine.Name;
+            engineCapabilities = engine.Capabilities;
         }
         else
         {
-            IReadOnlySet<string> capabilities = capabilitiesProvided ? ParseCapabilities(capabilitiesArg) : null;
-            engine = new SelfCheckEngine(capabilities);
+            engineName = "self-check";
+            engineCapabilities = capabilitiesProvided ? ParseCapabilities(capabilitiesArg) : Runner.DefaultCapabilities;
+            report = Runner.RunSelfCheck(fixtures, includePathological, engineCapabilities, propose, Console.Out);
         }
-
-        RunReport report =
-            adapterTemplate != null
-                ? Runner.RunAdapter(fixtures, engine, includePathological)
-                : Runner.RunSelfCheck(fixtures, includePathological, engine.Capabilities, propose, Console.Out);
-        PrintRunReport(report, engine);
+        PrintRunReport(report, engineName, engineCapabilities);
 
         bool anyRan = report.Passed > 0 || report.Failed > 0;
         if (!anyRan)
@@ -159,11 +159,11 @@ internal class Program
             .ToHashSet(StringComparer.Ordinal);
     }
 
-    private static void PrintRunReport(RunReport report, IEngine engine)
+    private static void PrintRunReport(RunReport report, string engineName, IReadOnlySet<string> capabilities)
     {
         Console.WriteLine();
         Console.WriteLine(
-            $"engine: {engine.Name}, capabilities: [{string.Join(",", engine.Capabilities.OrderBy(c => c, StringComparer.Ordinal))}]"
+            $"engine: {engineName}, capabilities: [{string.Join(",", capabilities.OrderBy(c => c, StringComparer.Ordinal))}]"
         );
         if (report.ExcludedPathologicalCount > 0)
         {
