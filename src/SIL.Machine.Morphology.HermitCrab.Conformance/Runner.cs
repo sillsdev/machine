@@ -151,8 +151,9 @@ public static class Runner
         {
             sw.Stop();
             result.ElapsedMs = sw.ElapsedMilliseconds;
-            // The watchdog's own timeout is never a crash match, as in adapter mode.
-            if (fixture.Words.ExpectCrash && ex is not TimeoutException)
+            // As in adapter mode, only the engine's own crash matches expect_crash; a timeout or a harness
+            // failure is a failure.
+            if (fixture.Words.ExpectCrash && ex is EngineCrashException)
             {
                 result.Outcome = FixtureOutcome.Passed;
                 result.Reason = $"engine crashed as expected (words.yaml expect_crash: true): {ex.Message}";
@@ -215,8 +216,18 @@ public static class Runner
         CancellationToken cancellationToken
     )
     {
-        Language language = XmlLanguageLoader.Load(fixture.GrammarPath);
-        Morpher morpher = ConformanceMorpherFactory.CreateTracing(language, run.Morpher);
+        // Only a failure of the engine itself is an EngineCrashException, so expect_crash cannot excuse a
+        // harness failure such as the rule index rejecting a grammar.
+        Morpher morpher;
+        try
+        {
+            Language language = XmlLanguageLoader.Load(fixture.GrammarPath);
+            morpher = ConformanceMorpherFactory.CreateTracing(language, run.Morpher);
+        }
+        catch (Exception ex)
+        {
+            throw new EngineCrashException($"engine failed to load '{fixture.GrammarPath}': {ex.Message}", ex);
+        }
         GrammarRuleIndex ruleIndex = GrammarRuleIndex.Load(fixture.GrammarPath);
 
         foreach (WordEntry word in run.Words)
@@ -234,6 +245,10 @@ public static class Runner
             {
                 wasSkipped = true;
                 results = new List<Word>();
+            }
+            catch (Exception ex)
+            {
+                throw new EngineCrashException($"engine failed to parse '{word.Word}': {ex.Message}", ex);
             }
 
             string actualSignature = SignatureFormat.BuildSignature(results);
