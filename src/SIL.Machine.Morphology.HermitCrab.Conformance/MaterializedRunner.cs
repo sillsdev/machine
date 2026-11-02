@@ -74,7 +74,7 @@ public static class MaterializedRunner
                 result.Outcome = FixtureOutcome.Skipped;
                 result.Reason =
                     $"requires [{string.Join(",", fixture.Manifest.Requires)}], "
-                    + $"engine declares [{string.Join(",", engine.Capabilities.OrderBy(c => c))}]; "
+                    + $"engine declares [{string.Join(",", engine.Capabilities.OrderBy(c => c, StringComparer.Ordinal))}]; "
                     + $"missing [{string.Join(",", missingCapabilities)}]";
                 report.Results.Add(result);
                 continue;

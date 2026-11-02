@@ -457,7 +457,7 @@ public static class WordsYamlLoader
             {
                 throw new WordsYamlException(
                     path,
-                    $"{context}: unknown key '{key}' (allowed: {string.Join(", ", allowedKeys.OrderBy(k => k))})"
+                    $"{context}: unknown key '{key}' (allowed: {string.Join(", ", allowedKeys.OrderBy(k => k, StringComparer.Ordinal))})"
                 );
             }
             if (map.ContainsKey(key))
