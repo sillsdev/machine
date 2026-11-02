@@ -25,6 +25,8 @@ public sealed class StressFixtureParityTests
         );
         string reasons = string.Join("; ", report.Results.Select(r => r.Reason));
         Assert.That(report.Failed, Is.EqualTo(0), reasons);
-        Assert.That(report.Passed, Is.EqualTo(1), reasons);
+        // A fixture with variants reports one result per variant, so pass means every run passed.
+        Assert.That(report.Results, Is.Not.Empty, reasons);
+        Assert.That(report.Passed, Is.EqualTo(report.Results.Count), reasons);
     }
 }
