@@ -9,7 +9,7 @@ namespace SIL.Machine.Morphology.HermitCrab;
 [TestFixture]
 public class IdentityRuleSignatureMorphDropTests
 {
-    private const string GrammarXml = """
+    private const string LanguageXml = """
         <?xml version="1.0" encoding="utf-8"?>
         <!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
         <HermitCrabInput>
@@ -97,13 +97,13 @@ public class IdentityRuleSignatureMorphDropTests
         </HermitCrabInput>
         """;
 
-    private static string WriteTempGrammar()
+    private static string WriteTempLanguage()
     {
         string path = Path.Combine(
             Path.GetTempPath(),
             "hc-identity-signature-drop-" + Guid.NewGuid().ToString("N") + ".xml"
         );
-        File.WriteAllText(path, GrammarXml);
+        File.WriteAllText(path, LanguageXml);
         return path;
     }
 
@@ -130,7 +130,7 @@ public class IdentityRuleSignatureMorphDropTests
     public void Fen_BareRootControl_IdentityWrapsRootDirectly_StableAndCorrect()
     {
         // Control: mrIdentity wraps the root directly, so no two rules share an affix boundary.
-        string path = WriteTempGrammar();
+        string path = WriteTempLanguage();
         try
         {
             Language language = XmlLanguageLoader.Load(path);
@@ -147,7 +147,7 @@ public class IdentityRuleSignatureMorphDropTests
     public void Feno_NoIdentityRuleApplies_StableAndCorrect()
     {
         // Control: after mrPtoQ alone the value is q, so mrIdentity (requires p) never applies.
-        string path = WriteTempGrammar();
+        string path = WriteTempLanguage();
         try
         {
             Language language = XmlLanguageLoader.Load(path);
@@ -163,7 +163,7 @@ public class IdentityRuleSignatureMorphDropTests
     [Test]
     public void Fenos_IdentityWrapsOutermost_EveryFreshLoadHasCorrectSignature()
     {
-        string path = WriteTempGrammar();
+        string path = WriteTempLanguage();
         try
         {
             const string CorrectSig = "FEN+PTOQ+QTOP+IDENT|fenos;FEN+PTOQ+QTOP|fenos";
