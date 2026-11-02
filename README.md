@@ -22,6 +22,8 @@ Machine provides implementations of many common statistical word alignment model
 
 Machine contains a rule-based morphological/phonological parser called HermitCrab.
 
+The HermitCrab conformance grammars are in [sillsdev/fieldworks-parser-conformance](https://github.com/sillsdev/fieldworks-parser-conformance), an engine-neutral suite of grammars a FieldWorks project can produce, each with the parses an engine must return. Machine runs them from a clone in `conformance/`, at the commit named in `conformance.commit`, which the build fetches (`dotnet build` or `dotnet test` of the HermitCrab tests), with the runner in [`src/SIL.Machine.Morphology.HermitCrab.Conformance`](src/SIL.Machine.Morphology.HermitCrab.Conformance/README.md).
+
 ### Feature Structures
 
 Machine provides a flexible implementation of feature structures with efficient unification, subsumption, and priority union operations. Feature values can be atomic symbols, strings, or variables.
