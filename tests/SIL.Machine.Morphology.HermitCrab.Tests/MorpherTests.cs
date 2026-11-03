@@ -12,6 +12,17 @@ namespace SIL.Machine.Morphology.HermitCrab;
 public class MorpherTests : HermitCrabTestBase
 {
     [Test]
+    public void Constructor_DefaultsMatchDocumentedProtocolDefaults()
+    {
+        var morpher = new Morpher(TraceManager, Language);
+
+        Assert.That(morpher.MaxStemCount, Is.EqualTo(2));
+        Assert.That(morpher.DeletionReapplications, Is.EqualTo(0));
+        Assert.That(morpher.MaxAlternatives, Is.EqualTo(0));
+        Assert.That(morpher.MergeEquivalentAnalyses, Is.True);
+    }
+
+    [Test]
     public void AnalyzeWord_CanAnalyze_ReturnsCorrectAnalysis()
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;

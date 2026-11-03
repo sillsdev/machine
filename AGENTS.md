@@ -78,3 +78,11 @@ first row wins:
 
 `docs/review/devils-advocate.md` is an optional adversarial pass for a high-risk
 change. Add a nested `AGENTS.md` only when a subtree needs different rules.
+
+`conformance/` is an ignored clone of sillsdev/fieldworks-parser-conformance at
+the commit in `conformance.commit`; do not edit it from machine. Building the
+HermitCrab tests fetches it and moves it to the pinned commit after a pull or
+branch switch. Changes to the grammars land in that repository, following its
+`AGENTS.md`. To try an unmerged suite change, set `HC_CONFORMANCE_SUITE=<path>`.
+How to get, bump and check the suite from machine is in
+`src/SIL.Machine.Morphology.HermitCrab.Conformance/README.md`.
