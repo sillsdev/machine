@@ -128,6 +128,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// (a value of 1 compiles the sequential cascade for unordered strata). It must remain a performance
         /// knob only: nothing that changes which analyses a parse returns, or whether
         /// <see cref="MaxAlternatives"/> is exceeded, may depend on it.
+        /// <see cref="ParseWords"/> throws unless this value is 1.
         /// </summary>
         public int MaxDegreeOfParallelism { get; }
 
