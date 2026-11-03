@@ -254,6 +254,13 @@
             ((Trace)output.CurrentTrace).Children.Add(new Trace(TraceType.Blocked, rule) { Output = output });
         }
 
+        public void MorphOrderSuppressed(Word output, Word canonicalWord)
+        {
+            ((Trace)output.CurrentTrace).Children.Add(
+                new Trace(TraceType.MorphOrderSuppressed, null) { Output = output }
+            );
+        }
+
         public void Successful(Language lang, Word word)
         {
             ((Trace)word.CurrentTrace).Children.Add(new Trace(TraceType.Successful, lang) { Output = word });
