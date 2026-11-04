@@ -154,10 +154,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 foreach (Word result in results)
                 {
-                    Interlocked.Increment(ref localAlternativeCount);
-                    if (_maxAlternatives > 0 && localAlternativeCount > _maxAlternatives)
-                        throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
-
                     if (mergeEquivalentAnalyses)
                     {
                         var key = new AnalysisMergeKey(result);
@@ -172,9 +168,15 @@ namespace SIL.Machine.Morphology.HermitCrab
                     {
                         // Skip intermediate sources from phonological rules, templates, and morphological rules.
                         result.Source = origInput;
-                        if (wordCache.ContainsKey(result))
+                        Word canonicalWord = wordCache.GetOrAdd(result, result);
+                        if (canonicalWord != result)
                             continue;
                     }
+
+                    Interlocked.Increment(ref localAlternativeCount);
+                    if (_maxAlternatives > 0 && localAlternativeCount > _maxAlternatives)
+                        throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
+
                     yield return result;
                 }
             }

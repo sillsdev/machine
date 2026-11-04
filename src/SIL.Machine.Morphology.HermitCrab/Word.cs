@@ -468,7 +468,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             if (_expandedAlternatives != null)
                 return _expandedAlternatives;
-            var alternatives = new HashSet<Word>();
+            var alternatives = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
             HashSet<Word> originals = Source?.ExpandAlternatives();
             // Update the alternatives of Source with any changes made since Source.
             if (originals == null || originals.Count < 2)
