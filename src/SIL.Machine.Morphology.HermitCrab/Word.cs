@@ -35,6 +35,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly Dictionary<string, HashSet<int>> _disjunctiveAllomorphIndices;
         private int _mruleAppCount = 0;
         private readonly ConcurrentBag<Word> _alternatives = new ConcurrentBag<Word>();
+        private HashSet<Word> _expandedAlternatives = null;
 
         public Word(RootAllomorph rootAllomorph, FeatureStruct realizationalFS)
         {
@@ -465,12 +466,14 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         internal HashSet<Word> ExpandAlternatives()
         {
+            if (_expandedAlternatives != null)
+                return _expandedAlternatives;
             var alternatives = new HashSet<Word>();
             HashSet<Word> originals = Source?.ExpandAlternatives();
             // Update the alternatives of Source with any changes made since Source.
-            if (originals == null)
+            if (originals == null || originals.Count < 2)
             {
-                // We have bottomed out.
+                // Special case.
                 alternatives.Add(this);
             }
             else if (Source.MorphologicalRuleUnapplicationCount > MorphologicalRuleUnapplicationCount)
@@ -485,8 +488,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                     Word alternative = original.Clone();
                     alternative._shape = this.Shape;
                     // Add new rules to alternative.
-                    int m_start = Source == null ? 0 : Source._mruleApps.Count();
-                    for (int i = m_start; i < _mruleApps.Count(); i++)
+                    int mr_start = Source == null ? 0 : Source._mruleApps.Count();
+                    for (int i = mr_start; i < _mruleApps.Count(); i++)
                         alternative.MorphologicalRuleUnapplied(_mruleApps[i], _allomorphApps[i]);
                     int nh_start = Source == null ? 0 : Source._nonHeadApps.Count();
                     for (int i = nh_start; i < _nonHeadApps.Count(); i++)
@@ -509,6 +512,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             // Add local alternatives.
             foreach (Word alternative in _alternatives)
                 alternatives.AddRange(alternative.ExpandAlternatives());
+            _expandedAlternatives = alternatives;
             return alternatives;
         }
 
