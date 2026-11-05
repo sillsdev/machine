@@ -212,6 +212,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         if (_morpher.TraceManager.IsTracing)
                             _morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
                         output.Add(outWord);
+
+                        // Allomorphs after the recorded one can never yield output, so the loop ends there.
+                        if (input.CurrentRecordedAllomorph == allo)
+                            break;
                     }
                     else if (_morpher.TraceManager.IsTracing)
                     {
