@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Extensions;
@@ -33,7 +34,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         private bool _isPartial;
         private readonly Dictionary<string, HashSet<int>> _disjunctiveAllomorphIndices;
         private int _mruleAppCount = 0;
-        private readonly IList<Word> _alternatives = new List<Word>();
+        private readonly ConcurrentBag<Word> _alternatives = new ConcurrentBag<Word>();
+        private HashSet<Word> _expandedAlternatives = null;
 
         public Word(RootAllomorph rootAllomorph, FeatureStruct realizationalFS)
         {
@@ -352,6 +354,31 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>
+        /// Reverts the most recent morphological rule application and updates related state.
+        /// </summary>
+        internal void PopUnapplied()
+        {
+            CheckFrozen();
+            if (_mruleAppIndex < 0)
+                throw new ArgumentOutOfRangeException("_mruleAppIndex");
+            IMorphologicalRule mrule = _mruleApps[_mruleAppIndex];
+            if (mrule != null)
+            {
+                _mrulesUnapplied.UpdateValue(mrule, () => 0, count => count - 1);
+                if (_mrulesUnapplied[mrule] == 0)
+                    _mrulesUnapplied.Remove(mrule);
+            }
+            _mruleApps.RemoveAt(_mruleAppIndex);
+            _allomorphApps.RemoveAt(_mruleAppIndex);
+            _mruleAppIndex--;
+        }
+
+        internal int MorphologicalRuleUnapplicationCount
+        {
+            get { return _mruleAppIndex + 1; }
+        }
+
+        /// <summary>
         /// Gets the number of times the specified morphological rule has been unapplied.
         /// </summary>
         /// <param name="mrule">The morphological rule.</param>
@@ -438,20 +465,27 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         internal Word Source { get; set; }
 
-        internal IList<Word> Alternatives
+        internal ConcurrentBag<Word> Alternatives
         {
             get { return _alternatives; }
         }
 
-        internal IList<Word> ExpandAlternatives()
+        internal HashSet<Word> ExpandAlternatives()
         {
-            IList<Word> alternatives = new List<Word>();
-            IList<Word> originals = Source?.ExpandAlternatives();
+            if (_expandedAlternatives != null)
+                return _expandedAlternatives;
+            var alternatives = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
+            HashSet<Word> originals = Source?.ExpandAlternatives();
             // Update the alternatives of Source with any changes made since Source.
             if (originals == null || originals.Count < 2)
             {
                 // Special case.
                 alternatives.Add(this);
+            }
+            else if (Source.MorphologicalRuleUnapplicationCount > MorphologicalRuleUnapplicationCount)
+            {
+                // This word is a simplification of Source, and so it should be skipped.
+                alternatives.AddRange(originals);
             }
             else
             {
@@ -460,8 +494,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                     Word alternative = original.Clone();
                     alternative._shape = this.Shape;
                     // Add new rules to alternative.
-                    int m_start = Source == null ? 0 : Source._mruleApps.Count();
-                    for (int i = m_start; i < _mruleApps.Count(); i++)
+                    int mr_start = Source == null ? 0 : Source._mruleApps.Count();
+                    for (int i = mr_start; i < _mruleApps.Count(); i++)
                         alternative.MorphologicalRuleUnapplied(_mruleApps[i], _allomorphApps[i]);
                     int nh_start = Source == null ? 0 : Source._nonHeadApps.Count();
                     for (int i = nh_start; i < _nonHeadApps.Count(); i++)
@@ -484,6 +518,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             // Add local alternatives.
             foreach (Word alternative in _alternatives)
                 alternatives.AddRange(alternative.ExpandAlternatives());
+            _expandedAlternatives = alternatives;
             return alternatives;
         }
 

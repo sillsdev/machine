@@ -30,7 +30,10 @@ namespace SIL.Machine.Rules
         )
             : base(rules, multiApp, comparer) { }
 
-        public override IEnumerable<TData> Apply(TData input)
+        public override IEnumerable<TData> Apply(
+            TData input,
+            Func<IEnumerable<TData>, IEnumerable<TData>> filterResults
+        )
         {
             // A set, so MaxAlternatives counts distinct results as the sequential cascade does.
             var output = new ConcurrentDictionary<TData, byte>(Comparer);
@@ -50,7 +53,7 @@ namespace SIL.Machine.Rules
                         {
                             for (int i = work.Item2; i < Rules.Count; i++)
                             {
-                                TData[] results = ApplyRule(Rules[i], i, work.Item1).ToArray();
+                                TData[] results = filterResults(ApplyRule(Rules[i], i, work.Item1)).ToArray();
                                 if (results.Length > 0)
                                 {
                                     foreach (TData result in results)

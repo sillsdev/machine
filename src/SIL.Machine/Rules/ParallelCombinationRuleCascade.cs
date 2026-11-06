@@ -36,7 +36,10 @@ namespace SIL.Machine.Rules
         /// </summary>
         public int MaxDegreeOfParallelism { get; set; } = -1;
 
-        public override IEnumerable<TData> Apply(TData input)
+        public override IEnumerable<TData> Apply(
+            TData input,
+            Func<IEnumerable<TData>, IEnumerable<TData>> filterResults
+        )
         {
             var parallelOptions = new ParallelOptions
             {
@@ -63,7 +66,7 @@ namespace SIL.Machine.Rules
                             {
                                 if ((work.Item2 == null || !work.Item2.Contains(i)))
                                 {
-                                    TData[] results = ApplyRule(Rules[i], i, work.Item1).ToArray();
+                                    TData[] results = filterResults(ApplyRule(Rules[i], i, work.Item1)).ToArray();
                                     if (results.Length > 0)
                                     {
                                         foreach (TData result in results)

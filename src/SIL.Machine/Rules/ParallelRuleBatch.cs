@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,14 +16,17 @@ namespace SIL.Machine.Rules
         public ParallelRuleBatch(IEnumerable<IRule<TData, TOffset>> rules, IEqualityComparer<TData> comparer)
             : base(rules, false, comparer) { }
 
-        public override IEnumerable<TData> Apply(TData input)
+        public override IEnumerable<TData> Apply(
+            TData input,
+            Func<IEnumerable<TData>, IEnumerable<TData>> filterResults
+        )
         {
             var output = new ConcurrentStack<TData>();
             Parallel.ForEach(
                 Rules,
                 rule =>
                 {
-                    TData[] outData = rule.Apply(input).ToArray();
+                    TData[] outData = filterResults(rule.Apply(input)).ToArray();
                     if (outData.Length > 0)
                         output.PushRange(outData);
                 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Annotations;
 using SIL.ObjectModel;
@@ -60,7 +61,15 @@ namespace SIL.Machine.Rules
                 throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
         }
 
-        public abstract IEnumerable<TData> Apply(TData input);
+        public IEnumerable<TData> Apply(TData input)
+        {
+            return Apply(input, results => results);
+        }
+
+        public abstract IEnumerable<TData> Apply(
+            TData input,
+            Func<IEnumerable<TData>, IEnumerable<TData>> filterResults
+        );
 
         protected virtual IEnumerable<TData> ApplyRule(IRule<TData, TOffset> rule, int index, TData input)
         {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Rules
@@ -22,20 +23,28 @@ namespace SIL.Machine.Rules
         )
             : base(rules, multiApp, comparer) { }
 
-        public override IEnumerable<TData> Apply(TData input)
+        public override IEnumerable<TData> Apply(
+            TData input,
+            Func<IEnumerable<TData>, IEnumerable<TData>> filterResults
+        )
         {
             var output = new HashSet<TData>(Comparer);
-            ApplyRules(input, !MultipleApplication ? new HashSet<int>() : null, output);
+            ApplyRules(input, !MultipleApplication ? new HashSet<int>() : null, output, filterResults);
             return output;
         }
 
-        private void ApplyRules(TData input, HashSet<int> rulesApplied, HashSet<TData> output)
+        private void ApplyRules(
+            TData input,
+            HashSet<int> rulesApplied,
+            HashSet<TData> output,
+            Func<IEnumerable<TData>, IEnumerable<TData>> filterResults
+        )
         {
             for (int i = 0; i < Rules.Count; i++)
             {
                 if ((rulesApplied == null || !rulesApplied.Contains(i)))
                 {
-                    foreach (TData result in ApplyRule(Rules[i], i, input))
+                    foreach (TData result in filterResults(ApplyRule(Rules[i], i, input)))
                     {
                         // avoid infinite loop
                         if (!Comparer.Equals(input, result))
@@ -43,7 +52,8 @@ namespace SIL.Machine.Rules
                             ApplyRules(
                                 result,
                                 rulesApplied == null ? null : new HashSet<int>(rulesApplied) { i },
-                                output
+                                output,
+                                filterResults
                             );
                         }
 

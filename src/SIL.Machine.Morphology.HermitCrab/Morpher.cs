@@ -447,9 +447,26 @@ namespace SIL.Machine.Morphology.HermitCrab
                 {
                     Word newWord = input.Clone();
                     newWord.RootAllomorph = allomorph;
+                    newWord.Freeze();
+                    if (
+                        newWord.SyntacticFeatureStruct != null
+                        && !newWord.SyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct)
+                    )
+                    { // Lookup fails because syntactic features don't match.
+                        if (TraceManager.IsTracing)
+                        {
+                            TraceManager.Failed(
+                                Language,
+                                input,
+                                FailureReason.RequiredSyntacticFeatureStruct,
+                                allomorph,
+                                newWord.SyntacticFeatureStruct
+                            );
+                        }
+                        continue;
+                    }
                     if (_traceManager.IsTracing)
                         _traceManager.SynthesizeWord(_lang, newWord);
-                    newWord.Freeze();
                     yield return newWord;
                 }
             }
