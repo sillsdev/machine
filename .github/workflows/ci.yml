@@ -115,7 +115,8 @@ jobs:
     needs: create_package
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    # Only this job can mint the OIDC token, so build steps never run with it.
+    # The nuget.org policy trusts only the nuget environment, which accepts v* tags alone.
+    environment: nuget
     permissions:
       id-token: write
 
