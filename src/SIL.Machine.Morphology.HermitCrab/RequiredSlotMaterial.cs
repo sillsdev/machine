@@ -303,11 +303,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         ruleAllomorphs = realizationalRule.Allomorphs;
                         break;
                     default:
-                        summary.MayAlwaysUnapply = true;
-                        summary.IsPure = false;
-                        summary.IsOrdered = false;
-                        summary.ReachLeft = SlotWalk.Unbounded;
-                        summary.ReachRight = SlotWalk.Unbounded;
+                        MakeOpaque(summary);
                         continue;
                 }
 
@@ -318,11 +314,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         || allomorph.Rhs.Where(IsInsertion).SelectMany(InsertedConstraints).Any(HasNoType)
                     )
                     {
-                        summary.MayAlwaysUnapply = true;
-                        summary.IsPure = false;
-                        summary.IsOrdered = false;
-                        summary.ReachLeft = SlotWalk.Unbounded;
-                        summary.ReachRight = SlotWalk.Unbounded;
+                        MakeOpaque(summary);
                         continue;
                     }
 
@@ -343,6 +335,15 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
             summary.Allomorphs = allomorphs.ToArray();
             return summary;
+        }
+
+        private static void MakeOpaque(SlotSummary summary)
+        {
+            summary.MayAlwaysUnapply = true;
+            summary.IsPure = false;
+            summary.IsOrdered = false;
+            summary.ReachLeft = SlotWalk.Unbounded;
+            summary.ReachRight = SlotWalk.Unbounded;
         }
 
         // Pre is the inserts before the first non-insertion, Post those after the last; any between is an infix.
