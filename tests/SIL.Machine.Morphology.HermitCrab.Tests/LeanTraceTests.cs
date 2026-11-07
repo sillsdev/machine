@@ -194,7 +194,7 @@ public class LeanTraceTests : HermitCrabTestBase
         return count;
     }
 
-    // The rule the CLI used before it read InputText and OutputText.
+    // Independent display-form rule for checking trace text.
     private static string? PreviousCliText(TraceType type, Word word)
     {
         if (word == null)

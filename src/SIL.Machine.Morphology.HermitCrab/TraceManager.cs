@@ -8,7 +8,7 @@
         /// Gets or sets whether trace nodes keep the words they describe. When <c>true</c> (the default),
         /// <see cref="Trace.Input"/> and <see cref="Trace.Output"/> hold the words, and some nodes hold clones.
         /// When <c>false</c>, both are always <c>null</c> and each node keeps only <see cref="Trace.InputText"/> and
-        /// <see cref="Trace.OutputText"/>, so a trace no longer keeps every intermediate shape alive. The tree and
+        /// <see cref="Trace.OutputText"/>, so the trace does not keep every intermediate shape alive. The tree and
         /// the text are the same in both modes.
         /// </summary>
         public bool RetainWords { get; set; } = true;
