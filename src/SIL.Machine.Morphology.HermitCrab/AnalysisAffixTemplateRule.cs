@@ -65,11 +65,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             int[] fired = null;
             if (RequiredSlotCannotUnapply(input, _rules.Count - 1, ref fired))
-            {
-                if (_morpher.TraceManager.IsTracing)
-                    _morpher.TraceManager.EndUnapplyTemplate(_template, input, false, FailureReason.None);
                 return Enumerable.Empty<Word>();
-            }
 
             Word inWord = input.Clone();
             inWord.Freeze();
@@ -148,11 +144,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     ReportShadow("violated", fired, i);
                     int[] outFired = fired;
                     if (RequiredSlotCannotUnapply(outWord, i - 1, ref outFired))
-                    {
-                        if (_morpher.TraceManager.IsTracing)
-                            _morpher.TraceManager.EndUnapplyTemplate(_template, outWord, false, FailureReason.None);
                         continue;
-                    }
                     ApplySlots(outWord, i - 1, output, outFired);
                 }
 
@@ -197,13 +189,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                                     int[] resFired = work.Item3;
                                     if (!RequiredSlotCannotUnapply(res, next, ref resFired))
                                         return Tuple.Create(res, next, resFired);
-                                    if (_morpher.TraceManager.IsTracing)
-                                        _morpher.TraceManager.EndUnapplyTemplate(
-                                            _template,
-                                            res,
-                                            false,
-                                            FailureReason.None
-                                        );
                                     return null;
                                 })
                                 .Where(item => item != null)
