@@ -31,12 +31,6 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 _pattern.Children.Add(node.Clone());
             }
 
-            // This pattern matches the surface, where the switch groups appear in reverse pattern order.
-            int leftIndex = Array.FindIndex(groupOrder, g => g.Name == leftGroupName);
-            int rightIndex = Array.FindIndex(groupOrder, g => g.Name == rightGroupName);
-            string firstName = leftIndex < rightIndex ? rightGroupName : leftGroupName;
-            string secondName = leftIndex < rightIndex ? leftGroupName : rightGroupName;
-
             // Synthesis leaves the context between the switch groups in place, so analysis keeps it and only
             // the switch groups trade places. Analysis skips boundaries, so a boundary here could never match.
             PatternNode<Word, ShapeNode>[] nodes = pattern.Children.ToArray();
@@ -46,13 +40,13 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             {
                 if (!(nodes[i] is Group<Word, ShapeNode> group))
                 {
-                    if (!IsBoundary(nodes[i]))
-                        _pattern.Children.Add(nodes[i].Clone());
+                    foreach (PatternNode<Word, ShapeNode> clone in new[] { nodes[i] }.DeepCloneExceptBoundaries())
+                        _pattern.Children.Add(clone);
                 }
-                else if (group.Name == secondName)
-                    AddGroup(groups, firstName);
-                else if (group.Name == firstName)
-                    AddGroup(groups, secondName);
+                else if (group.Name == leftGroupName)
+                    AddGroup(groups, rightGroupName);
+                else if (group.Name == rightGroupName)
+                    AddGroup(groups, leftGroupName);
                 else
                     AddGroup(groups, group.Name, skipBoundaries: true);
             }
@@ -69,11 +63,6 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             _pattern.Freeze();
         }
 
-        private static bool IsBoundary(PatternNode<Word, ShapeNode> node)
-        {
-            return node is Constraint<Word, ShapeNode> constraint && constraint.Type() == HCFeatureSystem.Boundary;
-        }
-
         private void AddGroup(
             Dictionary<string, Group<Word, ShapeNode>> groups,
             string name,
@@ -86,7 +75,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                     .Children.CastToConstraints("A switch group of a metathesis rule")
             )
             {
-                if (skipBoundaries && IsBoundary(constraint))
+                if (skipBoundaries && constraint.IsBoundary())
                     continue;
                 Constraint<Word, ShapeNode> newConstraint = constraint.Clone();
                 newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);

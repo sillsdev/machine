@@ -217,6 +217,215 @@ public class MetathesisRuleTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("kpta"));
     }
 
+    [TestCase(1)]
+    [TestCase(2)]
+    public void RequiredQuantifiedBoundaryBetweenSwitches_AnalysisUndoesSynthesis(int maxDegreeOfParallelism)
+    {
+        Morphophonemic.PhonologicalRules.Add(
+            new MetathesisRule
+            {
+                Pattern = Pattern<Word, ShapeNode>
+                    .New()
+                    .Group("1", group => group.Annotation(Character(Table3, "t")))
+                    .Annotation(Character(Table3, "+"))
+                    .Range(1, 1)
+                    .Group("2", group => group.Annotation(Character(Table3, "k")))
+                    .Value,
+                LeftSwitchName = "1",
+                RightSwitchName = "2",
+            }
+        );
+        LexEntry entry = AddEntry(
+            "root",
+            FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+            Morphophonemic,
+            "at+ka"
+        );
+
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism);
+        Assert.That(
+            morpher.GenerateWords(entry, System.Array.Empty<Morpheme>(), new FeatureStruct()),
+            Is.EquivalentTo(new[] { "akta" })
+        );
+        AssertMorphsEqual(morpher.ParseWord("akta"), "root");
+    }
+
+    [TestCase(1, 0)]
+    [TestCase(1, 1)]
+    [TestCase(1, 2)]
+    [TestCase(2, 0)]
+    [TestCase(2, 1)]
+    [TestCase(2, 2)]
+    public void BoundaryAlternative_AnalysisUndoesSynthesis(int maxDegreeOfParallelism, int nesting)
+    {
+        var pattern = new Pattern<Word, ShapeNode>();
+        pattern.Children.Add(new Group<Word, ShapeNode>("1", new Constraint<Word, ShapeNode>(Character(Table3, "t"))));
+        PatternNode<Word, ShapeNode> boundary = new Constraint<Word, ShapeNode>(Character(Table3, "+"));
+        if (nesting == 1)
+            boundary = new Quantifier<Word, ShapeNode>(0, 1, boundary);
+        else if (nesting == 2)
+            boundary = new Group<Word, ShapeNode>(boundary);
+        var alternatives = new Alternation<Word, ShapeNode>(
+            new PatternNode<Word, ShapeNode>[] { boundary, new Constraint<Word, ShapeNode>(Character(Table3, "i")) }
+        );
+        pattern.Children.Add(new Quantifier<Word, ShapeNode>(1, 1, alternatives));
+        pattern.Children.Add(new Group<Word, ShapeNode>("2", new Constraint<Word, ShapeNode>(Character(Table3, "k"))));
+        Morphophonemic.PhonologicalRules.Add(
+            new MetathesisRule
+            {
+                Pattern = pattern,
+                LeftSwitchName = "1",
+                RightSwitchName = "2",
+            }
+        );
+        LexEntry entry = AddEntry(
+            "root",
+            FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+            Morphophonemic,
+            "at+ka"
+        );
+        LexEntry segmentEntry = AddEntry(
+            "segment",
+            FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+            Morphophonemic,
+            "atika"
+        );
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism);
+        Assert.That(
+            morpher.GenerateWords(entry, System.Array.Empty<Morpheme>(), new FeatureStruct()),
+            Is.EquivalentTo(new[] { "akta" })
+        );
+        AssertMorphsEqual(morpher.ParseWord("akta"), "root");
+        Assert.That(
+            morpher.GenerateWords(segmentEntry, System.Array.Empty<Morpheme>(), new FeatureStruct()),
+            Is.EquivalentTo(new[] { "akita" })
+        );
+        AssertMorphsEqual(morpher.ParseWord("akita"), "segment");
+    }
+
+    [Test]
+    public void NonGreedyMiddleQuantifier_PreservesGreediness()
+    {
+        Pattern<Word, ShapeNode> pattern = Pattern<Word, ShapeNode>
+            .New()
+            .Group("1", group => group.Annotation(Character(Table3, "t")))
+            .Annotation(Character(Table3, "i"))
+            .LazyRange(1, 2)
+            .Group("2", group => group.Annotation(Character(Table3, "k")))
+            .Value;
+        var spec = new AnalysisMetathesisRuleSpec(pattern, "1", "2");
+        Quantifier<Word, ShapeNode> quantifier = spec.Pattern.Children.OfType<Quantifier<Word, ShapeNode>>().Single();
+        Assert.That(quantifier.IsGreedy, Is.False);
+    }
+
+    [Test]
+    public void QuantifiedMiddleSequence_RetainsSegmentAndSkipsBoundary()
+    {
+        Morphophonemic.PhonologicalRules.Add(
+            new MetathesisRule
+            {
+                Pattern = Pattern<Word, ShapeNode>
+                    .New()
+                    .Group("1", group => group.Annotation(Character(Table3, "t")))
+                    .Group(
+                        "sequence",
+                        group => group.Annotation(Character(Table3, "+")).Annotation(Character(Table3, "i"))
+                    )
+                    .Range(1, 1)
+                    .Group("2", group => group.Annotation(Character(Table3, "k")))
+                    .Value,
+                LeftSwitchName = "1",
+                RightSwitchName = "2",
+            }
+        );
+        LexEntry entry = AddEntry(
+            "root",
+            FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+            Morphophonemic,
+            "at+ika"
+        );
+        var morpher = new Morpher(TraceManager, Language);
+        Assert.That(
+            morpher.GenerateWords(entry, System.Array.Empty<Morpheme>(), new FeatureStruct()),
+            Is.EquivalentTo(new[] { "akita" })
+        );
+        AssertMorphsEqual(morpher.ParseWord("akita"), "root");
+        AssertMorphsEqual(morpher.ParseWord("akuta"));
+    }
+
+    [TestCase(1)]
+    [TestCase(2)]
+    public void BoundaryBetweenSwitches_AnalysisUndoesSynthesis(int maxDegreeOfParallelism)
+    {
+        Morphophonemic.PhonologicalRules.Add(
+            new MetathesisRule
+            {
+                Pattern = Pattern<Word, ShapeNode>
+                    .New()
+                    .Group("1", group => group.Annotation(Character(Table3, "t")))
+                    .Annotation(Character(Table3, "+"))
+                    .Group("2", group => group.Annotation(Character(Table3, "k")))
+                    .Value,
+                LeftSwitchName = "1",
+                RightSwitchName = "2",
+            }
+        );
+        LexEntry entry = AddEntry(
+            "root",
+            FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+            Morphophonemic,
+            "at+ka"
+        );
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism);
+        Assert.That(
+            morpher.GenerateWords(entry, System.Array.Empty<Morpheme>(), new FeatureStruct()),
+            Is.EquivalentTo(new[] { "akta" })
+        );
+        AssertMorphsEqual(morpher.ParseWord("akta"), "root");
+    }
+
+    [TestCase(false, false)]
+    [TestCase(false, true)]
+    [TestCase(true, false)]
+    [TestCase(true, true)]
+    public void UntypedMiddleConstraint_AnalysisUndoesSynthesis(bool grouped, bool nonempty)
+    {
+        FeatureStruct middle = nonempty ? FeatureStruct.New().Symbol(HCFeatureSystem.Clean).Value : new FeatureStruct();
+        Pattern<Word, ShapeNode> pattern = grouped
+            ? Pattern<Word, ShapeNode>
+                .New()
+                .Group("1", group => group.Annotation(Character(Table3, "t")))
+                .Group("middle", group => group.Annotation(middle))
+                .Group("2", group => group.Annotation(Character(Table3, "k")))
+                .Value
+            : Pattern<Word, ShapeNode>
+                .New()
+                .Group("1", group => group.Annotation(Character(Table3, "t")))
+                .Annotation(middle)
+                .Group("2", group => group.Annotation(Character(Table3, "k")))
+                .Value;
+        Morphophonemic.PhonologicalRules.Add(
+            new MetathesisRule
+            {
+                Pattern = pattern,
+                LeftSwitchName = "1",
+                RightSwitchName = "2",
+            }
+        );
+        LexEntry entry = AddEntry(
+            "root",
+            FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+            Morphophonemic,
+            "tika"
+        );
+        var morpher = new Morpher(TraceManager, Language);
+        Assert.That(
+            morpher.GenerateWords(entry, System.Array.Empty<Morpheme>(), new FeatureStruct()),
+            Is.EquivalentTo(new[] { "kita" })
+        );
+        AssertMorphsEqual(morpher.ParseWord("kita"), "root", "tika");
+    }
+
     private LexEntry AddMiddleContextRule(
         System.Func<IGroupSyntax<Word, ShapeNode>, IGroupSyntax<Word, ShapeNode>>? middle,
         string root
