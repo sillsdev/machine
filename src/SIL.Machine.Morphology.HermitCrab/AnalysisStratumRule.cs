@@ -112,11 +112,17 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             // Standalone stratum application is uncapped.
             int alternativeCount = 0;
-            return Apply(input, ref alternativeCount, 0);
+            return Apply(input, ref alternativeCount, false);
         }
 
-        internal IEnumerable<Word> Apply(Word input, ref int alternativeCount, int maxAlternatives)
+        internal IEnumerable<Word> Apply(Word input, ref int alternativeCount)
         {
+            return Apply(input, ref alternativeCount, true);
+        }
+
+        private IEnumerable<Word> Apply(Word input, ref int alternativeCount, bool enforceLimit)
+        {
+            int maxAlternatives = enforceLimit ? _morpher.MaxAlternatives : 0;
             RuleCascade<Word, ShapeNode> morphologicalRules = _mrulesRule;
             RuleBatch<Word, ShapeNode> templates = _templatesRule;
             if (maxAlternatives > 0)
