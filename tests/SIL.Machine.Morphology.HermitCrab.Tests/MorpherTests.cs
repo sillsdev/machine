@@ -76,8 +76,7 @@ public class MorpherTests : HermitCrabTestBase
         );
         Morphophonemic.MorphologicalRules.Add(gSuffix);
 
-        var morpher = new Morpher(TraceManager, Language);
-        morpher.MaxAlternatives = 1;
+        var morpher = new Morpher(TraceManager, Language, 0, 1);
 
         Assert.Throws<MaxAlternativesExceededException>(() => morpher.AnalyzeWord("sagd"));
     }
@@ -655,7 +654,7 @@ public class MorpherTests : HermitCrabTestBase
     {
         AddAffixTemplateAndCommutingPrefixes();
         SetRuleOrder(ruleOrder);
-        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1) { MaxAlternatives = limit };
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1, maxAlternatives: limit);
         string[] words = { "gudisagd", "sag", "digusagd", "sagt", "disagd", "sag" };
         string[][] expected = words
             .Select(w => morpher.ParseWord(w).Select(BatchAnalysisSignature).ToArray())
@@ -676,13 +675,19 @@ public class MorpherTests : HermitCrabTestBase
         }
     }
 
+    [Test]
+    public void MaxAlternatives_HasNoSetter()
+    {
+        Assert.That(typeof(Morpher).GetProperty(nameof(Morpher.MaxAlternatives))!.SetMethod, Is.Null);
+    }
+
     [TestCase(MorphologicalRuleOrder.Unordered, 0)]
     [TestCase(MorphologicalRuleOrder.Unordered, 1)]
     [TestCase(MorphologicalRuleOrder.Unordered, 2)]
     [TestCase(MorphologicalRuleOrder.Linear, 0)]
     [TestCase(MorphologicalRuleOrder.Linear, 1)]
     [TestCase(MorphologicalRuleOrder.Linear, 2)]
-    public void ParseWord_MaxAlternativesCanChangeBetweenCalls(MorphologicalRuleOrder ruleOrder, int degree)
+    public void ParseWord_MaxAlternativesIsFixedForEachMorpher(MorphologicalRuleOrder ruleOrder, int degree)
     {
         AddAffixTemplateAndCommutingPrefixes();
         SetRuleOrder(ruleOrder);
@@ -692,7 +697,8 @@ public class MorpherTests : HermitCrabTestBase
 
         foreach (int limit in new[] { 1, 100, 1, 0 })
         {
-            morpher.MaxAlternatives = limit;
+            morpher = new Morpher(TraceManager, Language, degree, limit);
+            Assert.That(morpher.MaxAlternatives, Is.EqualTo(limit));
             if (limit == 1)
                 Assert.Throws<MaxAlternativesExceededException>(() => morpher.ParseWord("gudisagd"));
             else
@@ -704,7 +710,7 @@ public class MorpherTests : HermitCrabTestBase
     public void CompileAnalysisRule_DirectStratumInvocationRemainsUncapped()
     {
         AddAffixTemplateAndCommutingPrefixes();
-        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1) { MaxAlternatives = 1 };
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1, maxAlternatives: 1);
         IRule<Word, ShapeNode> rule = Morphophonemic.CompileAnalysisRule(morpher);
         var input = new Word(Morphophonemic, Table3.Segment("gudisagd"));
         input.Freeze();
@@ -775,6 +781,88 @@ public class MorpherTests : HermitCrabTestBase
     }
 
     [TestCase(1)]
+    [TestCase(2)]
+    [TestCase(4)]
+    public void ParseWords_ReportsProgressInOrderWithinConcurrencyLimit(int concurrency)
+    {
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        string[] words = { "sag", "sag$", "sagt", "sag", "sag", "sag" };
+        var events = new List<(int Index, string Word, WordParseResult Result)>();
+        object sync = new();
+        int active = 0;
+        int peak = 0;
+        IReadOnlyList<WordParseResult> results = morpher.ParseWords(
+            words,
+            concurrency,
+            progress: (index, word, result) =>
+            {
+                lock (sync)
+                {
+                    events.Add((index, word, result));
+                    active += result == null ? 1 : -1;
+                    peak = Math.Max(peak, active);
+                }
+            }
+        );
+
+        Assert.That(events, Has.Count.EqualTo(words.Length * 2));
+        Assert.That(active, Is.Zero);
+        Assert.That(peak, Is.InRange(1, concurrency));
+        for (int i = 0; i < words.Length; i++)
+        {
+            var perWord = events.Where(e => e.Index == i).ToArray();
+            Assert.That(perWord, Has.Length.EqualTo(2));
+            Assert.That(perWord.Select(e => e.Word), Is.EqualTo(new[] { words[i], words[i] }));
+            Assert.That(perWord[0].Result, Is.Null);
+            Assert.That(perWord[1].Result, Is.SameAs(results[i]));
+        }
+        Assert.That(results[1].Error, Is.TypeOf<InvalidShapeException>());
+    }
+
+    [TestCase(1)]
+    [TestCase(4)]
+    public void ParseWords_PropagatesCallbackErrorsAfterAllWordsFinish(int concurrency)
+    {
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        string[] words = { "sag", "sag$", "sag", "sag" };
+        var completed = new WordParseResult[words.Length];
+        var starts = new int[words.Length];
+        var finishes = new int[words.Length];
+        var error = Assert.Throws<AggregateException>(() =>
+            morpher.ParseWords(
+                words,
+                concurrency,
+                progress: (index, word, result) =>
+                {
+                    if (result == null)
+                    {
+                        Interlocked.Increment(ref starts[index]);
+                        if (index == 0)
+                            throw new InvalidOperationException("start");
+                    }
+                    else
+                    {
+                        completed[index] = result;
+                        Interlocked.Increment(ref finishes[index]);
+                        if (index == 2)
+                            throw new InvalidOperationException("finish");
+                    }
+                }
+            )
+        );
+
+        Assert.That(error.InnerExceptions.Select(e => e.Message), Is.EquivalentTo(new[] { "start", "finish" }));
+        Assert.That(starts, Is.All.EqualTo(1));
+        Assert.That(finishes, Is.All.EqualTo(1));
+        Assert.That(completed[1].Error, Is.TypeOf<InvalidShapeException>());
+        foreach (int index in new[] { 0, 2, 3 })
+        {
+            Assert.That(completed[index].Error, Is.Null);
+            Assert.That(completed[index].Analyses, Is.Not.Empty);
+        }
+    }
+
+    [TestCase(1)]
     [TestCase(4)]
     public void ParseWords_CapturesInvalidShapesWithoutLosingOtherResults(int concurrency)
     {
@@ -801,7 +889,7 @@ public class MorpherTests : HermitCrabTestBase
     public void ParseWords_CapturesMaxAlternativesPerWord(int concurrency)
     {
         AddAffixTemplateAndCommutingPrefixes();
-        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1) { MaxAlternatives = 1 };
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1, maxAlternatives: 1);
 
         IReadOnlyList<WordParseResult> results = morpher.ParseWords(
             new[] { "gudisagd", "sag", "digusagd", "sag" },
@@ -819,8 +907,13 @@ public class MorpherTests : HermitCrabTestBase
             Assert.That(results[index].Analyses, Is.Not.Empty);
         }
 
-        morpher.MaxAlternatives = 0;
-        Assert.That(morpher.ParseWords(new[] { "gudisagd" }, concurrency)[0].Analyses, Is.Not.Empty);
+        Assert.That(morpher.MaxAlternatives, Is.EqualTo(1));
+        Assert.That(
+            morpher.ParseWords(new[] { "gudisagd" }, concurrency)[0].Error,
+            Is.TypeOf<MaxAlternativesExceededException>()
+        );
+        var unlimited = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        Assert.That(unlimited.ParseWords(new[] { "gudisagd" }, concurrency)[0].Analyses, Is.Not.Empty);
     }
 
     [TestCase(-1)]

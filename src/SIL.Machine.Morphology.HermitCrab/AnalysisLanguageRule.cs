@@ -34,11 +34,10 @@ namespace SIL.Machine.Morphology.HermitCrab
 
                 // The limit spans every input to this stratum in this parse.
                 int alternativeCount = 0;
-                int maxAlternatives = _morpher.MaxAlternatives;
 
                 foreach (Word inData in inputSet)
                 {
-                    foreach (Word outData in _rules[i].Apply(inData, ref alternativeCount, maxAlternatives))
+                    foreach (Word outData in _rules[i].Apply(inData, ref alternativeCount))
                     {
                         outputSet.Add(outData);
                         results.Add(outData);
