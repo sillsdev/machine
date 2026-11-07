@@ -32,7 +32,11 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly IList<RootAllomorph> _lexicalPatterns = new List<RootAllomorph>();
 
         public Morpher(ITraceManager traceManager, Language lang, int maxDegreeOfParallelism = 0)
+            : this(traceManager, lang, maxDegreeOfParallelism, 0) { }
+
+        public Morpher(ITraceManager traceManager, Language lang, int maxDegreeOfParallelism, int maxAlternatives)
         {
+            MaxAlternatives = maxAlternatives;
             _lang = lang;
             _traceManager = traceManager;
             // Must be set before CompileAnalysisRule: AnalysisStratumRule picks a sequential vs. parallel
@@ -60,7 +64,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             _analysisRule = lang.CompileAnalysisRule(this);
             _synthesisRule = lang.CompileSynthesisRule(this);
             MaxStemCount = 2;
-            MaxAlternatives = 0;
             MergeEquivalentAnalyses = true;
             PruneDisagreeingCopies = true;
             LexEntrySelector = entry => true;
@@ -93,8 +96,9 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <summary>
         /// MaxAlternatives limits the number of alternatives considered.
         /// If the limit is exceeded, then MaxAlternativesExceededException is thrown.
+        /// Set this value with the constructor.
         /// </summary>
-        public int MaxAlternatives { get; set; }
+        public int MaxAlternatives { get; }
 
         /// <summary>
         /// Merge analyses with equivalent state for every analysis-side rule.
@@ -232,12 +236,17 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// Keep the Language, settings, and tracing fixed until completion; selectors and custom rules must
         /// support concurrent calls when maxWordConcurrency is greater than 1 and tracing is disabled.
         /// Do not overlap traced calls sharing a trace manager. Failed parses have empty analyses.
+        /// Progress receives the input index and surface form, with a null result at the start and the
+        /// completed result at the finish. It runs on parsing threads (the calling thread for serial batches),
+        /// possibly concurrently, and must be fast and thread-safe. Callback exceptions are collected and
+        /// propagated as an AggregateException after all words and both notifications have been processed.
         /// Batch argument validation and input enumeration errors propagate to the caller.
         /// </summary>
         public IReadOnlyList<WordParseResult> ParseWords(
             IEnumerable<string> words,
             int maxWordConcurrency = 4,
-            bool guessRoot = false
+            bool guessRoot = false,
+            Action<int, string, WordParseResult> progress = null
         )
         {
             if (words == null)
@@ -253,9 +262,23 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             string[] inputs = words.ToArray();
             var results = new WordParseResult[inputs.Length];
+            var callbackErrors = new ConcurrentQueue<Exception>();
+            void Notify(int index, WordParseResult result)
+            {
+                try
+                {
+                    progress?.Invoke(index, inputs[index], result);
+                }
+                catch (Exception error)
+                {
+                    callbackErrors.Enqueue(error);
+                }
+            }
+
             void Parse(int index)
             {
                 object trace = null;
+                Notify(index, null);
                 try
                 {
                     var analyses = ParseWord(inputs[index], out trace, guessRoot).ToList().AsReadOnly();
@@ -265,6 +288,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 {
                     results[index] = new WordParseResult(inputs[index], Array.Empty<Word>(), trace, error);
                 }
+                Notify(index, results[index]);
             }
 
             if (_traceManager.IsTracing || maxWordConcurrency == 1)
@@ -281,6 +305,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                     Parse
                 );
             }
+
+            if (!callbackErrors.IsEmpty)
+                throw new AggregateException("One or more progress callbacks failed.", callbackErrors);
 
             return Array.AsReadOnly(results);
         }
