@@ -195,8 +195,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         /// <summary>
         /// Gets the shape text of the input in its display form: the regular-expression form for analysis node
-        /// types and the plain form otherwise. It is <c>null</c> when the node has no input. With retained words
-        /// it is computed from <see cref="Input"/> on each read.
+        /// types except <see cref="TraceType.CompoundingRuleAnalysis"/>, and the plain form otherwise. It is
+        /// <c>null</c> when the node has no input. With retained words, the text is formatted from
+        /// <see cref="Input"/>; frozen words cache the formatted text for their lifetime.
         /// </summary>
         public string InputText => _inputText ?? FormatText(Input);
 
