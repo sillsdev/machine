@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='utf-8'?>
+<HermitCrabInput>
+  <Language>
+    <Name>f0n1-stops-seg-seg-right-a</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="pos122">
+        <Name>***</Name>
+      </PartOfSpeech>
+      <PartOfSpeech id="pos17">
+        <Name>W</Name>
+      </PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="feat51">
+        <Name>syl</Name>
+        <Symbols>
+          <Symbol id="sym35">-</Symbol>
+          <Symbol id="sym149">+</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      </PhonologicalFeatureSystem>
+    <HeadFeatures />
+    <CharacterDefinitionTable id="table1">
+      <Name>***</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="char3">
+          <Representations>
+            <Representation>t</Representation>
+          </Representations>
+          <FeatureValue feature="feat51" symbolValues="sym35" />
+        </SegmentDefinition>
+        <SegmentDefinition id="char4">
+          <Representations>
+            <Representation>d</Representation>
+          </Representations>
+          <FeatureValue feature="feat51" symbolValues="sym35" />
+        </SegmentDefinition>
+        <SegmentDefinition id="char7">
+          <Representations>
+            <Representation>a</Representation>
+          </Representations>
+          <FeatureValue feature="feat51" symbolValues="sym149" />
+        </SegmentDefinition>
+        </SegmentDefinitions>
+      <BoundaryDefinitions>
+        <BoundaryDefinition id="char9">
+          <Representations>
+            <Representation>+</Representation>
+          </Representations>
+        </BoundaryDefinition>
+        <BoundaryDefinition id="char10">
+          <Representations>
+            <Representation>^0</Representation>
+            <Representation>*0</Representation>
+            <Representation>&amp;0</Representation>
+            <Representation>∅</Representation>
+          </Representations>
+        </BoundaryDefinition>
+        <BoundaryDefinition id="char11">
+          <Representations>
+            <Representation>.</Representation>
+          </Representations>
+        </BoundaryDefinition>
+      </BoundaryDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prule1" multipleApplicationOrder="simultaneous">
+        <Name>f0n1-stops-seg-seg-right-a</Name>
+        <PhoneticInput>
+          <PhoneticSequence>
+            <Segment segment="char3" />
+          </PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <Segment segment="char4" />
+              </PhoneticSequence>
+            </PhoneticOutput>
+            <Environment>
+              <RightEnvironment>
+                <PhoneticTemplate>
+                  <PhoneticSequence>
+                    <Segment segment="char7" />
+                  </PhoneticSequence>
+                </PhoneticTemplate>
+              </RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" phonologicalRules="prule1">
+        <Name>Morphology</Name>
+        <LexicalEntries>
+          <LexicalEntry id="entry2" partOfSpeech="pos17">
+            <Allomorphs>
+              <Allomorph id="allo2">
+                <PhoneticShape>ta</PhoneticShape>
+                <Properties>
+                  <Property name="ID">24</Property>
+                </Properties>
+              </Allomorph>
+            </Allomorphs>
+            <Gloss>ata</Gloss>
+            <Properties>
+              <Property name="ID">22</Property>
+            </Properties>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      </Strata>
+  </Language>
+</HermitCrabInput>
