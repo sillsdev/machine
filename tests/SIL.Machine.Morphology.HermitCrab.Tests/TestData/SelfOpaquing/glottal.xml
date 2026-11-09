@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='utf-8'?>
+<HermitCrabInput>
+  <Language>
+    <Name>Private underlying realization probe</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN">
+        <Name>N</Name>
+      </PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="vocalic">
+        <Name>vocalic</Name>
+        <Symbols>
+          <Symbol id="vocalic_yes">yes</Symbol>
+          <Symbol id="vocalic_no">no</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="a">
+          <Representations>
+            <Representation>a</Representation>
+          </Representations>
+          <FeatureValue feature="vocalic" symbolValues="vocalic_yes" />
+        </SegmentDefinition>
+        <SegmentDefinition id="q">
+          <Representations>
+            <Representation>ʔ</Representation>
+          </Representations>
+          <FeatureValue feature="vocalic" symbolValues="vocalic_no" />
+        </SegmentDefinition>
+        <SegmentDefinition id="dash">
+          <Representations>
+            <Representation>-</Representation>
+          </Representations>
+          <FeatureValue feature="vocalic" symbolValues="vocalic_no" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="vowels">
+        <Name>vowels</Name>
+        <FeatureValue feature="vocalic" symbolValues="vocalic_yes" />
+      </FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="postC" multipleApplicationOrder="simultaneous">
+        <Name>postC</Name>
+        <PhoneticInput>
+          <PhoneticSequence>
+            <Segment segment="q" />
+          </PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <Segment segment="dash" />
+              </PhoneticSequence>
+            </PhoneticOutput>
+            <Environment>
+              <RightEnvironment>
+                <PhoneticTemplate>
+                  <PhoneticSequence>
+                    <SimpleContext naturalClass="vowels" />
+                  </PhoneticSequence>
+                </PhoneticTemplate>
+              </RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" phonologicalRules="postC">
+        <Name>Core</Name>
+        <LexicalEntries>
+          <LexicalEntry id="POSTC" partOfSpeech="posN">
+            <Allomorphs>
+              <Allomorph id="alloPOSTC">
+                <PhoneticShape>ʔa</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <MorphemeId>POSTC</MorphemeId>
+            <Gloss>POSTC</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
