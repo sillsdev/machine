@@ -264,7 +264,10 @@ public class AnalysisAffixTemplateOrderTests : HermitCrabTestBase
         input.Freeze();
         Word restored = deletion.CompileAnalysisRule(morpher).Apply(input).Single();
         Assert.That(restored.Shape.First(n => n.Type() == HCFeatureSystem.Segment).Annotation.Optional, Is.True);
-        var template = TemplateOf(Slot(false, Prefix("ka")));
+        // The deletion rule leaves the word NonTemplate, and since 98d902a8 a final template is not
+        // unapplied after a non-template rule unless the grammar has partial rules.
+        AffixTemplate template = TemplateOf(Slot(false, Prefix("ka")));
+        template.IsFinal = false;
         var parses = new List<string[]>();
         foreach (
             RequiredSlotLookaheadMode mode in new[]
