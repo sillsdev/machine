@@ -80,17 +80,27 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public bool IsWordValid(Word word, Annotation<ShapeNode> morph)
         {
-            if (_type == ConstraintType.Exclude)
-                return !IsMatch(word, morph);
-            return IsMatch(word, morph);
+            return IsWordValid(word, morph, morph);
         }
 
-        private bool IsMatch(Word word, Annotation<ShapeNode> morph)
+        /// <summary>
+        /// Checks the environment of a morph that may be split into several pieces (for example by an infix).
+        /// The left context is taken before <paramref name="firstMorph"/> and the right context after
+        /// <paramref name="lastMorph"/>.
+        /// </summary>
+        public bool IsWordValid(Word word, Annotation<ShapeNode> firstMorph, Annotation<ShapeNode> lastMorph)
         {
-            if (_leftEnvMatcher != null && !_leftEnvMatcher.IsMatch(word, morph.Range.Start.Prev))
+            if (_type == ConstraintType.Exclude)
+                return !IsMatch(word, firstMorph, lastMorph);
+            return IsMatch(word, firstMorph, lastMorph);
+        }
+
+        private bool IsMatch(Word word, Annotation<ShapeNode> firstMorph, Annotation<ShapeNode> lastMorph)
+        {
+            if (_leftEnvMatcher != null && !_leftEnvMatcher.IsMatch(word, firstMorph.Range.Start.Prev))
                 return false;
 
-            if (_rightEnvMatcher != null && !_rightEnvMatcher.IsMatch(word, morph.Range.End.Next))
+            if (_rightEnvMatcher != null && !_rightEnvMatcher.IsMatch(word, lastMorph.Range.End.Next))
                 return false;
 
             return true;

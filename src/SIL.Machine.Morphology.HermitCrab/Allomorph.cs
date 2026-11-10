@@ -107,9 +107,16 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (!CheckAllomorphConstraints(morpher, this, word))
                 return false;
 
-            foreach (Annotation<ShapeNode> morph in word.GetMorphs(this))
+            // An infix can split a root into several morph annotations that share one MorphID. Environments are
+            // tested around the whole application: left of the first piece and right of the last piece.
+            foreach (
+                IGrouping<string, Annotation<ShapeNode>> pieces in word.GetMorphs(this)
+                    .GroupBy(m => (string)m.FeatureStruct.GetValue(HCFeatureSystem.MorphID))
+            )
             {
-                if (Environments.Count > 0 && !Environments.Any(e => e.IsWordValid(word, morph)))
+                Annotation<ShapeNode> morph = pieces.First();
+                Annotation<ShapeNode> lastPiece = pieces.Last();
+                if (Environments.Count > 0 && !Environments.Any(e => e.IsWordValid(word, morph, lastPiece)))
                 {
                     if (morpher.TraceManager.IsTracing)
                     {
@@ -132,7 +139,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         !FreeFluctuatesWith(disjunctiveAllomorph)
                         && (
                             disjunctiveAllomorph.Environments.Count == 0
-                            || disjunctiveAllomorph.Environments.Any(e => e.IsWordValid(word, morph))
+                            || disjunctiveAllomorph.Environments.Any(e => e.IsWordValid(word, morph, lastPiece))
                         )
                         && disjunctiveAllomorph.CheckAllomorphConstraints(null, this, word)
                     )
