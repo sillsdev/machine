@@ -435,32 +435,35 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             if (_traceManager.IsTracing)
                 _traceManager.LexicalLookup(input.Stratum, input);
-            foreach (RootAllomorph allomorph in SearchRootAllomorphs(input.Stratum, input.Shape).Distinct())
+            foreach (RootAllomorph allomorph in SearchRootAllomorphs(input.Stratum, input.Shape))
             {
-                if (((LexEntry)allomorph.Morpheme is LexEntry entry) && LexEntrySelector(entry))
+                if ((allomorph.Morpheme is LexEntry entry) && LexEntrySelector(entry))
                 {
-                    Word newWord = input.Clone();
-                    newWord.RootAllomorph = allomorph;
-                    newWord.Freeze();
                     if (
-                        newWord.SyntacticFeatureStruct != null
-                        && !newWord.SyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct)
+                        entry.SyntacticFeatureStruct != null
+                        && !entry.SyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct)
                     )
                     { // Lookup fails because syntactic features don't match.
                         if (TraceManager.IsTracing)
                         {
+                            Word traceWord = input.Clone();
+                            traceWord.RootAllomorph = allomorph;
                             TraceManager.Failed(
                                 Language,
-                                input,
+                                traceWord,
                                 FailureReason.RequiredSyntacticFeatureStruct,
                                 allomorph,
-                                newWord.SyntacticFeatureStruct
+                                traceWord.SyntacticFeatureStruct
                             );
+                            traceWord.Freeze();
                         }
                         continue;
                     }
+                    Word newWord = input.Clone();
+                    newWord.RootAllomorph = allomorph;
                     if (_traceManager.IsTracing)
                         _traceManager.SynthesizeWord(_lang, newWord);
+                    newWord.Freeze();
                     yield return newWord;
                 }
             }

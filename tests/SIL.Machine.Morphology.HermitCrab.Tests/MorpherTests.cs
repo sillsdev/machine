@@ -776,6 +776,37 @@ public class MorpherTests : HermitCrabTestBase
         });
     }
 
+    [Test]
+    public void LexicalLookup_OnlyUsesAllomorphsInSearchRootAllomorphs()
+    {
+        LexEntry entry = AddEntry("lookup", FeatureStruct.New().Value, Morphophonemic, "pup");
+        var sibling = new RootAllomorph(new Segments(Table3, "fuf", true));
+        entry.Allomorphs.Add(sibling);
+        var morpher = new Morpher(TraceManager, Language);
+
+        var input = new Word(Morphophonemic, Table3.Segment("fuf"));
+        Word[] results = morpher.LexicalLookup(input).ToArray();
+
+        Assert.That(results, Has.Length.EqualTo(1));
+        Assert.That(results[0].RootAllomorph, Is.SameAs(sibling));
+    }
+
+    [Test]
+    public void LexicalLookup_FiltersAllomorphsByEntrySyntacticFeatureStruct()
+    {
+        FeatureStruct noun = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value;
+        FeatureStruct verb = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value;
+        LexEntry nounEntry = AddEntry("nounLookup", noun, Morphophonemic, "tup");
+        LexEntry verbEntry = AddEntry("verbLookup", verb, Morphophonemic, "tup");
+        var morpher = new Morpher(TraceManager, Language);
+
+        var input = new Word(Morphophonemic, Table3.Segment("tup")) { SyntacticFeatureStruct = verb };
+        Word[] results = morpher.LexicalLookup(input).ToArray();
+
+        Assert.That(results, Has.Length.EqualTo(1));
+        Assert.That(results[0].RootAllomorph, Is.SameAs(verbEntry.PrimaryAllomorph));
+    }
+
     // Include allomorph identity, application order, and root identity in result comparisons.
     internal static string WordAnalysisSignature(Word word)
     {
