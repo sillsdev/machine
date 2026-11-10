@@ -854,6 +854,79 @@ public class AffixProcessRuleTests : HermitCrabTestBase
     }
 
     [Test]
+    public void InfixSplitRootAllomorphEnvironments()
+    {
+        var cons = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons+")
+            .Value;
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem).Symbol("voc+").Value;
+
+        // gabs / _ V, then the elsewhere form gabas
+        LexEntry root = AddEntry(
+            "root",
+            FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            Morphophonemic,
+            "gabs",
+            "gabas"
+        );
+        root.Allomorphs[0]
+            .Environments.Add(
+                new AllomorphEnvironment(
+                    ConstraintType.Require,
+                    null,
+                    Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+                )
+            );
+
+        var infix = new AffixProcessRule
+        {
+            Name = "in_infix",
+            Gloss = "INF",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        infix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs =
+                {
+                    Pattern<Word, ShapeNode>.New("1").Annotation(cons).Value,
+                    Pattern<Word, ShapeNode>.New("2").Annotation(any).OneOrMore.Value,
+                },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "in"), new CopyFromInput("2") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(infix);
+
+        var suffix = new AffixProcessRule
+        {
+            Name = "a_suffix",
+            Gloss = "SFX",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        suffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "a") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(suffix);
+
+        var morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("gabsa"), "root SFX");
+        AssertMorphsEqual(morpher.ParseWord("gabas"), "root");
+        // The infix's i must not count as the right context of the piece g, so gabs / _ V does not apply
+        // here and must not block gabas.
+        AssertMorphsEqual(morpher.ParseWord("ginabas"), "root INF");
+        // gabs / _ V is a valid right context for both pieces of g|in|abs only when a vowel follows the whole root.
+        AssertMorphsEqual(morpher.ParseWord("ginabsa"), "root INF SFX");
+        Assert.That(morpher.ParseWord("ginabs"), Is.Empty);
+    }
+
+    [Test]
     public void SimulfixRules()
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
