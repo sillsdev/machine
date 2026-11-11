@@ -83,11 +83,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             return IsWordValid(word, morph, morph);
         }
 
-        /// <summary>
-        /// Checks the environment of a morph that may be split into several pieces (for example by an infix).
-        /// The left context is taken before <paramref name="firstMorph"/> and the right context after
-        /// <paramref name="lastMorph"/>.
-        /// </summary>
         public bool IsWordValid(Word word, Annotation<ShapeNode> firstMorph, Annotation<ShapeNode> lastMorph)
         {
             if (_type == ConstraintType.Exclude)
