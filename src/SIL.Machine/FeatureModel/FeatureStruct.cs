@@ -1202,7 +1202,8 @@ namespace SIL.Machine.FeatureModel
 
         private FeatureStruct CloneTree(FeatureValue[] visited, ref int count)
         {
-            if (!MarkVisited(this, visited, ref count))
+            // Every value takes a slot, so a node too wide to fit falls back before cloning anything.
+            if (count + 1 + _definite.Count > visited.Length || !MarkVisited(this, visited, ref count))
                 return null;
             var clone = new FeatureStruct();
             foreach (KeyValuePair<Feature, FeatureValue> featVal in _definite)
