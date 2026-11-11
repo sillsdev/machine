@@ -107,6 +107,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (!CheckAllomorphConstraints(morpher, this, word))
                 return false;
 
+            if (Environments.Count == 0 && Index == 0)
+                return true;
+
             // An infix can split a root into several morph annotations that share one MorphID. Environments are
             // tested around the whole application: left of the first piece and right of the last piece.
             foreach (
