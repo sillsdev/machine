@@ -439,20 +439,30 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 if ((allomorph.Morpheme is LexEntry entry) && LexEntrySelector(entry))
                 {
-                    if (
-                        entry.SyntacticFeatureStruct != null
-                        && !entry.SyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct)
-                    )
-                    { // Lookup fails because syntactic features don't match.
-                        // We can't notify the TraceManager because then _traceManager.SynthesizeWord(_lang, newWord)
-                        // could end up under the wrong node in the next iteration of the for loop.
-                        continue;
-                    }
                     Word newWord = input.Clone();
                     newWord.RootAllomorph = allomorph;
                     if (_traceManager.IsTracing)
                         _traceManager.SynthesizeWord(_lang, newWord);
                     newWord.Freeze();
+                    if (
+                        entry.SyntacticFeatureStruct != null
+                        && !entry.SyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct)
+                    )
+                    { // Lookup fails because syntactic features don't match.
+                        if (TraceManager.IsTracing)
+                        {
+                            // This must follow the SynthesizeWord trace
+                            // to avoid problems with it in the next iteration of the loop.
+                            TraceManager.Failed(
+                                Language,
+                                newWord,
+                                FailureReason.RequiredSyntacticFeatureStruct,
+                                allomorph,
+                                newWord.SyntacticFeatureStruct
+                            );
+                        }
+                        continue;
+                    }
                     yield return newWord;
                 }
             }
