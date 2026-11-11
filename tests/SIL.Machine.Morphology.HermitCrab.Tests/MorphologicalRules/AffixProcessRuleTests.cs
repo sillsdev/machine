@@ -1622,6 +1622,64 @@ public class AffixProcessRuleTests : HermitCrabTestBase
     }
 
     [Test]
+    public void CircumfixAllomorphEnvironmentIsTestedAroundTheWholeCircumfix()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var cons = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons+")
+            .Value;
+
+        // FieldWorks builds one environment for a circumfix allomorph: the left context of the prefix half and the
+        // right context of the suffix half. Here the circumfix must be word-initial and followed by a consonant.
+        var circumfix = new AffixProcessRule { Name = "circumfix", Gloss = "OBJ" };
+        var circumfixAllomorph = new AffixProcessAllomorph
+        {
+            Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+            Rhs = { new InsertSegments(Table3, "ta"), new CopyFromInput("1"), new InsertSegments(Table3, "od") },
+        };
+        circumfixAllomorph.Environments.Add(
+            new AllomorphEnvironment(
+                ConstraintType.Require,
+                Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value,
+                Pattern<Word, ShapeNode>.New().Annotation(cons).Value
+            )
+        );
+        circumfix.Allomorphs.Add(circumfixAllomorph);
+        Morphophonemic.MorphologicalRules.Add(circumfix);
+
+        var sSuffix = new AffixProcessRule { Name = "s_suffix", Gloss = "3SG" };
+        sSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "s") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(sSuffix);
+
+        var kuPrefix = new AffixProcessRule { Name = "ku_prefix", Gloss = "PFX" };
+        kuPrefix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new InsertSegments(Table3, "ku"), new CopyFromInput("1") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(kuPrefix);
+
+        var morpher = new Morpher(TraceManager, Language);
+        // Word-initial before ta and a consonant after od: both outer contexts hold. The environment is not tested
+        // at od for its left context or at ta for its right context.
+        AssertMorphsEqual(morpher.ParseWord("tasagods"), "OBJ 32 3SG");
+        // Nothing follows od.
+        Assert.That(morpher.ParseWord("tasagod"), Is.Empty);
+        // ku precedes ta.
+        Assert.That(morpher.ParseWord("kutasagods"), Is.Empty);
+    }
+
+    [Test]
     public void BoundaryRules()
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;

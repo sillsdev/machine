@@ -109,6 +109,49 @@ public class CompoundingRuleTests : HermitCrabTestBase
     }
 
     [Test]
+    public void RootCompoundedWithItselfTestsEnvironmentAroundEachCopy()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        // A new entry, because the environment must not leak into the shared entries of other tests.
+        LexEntry root = AddEntry(
+            "gab",
+            FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+            Morphophonemic,
+            "gab"
+        );
+        var rule1 = new CompoundingRule { Name = "rule1" };
+        Morphophonemic.MorphologicalRules.Add(rule1);
+        rule1.Subrules.Add(
+            new CompoundingSubrule
+            {
+                HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
+                NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("head"), new CopyFromInput("nonHead") },
+            }
+        );
+
+        var morpher = new Morpher(TraceManager, Language);
+        // Other entries also parse these strings, so only parses made of the new root alone are counted.
+        IEnumerable<Word> ParseWithOnlyRoot(string word) =>
+            morpher.ParseWord(word).Where(w => w.AllomorphsInMorphOrder.All(a => a.Morpheme == root));
+        Assert.That(ParseWithOnlyRoot("gabgab"), Is.Not.Empty);
+
+        // gab / _ #: both copies share one root allomorph and one MorphID base, but each is its own application, so
+        // the first copy is not word-final and the compound is rejected.
+        root.PrimaryAllomorph.Environments.Add(
+            new AllomorphEnvironment(
+                ConstraintType.Require,
+                null,
+                Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
+            )
+        );
+
+        morpher = new Morpher(TraceManager, Language);
+        Assert.That(ParseWithOnlyRoot("gab"), Is.Not.Empty);
+        Assert.That(ParseWithOnlyRoot("gabgab"), Is.Empty);
+    }
+
+    [Test]
     public void MorphosyntacticRules()
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;

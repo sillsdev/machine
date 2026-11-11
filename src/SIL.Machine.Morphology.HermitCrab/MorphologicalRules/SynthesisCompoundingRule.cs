@@ -270,7 +270,13 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 }
             }
 
-            output.MarkMorph(newMorphNodes, headMatch.Input.CurrentNonHead.RootAllomorph, Word.RootMorphID);
+            // The head keeps its morph ID. The non-head root gets its own ID so that a root compounded with itself
+            // is two applications, and Allomorph.IsWordValid tests environments around each copy.
+            output.MarkMorph(
+                newMorphNodes,
+                headMatch.Input.CurrentNonHead.RootAllomorph,
+                Word.RootMorphID + output.MorphologicalRuleApplicationCount
+            );
 
             return output;
         }

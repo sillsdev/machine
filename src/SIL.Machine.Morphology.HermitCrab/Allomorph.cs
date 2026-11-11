@@ -110,8 +110,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (Environments.Count == 0 && Index == 0)
                 return true;
 
-            // An infix can split a root into several morph annotations that share one MorphID. Environments are
-            // tested around the whole application: left of the first piece and right of the last piece.
+            // An infix or a circumfix splits one application into several morph annotations that share a MorphID.
+            // Environments are tested around the whole application: left of the first piece, right of the last.
+            // A root compounded with itself is two applications because the non-head copy has its own MorphID.
             foreach (
                 IGrouping<string, Annotation<ShapeNode>> pieces in word.GetMorphs(this)
                     .GroupBy(m => (string)m.FeatureStruct.GetValue(HCFeatureSystem.MorphID))
