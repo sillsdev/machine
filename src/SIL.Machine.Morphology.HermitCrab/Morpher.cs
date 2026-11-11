@@ -95,8 +95,9 @@ namespace SIL.Machine.Morphology.HermitCrab
         internal RequiredSlotLookaheadMode RequiredSlotLookahead { get; set; } = RequiredSlotLookaheadMode.On;
 
         /// <summary>
-        /// Enable required-slot pruning during affix template analysis. Enabled by default. Set it before
-        /// parsing; changing it during a parse alters how much is pruned, not the analyses returned.
+        /// Enable required-slot pruning during affix template analysis. On by default. While
+        /// <see cref="ITraceManager.IsTracing"/> is set, nothing is pruned even when this reads true. Set it
+        /// before parsing; changing it during a parse alters how much is pruned, not the analyses returned.
         /// </summary>
         public bool PruneRequiredSlots
         {
