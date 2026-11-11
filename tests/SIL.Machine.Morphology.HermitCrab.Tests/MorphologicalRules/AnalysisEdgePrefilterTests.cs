@@ -83,7 +83,11 @@ public class AnalysisEdgePrefilterTests : HermitCrabTestBase
 
     private Word[] Apply(AffixProcessRule rule, string word, bool enabled, bool optionalLast = false)
     {
-        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1) { EdgePrefilterEnabled = enabled };
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
+        {
+            EdgePrefilterEnabled = enabled,
+            EdgeIndexEnabled = false,
+        };
         return new AnalysisAffixProcessRule(morpher, rule).Apply(FrozenInput(word, optionalLast)).ToArray();
     }
 
@@ -120,6 +124,7 @@ public class AnalysisEdgePrefilterTests : HermitCrabTestBase
         int rejected = 0;
         var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
         {
+            EdgeIndexEnabled = false,
             EdgePrefilterRejected = () => rejected++,
         };
         var rule = new AnalysisAffixProcessRule(morpher, SuffixRuleAppending("d"));
@@ -139,6 +144,7 @@ public class AnalysisEdgePrefilterTests : HermitCrabTestBase
         int rejected = 0;
         var morpher = new Morpher(traceManager, Language, maxDegreeOfParallelism: 1)
         {
+            EdgeIndexEnabled = false,
             EdgePrefilterRejected = () => rejected++,
         };
         var analysisRule = new AnalysisAffixProcessRule(morpher, rule);
@@ -195,6 +201,7 @@ public class AnalysisEdgePrefilterTests : HermitCrabTestBase
         int rejected = 0;
         var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
         {
+            EdgeIndexEnabled = false,
             EdgePrefilterRejected = () => rejected++,
         };
         var analysisRule = new AnalysisAffixProcessRule(morpher, rule);
@@ -232,6 +239,7 @@ public class AnalysisEdgePrefilterTests : HermitCrabTestBase
         int rejected = 0;
         var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
         {
+            EdgeIndexEnabled = false,
             EdgePrefilterRejected = () => rejected++,
         };
         var analysisRule = new AnalysisAffixProcessRule(morpher, rule);
@@ -257,6 +265,7 @@ public class AnalysisEdgePrefilterTests : HermitCrabTestBase
         int rejected = 0;
         var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
         {
+            EdgeIndexEnabled = false,
             EdgePrefilterRejected = () => rejected++,
         };
         var analysisRule = new AnalysisAffixProcessRule(morpher, rule);
@@ -422,8 +431,12 @@ public class AnalysisEdgePrefilterTests : HermitCrabTestBase
         // by skipping an optional edge node.
         foreach (int degree in new[] { 1, 0 })
         {
-            var on = new Morpher(TraceManager, Language, degree);
-            var off = new Morpher(TraceManager, Language, degree) { EdgePrefilterEnabled = false };
+            var on = new Morpher(TraceManager, Language, degree) { EdgeIndexEnabled = false };
+            var off = new Morpher(TraceManager, Language, degree)
+            {
+                EdgePrefilterEnabled = false,
+                EdgeIndexEnabled = false,
+            };
             foreach (string word in new[] { "puu", "pu", "pi", "bubuu" })
             {
                 Assert.That(
@@ -448,9 +461,14 @@ public class AnalysisEdgePrefilterTests : HermitCrabTestBase
         int rejected = 0;
         var on = new Morpher(TraceManager, language, maxDegreeOfParallelism)
         {
+            EdgeIndexEnabled = false,
             EdgePrefilterRejected = () => Interlocked.Increment(ref rejected),
         };
-        var off = new Morpher(TraceManager, language, maxDegreeOfParallelism) { EdgePrefilterEnabled = false };
+        var off = new Morpher(TraceManager, language, maxDegreeOfParallelism)
+        {
+            EdgePrefilterEnabled = false,
+            EdgeIndexEnabled = false,
+        };
 
         int parsed = 0;
         foreach (string word in words)

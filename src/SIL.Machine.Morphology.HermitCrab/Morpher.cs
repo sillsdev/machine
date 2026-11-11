@@ -23,6 +23,14 @@ namespace SIL.Machine.Morphology.HermitCrab
         // Called from analysis threads, so a handler must be thread-safe.
         internal Action EdgePrefilterRejected { get; set; }
 
+        // Skips an analysis affix rule whose every allomorph the edge prefilter would reject. Never while tracing.
+        internal bool EdgeIndexEnabled { get; set; } = true;
+
+        // Called from analysis threads, so a handler must be thread-safe.
+        internal Action EdgeIndexRejected { get; set; }
+
+        internal AnalysisEdgeIndex EdgeIndex { get; }
+
         private readonly Language _lang;
         private readonly IRule<Word, ShapeNode> _analysisRule;
         private readonly IRule<Word, ShapeNode> _synthesisRule;
@@ -57,6 +65,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 morphemes.AddRange(stratum.MorphologicalRules.OfType<AffixProcessRule>());
                 morphemes.AddRange(stratum.AffixTemplates.SelectMany(t => t.Slots).SelectMany(s => s.Rules).Distinct());
             }
+            EdgeIndex = new AnalysisEdgeIndex(lang);
             _analysisRule = lang.CompileAnalysisRule(this);
             _synthesisRule = lang.CompileSynthesisRule(this);
             MaxStemCount = 2;

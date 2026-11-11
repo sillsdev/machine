@@ -14,6 +14,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         private readonly List<PatternRule<Word, ShapeNode>> _rules;
         private readonly List<AnalysisAffixProcessAllomorphRuleSpec> _ruleSpecs;
         private readonly FeatureStruct _outputFS;
+        private readonly bool[] _leftRejects;
+        private readonly bool[] _rightRejects;
 
         public AnalysisAffixProcessRule(Morpher morpher, AffixProcessRule rule)
         {
@@ -46,15 +48,33 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     )
                 );
             }
+
+            IReadOnlyList<FeatureStruct> segments = morpher.EdgeIndex.Segments;
+            _leftRejects = SegmentsRejectingEveryAllomorph(segments, _ruleSpecs.ConvertAll(s => s.LeftEdgeConstraint));
+            _rightRejects = SegmentsRejectingEveryAllomorph(
+                segments,
+                _ruleSpecs.ConvertAll(s => s.RightEdgeConstraint)
+            );
         }
 
-        private static ShapeNode FindEdge(Shape shape, bool first)
+        // Null when some allomorph has no edge constraint on that side or no segment fails them all.
+        private static bool[] SegmentsRejectingEveryAllomorph(
+            IReadOnlyList<FeatureStruct> segments,
+            IReadOnlyList<FeatureStruct> constraints
+        )
         {
-            ShapeNode node = first ? shape.First : shape.Last;
-            ShapeNode end = first ? shape.End : shape.Begin;
-            while (node != null && node != end && node.Type() != HCFeatureSystem.Segment)
-                node = first ? node.Next : node.Prev;
-            return node == end ? null : node;
+            if (constraints.Count == 0 || constraints.Any(c => c == null))
+                return null;
+            bool[] rejects = null;
+            for (int s = 0; s < segments.Count; s++)
+            {
+                if (constraints.All(c => !segments[s].IsUnifiable(c, false, null)))
+                {
+                    rejects = rejects ?? new bool[segments.Count];
+                    rejects[s] = true;
+                }
+            }
+            return rejects;
         }
 
         // The matcher can skip optional annotations, so only a mandatory edge can reject a match.
@@ -64,10 +84,28 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             || node.Annotation.Optional
             || node.Annotation.FeatureStruct.IsUnifiable(constraint, false, null);
 
+        private static bool Rejects(bool[] rejects, int segment) =>
+            rejects != null && segment != AnalysisEdgeIndex.NoSegment && rejects[segment];
+
+        private bool EdgeIndexRejects(Word input)
+        {
+            if (_leftRejects == null && _rightRejects == null)
+                return false;
+            (int left, int right) = _morpher.EdgeIndex.GetEdgeSegments(input);
+            return Rejects(_leftRejects, left) || Rejects(_rightRejects, right);
+        }
+
         public IEnumerable<Word> Apply(Word input)
         {
             if (!_morpher.RuleSelector(_rule))
                 return Enumerable.Empty<Word>();
+
+            // Tracing keeps the per-allomorph path so its failure events are unchanged.
+            if (_morpher.EdgeIndexEnabled && !_morpher.TraceManager.IsTracing && EdgeIndexRejects(input))
+            {
+                _morpher.EdgeIndexRejected?.Invoke();
+                return Enumerable.Empty<Word>();
+            }
 
             if (
                 input.GetUnapplicationCount(_rule) >= _rule.MaxApplicationCount
@@ -77,8 +115,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 return Enumerable.Empty<Word>();
             }
 
-            ShapeNode first = _morpher.EdgePrefilterEnabled ? FindEdge(input.Shape, true) : null;
-            ShapeNode last = _morpher.EdgePrefilterEnabled ? FindEdge(input.Shape, false) : null;
+            ShapeNode first = _morpher.EdgePrefilterEnabled ? AnalysisEdgeIndex.FindEdge(input.Shape, true) : null;
+            ShapeNode last = _morpher.EdgePrefilterEnabled ? AnalysisEdgeIndex.FindEdge(input.Shape, false) : null;
             var output = new List<Word>();
             for (int i = 0; i < _rules.Count; i++)
             {

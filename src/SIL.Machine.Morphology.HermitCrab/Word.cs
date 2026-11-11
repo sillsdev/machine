@@ -568,6 +568,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         internal IDictionary<int, Tuple<FailureReason, object>> CurrentRuleResults { get; set; }
 
+        // Derived from the frozen shape, so clones do not copy it.
+        internal AnalysisEdgeIndex.EdgeSegments EdgeSegments { get; set; }
+
         protected override int FreezeImpl()
         {
             int code = 23;
