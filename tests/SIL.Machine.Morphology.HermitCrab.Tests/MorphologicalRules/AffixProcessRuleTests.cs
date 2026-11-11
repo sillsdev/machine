@@ -927,6 +927,81 @@ public class AffixProcessRuleTests : HermitCrabTestBase
     }
 
     [Test]
+    public void InfixSplitRootAllomorphLeftEnvironments()
+    {
+        var cons = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons+")
+            .Value;
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem).Symbol("voc+").Value;
+        FeatureStruct verb = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value;
+
+        LexEntry required = AddEntry("req", verb, Morphophonemic, "gabs");
+        required
+            .Allomorphs[0]
+            .Environments.Add(
+                new AllomorphEnvironment(
+                    ConstraintType.Require,
+                    Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
+                    null
+                )
+            );
+        LexEntry excluded = AddEntry("exc", verb, Morphophonemic, "babs");
+        excluded
+            .Allomorphs[0]
+            .Environments.Add(
+                new AllomorphEnvironment(
+                    ConstraintType.Exclude,
+                    Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
+                    null
+                )
+            );
+
+        var infix = new AffixProcessRule
+        {
+            Name = "in_infix",
+            Gloss = "INF",
+            RequiredSyntacticFeatureStruct = verb,
+        };
+        infix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs =
+                {
+                    Pattern<Word, ShapeNode>.New("1").Annotation(cons).Value,
+                    Pattern<Word, ShapeNode>.New("2").Annotation(any).OneOrMore.Value,
+                },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "in"), new CopyFromInput("2") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(infix);
+
+        var prefix = new AffixProcessRule
+        {
+            Name = "ku_prefix",
+            Gloss = "PFX",
+            RequiredSyntacticFeatureStruct = verb,
+        };
+        prefix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new InsertSegments(Table3, "ku"), new CopyFromInput("1") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(prefix);
+
+        var morpher = new Morpher(TraceManager, Language);
+        // The left context is taken before the first piece (g), not before the last piece (abs), which follows n.
+        AssertMorphsEqual(morpher.ParseWord("kuginabs"), "PFX req INF");
+        Assert.That(morpher.ParseWord("ginabs"), Is.Empty);
+        AssertMorphsEqual(morpher.ParseWord("binabs"), "exc INF");
+        Assert.That(morpher.ParseWord("kubinabs"), Is.Empty);
+    }
+
+    [Test]
     public void SimulfixRules()
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
