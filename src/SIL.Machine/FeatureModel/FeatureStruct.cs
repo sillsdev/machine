@@ -1178,9 +1178,7 @@ namespace SIL.Machine.FeatureModel
 
         private const int MaxTreeCloneNodes = 32;
 
-        // Per-thread scratch space, cleared after every use. Clone must not re-enter on the same thread while
-        // TryCloneTree is running (CloneTree calls only CloneImpl(null) on leaf values, which never clone a
-        // FeatureStruct), otherwise the inner call would overwrite the outer call's visited list.
+        // Per-thread scratch. Clone must not re-enter on the same thread while TryCloneTree runs.
         [ThreadStatic]
         private static FeatureValue[] ScratchVisited;
 
