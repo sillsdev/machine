@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
@@ -26,7 +25,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         public AnalysisEdgeIndex(Language language)
         {
-            _ids = new Dictionary<FeatureStruct, int>(FreezableEqualityComparer<FeatureStruct>.Default);
+            _ids = new Dictionary<FeatureStruct, int>(new SegmentComparer());
             _segments = new List<FeatureStruct>();
             foreach (Stratum stratum in language.Strata)
             {
@@ -90,6 +89,45 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             if (node == null || node.Annotation.Optional || !node.Annotation.FeatureStruct.IsFrozen)
                 return NoSegment;
             return _ids.TryGetValue(node.Annotation.FeatureStruct, out int id) ? id : NoSegment;
+        }
+
+        /// <summary>
+        /// Value equality for frozen feature structures. Flat structures of simple values are compared feature by
+        /// feature, because the general comparison allocates its cycle-tracking sets on every call and this runs
+        /// once per analysis word.
+        /// </summary>
+        private sealed class SegmentComparer : IEqualityComparer<FeatureStruct>
+        {
+            public bool Equals(FeatureStruct x, FeatureStruct y)
+            {
+                if (ReferenceEquals(x, y))
+                    return true;
+                if (x == null || y == null || x.GetFrozenHashCode() != y.GetFrozenHashCode())
+                    return false;
+                IReadOnlyCollection<Feature> features = x.Features;
+                if (features.Count != y.Features.Count)
+                    return false;
+                foreach (Feature feature in features)
+                {
+                    if (!y.TryGetValue(feature, out FeatureValue yValue))
+                        return false;
+                    x.TryGetValue(feature, out FeatureValue xValue);
+                    if (
+                        !(xValue is SimpleFeatureValue xSimple)
+                        || !(yValue is SimpleFeatureValue ySimple)
+                        || xSimple.IsVariable
+                        || ySimple.IsVariable
+                    )
+                    {
+                        return x.ValueEquals(y);
+                    }
+                    if (!xSimple.ValueEquals(ySimple))
+                        return false;
+                }
+                return true;
+            }
+
+            public int GetHashCode(FeatureStruct obj) => obj.GetFrozenHashCode();
         }
 
         /// <summary>
