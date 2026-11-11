@@ -1,13 +1,19 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.FeatureModel
 {
+    /// <remarks>
+    /// Instances are not safe for concurrent use; a failed unification writes in place and rolls back, so
+    /// overlapping use from another thread throws <see cref="InvalidOperationException"/>.
+    /// </remarks>
     public class VariableBindings : IDictionary<string, SimpleFeatureValue>, ICloneable<VariableBindings>
     {
         private readonly Dictionary<string, SimpleFeatureValue> _varBindings;
-        private bool _inTransaction;
+        private int _owner;
         private Dictionary<string, SimpleFeatureValue> _undo;
 
         public VariableBindings()
@@ -22,17 +28,19 @@ namespace SIL.Machine.FeatureModel
                 _varBindings[kvp.Key] = kvp.Value.Clone();
         }
 
-        // Not safe for concurrent use. Only the outermost operation owns the rollback; transactions do not nest.
         /// <summary>
         /// Starts a transaction so a failed operation can be rolled back without cloning up front. The bindings
         /// are only snapshotted if something is written. Returns false if a transaction is already open.
         /// </summary>
         internal bool BeginTransaction()
         {
-            if (_inTransaction)
-                return false;
-            _inTransaction = true;
-            return true;
+            int thread = Environment.CurrentManagedThreadId;
+            int current = Interlocked.CompareExchange(ref _owner, thread, 0);
+            if (current == 0)
+                return true;
+            if (current != thread)
+                throw new InvalidOperationException("VariableBindings is not safe for concurrent use");
+            return false;
         }
 
         internal void EndTransaction(bool commit)
@@ -44,12 +52,12 @@ namespace SIL.Machine.FeatureModel
                     _varBindings[kvp.Key] = kvp.Value;
             }
             _undo = null;
-            _inTransaction = false;
+            Volatile.Write(ref _owner, 0);
         }
 
         private void BeforeWrite()
         {
-            if (_inTransaction && _undo == null)
+            if (_owner != 0 && _undo == null)
                 _undo = new Dictionary<string, SimpleFeatureValue>(_varBindings);
         }
 
