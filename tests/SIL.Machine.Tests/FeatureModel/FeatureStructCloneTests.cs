@@ -47,7 +47,9 @@ public class FeatureStructCloneTests
 
         FeatureStruct clone = fs.Clone();
         Assert.That(clone.GetValue<FeatureStruct>("cx1"), Is.Not.SameAs(fs.GetValue<FeatureStruct>("cx1")));
-        clone.GetValue<FeatureStruct>("cx1").AddValue(featSys.GetFeature<SymbolicFeature>("a"), featSys.GetSymbol("a2"));
+        clone
+            .GetValue<FeatureStruct>("cx1")
+            .AddValue(featSys.GetFeature<SymbolicFeature>("a"), featSys.GetSymbol("a2"));
         Assert.That(clone.ValueEquals(fs), Is.False);
     }
 
