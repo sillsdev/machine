@@ -444,19 +444,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                         && !entry.SyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct)
                     )
                     { // Lookup fails because syntactic features don't match.
-                        if (TraceManager.IsTracing)
-                        {
-                            Word traceWord = input.Clone();
-                            traceWord.RootAllomorph = allomorph;
-                            TraceManager.Failed(
-                                Language,
-                                traceWord,
-                                FailureReason.RequiredSyntacticFeatureStruct,
-                                allomorph,
-                                traceWord.SyntacticFeatureStruct
-                            );
-                            traceWord.Freeze();
-                        }
+                        // We can't notify the TraceManager because then _traceManager.SynthesizeWord(_lang, newWord)
+                        // could end up under the wrong node in the next iteration of the for loop.
                         continue;
                     }
                     Word newWord = input.Clone();
