@@ -138,6 +138,34 @@ public class FeatureStructCloneTests
         AssertMatchesMapCopy(root);
     }
 
+    [TestCase(30, false)]
+    [TestCase(31, false)]
+    [TestCase(32, false)]
+    [TestCase(40, false)]
+    [TestCase(40, true)]
+    public void Clone_WideStructureAroundTheNodeLimit_MatchesMapCopy(int width, bool nested)
+    {
+        var featSys = new FeatureSystem { new ComplexFeature("cx1") };
+        var wide = new FeatureStruct();
+        for (int i = 0; i < width; i++)
+        {
+            var feature = new SymbolicFeature(
+                "f" + i,
+                new FeatureSymbol("f" + i + "+"),
+                new FeatureSymbol("f" + i + "-")
+            );
+            featSys.Add(feature);
+            wide.AddValue(feature, featSys.GetSymbol("f" + i + "+"));
+        }
+        FeatureStruct root = wide;
+        if (nested)
+        {
+            root = new FeatureStruct();
+            root.AddValue(featSys.GetFeature<ComplexFeature>("cx1"), wide);
+        }
+        AssertMatchesMapCopy(root);
+    }
+
     [Test]
     public void Clone_LargeReentrantStructure_PreservesSharing()
     {
