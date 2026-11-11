@@ -22,6 +22,9 @@ namespace SIL.Machine.FeatureModel
                 _varBindings[kvp.Key] = kvp.Value.Clone();
         }
 
+        // There are no nested transactions: only the outermost operation owns the rollback. An inner
+        // Unify/Subsumes/IsUnifiable call on the same bindings gets false from BeginTransaction and its writes
+        // are undone only if the outer operation fails. The bindings are not safe for concurrent use.
         /// <summary>
         /// Starts a transaction so a failed operation can be rolled back without cloning up front. The bindings
         /// are only snapshotted if something is written. Returns false if a transaction is already open.
