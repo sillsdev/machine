@@ -878,13 +878,18 @@ namespace SIL.Machine.FeatureModel
 
             other = Dereference(other);
 
-            VariableBindings definiteVarBindings = varBindings?.Clone();
-            if (IsUnifiableImpl(other, useDefaults, definiteVarBindings))
+            bool owner = varBindings != null && varBindings.BeginTransaction();
+            bool success = false;
+            try
             {
-                varBindings?.Replace(definiteVarBindings);
-                return true;
+                success = IsUnifiableImpl(other, useDefaults, varBindings);
+                return success;
             }
-            return false;
+            finally
+            {
+                if (owner)
+                    varBindings.EndTransaction(success);
+            }
         }
 
         internal override bool IsUnifiableImpl(FeatureValue other, bool useDefaults, VariableBindings varBindings)
@@ -934,17 +939,26 @@ namespace SIL.Machine.FeatureModel
 
             other = Dereference(other);
 
-            VariableBindings tempVarBindings = varBindings?.Clone();
-            FeatureValue newFV;
-            if (!UnifyImpl(other, useDefaults, tempVarBindings, out newFV))
+            bool owner = varBindings != null && varBindings.BeginTransaction();
+            bool success = false;
+            try
             {
-                output = null;
-                return false;
-            }
+                FeatureValue newFV;
+                if (!UnifyImpl(other, useDefaults, varBindings, out newFV))
+                {
+                    output = null;
+                    return false;
+                }
 
-            varBindings?.Replace(tempVarBindings);
-            output = (FeatureStruct)newFV;
-            return true;
+                success = true;
+                output = (FeatureStruct)newFV;
+                return true;
+            }
+            finally
+            {
+                if (owner)
+                    varBindings.EndTransaction(success);
+            }
         }
 
         public bool Subsumes(FeatureStruct other)
@@ -969,13 +983,18 @@ namespace SIL.Machine.FeatureModel
 
             other = Dereference(other);
 
-            VariableBindings tempVarBindings = varBindings?.Clone();
-            if (SubsumesImpl(other, useDefaults, tempVarBindings))
+            bool owner = varBindings != null && varBindings.BeginTransaction();
+            bool success = false;
+            try
             {
-                varBindings?.Replace(tempVarBindings);
-                return true;
+                success = SubsumesImpl(other, useDefaults, varBindings);
+                return success;
             }
-            return false;
+            finally
+            {
+                if (owner)
+                    varBindings.EndTransaction(success);
+            }
         }
 
         internal override bool SubsumesImpl(FeatureValue other, bool useDefaults, VariableBindings varBindings)
@@ -1150,7 +1169,72 @@ namespace SIL.Machine.FeatureModel
 
         public new FeatureStruct Clone()
         {
+            // Common case: a plain tree with no shared substructure needs no copies map.
+            FeatureStruct tree = TryCloneTree();
+            if (tree != null)
+                return tree;
             return new FeatureStruct(this);
+        }
+
+        private const int MaxTreeCloneNodes = 32;
+
+        [ThreadStatic]
+        private static FeatureValue[] ScratchVisited;
+
+        /// <summary>
+        /// Clones this structure without a copies map. Returns null if any value is reachable twice (a
+        /// reentrance) or the structure is large, in which case the caller must use the map-based copy.
+        /// </summary>
+        private FeatureStruct TryCloneTree()
+        {
+            FeatureValue[] visited = ScratchVisited ?? (ScratchVisited = new FeatureValue[MaxTreeCloneNodes]);
+            int count = 0;
+            try
+            {
+                return CloneTree(visited, ref count);
+            }
+            finally
+            {
+                Array.Clear(visited, 0, count);
+            }
+        }
+
+        private FeatureStruct CloneTree(FeatureValue[] visited, ref int count)
+        {
+            if (!MarkVisited(this, visited, ref count))
+                return null;
+            var clone = new FeatureStruct();
+            foreach (KeyValuePair<Feature, FeatureValue> featVal in _definite)
+            {
+                FeatureValue value = Dereference(featVal.Value);
+                if (value is FeatureStruct fs)
+                {
+                    FeatureStruct child = fs.CloneTree(visited, ref count);
+                    if (child == null)
+                        return null;
+                    clone._definite[featVal.Key] = child;
+                }
+                else
+                {
+                    if (!MarkVisited(value, visited, ref count))
+                        return null;
+                    clone._definite[featVal.Key] = value.CloneImpl(null);
+                }
+            }
+            return clone;
+        }
+
+        private static bool MarkVisited(FeatureValue value, FeatureValue[] visited, ref int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                if (ReferenceEquals(visited[i], value))
+                    return false;
+            }
+            if (count == visited.Length)
+                return false;
+            visited[count++] = value;
+            return true;
         }
 
         internal override bool ValueEqualsImpl(
