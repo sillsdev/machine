@@ -11,7 +11,7 @@ Governs `src/SIL.Machine.Morphology.HermitCrab/**/*.cs`.
   whether equivalent analyses can be merged safely. The merge key
   (`AnalysisMergeKey`) compares exactly these fields: shape, stratum identity, syntactic
   feature structure, realizational feature structure, non-head count, per-rule
-  unapplication counts, and `FinalTemplateState`. Check a new field against that list.
+  unapplication counts, `FinalTemplateState`, and `NeedsPartial`. Check a new field against that list.
 - Inspect allocations and retained object lifetimes only in changed inner loops. If the
   change claims a performance improvement, require a reproducible benchmark or measured
   artifact in addition to semantic regression tests.
