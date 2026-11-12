@@ -346,6 +346,17 @@ public class AffixTemplateTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("sagdvs"), "32 PAST NOM PL");
         AssertMorphsEqual(morpher.ParseWord("sagdmi"), "32 PAST 53");
         AssertMorphsEqual(morpher.ParseWord("sagdmis"), "32 PAST 53 PL");
+
+        // Test rules split between two strata.
+        Morphophonemic.MorphologicalRules.Remove(crule);
+        Allophonic.MorphologicalRules.Add(crule);
+        verbTemplate.IsFinal = true;
+        morpher = new Morpher(TraceManager, Language, 1);
+        AssertMorphsEqual(morpher.ParseWord("sagdbupu"));
+
+        verbTemplate.IsFinal = false;
+        morpher = new Morpher(TraceManager, Language, 1);
+        AssertMorphsEqual(morpher.ParseWord("sagdbupu"), "32 PAST 46");
     }
 
     [Test]
@@ -462,7 +473,7 @@ public class AffixTemplateTests : HermitCrabTestBase
 
         // Verify early pruning of final template.
         var morpher = new Morpher(TraceManager, Language);
-        Assert.That(morpher.IsPartial, Is.True);
+        Assert.That(morpher.GetPartialMorphemes(), Is.Not.Empty);
         morpher.AlwaysEnforceFinalTemplates = true;
         TraceManager.IsTracing = true;
         AssertMorphsEqual(morpher.ParseWord("sagdv", out object trace));
@@ -488,6 +499,79 @@ public class AffixTemplateTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("sagdvs"), "32 PAST NOM PL");
         AssertMorphsEqual(morpher.ParseWord("sagdmi"), "32 PAST 53");
         AssertMorphsEqual(morpher.ParseWord("sagdmis"), "32 PAST 53 PL");
+    }
+
+    [Test]
+    public void PartialLexicalEntryDoesNotDisableEarlyPruningOfFinalTemplate()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var verb = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value;
+
+        AffixProcessRule CreateSuffix(string name, string gloss, string suffix)
+        {
+            var rule = new AffixProcessRule
+            {
+                Name = name,
+                Gloss = gloss,
+                RequiredSyntacticFeatureStruct = verb.Clone(),
+            };
+            rule.Allomorphs.Add(
+                new AffixProcessAllomorph
+                {
+                    Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                    Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, suffix) },
+                }
+            );
+            return rule;
+        }
+
+        var edSuffix = CreateSuffix("ed_suffix", "PAST", "d");
+        var verbTemplate = new AffixTemplate { Name = "verb", RequiredSyntacticFeatureStruct = verb.Clone() };
+        verbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix));
+        Morphophonemic.AffixTemplates.Add(verbTemplate);
+        var nominalizer = CreateSuffix("nominalizer", "NOM", "v");
+        Morphophonemic.MorphologicalRules.Add(nominalizer);
+        var partialRoot = AddEntry("partial_root", verb.Clone(), Morphophonemic, "sab");
+        partialRoot.IsPartial = true;
+        try
+        {
+            // The test grammar already has a partial entry, so only the rules decide the prune.
+            var morpher = new Morpher(TraceManager, Language);
+            Assert.That(morpher.GetPartialMorphemes(), Is.Not.Empty);
+            Assert.That(morpher.HasPartialRules, Is.False);
+            Assert.That(morpher.AlwaysEnforceFinalTemplates, Is.False);
+            TraceManager.IsTracing = true;
+            AssertMorphsEqual(morpher.ParseWord("sagdv", out object trace));
+            Assert.That(
+                GetFailureDepth((Trace)trace, FailureReason.NonPartialRuleProhibitedAfterFinalTemplate),
+                Is.EqualTo(2)
+            );
+            TraceManager.IsTracing = false;
+            AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
+
+            // No template applies to a partial root, so pruning loses nothing for it.
+            AssertMorphsEqual(morpher.ParseWord("sab"), "partial_root");
+            AssertMorphsEqual(morpher.ParseWord("sabd"));
+            AssertMorphsEqual(morpher.ParseWord("sabdv"));
+            AssertMorphsEqual(morpher.ParseWord("sabv"), "partial_root NOM");
+
+            // A partial rule still turns the prune off, and what it licenses after a final template survives.
+            nominalizer.IsPartial = true;
+            morpher = new Morpher(TraceManager, Language);
+            Assert.That(morpher.HasPartialRules, Is.True);
+            TraceManager.IsTracing = true;
+            AssertMorphsEqual(morpher.ParseWord("sagdv", out trace), "32 PAST NOM");
+            Assert.That(
+                GetFailureDepth((Trace)trace, FailureReason.NonPartialRuleProhibitedAfterFinalTemplate),
+                Is.EqualTo(0)
+            );
+            TraceManager.IsTracing = false;
+        }
+        finally
+        {
+            Morphophonemic.Entries.Remove(partialRoot);
+            Entries.Remove("partial_root");
+        }
     }
 
     private static int GetFailureDepth(Trace trace, FailureReason reason)
@@ -554,6 +638,112 @@ public class AffixTemplateTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("sagvs"), "32 NOM PL");
     }
 
+    [TestCase(true)]
+    [TestCase(false)]
+    public void CliticAppliedAfterFinalTemplate(bool alwaysEnforceFinalTemplates)
+    {
+        var clitics = new Stratum(Table3)
+        {
+            Name = "Clitics",
+            MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered,
+        };
+        Language.Strata.Add(clitics);
+        try
+        {
+            CliticAppliedAfterFinalTemplate(clitics, alwaysEnforceFinalTemplates);
+        }
+        finally
+        {
+            Language.Strata.Remove(clitics);
+        }
+    }
+
+    private void CliticAppliedAfterFinalTemplate(Stratum clitics, bool alwaysEnforceFinalTemplates)
+    {
+        FeatureStruct any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+        var edSuffix = new AffixProcessRule { Name = "ed_suffix", Gloss = "PAST" };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") },
+            }
+        );
+
+        var verbTemplate = new AffixTemplate
+        {
+            Name = "verb",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        verbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix));
+        Morphophonemic.AffixTemplates.Add(verbTemplate);
+
+        var clitic = new AffixProcessRule
+        {
+            Name = "clitic",
+            Gloss = "PL",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        clitic.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "s") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(clitic);
+        var morpher = new Morpher(TraceManager, Language);
+        morpher.AlwaysEnforceFinalTemplates = alwaysEnforceFinalTemplates;
+        AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
+        AssertMorphsEqual(morpher.ParseWord("sagds"));
+
+        clitic.IsCliticRule = true;
+        morpher = new Morpher(TraceManager, Language);
+        morpher.AlwaysEnforceFinalTemplates = alwaysEnforceFinalTemplates;
+        AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
+        AssertMorphsEqual(morpher.ParseWord("sagds"), "32 PAST PL");
+
+        clitic.IsCliticRule = null;
+        Morphophonemic.MorphologicalRules.Remove(clitic);
+        clitics.MorphologicalRules.Add(clitic);
+        morpher = new Morpher(TraceManager, Language);
+        morpher.AlwaysEnforceFinalTemplates = alwaysEnforceFinalTemplates;
+        AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
+        AssertMorphsEqual(morpher.ParseWord("sagds"), "32 PAST PL");
+
+        clitic.IsCliticRule = false;
+        morpher = new Morpher(TraceManager, Language);
+        morpher.AlwaysEnforceFinalTemplates = alwaysEnforceFinalTemplates;
+        AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
+        AssertMorphsEqual(morpher.ParseWord("sagds"));
+
+        // Test stacked clitics.
+        var clitic2 = new AffixProcessRule
+        {
+            Name = "clitic2",
+            Gloss = "T",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        clitic2.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "t") },
+            }
+        );
+        clitics.MorphologicalRules.Add(clitic2);
+        clitic.IsCliticRule = true;
+        morpher = new Morpher(TraceManager, Language);
+        morpher.AlwaysEnforceFinalTemplates = alwaysEnforceFinalTemplates;
+        AssertMorphsEqual(morpher.ParseWord("sagdst"), "32 PAST PL T");
+
+        clitic.IsCliticRule = false;
+        morpher = new Morpher(TraceManager, Language);
+        morpher.AlwaysEnforceFinalTemplates = alwaysEnforceFinalTemplates;
+        AssertMorphsEqual(morpher.ParseWord("sagdst"));
+    }
+
     [TestCase(true, TestName = "SameRuleUsedInMultipleTemplates_AffixHasRequiredFeatures")]
     [TestCase(false, TestName = "SameRuleUsedInMultipleTemplates_AffixHasNoRequiredFeatures")]
     public void SameRuleUsedInMultipleTemplates(bool affixHasRequiredFeatures)
@@ -615,5 +805,63 @@ public class AffixTemplateTests : HermitCrabTestBase
 
         var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("mivd"), "53 IVERB PAST");
+    }
+
+    [TestCase(0)]
+    [TestCase(1)]
+    public void FinalTemplateInLowerStratum_ParsesWhenUpperAnalysesDifferOnlyInFinalTemplateState(int maxParallelism)
+    {
+        FeatureStruct any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        FeatureStruct verb = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value;
+        FeatureStruct noun = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value;
+
+        AffixProcessRule Suffix(string gloss, string segments)
+        {
+            var rule = new AffixProcessRule { Name = gloss, Gloss = gloss };
+            rule.Allomorphs.Add(
+                new AffixProcessAllomorph
+                {
+                    Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                    Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, segments) },
+                }
+            );
+            return rule;
+        }
+
+        // The Morphophonemic stratum does not block final templates, so it inherits the FinalTemplateState the
+        // Surface stratum leaves on each analysis.
+        AffixProcessRule finalSuffix = Suffix("FINAL", "d");
+        finalSuffix.RequiredSyntacticFeatureStruct = verb;
+        var finalTemplate = new AffixTemplate { Name = "final", RequiredSyntacticFeatureStruct = verb };
+        finalTemplate.Slots.Add(new AffixTemplateSlot(finalSuffix));
+        Morphophonemic.AffixTemplates.Add(finalTemplate);
+
+        // Both suffixes add "s", so Surface unapplies them in either order to one shape. NOM last leaves
+        // NonTemplate, which blocks the final template; TEMPLATE last leaves None, which allows it.
+        AffixProcessRule templateSuffix = Suffix("TEMPLATE", "s");
+        var nonFinalTemplate = new AffixTemplate
+        {
+            Name = "non-final",
+            IsFinal = false,
+            RequiredSyntacticFeatureStruct = verb,
+        };
+        nonFinalTemplate.Slots.Add(new AffixTemplateSlot(templateSuffix));
+        Surface.AffixTemplates.Add(nonFinalTemplate);
+
+        AffixProcessRule nominalizer = Suffix("NOM", "s");
+        nominalizer.RequiredSyntacticFeatureStruct = verb;
+        nominalizer.OutSyntacticFeatureStruct = noun;
+        Surface.MorphologicalRules.Add(nominalizer);
+
+        var morpher =
+            maxParallelism == 0
+                ? new Morpher(TraceManager, Language)
+                : new Morpher(TraceManager, Language, maxParallelism);
+        morpher.AlwaysEnforceFinalTemplates = true;
+        Assert.That(morpher.MergeEquivalentAnalyses, Is.True);
+        AssertMorphsEqual(morpher.ParseWord("sagdss"), "32 FINAL TEMPLATE NOM");
+
+        morpher.MergeEquivalentAnalyses = false;
+        AssertMorphsEqual(morpher.ParseWord("sagdss"), "32 FINAL TEMPLATE NOM");
     }
 }

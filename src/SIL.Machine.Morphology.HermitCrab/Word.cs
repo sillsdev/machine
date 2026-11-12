@@ -18,6 +18,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private RootAllomorph _rootAllomorph;
         private Shape _shape;
         private readonly List<IMorphologicalRule> _mruleApps;
+        private readonly List<Allomorph> _allomorphApps;
         private int _mruleAppIndex = -1;
         private readonly Dictionary<IMorphologicalRule, int> _mrulesUnapplied;
         private readonly Dictionary<IMorphologicalRule, int> _mrulesApplied;
@@ -42,6 +43,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             ResetDirty();
             SetRootAllomorph(rootAllomorph);
             RealizationalFeatureStruct = realizationalFS;
+            _allomorphApps = new List<Allomorph>();
             _mruleApps = new List<IMorphologicalRule>();
             _mrulesUnapplied = new Dictionary<IMorphologicalRule, int>();
             _mrulesApplied = new Dictionary<IMorphologicalRule, int>();
@@ -61,6 +63,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             SyntacticFeatureStruct = new FeatureStruct();
             RealizationalFeatureStruct = new FeatureStruct();
             _mprFeatures = new MprFeatureSet();
+            _allomorphApps = new List<Allomorph>();
             _mruleApps = new List<IMorphologicalRule>();
             _mrulesUnapplied = new Dictionary<IMorphologicalRule, int>();
             _mrulesApplied = new Dictionary<IMorphologicalRule, int>();
@@ -73,11 +76,6 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         protected Word(Word word)
-            : this(word, cloneNonHeadApps: true) { }
-
-        // ReplayOnto passes false: it rebuilds the non-head list wholesale, so cloning it here would be
-        // discarded work.
-        private Word(Word word, bool cloneNonHeadApps)
         {
             _allomorphs = new Dictionary<string, Allomorph>(word._allomorphs);
             Stratum = word.Stratum;
@@ -88,18 +86,18 @@ namespace SIL.Machine.Morphology.HermitCrab
             SyntacticFeatureStruct = word.SyntacticFeatureStruct.Clone();
             RealizationalFeatureStruct = word.RealizationalFeatureStruct.Clone();
             _mprFeatures = word.MprFeatures.Clone();
+            _allomorphApps = new List<Allomorph>(word._allomorphApps);
             _mruleApps = new List<IMorphologicalRule>(word._mruleApps);
             _mruleAppIndex = word._mruleAppIndex;
             _mrulesUnapplied = new Dictionary<IMorphologicalRule, int>(word._mrulesUnapplied);
             _mrulesApplied = new Dictionary<IMorphologicalRule, int>(word._mrulesApplied);
-            _nonHeadApps = cloneNonHeadApps ? new List<Word>(word._nonHeadApps.CloneItems()) : new List<Word>();
+            _nonHeadApps = new List<Word>(word._nonHeadApps.CloneItems());
             _nonHeadAppIndex = word._nonHeadAppIndex;
             _obligatorySyntacticFeatures = new IDBearerSet<Feature>(word._obligatorySyntacticFeatures);
             _isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
             _finalTemplateState = word._finalTemplateState;
             _isPartial = word._isPartial;
             CurrentTrace = word.CurrentTrace;
-            AnalysisScope = word.AnalysisScope;
             _disjunctiveAllomorphIndices = word._disjunctiveAllomorphIndices.ToDictionary(
                 kvp => kvp.Key,
                 kvp => new HashSet<int>(kvp.Value)
@@ -222,15 +220,31 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public object CurrentTrace { get; set; }
 
-        /// <summary>
-        /// Carrier for the analysis-cascade memo. Reference-shared like
-        /// <see cref="CurrentTrace"/> and excluded from <c>FreezeImpl</c>/<c>ValueEquals</c> for the same
-        /// reason. Null while tracing, and for words not routed through
-        /// <see cref="Morpher.ParseWord(string, out object)"/> at all, so readers must fall back to
-        /// unmemoized behavior rather than throw. Cleared again on entry to synthesis so returned words do
-        /// not pin the per-parse tables.
-        /// </summary>
-        internal AnalysisScope AnalysisScope { get; set; }
+        // Display text for traces, kept only on frozen words and never copied by the copy constructor.
+        private string _traceTextRegex;
+        private string _traceTextPlain;
+
+        internal string GetTraceText(bool analysis)
+        {
+            // Unsynchronised on purpose: a racing writer stores an equal string.
+            if (!IsFrozen)
+                return FormatTraceText(analysis);
+            if (analysis)
+            {
+                if (_traceTextRegex == null)
+                    _traceTextRegex = FormatTraceText(true);
+                return _traceTextRegex;
+            }
+            if (_traceTextPlain == null)
+                _traceTextPlain = FormatTraceText(false);
+            return _traceTextPlain;
+        }
+
+        private string FormatTraceText(bool analysis)
+        {
+            CharacterDefinitionTable table = Stratum.CharacterDefinitionTable;
+            return analysis ? Shape.ToRegexString(table, true) : Shape.ToString(table, true);
+        }
 
         public bool IsPartial
         {
@@ -262,6 +276,21 @@ namespace SIL.Machine.Morphology.HermitCrab
             IMorphologicalRule curRule = _mruleApps[_mruleAppIndex];
             return curRule == rule || (curRule == null && rule is CompoundingRule);
         }
+
+        internal bool IsAllomorphApplicable(Allomorph allomorph)
+        {
+            if (_mruleAppIndex < 0)
+                return false;
+
+            Allomorph curAllomorph = _allomorphApps[_mruleAppIndex];
+            return curAllomorph == null || curAllomorph == allomorph;
+        }
+
+        /// <summary>
+        /// The allomorph that analysis recorded for the rule now being applied, or null when any allomorph is
+        /// acceptable or no rule is pending.
+        /// </summary>
+        internal Allomorph CurrentRecordedAllomorph => _mruleAppIndex < 0 ? null : _allomorphApps[_mruleAppIndex];
 
         internal bool HasRemainingRulesFromStratum(Stratum stratum)
         {
@@ -329,18 +358,13 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>
-        /// Notifies this word that the specified morphological rule was unapplied. Null
+        /// Notifies this word that the specified morphological rule and allomorph were unapplied.
+        /// A null allomorph means that any allomorph is acceptable.  A null morphological rule
         /// indicates that an unknown compounding rule was unapplied. This is used when
         /// generating a compound word, because the compounding rule is usually not known just
         /// the non-head allomorph.
-        /// <para>
-        /// The trail push and the count increment below must stay in lockstep: <see cref="ReplayOnto"/>
-        /// splits a stored result on the assumption that equal unapplication multisets imply equal trail
-        /// lengths. Realizational rules incrementing the count without extending the trail is safe because
-        /// they do so on both sides of any comparison; any other divergence misaligns the graft.
-        /// </para>
         /// </summary>
-        internal void MorphologicalRuleUnapplied(IMorphologicalRule mrule)
+        internal void MorphologicalRuleUnapplied(IMorphologicalRule mrule, Allomorph allomorph = null)
         {
             CheckFrozen();
             if (mrule != null)
@@ -348,6 +372,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (!(mrule is RealizationalAffixProcessRule))
             {
                 _mruleApps.Add(mrule);
+                _allomorphApps.Add(allomorph);
                 _mruleAppIndex++;
             }
         }
@@ -364,9 +389,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             return numUnapplies;
         }
 
-        /// <summary>
-        /// The full multiset backing <see cref="GetUnapplicationCount"/>, for <see cref="AnalysisStateKey"/>.
-        /// </summary>
         internal IReadOnlyDictionary<IMorphologicalRule, int> UnappliedRuleCounts => _mrulesUnapplied;
 
         /// <summary>
@@ -433,15 +455,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             get { return _nonHeadApps.Count; }
         }
 
-        internal IReadOnlyList<Word> NonHeads => _nonHeadApps;
-
-        /// <summary>
-        /// Length of the morphological-rule trail so far. Recorded with <see cref="NonHeadCount"/> when a
-        /// subtree is memoized, to mark where a replayed result's kept suffix begins; see
-        /// <see cref="ReplayOnto"/>.
-        /// </summary>
-        internal int MorphologicalRuleTrailLength => _mruleApps.Count;
-
         internal void NonHeadUnapplied(Word nonHead)
         {
             CheckFrozen();
@@ -475,7 +488,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     // Add new rules to alternative.
                     int m_start = Source == null ? 0 : Source._mruleApps.Count();
                     for (int i = m_start; i < _mruleApps.Count(); i++)
-                        alternative.MorphologicalRuleUnapplied(_mruleApps[i]);
+                        alternative.MorphologicalRuleUnapplied(_mruleApps[i], _allomorphApps[i]);
                     int nh_start = Source == null ? 0 : Source._nonHeadApps.Count();
                     for (int i = nh_start; i < _nonHeadApps.Count(); i++)
                         alternative.NonHeadUnapplied(_nonHeadApps[i]);
@@ -498,68 +511,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             foreach (Word alternative in _alternatives)
                 alternatives.AddRange(alternative.ExpandAlternatives());
             return alternatives;
-        }
-
-        /// <summary>
-        /// Re-parents this Word -- computed while exploring the subtree below some cascade node N -- onto
-        /// <paramref name="queryNode"/>, which reached N's <see cref="AnalysisStateKey"/> via a different
-        /// unapplication order.
-        /// <para>
-        /// Sound because an equal key means N and <paramref name="queryNode"/> agree on Shape, both
-        /// FeatureStructs, the unapplication multiset and the non-head count, so everything computed
-        /// inside the subtree is a function of state they share and carries over untouched. Only the two
-        /// ordered structures the key reduces to counts -- the rule trail and the non-head list -- can
-        /// differ, and only in the prefix accumulated before reaching N, which is what gets replaced.
-        /// </para>
-        /// </summary>
-        /// <param name="queryNode">The word that hit the memo; its trail and non-heads become the prefix.</param>
-        /// <param name="mruleTrailPrefixLength">
-        /// N's <c>_mruleApps.Count</c> when its subtree was memoized: this word's trail from that index on
-        /// is the subtree-local suffix to keep.
-        /// </param>
-        /// <param name="nonHeadPrefixLength">Same, for <c>_nonHeadApps</c>.</param>
-        /// <param name="queryNonHeadPrefix">
-        /// Pre-cloned non-heads from <paramref name="queryNode"/>, so one memo hit clones them once rather
-        /// than per stored result; see <c>AnalysisScope.TryReplay</c>. Null clones them here instead.
-        /// </param>
-        internal Word ReplayOnto(
-            Word queryNode,
-            int mruleTrailPrefixLength,
-            int nonHeadPrefixLength,
-            IReadOnlyList<Word> queryNonHeadPrefix = null
-        )
-        {
-            var clone = new Word(this, cloneNonHeadApps: false);
-
-            List<IMorphologicalRule> mruleSuffix = clone._mruleApps.GetRange(
-                mruleTrailPrefixLength,
-                clone._mruleApps.Count - mruleTrailPrefixLength
-            );
-            clone._mruleApps.Clear();
-            clone._mruleApps.AddRange(queryNode._mruleApps);
-            clone._mruleApps.AddRange(mruleSuffix);
-            clone._mruleAppIndex = clone._mruleApps.Count - 1;
-
-            // The clone's non-head list starts empty, so it is built as query prefix + this word's
-            // subtree-local suffix without ever cloning the prefix this word arrived with, which the graft
-            // discards anyway.
-            if (queryNonHeadPrefix != null)
-                clone._nonHeadApps.AddRange(queryNonHeadPrefix);
-            else
-                clone._nonHeadApps.AddRange(queryNode._nonHeadApps.CloneItems());
-            clone._nonHeadApps.AddRange(
-                _nonHeadApps.GetRange(nonHeadPrefixLength, _nonHeadApps.Count - nonHeadPrefixLength).CloneItems()
-            );
-            clone._nonHeadAppIndex = clone._nonHeadApps.Count - 1;
-
-            clone.Freeze();
-            return clone;
-        }
-
-        // Hoisted out of the per-result loop by AnalysisScope.TryReplay; see ReplayOnto.
-        internal List<Word> CloneNonHeadsForReplay()
-        {
-            return new List<Word>(_nonHeadApps.CloneItems());
         }
 
         public Allomorph GetAllomorph(Annotation<ShapeNode> morph)
@@ -632,6 +583,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             code = code * 31 + _nonHeadAppIndex.GetHashCode();
             code = code * 31 + _stratum.GetHashCode();
             code = code * 31 + (_rootAllomorph == null ? 0 : _rootAllomorph.GetHashCode());
+            code = code * 31 + _allomorphApps.GetSequenceHashCode();
             code = code * 31 + _mruleApps.GetSequenceHashCode();
             code = code * 31 + _mruleAppIndex.GetHashCode();
             code = code * 31 + _isLastAppliedRuleFinal.GetHashCode();
@@ -656,6 +608,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 && _nonHeadAppIndex == other._nonHeadAppIndex
                 && _stratum == other._stratum
                 && _rootAllomorph == other._rootAllomorph
+                && _allomorphApps.SequenceEqual(other._allomorphApps)
                 && _mruleApps.SequenceEqual(other._mruleApps)
                 && _mruleAppIndex == other._mruleAppIndex
                 && _isLastAppliedRuleFinal == other._isLastAppliedRuleFinal

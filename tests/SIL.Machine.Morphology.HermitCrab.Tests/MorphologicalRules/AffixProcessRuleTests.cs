@@ -965,8 +965,9 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("sɯɯpu"), "50 SIMUL");
     }
 
-    [Test]
-    public void ReduplicationRules()
+    [TestCase(false)]
+    [TestCase(true)]
+    public void ReduplicationRules(bool pruneCopies)
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
         var cons = FeatureStruct
@@ -1015,7 +1016,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         );
         Morphophonemic.MorphologicalRules.Add(redup);
 
-        var morpher = new Morpher(TraceManager, Language);
+        var morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("sasag"), "RED 32");
 
         var voicing = new RewriteRule
@@ -1033,7 +1034,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         );
         Allophonic.PhonologicalRules.Add(voicing);
 
-        morpher = new Morpher(TraceManager, Language);
+        morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("sazag"), "RED 32");
 
         var affrication = new RewriteRule
@@ -1050,7 +1051,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         );
         Allophonic.PhonologicalRules.Add(affrication);
 
-        morpher = new Morpher(TraceManager, Language);
+        morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("tsazag"), "RED 32");
 
         redup.Allomorphs.Clear();
@@ -1066,7 +1067,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(TraceManager, Language);
+        morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("tsagag"), "32 RED");
 
         Allophonic.PhonologicalRules.Clear();
@@ -1084,7 +1085,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(TraceManager, Language);
+        morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("sagsag"), "32 RED");
         AssertMorphsEqual(morpher.ParseWord("sasibudbud"), "38 RED");
 
@@ -1115,7 +1116,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         );
         Allophonic.PhonologicalRules.Add(gDelete);
 
-        morpher = new Morpher(TraceManager, Language);
+        morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("saag"), "32 RED");
 
         gDelete.Subrules.Clear();
@@ -1126,7 +1127,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(TraceManager, Language);
+        morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("saga"), "32 RED");
 
         Allophonic.PhonologicalRules.Clear();
@@ -1152,7 +1153,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(TraceManager, Language);
+        morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("buiuib"), "30 RED", "31 RED");
     }
 
@@ -1900,8 +1901,9 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("bubib"), "42 PRES", "43 PRES");
     }
 
-    [Test]
-    public void ModifyFromInputRules()
+    [TestCase(false)]
+    [TestCase(true)]
+    public void ModifyFromInputRules(bool pruneCopies)
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
         var vowel = FeatureStruct
@@ -1941,7 +1943,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         );
         Morphophonemic.MorphologicalRules.Add(sSuffix);
 
-        var morpher = new Morpher(TraceManager, Language);
+        var morpher = new Morpher(TraceManager, Language) { PruneDisagreeingCopies = pruneCopies };
         AssertMorphsEqual(morpher.ParseWord("puso"), "52 PL");
     }
 
@@ -2028,5 +2030,181 @@ public class AffixProcessRuleTests : HermitCrabTestBase
 
         var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("katibɯd"), "49 PER.ACT");
+    }
+
+    [Test]
+    public void IsAllomorphApplicable()
+    {
+        FeatureStruct any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var sSuffix = new AffixProcessRule
+        {
+            Name = "s_suffix",
+            Gloss = "3SG",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            OutSyntacticFeatureStruct = FeatureStruct
+                .New(Language.SyntacticFeatureSystem)
+                .Feature(Head)
+                .EqualTo(head => head.Feature("pers").EqualTo("3"))
+                .Value,
+        };
+        var allomorph1 = new AffixProcessAllomorph
+        {
+            Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+            Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "s") },
+        };
+        var allomorph2 = new AffixProcessAllomorph
+        {
+            Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+            Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "z") },
+        };
+        sSuffix.Allomorphs.Add(allomorph1);
+        sSuffix.Allomorphs.Add(allomorph2);
+        Morphophonemic.MorphologicalRules.Add(sSuffix);
+        var morpher = new Morpher(TraceManager, Language) { MergeEquivalentAnalyses = true };
+
+        Shape shape = Morphophonemic.CharacterDefinitionTable.Segment("sag");
+        var input = new Word(Morphophonemic, shape);
+        input.MorphologicalRuleUnapplied(sSuffix);
+        input.Freeze();
+        Word word = morpher.LexicalLookup(input).First();
+        IEnumerable<Word> output = morpher.SynthesizeWord(word);
+        Assert.That(output.Count(), Is.EqualTo(2));
+
+        shape = Morphophonemic.CharacterDefinitionTable.Segment("sag");
+        input = new Word(Morphophonemic, shape);
+        input.MorphologicalRuleUnapplied(sSuffix, allomorph1);
+        input.Freeze();
+        word = morpher.LexicalLookup(input).First();
+        output = morpher.SynthesizeWord(word);
+        Assert.That(output.Count(), Is.EqualTo(1));
+        Assert.That(output.First().ToString(), Is.EqualTo("sags"));
+
+        shape = Morphophonemic.CharacterDefinitionTable.Segment("sag");
+        input = new Word(Morphophonemic, shape);
+        input.MorphologicalRuleUnapplied(sSuffix, allomorph2);
+        input.Freeze();
+        word = morpher.LexicalLookup(input).First();
+        output = morpher.SynthesizeWord(word);
+        Assert.That(output.Count(), Is.EqualTo(1));
+        Assert.That(output.First().ToString(), Is.EqualTo("sagz"));
+    }
+
+    private AffixProcessRule AddThreeSegmentSuffix(
+        string seg0,
+        string env0,
+        string seg1,
+        string env1,
+        string seg2,
+        string env2
+    )
+    {
+        FeatureStruct any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var sSuffix = new AffixProcessRule
+        {
+            Name = "s_suffix",
+            Gloss = "3SG",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        foreach ((string seg, string env) in new[] { (seg0, env0), (seg1, env1), (seg2, env2) })
+        {
+            var allomorph = new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, seg) },
+            };
+            if (env.Length > 0)
+            {
+                allomorph.Environments.Add(
+                    new AllomorphEnvironment(
+                        ConstraintType.Require,
+                        null,
+                        Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, env)).Value
+                    )
+                );
+            }
+            sSuffix.Allomorphs.Add(allomorph);
+        }
+        Morphophonemic.MorphologicalRules.Add(sSuffix);
+
+        var edSuffix = new AffixProcessRule
+        {
+            Name = "ed_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(edSuffix);
+        return sSuffix;
+    }
+
+    private static void CollectSubruleApplications(
+        Trace trace,
+        IMorphologicalRule rule,
+        List<(int Index, int Recorded)> found
+    )
+    {
+        if (
+            trace.Type == TraceType.MorphologicalRuleSynthesis
+            && trace.Source == rule
+            && trace.SubruleIndex >= 0
+            && trace.Input?.CurrentRecordedAllomorph is AffixProcessAllomorph recorded
+        )
+        {
+            found.Add((trace.SubruleIndex, ((AffixProcessRule)rule).Allomorphs.IndexOf(recorded)));
+        }
+        foreach (Trace child in trace.Children)
+            CollectSubruleApplications(child, rule, found);
+    }
+
+    private List<(int Index, int Recorded)> ParseTraced(AffixProcessRule rule, string word, params string[] expected)
+    {
+        TraceManager.IsTracing = true;
+        var morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord(word, out object trace), expected);
+        TraceManager.IsTracing = false;
+        var found = new List<(int Index, int Recorded)>();
+        CollectSubruleApplications((Trace)trace, rule, found);
+        return found;
+    }
+
+    [Test]
+    public void SynthesisStopsAtRecordedAllomorph()
+    {
+        AffixProcessRule sSuffix = AddThreeSegmentSuffix("s", "ɯ", "z", "a", "z", "a");
+
+        var applications = ParseTraced(sSuffix, "sagsɯd", "32 3SG PAST");
+
+        Assert.That(applications, Is.Not.Empty);
+        Assert.That(applications.Any(a => a.Index == a.Recorded), Is.True);
+        Assert.That(applications.Any(a => a.Index > a.Recorded), Is.False);
+    }
+
+    [Test]
+    public void SynthesisTriesEveryAllomorphUpToRecordedLast()
+    {
+        AffixProcessRule sSuffix = AddThreeSegmentSuffix("s", "a", "z", "a", "z", "ɯ");
+
+        var applications = ParseTraced(sSuffix, "sagzɯd", "32 3SG PAST");
+
+        Assert.That(applications.Any(a => a.Recorded == 2 && a.Index == 2), Is.True);
+        Assert.That(applications.Any(a => a.Index > a.Recorded), Is.False);
+    }
+
+    [Test]
+    public void EarlierEnvironmentFreeAllomorphStillBlocksLaterOnes()
+    {
+        AffixProcessRule sSuffix = AddThreeSegmentSuffix("s", "", "z", "ɯ", "z", "ɯ");
+
+        // allomorph 0 has no environment, so the disjunctive property rejects the later z allomorphs
+        var applications = ParseTraced(sSuffix, "sagzɯd");
+
+        Assert.That(applications.Any(a => a.Index > a.Recorded), Is.False);
+        ParseTraced(sSuffix, "sagsɯd", "32 3SG PAST");
     }
 }

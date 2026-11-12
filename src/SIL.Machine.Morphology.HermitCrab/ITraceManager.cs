@@ -26,6 +26,7 @@
         NonPartialRuleProhibitedAfterFinalTemplate,
         NonPartialRuleRequiredAfterNonFinalTemplate,
         MaxApplicationCount,
+        AllomorphNotApplicable,
     }
 
     public interface ITraceManager

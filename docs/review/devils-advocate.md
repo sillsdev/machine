@@ -17,8 +17,8 @@ Challenge the most consequential claim first, one objection at a time, each with
 a `path:line` and a concrete scenario. In this repository the claims that have
 failed before are:
 
-- a HermitCrab performance win asserted without a measured artifact, or a memo
-  key that omits a field a rule reads;
+- a HermitCrab speedup asserted without a measured artifact, or a merge that ignores
+  state read by an analysis rule;
 - a USFM or reference change whose test proves the happy path only;
 - a parity claim about `machine.py` with no checked comparison.
 

@@ -274,7 +274,7 @@
               <FeatureValue feature="ffeat1" symbolValues="fval1" />
             </NonHeadRequiredFootFeatures>
           </CompoundingRule>
-          <MorphologicalRule id="mrule2" blockable="false" multipleApplication="2" requiredPartsOfSpeech="pos1" requiredStemName="stemName1" outputPartOfSpeech="pos2" outputObligatoryFeatures="hfeat1" partial="true">
+          <MorphologicalRule id="mrule2" blockable="false" isCliticRule="true" multipleApplication="2" requiredPartsOfSpeech="pos1" requiredStemName="stemName1" outputPartOfSpeech="pos2" outputObligatoryFeatures="hfeat1" partial="true">
             <Name>morph rule 1</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="msubrule1">
