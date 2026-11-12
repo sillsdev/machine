@@ -239,7 +239,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// Progress receives the input index and surface form, with a null result at the start and the
         /// completed result at the finish. It runs on parsing threads (the calling thread for serial batches),
         /// possibly concurrently, and must be fast and thread-safe. Callback exceptions are collected and
-        /// propagated as an AggregateException after all words and both notifications have been processed.
+        /// propagated as a WordParseProgressException (an AggregateException) after all words and both notifications
+        /// have been processed; its Results property holds every word's result in input order.
         /// Batch argument validation and input enumeration errors propagate to the caller.
         /// </summary>
         public IReadOnlyList<WordParseResult> ParseWords(
@@ -306,10 +307,11 @@ namespace SIL.Machine.Morphology.HermitCrab
                 );
             }
 
+            IReadOnlyList<WordParseResult> ordered = Array.AsReadOnly(results);
             if (!callbackErrors.IsEmpty)
-                throw new AggregateException("One or more progress callbacks failed.", callbackErrors);
+                throw new WordParseProgressException(ordered, callbackErrors);
 
-            return Array.AsReadOnly(results);
+            return ordered;
         }
 
         /// <summary>

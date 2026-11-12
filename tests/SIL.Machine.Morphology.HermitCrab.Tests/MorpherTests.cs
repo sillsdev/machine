@@ -825,10 +825,9 @@ public class MorpherTests : HermitCrabTestBase
     {
         var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
         string[] words = { "sag", "sag$", "sag", "sag" };
-        var completed = new WordParseResult[words.Length];
         var starts = new int[words.Length];
         var finishes = new int[words.Length];
-        var error = Assert.Throws<AggregateException>(() =>
+        var error = Assert.Throws<WordParseProgressException>(() =>
             morpher.ParseWords(
                 words,
                 concurrency,
@@ -842,7 +841,6 @@ public class MorpherTests : HermitCrabTestBase
                     }
                     else
                     {
-                        completed[index] = result;
                         Interlocked.Increment(ref finishes[index]);
                         if (index == 2)
                             throw new InvalidOperationException("finish");
@@ -854,11 +852,12 @@ public class MorpherTests : HermitCrabTestBase
         Assert.That(error.InnerExceptions.Select(e => e.Message), Is.EquivalentTo(new[] { "start", "finish" }));
         Assert.That(starts, Is.All.EqualTo(1));
         Assert.That(finishes, Is.All.EqualTo(1));
-        Assert.That(completed[1].Error, Is.TypeOf<InvalidShapeException>());
+        Assert.That(error.Results.Select(r => r.SurfaceForm), Is.EqualTo(words));
+        Assert.That(error.Results[1].Error, Is.TypeOf<InvalidShapeException>());
         foreach (int index in new[] { 0, 2, 3 })
         {
-            Assert.That(completed[index].Error, Is.Null);
-            Assert.That(completed[index].Analyses, Is.Not.Empty);
+            Assert.That(error.Results[index].Error, Is.Null);
+            Assert.That(error.Results[index].Analyses, Is.Not.Empty);
         }
     }
 
