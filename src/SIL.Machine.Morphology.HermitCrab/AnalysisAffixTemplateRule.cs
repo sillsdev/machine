@@ -41,13 +41,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginUnapplyTemplate(_template, input);
 
-            // Do not allow a final template to unapply if we don't need to worry about partial rules
-            // and a non-template was last unapplied.
-            if (
-                (!_morpher.HasPartialRules || _morpher.AlwaysEnforceFinalTemplates)
-                && input.FinalTemplateState == FinalTemplateState.NonTemplate
-                && _template.IsFinal
-            )
+            // In synthesis a non-template rule follows a final template only if a partial rule applied earlier.
+            bool afterNonTemplate = _template.IsFinal && input.FinalTemplateState == FinalTemplateState.NonTemplate;
+            if (afterNonTemplate && _morpher.IsFinalTemplatePrunable(_template, input))
             {
                 if (_morpher.TraceManager.IsTracing)
                 {
@@ -62,6 +58,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
 
             Word inWord = input.Clone();
+            // The prune check above passed, so the word is partial at this template or the analysis fails.
+            if (afterNonTemplate)
+                inWord.NeedsPartial = true;
             inWord.Freeze();
 
             var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
@@ -69,6 +68,14 @@ namespace SIL.Machine.Morphology.HermitCrab
                 ApplySlots(inWord, _rules.Count - 1, output);
             else
                 ParallelApplySlots(inWord, output);
+
+            // The output with every slot skipped did not unapply the template, so it owes nothing.
+            if (afterNonTemplate && output.Remove(inWord))
+            {
+                Word unchanged = input.Clone();
+                unchanged.Freeze();
+                output.Add(unchanged);
+            }
 
             return output;
         }
