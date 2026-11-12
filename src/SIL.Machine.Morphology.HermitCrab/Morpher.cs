@@ -249,7 +249,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 // Guess roots when there are no results.
                 List<Word> matches = new List<Word>();
-                // A guessed root is never partial, so it cannot pay the partial rule a flagged analysis owes.
+                // A partial root takes no template, so the slot rule a flagged analysis owes is never applied.
                 foreach (Word analysisWord in origAnalyses.Where(w => !w.NeedsPartial))
                 {
                     var lexicalGuesses = LexicalGuess(analysisWord).Distinct();
