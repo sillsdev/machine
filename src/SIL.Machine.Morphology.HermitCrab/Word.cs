@@ -31,6 +31,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private bool? _isLastAppliedRuleFinal;
         private FinalTemplateState _finalTemplateState;
         private bool _isPartial;
+        private bool _needsPartial;
         private readonly Dictionary<string, HashSet<int>> _disjunctiveAllomorphIndices;
         private int _mruleAppCount = 0;
         private readonly IList<Word> _alternatives = new List<Word>();
@@ -97,6 +98,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
             _finalTemplateState = word._finalTemplateState;
             _isPartial = word._isPartial;
+            _needsPartial = word._needsPartial;
             CurrentTrace = word.CurrentTrace;
             _disjunctiveAllomorphIndices = word._disjunctiveAllomorphIndices.ToDictionary(
                 kvp => kvp.Key,
@@ -418,6 +420,20 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
+        /// <summary>
+        /// Analysis unapplied a final template right after a non-template rule. Synthesis allows that only if a
+        /// partial rule applied before the template, so one must still be unapplied for the analysis to match.
+        /// </summary>
+        internal bool NeedsPartial
+        {
+            get { return _needsPartial; }
+            set
+            {
+                CheckFrozen();
+                _needsPartial = value;
+            }
+        }
+
         internal FinalTemplateState FinalTemplateState
         {
             get { return _finalTemplateState; }
@@ -588,6 +604,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             code = code * 31 + _mruleAppIndex.GetHashCode();
             code = code * 31 + _isLastAppliedRuleFinal.GetHashCode();
             code = code * 31 + _finalTemplateState.GetHashCode();
+            code = code * 31 + (_needsPartial ? 1 : 0);
             return code;
         }
 
@@ -612,7 +629,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                 && _mruleApps.SequenceEqual(other._mruleApps)
                 && _mruleAppIndex == other._mruleAppIndex
                 && _isLastAppliedRuleFinal == other._isLastAppliedRuleFinal
-                && _finalTemplateState == other._finalTemplateState;
+                && _finalTemplateState == other._finalTemplateState
+                && _needsPartial == other._needsPartial;
         }
 
         public Word Clone()

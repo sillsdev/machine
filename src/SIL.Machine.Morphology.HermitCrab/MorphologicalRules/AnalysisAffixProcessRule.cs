@@ -115,14 +115,17 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
                         outWord.SyntacticFeatureStruct = syntacticFS;
                     }
-                    if (!_morpher.HasPartialRules || _morpher.AlwaysEnforceFinalTemplates)
+                    if (_morpher.TracksFinalTemplateState && !_rule.GetIsCliticRule())
                     {
-                        if (!_rule.GetIsCliticRule())
-                        {
-                            outWord.FinalTemplateState = !_rule.IsTemplateRule
+                        // A partial rule may follow a final template in synthesis, so it never arms the prune.
+                        // It also pays the debt of a final template unapplied after a non-template rule.
+                        bool partialRule = !_rule.IsTemplateRule && _rule.IsPartial;
+                        if (partialRule)
+                            outWord.NeedsPartial = false;
+                        outWord.FinalTemplateState =
+                            !_rule.IsTemplateRule && (!partialRule || _morpher.AlwaysEnforceFinalTemplates)
                                 ? FinalTemplateState.NonTemplate
                                 : FinalTemplateState.None;
-                        }
                     }
                     outWord.MorphologicalRuleUnapplied(_rule, _rule.Allomorphs[i]);
                     outWord.Freeze();
