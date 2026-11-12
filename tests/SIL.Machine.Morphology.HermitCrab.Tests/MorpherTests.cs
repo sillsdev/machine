@@ -792,6 +792,59 @@ public class MorpherTests : HermitCrabTestBase
     }
 
     [Test]
+    public void ParseWord_OnlyUsesAllomorphsInSearchRootAllomorphs()
+    {
+        var highFrontUnrndVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Symbol("low-")
+            .Symbol("back-")
+            .Symbol("round-")
+            .Value;
+        var highVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Value;
+        var cons = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons+")
+            .Value;
+
+        var rewriteRule = new RewriteRule
+        {
+            Name = "rewriteRule",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value,
+        };
+        Allophonic.PhonologicalRules.Add(rewriteRule);
+        rewriteRule.Subrules.Add(
+            new RewriteSubrule { LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value }
+        );
+
+        LexEntry entry = AddEntry("BU", FeatureStruct.New().Value, Morphophonemic, "buii");
+        var sibling = new RootAllomorph(new Segments(Table3, "bui", true));
+        sibling.Environments.Add(
+            new AllomorphEnvironment(
+                ConstraintType.Require,
+                null,
+                Pattern<Word, ShapeNode>.New().Annotation(cons).Value
+            )
+        );
+        entry.Allomorphs.Add(sibling);
+        Morphophonemic.Entries.Add(entry);
+
+        var morpher = new Morpher(TraceManager, Language);
+        var result = morpher.ParseWord("bu").ToArray();
+        Assert.That(result, Is.Empty);
+    }
+
+    [Test]
     public void LexicalLookup_FiltersAllomorphsByEntrySyntacticFeatureStruct()
     {
         FeatureStruct noun = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value;
