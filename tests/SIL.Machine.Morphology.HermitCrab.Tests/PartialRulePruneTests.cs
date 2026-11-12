@@ -116,10 +116,7 @@ public class PartialRulePruneTests
         Assert.That(differences, Is.Empty);
     }
 
-    // In a grammar with partial rules and a lexical family, master returns each of these words twice and the
-    // prune returns them once: a family member that replaces the root is a fresh word that forgets the pending
-    // final template. Only duplicates are lost, never a distinct analysis (cx3.expected holds the distinct ones).
-    // This pins the behaviour; if it changes, update the doc comment on Morpher.IsFinalTemplatePrunable.
+    // Master returns each word twice in a family grammar with partial rules; the prune drops only duplicates.
     [TestCase("kamdtr")]
     [TestCase("kamdtrt")]
     public void ParseWord_FamilyAndPartialRuleGrammar_ReturnsEachAnalysisOnce(string word)
@@ -150,8 +147,7 @@ public class PartialRulePruneTests
     }
 
     // The look-ahead assumes unapplying a rule copies input nodes and adds only inserted or rebuilt ones. Weigh a
-    // new output action type there before listing it here. This guards the action types; the cx grammars above
-    // guard how the look-ahead reads each rule shape (compound non-head, modify, simple context, copies).
+    // new output action type there before listing it here.
     [Test]
     public void MorphologicalOutputAction_Subtypes_AreTheOnesPartialRuleLookAheadKnows()
     {
