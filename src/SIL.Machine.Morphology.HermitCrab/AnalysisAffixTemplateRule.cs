@@ -30,13 +30,34 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public IEnumerable<Word> Apply(Word input)
         {
-            if (!_morpher.RuleSelector(_template))
+            if (!CanApply(input))
                 return Enumerable.Empty<Word>();
+
+            Word inWord = input.Clone();
+            inWord.Freeze();
+
+            var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
+            if (_morpher.MaxDegreeOfParallelism == 1)
+                ApplySlots(inWord, _rules.Count - 1, output);
+            else
+                ParallelApplySlots(inWord, output);
+
+            return output;
+        }
+
+        internal AffixTemplate Template => _template;
+
+        internal IReadOnlyList<IRule<Word, ShapeNode>> SlotRules => _rules;
+
+        internal bool CanApply(Word input)
+        {
+            if (!_morpher.RuleSelector(_template))
+                return false;
 
             // A check only: adding the template's required features here would make SyntacticFeatureStruct
             // depend on whether a template was un-applied, which Word.ValueEquals assumes cannot happen.
             if (!input.SyntacticFeatureStruct.IsUnifiable(_template.RequiredSyntacticFeatureStruct))
-                return Enumerable.Empty<Word>();
+                return false;
 
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginUnapplyTemplate(_template, input);
@@ -58,19 +79,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                         FailureReason.NonPartialRuleProhibitedAfterFinalTemplate
                     );
                 }
-                return Enumerable.Empty<Word>();
+                return false;
             }
 
-            Word inWord = input.Clone();
-            inWord.Freeze();
-
-            var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
-            if (_morpher.MaxDegreeOfParallelism == 1)
-                ApplySlots(inWord, _rules.Count - 1, output);
-            else
-                ParallelApplySlots(inWord, output);
-
-            return output;
+            return true;
         }
 
         private void ApplySlots(Word inWord, int index, HashSet<Word> output)
