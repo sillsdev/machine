@@ -27,6 +27,7 @@
         NonPartialRuleRequiredAfterNonFinalTemplate,
         MaxApplicationCount,
         AllomorphNotApplicable,
+        LexicalLookupFeatures,
     }
 
     public interface ITraceManager
