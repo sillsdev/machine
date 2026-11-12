@@ -284,7 +284,7 @@ public class AnalysisAffixTemplatesRuleTests : HermitCrabTestBase
                 {
                     RequiredSlotLookahead = mode,
                 };
-                IRule<Word, ShapeNode>[] rules = new[]
+                AffixTemplate[] templates =
                 {
                     Template(new AffixTemplateSlot(a), new AffixTemplateSlot(tail)),
                     Template(
@@ -293,20 +293,74 @@ public class AnalysisAffixTemplatesRuleTests : HermitCrabTestBase
                         new AffixTemplateSlot(tail)
                     ),
                     Template(new AffixTemplateSlot(s), new AffixTemplateSlot(tail)),
-                }
-                    .Select(t => t.CompileAnalysisRule(morpher))
-                    .ToArray();
+                };
+                IRule<Word, ShapeNode>[] rules = templates.Select(t => t.CompileAnalysisRule(morpher)).ToArray();
+                var offMorpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
+                {
+                    RequiredSlotLookahead = RequiredSlotLookaheadMode.Off,
+                };
+                IRule<Word, ShapeNode>[] offRules = templates.Select(t => t.CompileAnalysisRule(offMorpher)).ToArray();
                 var own = new RuleBatch<Word, ShapeNode>(rules, false, FreezableEqualityComparer<Word>.Default);
+                var ownOff = new RuleBatch<Word, ShapeNode>(offRules, false, FreezableEqualityComparer<Word>.Default);
                 var shared = new AnalysisAffixTemplatesRule(morpher, rules);
                 Word input = Input(text);
                 input.Freeze();
                 Word[] expected = own.Apply(input).ToArray();
                 Word[] actual = shared.Apply(input).ToArray();
                 Assert.That(actual, Is.EqualTo(expected).Using(FreezableEqualityComparer<Word>.Default), text);
+                Assert.That(
+                    actual.Select(w => new AnalysisStratumRule.AnalysisMergeKey(w)),
+                    Is.EqualTo(ownOff.Apply(input).Select(w => new AnalysisStratumRule.AnalysisMergeKey(w))),
+                    text
+                );
                 compared += actual.Length;
             }
         }
         Assert.That(compared, Is.GreaterThan(10));
+    }
+
+    // The pure optional slot "s" is skipped on the way to the required slot "a"; the parent's scan already covered
+    // "a" on that word, so the shared walk must not repeat it.
+    [Test]
+    public void LookaheadDoesNotRescanAfterSkippingAPureOptionalSlot()
+    {
+        long Unifications(bool shared, string text)
+        {
+            long total = 0;
+            var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
+            {
+                RequiredSlotLookahead = RequiredSlotLookaheadMode.On,
+                RequiredSlotCheckObserver = n => total += n,
+            };
+            CountingSuffix a = Suffix("a", "a");
+            CountingSuffix s = Suffix("s", "s");
+            CountingSuffix tail = Suffix("ad", "ad");
+            IRule<Word, ShapeNode>[] rules = new[]
+            {
+                Template(
+                    new AffixTemplateSlot(a),
+                    new AffixTemplateSlot(s) { Optional = true },
+                    new AffixTemplateSlot(tail)
+                ),
+                Template(
+                    new AffixTemplateSlot(s),
+                    new AffixTemplateSlot(s) { Optional = true },
+                    new AffixTemplateSlot(tail)
+                ),
+            }
+                .Select(t => t.CompileAnalysisRule(morpher))
+                .ToArray();
+            IRule<Word, ShapeNode> batch = shared
+                ? new AnalysisAffixTemplatesRule(morpher, rules)
+                : new RuleBatch<Word, ShapeNode>(rules, false, FreezableEqualityComparer<Word>.Default);
+            Word input = Input(text);
+            input.Freeze();
+            batch.Apply(input).ToArray();
+            return total;
+        }
+
+        foreach (string text in new[] { "sad", "saad", "aad", "ssad" })
+            Assert.That(Unifications(true, text), Is.LessThanOrEqualTo(Unifications(false, text)), text);
     }
 
     private static string Signature(Word w) => w + " " + string.Join(",", w.MorphologicalRules.Select(r => r.Name));

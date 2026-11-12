@@ -78,7 +78,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 Word inWord = input.Clone();
                 inWord.Freeze();
-                Walk(_root, inWord, new WalkState(_templates, outputs, _morpher), null);
+                Walk(_root, inWord, new WalkState(_templates, outputs, _morpher), null, false);
             }
 
             // Template order determines which equal word survives and the order seen by analysis folding.
@@ -110,7 +110,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         // A template that fails the look-ahead on a word is dead below it while its siblings go on.
         // Marks are set on entry and undone on return, so the mask is one bool per template per call.
-        private void Walk(SlotNode node, Word input, WalkState state, int[][] fired)
+        // A skipped slot hands the walk the word its parent already scanned, from the skipped slot downward.
+        // When that slot is pure the scan ran on through the slots below it, so only an impure one needs a re-check.
+        private void Walk(SlotNode node, Word input, WalkState state, int[][] fired, bool skipped)
         {
             List<int> marked = null;
             if (state.Mode != RequiredSlotLookaheadMode.Off)
@@ -120,6 +122,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                     if (state.Outputs[t] == null || state.Dead[t])
                         continue;
                     AnalysisAffixTemplateRule template = _templates[t];
+                    if (skipped && template.IsSlotPure(template.Template.Slots.Count - node.Depth))
+                        continue;
                     int[] templateFired = fired?[t];
                     if (
                         !template.RequiredSlotCannotUnapply(
@@ -164,10 +168,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                             _templates[t]
                                 .ReportShadow("violated", fired[t], _templates[t].SlotRules.Count - child.Depth);
                     }
-                    Walk(child, word, state, fired);
+                    Walk(child, word, state, fired, false);
                 }
                 if (child.Optional)
-                    Walk(child, input, state, fired);
+                    Walk(child, input, state, fired, true);
             }
 
             if (marked != null)

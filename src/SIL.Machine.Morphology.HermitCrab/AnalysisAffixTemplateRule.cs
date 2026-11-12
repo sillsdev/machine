@@ -129,6 +129,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             return cannot;
         }
 
+        internal bool IsSlotPure(int slot) => _lookahead.IsPure(slot);
+
         internal static bool IsFired(int[] fired, int slot)
         {
             return fired != null && Array.IndexOf(fired, slot) >= 0;
