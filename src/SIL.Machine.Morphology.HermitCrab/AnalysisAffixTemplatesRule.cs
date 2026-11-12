@@ -110,8 +110,6 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         // A template that fails the look-ahead on a word is dead below it while its siblings go on.
         // Marks are set on entry and undone on return, so the mask is one bool per template per call.
-        // A skipped slot hands the walk the word its parent already scanned, from the skipped slot downward.
-        // When that slot is pure the scan ran on through the slots below it, so only an impure one needs a re-check.
         private void Walk(SlotNode node, Word input, WalkState state, int[][] fired, bool skipped)
         {
             List<int> marked = null;
@@ -122,6 +120,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     if (state.Outputs[t] == null || state.Dead[t])
                         continue;
                     AnalysisAffixTemplateRule template = _templates[t];
+                    // After a skip, only an impure skipped slot stopped the parent's scan, so only it needs a re-check.
                     if (skipped && template.IsSlotPure(template.Template.Slots.Count - node.Depth))
                         continue;
                     int[] templateFired = fired?[t];
