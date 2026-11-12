@@ -28,6 +28,7 @@
         MaxApplicationCount,
         AllomorphNotApplicable,
         LexicalLookupFeatures,
+        UnreachableRequiredSlot,
     }
 
     public interface ITraceManager
@@ -45,7 +46,13 @@
         void PhonologicalRuleNotUnapplied(IPhonologicalRule rule, int subruleIndex, Word input);
 
         void BeginUnapplyTemplate(AffixTemplate template, Word input);
-        void EndUnapplyTemplate(AffixTemplate template, Word output, bool unapplied, FailureReason reason);
+        void EndUnapplyTemplate(
+            AffixTemplate template,
+            Word output,
+            bool unapplied,
+            FailureReason reason,
+            object failureObj
+        );
 
         void MorphologicalRuleUnapplied(IMorphologicalRule rule, int subruleIndex, Word input, Word output);
         void MorphologicalRuleNotUnapplied(IMorphologicalRule rule, int subruleIndex, Word input);
