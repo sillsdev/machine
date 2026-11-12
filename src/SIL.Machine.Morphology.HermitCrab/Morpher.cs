@@ -95,10 +95,10 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// derivation this refuses has a non-partial rule after the final template, which is allowed only when the
         /// word is partial there: a partial rule applied before the template. A partial rule leaves the analysis
         /// state at none, so it never arms this. Templates no partial word can reach are pruned outright, and
-        /// others when the shape shows that no partial rule can still be unapplied. As with the prune it narrows,
-        /// a lexical family can make this drop a duplicate analysis: a family member that replaces the root is a
-        /// fresh word that forgets the pending final template. FieldWorks never writes a family; no distinct
-        /// analysis was lost in a grammar that has one.
+        /// others when the shape shows that no partial rule can still be unapplied. In a grammar with both partial
+        /// rules and lexical families this can drop a duplicate analysis that master returns: a family member
+        /// that replaces the root is a fresh word that forgets the pending final template. Only a duplicate is
+        /// lost, never a distinct analysis. FieldWorks never writes a family.
         /// </summary>
         internal bool IsFinalTemplatePrunable(AffixTemplate template, Word input)
         {
@@ -249,7 +249,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 // Guess roots when there are no results.
                 List<Word> matches = new List<Word>();
-                foreach (Word analysisWord in origAnalyses)
+                // A guessed root is never partial, so it cannot pay the partial rule a flagged analysis owes.
+                foreach (Word analysisWord in origAnalyses.Where(w => !w.NeedsPartial))
                 {
                     var lexicalGuesses = LexicalGuess(analysisWord).Distinct();
                     foreach (Word synthesisWord in lexicalGuesses)
