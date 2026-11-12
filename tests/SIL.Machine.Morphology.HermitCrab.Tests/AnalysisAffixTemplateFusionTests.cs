@@ -175,9 +175,9 @@ public class AnalysisAffixTemplateFusionTests : HermitCrabTestBase
     }
 
     [Test]
-    public void Apply_SlotWithABoundedRunThatMayBeEmpty_StaysImpureWhenTheMaterialIsAbsent()
+    public void Apply_SlotWithABoundedRunThatMayBeEmpty_StaysImpureWhenTheRunCouldBeTheMissingSegment()
     {
-        AffixTemplate template = TemplateOf(Slot(false, Suffix("ti")), Slot(true, BoundedRunSuffix("z")));
+        AffixTemplate template = TemplateOf(Slot(false, Suffix("i")), Slot(true, BoundedRunSuffix("z")));
 
         (WalkResult off, WalkResult on) = WalkBoth(template, "sagz");
 
