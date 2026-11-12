@@ -189,7 +189,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                 {
                     int index = names.IndexOf(action.PartName);
                     if (index < 0)
-                        continue; // a non-head part of a compound
+                    {
+                        // A non-head part leaves the head shape, so it separates head parts that follow it from
+                        // those before it just as an inserted segment does.
+                        if (copies.Count > 0)
+                            insertedAfterCopy = true;
+                        continue;
+                    }
                     if (insertedAfterCopy)
                         insertedBetween = true;
                     copies.Add(index);
