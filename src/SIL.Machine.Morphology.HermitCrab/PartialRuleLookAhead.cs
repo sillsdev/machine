@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
@@ -121,7 +121,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     a.Rhs.OfType<InsertSegments>()
                         .Select(ins =>
                             ins.Segments.Shape.Where(n => n.Annotation.Type() == HCFeatureSystem.Segment)
-                                .Select(n => n.Annotation.FeatureStruct)
+                                .Select(n => FrozenCopy(n.Annotation.FeatureStruct))
                                 .ToArray()
                         )
                         .Where(run => run.Length > 0)
@@ -147,6 +147,14 @@ namespace SIL.Machine.Morphology.HermitCrab
                 Rebuildable = rebuildable,
                 Contiguous = notContiguous == 0 && !rebuildable.Any(a => a.Any(r => r.Any(x => x))),
             };
+        }
+
+        // Look-ahead runs on several threads, and unifying with an unfrozen structure is not thread-safe.
+        private static FeatureStruct FrozenCopy(FeatureStruct fs)
+        {
+            FeatureStruct copy = fs.Clone();
+            copy.Freeze();
+            return copy;
         }
 
         private static IEnumerable<Transform> Transforms(IMorphologicalRule rule)

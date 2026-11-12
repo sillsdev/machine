@@ -42,7 +42,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _morpher.TraceManager.BeginUnapplyTemplate(_template, input);
 
             // In synthesis a non-template rule follows a final template only if a partial rule applied earlier.
-            bool afterNonTemplate = _template.IsFinal && input.FinalTemplateState == FinalTemplateState.NonTemplate;
+            bool afterNonTemplate =
+                _morpher.TracksFinalTemplateState
+                && _template.IsFinal
+                && input.FinalTemplateState == FinalTemplateState.NonTemplate;
             if (afterNonTemplate && _morpher.IsFinalTemplatePrunable(_template, input))
             {
                 if (_morpher.TraceManager.IsTracing)
