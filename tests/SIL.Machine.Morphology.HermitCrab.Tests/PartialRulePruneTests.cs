@@ -1,11 +1,10 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 
 namespace SIL.Machine.Morphology.HermitCrab;
 
-// The grammars in TestData/PartialPrune put partial material where a careless prune of final templates would miss
-// it. The .expected files hold the analyses (allomorphs, shape, syntactic features) found before
-// the prune was narrowed, so a lost, extra or changed analysis fails a test.
+// Each grammar in TestData/PartialPrune puts partial material where a careless prune would miss it. The .expected
+// files hold master's analyses, so a lost, extra or changed one fails.
 public class PartialRulePruneTests
 {
     private static readonly string[] Grammars =
@@ -108,8 +107,8 @@ public class PartialRulePruneTests
         Assert.That(differences, Is.Empty);
     }
 
-    // Rule-selector calls are the work counter: every analysis and synthesis rule asks once per application. With
-    // one thread the count is deterministic, so a bound separates a prune that fires from one that does not.
+    // Rule-selector calls count work. At one thread the count is deterministic, so a bound tells a prune that
+    // fires from one that does not.
     [TestCase("g8", "akamdt", 130, TestName = "TemplateNoPartialWordCanReach")]
     [TestCase("g6", "loptr", 18, TestName = "ShapeHasNoRoomForPartialMaterialContiguous")]
     [TestCase("g12", "loptr", 16, TestName = "ShapeHasNoRoomForPartialMaterialExistence")]
@@ -129,8 +128,8 @@ public class PartialRulePruneTests
         Assert.That(calls, Is.LessThanOrEqualTo(maxCalls));
     }
 
-    // The look-ahead assumes that unapplying a rule copies nodes of its input unchanged and adds only nodes it
-    // inserts or rebuilds. A new kind of output action has to be considered there before it is listed here.
+    // The look-ahead assumes unapplying a rule copies input nodes and adds only inserted or rebuilt ones. Weigh a
+    // new output action type there before listing it here.
     [Test]
     public void MorphologicalOutputAction_Subtypes_AreTheOnesPartialRuleLookAheadKnows()
     {

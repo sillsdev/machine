@@ -118,7 +118,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             return input.Where(req.Contains);
         }
 
-        /// <summary>The part-of-speech values a feature structure allows, or null if it does not constrain it.</summary>
+        /// <summary>The part-of-speech values a feature structure allows, or null if it leaves them open.</summary>
         private static HashSet<FeatureSymbol> Constraint(HashSet<FeatureSymbol> all, FeatureStruct fs)
         {
             if (fs == null)
