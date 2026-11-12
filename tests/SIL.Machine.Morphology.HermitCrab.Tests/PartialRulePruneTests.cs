@@ -28,6 +28,14 @@ public class PartialRulePruneTests
         "g19c", // phonological deletion hides a partial segment, minimal
         "g20", // three partial rules
         "g21", // compounding and a partial rule the look-ahead cannot reason about
+        "cx1b", // a compound puts its non-head between two head parts, hiding the partial material
+        "cx2", // a flagged and an unflagged word differ only in NeedsPartial and must both survive
+        "cx3", // lexical family and a partial rule: master returns duplicates, see the pinning test below
+        "cx4", // ModifyFromInput changes the partial material
+        "cx5", // InsertSimpleContext splits the partial material
+        "cx6", // an infix and a copy of a part (reduplication) rearrange the partial material
+        "cx7", // a compound with the non-head before the head parts
+        "cx8", // a compound copies one head part twice around the non-head
     ];
 
     // Grammars whose words need the deletion rules to be reapplied.
@@ -107,6 +115,18 @@ public class PartialRulePruneTests
         Assert.That(differences, Is.Empty);
     }
 
+    // In a grammar with partial rules and a lexical family, master returns each of these words twice and the
+    // prune returns them once: a family member that replaces the root is a fresh word that forgets the pending
+    // final template. Only duplicates are lost, never a distinct analysis (cx3.expected holds the distinct ones).
+    // This pins the behaviour; if it changes, update the doc comment on Morpher.IsFinalTemplatePrunable.
+    [TestCase("kamdtr")]
+    [TestCase("kamdtrt")]
+    public void ParseWord_FamilyAndPartialRuleGrammar_ReturnsEachAnalysisOnce(string word)
+    {
+        Morpher morpher = CreateMorpher("cx3", maxDegreeOfParallelism: 1);
+        Assert.That(morpher.ParseWord(word).Count(), Is.EqualTo(1));
+    }
+
     // Rule-selector calls count work. At one thread the count is deterministic, so a bound tells a prune that
     // fires from one that does not.
     [TestCase("g8", "akamdt", 130, TestName = "TemplateNoPartialWordCanReach")]
@@ -129,7 +149,8 @@ public class PartialRulePruneTests
     }
 
     // The look-ahead assumes unapplying a rule copies input nodes and adds only inserted or rebuilt ones. Weigh a
-    // new output action type there before listing it here.
+    // new output action type there before listing it here. This guards the action types; the cx grammars above
+    // guard how the look-ahead reads each rule shape (compound non-head, modify, simple context, copies).
     [Test]
     public void MorphologicalOutputAction_Subtypes_AreTheOnesPartialRuleLookAheadKnows()
     {
