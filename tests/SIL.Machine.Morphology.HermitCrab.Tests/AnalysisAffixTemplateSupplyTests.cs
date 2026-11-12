@@ -15,6 +15,14 @@ public class AnalysisAffixTemplateSupplyTests : HermitCrabTestBase
 
     private sealed record WalkResult(List<string> Parses, int RuleAttempts, int Violations);
 
+    private FeatureStruct AlphaVoicing =>
+        FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Feature("vd")
+            .EqualToVariable("a")
+            .Value;
+
     private FeatureStruct Vowel =>
         FeatureStruct.New(Language.PhonologicalFeatureSystem).Symbol(HCFeatureSystem.Segment).Symbol("voc+").Value;
 
@@ -73,6 +81,20 @@ public class AnalysisAffixTemplateSupplyTests : HermitCrabTestBase
             new InsertSegments(Table3, insert)
         );
 
+    // Deletes the last segment of the stem when it agrees in voicing with the segment before it. The variable is
+    // bound by the copied part, so unapplying writes back a segment whose voicing is that variable.
+    private AffixProcessRule VariableTruncatingSuffix(string insert) =>
+        RuleOf(
+            "variable_truncating_" + insert,
+            new[]
+            {
+                Pattern<Word, ShapeNode>.New("1").Annotation(Any).OneOrMore.Annotation(AlphaVoicing).Value,
+                Pattern<Word, ShapeNode>.New("2").Annotation(AlphaVoicing).Value,
+            },
+            new CopyFromInput("1"),
+            new InsertSegments(Table3, insert)
+        );
+
     // Deletes the last two segments of the stem, so unapplying it writes two segments back.
     private AffixProcessRule TwoSegmentTruncatingSuffix(string insert) =>
         RuleOf(
@@ -100,23 +122,28 @@ public class AnalysisAffixTemplateSupplyTests : HermitCrabTestBase
             new InsertSegments(Table3, insert)
         );
 
-    private WalkResult Walk(AffixTemplate template, string form, RequiredSlotLookaheadMode mode)
+    private WalkResult Walk(
+        AffixTemplate template,
+        string form,
+        RequiredSlotLookaheadMode mode,
+        int maxDegreeOfParallelism = 1
+    )
     {
         int attempts = 0;
         int violations = 0;
-        var morpher = new Morpher(TraceManager, Language, 1)
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism)
         {
             RequiredSlotLookahead = mode,
             RuleSelector = rule =>
             {
                 if (rule is AffixProcessRule)
-                    attempts++;
+                    System.Threading.Interlocked.Increment(ref attempts);
                 return true;
             },
             RequiredSlotShadow = (kind, t, slot) =>
             {
                 if (kind != "fired")
-                    violations++;
+                    System.Threading.Interlocked.Increment(ref violations);
             },
         };
         TraceManager.IsTracing = false;
@@ -261,7 +288,25 @@ public class AnalysisAffixTemplateSupplyTests : HermitCrabTestBase
     }
 
     [Test]
-    public void Apply_OnEveryTruncationTemplateAndWord_KeepsTheParsesAndNeverViolatesTheShadow()
+    public void Apply_DeletedSegmentCarriesAVariable_SupplyCoversAnyConstraint()
+    {
+        // The variable segment may be any segment when it is written back, so it may be the t of -t; the vowel
+        // constraint of the other template is covered too, which a supply covering nothing would prune.
+        AffixTemplate consonantSlot = TemplateOf(Slot(false, Suffix("t")), Slot(true, VariableTruncatingSuffix("z")));
+        AffixTemplate vowelSlot = TemplateOf(Slot(false, Suffix("i")), Slot(true, VariableTruncatingSuffix("z")));
+
+        foreach (AffixTemplate template in new[] { consonantSlot, vowelSlot })
+        {
+            (WalkResult off, WalkResult on) = WalkBoth(template, "sagz");
+            Assert.That(on.RuleAttempts, Is.GreaterThan(0), "the variable supply may cover the missing segment");
+        }
+    }
+
+    [TestCase(1)]
+    [TestCase(0)]
+    public void Apply_OnEveryTruncationTemplateAndWord_KeepsTheParsesAndNeverViolatesTheShadow(
+        int maxDegreeOfParallelism
+    )
     {
         var templates = new Dictionary<AffixTemplate, string[]>
         {
@@ -298,9 +343,9 @@ public class AnalysisAffixTemplateSupplyTests : HermitCrabTestBase
         {
             foreach (string form in forms)
             {
-                WalkResult off = Walk(template, form, RequiredSlotLookaheadMode.Off);
-                WalkResult on = Walk(template, form, RequiredSlotLookaheadMode.On);
-                WalkResult shadow = Walk(template, form, RequiredSlotLookaheadMode.Shadow);
+                WalkResult off = Walk(template, form, RequiredSlotLookaheadMode.Off, maxDegreeOfParallelism);
+                WalkResult on = Walk(template, form, RequiredSlotLookaheadMode.On, maxDegreeOfParallelism);
+                WalkResult shadow = Walk(template, form, RequiredSlotLookaheadMode.Shadow, maxDegreeOfParallelism);
                 Assert.Multiple(() =>
                 {
                     Assert.That(on.Parses, Is.EqualTo(off.Parses), form);

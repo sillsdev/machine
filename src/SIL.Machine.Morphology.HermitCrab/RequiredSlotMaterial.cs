@@ -99,6 +99,20 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// (<see cref="SlotWalk.ReachLeft"/>), and the nodes of a required ordered slot lie after the prefix and before
     /// the suffix it inserts (<see cref="SlotWalk.Lo"/>, <see cref="SlotWalk.Hi"/>). Both only hold while every
     /// slot walked so far is ordered, and the reach only while none can remove from the middle.
+    ///
+    /// Supply. The Presence argument above fails for an impure slot, whose unapplication can write back a segment
+    /// the shape lacks (<see cref="AnalysisMorphologicalTransform.GenerateShape"/> untruncates the segments of an
+    /// uncopied part). Such a slot is walked past, and is called a supplier, only when it copies and inserts and
+    /// nothing more, because a modified node could change any feature of any node. Its budget is the most
+    /// segments any of its allomorphs writes back, and its supply is the constraints of those segments; a constraint with variables
+    /// is recorded as a null supply, which covers any required constraint. A required constraint that unifies with
+    /// no node of the shape is missing, and is covered only if some supplier already walked has a supply that
+    /// unifies with it (<c>AllomorphSummary.Cover</c>). The test passes when the missing constraints number no more
+    /// than the summed budget of the suppliers covering them, so it can only be weaker than the pure case. Slots
+    /// walked past as suppliers are recorded in <see cref="SlotWalk.Suppliers"/>. Once a supplier has been walked,
+    /// the shape may later gain nodes at any position, so the ordered test, the edge window and the reach no
+    /// longer hold and only the unordered presence test with the budget runs (<see cref="Advance"/>). A change to
+    /// <c>Embeds</c> must not assume that every slot walked is pure.
     /// </remarks>
     internal class RequiredSlotMaterial
     {
