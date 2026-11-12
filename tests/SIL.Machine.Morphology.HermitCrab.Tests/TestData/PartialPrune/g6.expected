@@ -1,0 +1,17 @@
+lopqtr	LOP.0+Q.0+R.0+T.0|lopqtr|[POS:B]
+loptr	-
+loptqr	LOP.0+Q.0+R.0+T.0|loptqr|[POS:B]
+loptrq	-
+lopqtmo	LOP.0+MO.0+Q.0+T.0|lopqtmo|[POS:B]
+loptmo	-
+lopqtrq	-
+lopwtrq	LOP.0+Q.0+R.0+T.0+W.0|lopwtrq|[POS:B]
+lopwtrw	-
+kamdqtr	D.0+KAM.0+Q.0+R.0+T.0|kamdqtr|[POS:B]
+kamqdtr	D.0+KAM.0+Q.0+R.0+T.0|kamqdtr|[POS:B]
+kamdtr	-
+kamdtqr	D.0+KAM.0+Q.0+R.0+T.0|kamdtqr|[POS:B]
+lopt	LOP.0+T.0|lopt|[POS:B]
+lopqt	LOP.0+Q.0+T.0|lopqt|[POS:B]
+loptq	LOP.0+Q.0+T.0|loptq|[POS:B]
+lopqtrmo	LOP.0+MO.0+Q.0+R.0+T.0|lopqtrmo|[POS:B]

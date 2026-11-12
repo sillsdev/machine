@@ -555,7 +555,7 @@ public class AffixTemplateTests : HermitCrabTestBase
             AssertMorphsEqual(morpher.ParseWord("sabdv"));
             AssertMorphsEqual(morpher.ParseWord("sabv"), "partial_root NOM");
 
-            // A partial rule still turns the prune off, and what it licenses after a final template survives.
+            // A partial rule leaves the state at none, so what it licenses after a final template survives.
             nominalizer.IsPartial = true;
             morpher = new Morpher(TraceManager, Language);
             Assert.That(morpher.HasPartialRules, Is.True);

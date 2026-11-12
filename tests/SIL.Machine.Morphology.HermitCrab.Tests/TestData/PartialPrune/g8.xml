@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HermitCrabInput>
+  <Language>
+    <Name>AdvGate</Name>
+    <PartsOfSpeech><PartOfSpeech id="posA"><Name>A</Name></PartOfSpeech><PartOfSpeech id="posB"><Name>B</Name></PartOfSpeech><PartOfSpeech id="posC"><Name>C</Name></PartOfSpeech><PartOfSpeech id="posE"><Name>E</Name></PartOfSpeech></PartsOfSpeech>
+    <CharacterDefinitionTable id="tbl"><Name>Main</Name><SegmentDefinitions>
+<SegmentDefinition id="sa"><Representations><Representation>a</Representation></Representations></SegmentDefinition><SegmentDefinition id="sb"><Representations><Representation>b</Representation></Representations></SegmentDefinition><SegmentDefinition id="sd"><Representations><Representation>d</Representation></Representations></SegmentDefinition><SegmentDefinition id="se"><Representations><Representation>e</Representation></Representations></SegmentDefinition><SegmentDefinition id="sg"><Representations><Representation>g</Representation></Representations></SegmentDefinition><SegmentDefinition id="si"><Representations><Representation>i</Representation></Representations></SegmentDefinition><SegmentDefinition id="sk"><Representations><Representation>k</Representation></Representations></SegmentDefinition><SegmentDefinition id="sl"><Representations><Representation>l</Representation></Representations></SegmentDefinition><SegmentDefinition id="sm"><Representations><Representation>m</Representation></Representations></SegmentDefinition><SegmentDefinition id="sn"><Representations><Representation>n</Representation></Representations></SegmentDefinition><SegmentDefinition id="so"><Representations><Representation>o</Representation></Representations></SegmentDefinition><SegmentDefinition id="sp"><Representations><Representation>p</Representation></Representations></SegmentDefinition><SegmentDefinition id="sq"><Representations><Representation>q</Representation></Representations></SegmentDefinition><SegmentDefinition id="sr"><Representations><Representation>r</Representation></Representations></SegmentDefinition><SegmentDefinition id="ss"><Representations><Representation>s</Representation></Representations></SegmentDefinition><SegmentDefinition id="st"><Representations><Representation>t</Representation></Representations></SegmentDefinition><SegmentDefinition id="su"><Representations><Representation>u</Representation></Representations></SegmentDefinition><SegmentDefinition id="sw"><Representations><Representation>w</Representation></Representations></SegmentDefinition><SegmentDefinition id="sx"><Representations><Representation>x</Representation></Representations></SegmentDefinition><SegmentDefinition id="sy"><Representations><Representation>y</Representation></Representations></SegmentDefinition><SegmentDefinition id="sz"><Representations><Representation>z</Representation></Representations></SegmentDefinition>
+    </SegmentDefinitions></CharacterDefinitionTable>
+    <NaturalClasses><FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass></NaturalClasses>
+    <Strata>
+<Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="unordered" morphologicalRules="d e u p cr q" isActive="yes"><Name>Main</Name>
+<MorphologicalRuleDefinitions><MorphologicalRule id="d" requiredPartsOfSpeech="posA" outputPartOfSpeech="posB"><Name>d</Name><MorphologicalSubrules><MorphologicalSubrule id="subd">
+<MorphologicalInput><PhoneticSequence id="std"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+<MorphologicalOutput><CopyFromInput index="std" /><InsertSegments><PhoneticShape>d</PhoneticShape></InsertSegments></MorphologicalOutput>
+</MorphologicalSubrule></MorphologicalSubrules><MorphemeId>D</MorphemeId><Gloss>d</Gloss></MorphologicalRule>
+<MorphologicalRule id="e" outputPartOfSpeech="posB"><Name>e</Name><MorphologicalSubrules><MorphologicalSubrule id="sube">
+<MorphologicalInput><PhoneticSequence id="ste"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+<MorphologicalOutput><CopyFromInput index="ste" /><InsertSegments><PhoneticShape>e</PhoneticShape></InsertSegments></MorphologicalOutput>
+</MorphologicalSubrule></MorphologicalSubrules><MorphemeId>E</MorphemeId><Gloss>e</Gloss></MorphologicalRule>
+<MorphologicalRule id="t"><Name>t</Name><MorphologicalSubrules><MorphologicalSubrule id="subt">
+<MorphologicalInput><PhoneticSequence id="stt"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+<MorphologicalOutput><CopyFromInput index="stt" /><InsertSegments><PhoneticShape>t</PhoneticShape></InsertSegments></MorphologicalOutput>
+</MorphologicalSubrule></MorphologicalSubrules><MorphemeId>T</MorphemeId><Gloss>t</Gloss></MorphologicalRule>
+<MorphologicalRule id="u"><Name>u</Name><MorphologicalSubrules><MorphologicalSubrule id="subu">
+<MorphologicalInput><PhoneticSequence id="stu"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+<MorphologicalOutput><CopyFromInput index="stu" /><InsertSegments><PhoneticShape>u</PhoneticShape></InsertSegments></MorphologicalOutput>
+</MorphologicalSubrule></MorphologicalSubrules><MorphemeId>U</MorphemeId><Gloss>u</Gloss></MorphologicalRule>
+<MorphologicalRule id="x"><Name>x</Name><MorphologicalSubrules><MorphologicalSubrule id="subx">
+<MorphologicalInput><PhoneticSequence id="stx"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+<MorphologicalOutput><CopyFromInput index="stx" /><InsertSegments><PhoneticShape>x</PhoneticShape></InsertSegments></MorphologicalOutput>
+</MorphologicalSubrule></MorphologicalSubrules><MorphemeId>X</MorphemeId><Gloss>x</Gloss></MorphologicalRule>
+<MorphologicalRule id="p"><Name>p</Name><MorphologicalSubrules><MorphologicalSubrule id="subp">
+<MorphologicalInput><PhoneticSequence id="stp"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+<MorphologicalOutput><InsertSegments><PhoneticShape>a</PhoneticShape></InsertSegments><CopyFromInput index="stp" /></MorphologicalOutput>
+</MorphologicalSubrule></MorphologicalSubrules><MorphemeId>P</MorphemeId><Gloss>p</Gloss></MorphologicalRule>
+<CompoundingRule id="cr" headPartsOfSpeech="posB" nonHeadPartsOfSpeech="posE"><Name>cr</Name><CompoundingSubrules><CompoundingSubrule>
+<HeadMorphologicalInput><PhoneticSequence id="hcr"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></HeadMorphologicalInput>
+<NonHeadMorphologicalInput><PhoneticSequence id="ncr"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></NonHeadMorphologicalInput>
+<MorphologicalOutput><CopyFromInput index="hcr" /><CopyFromInput index="ncr" /></MorphologicalOutput></CompoundingSubrule></CompoundingSubrules></CompoundingRule>
+<MorphologicalRule id="q" partial="true" requiredPartsOfSpeech="posC"><Name>q</Name><MorphologicalSubrules><MorphologicalSubrule id="subq">
+<MorphologicalInput><PhoneticSequence id="stq"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+<MorphologicalOutput><CopyFromInput index="stq" /><InsertSegments><PhoneticShape>q</PhoneticShape></InsertSegments></MorphologicalOutput>
+</MorphologicalSubrule></MorphologicalSubrules><MorphemeId>Q</MorphemeId><Gloss>q</Gloss></MorphologicalRule>
+</MorphologicalRuleDefinitions>
+<AffixTemplates><AffixTemplate requiredPartsOfSpeech="posB" final="true"><Name>T1</Name><Slot morphologicalRules="t"><Name>slotT1</Name></Slot></AffixTemplate>
+<AffixTemplate requiredPartsOfSpeech="posB" final="true"><Name>T2</Name><Slot morphologicalRules="u"><Name>slotT2</Name></Slot></AffixTemplate>
+<AffixTemplate requiredPartsOfSpeech="posC" final="true"><Name>T3</Name><Slot morphologicalRules="x"><Name>slotT3</Name></Slot></AffixTemplate>
+<AffixTemplate requiredPartsOfSpeech="posA" final="true"><Name>T4</Name><Slot morphologicalRules="x"><Name>slotT4</Name></Slot></AffixTemplate>
+</AffixTemplates>
+<LexicalEntries><LexicalEntry id="ekam" partOfSpeech="posA"><Allomorphs><Allomorph id="akam"><PhoneticShape>kam</PhoneticShape></Allomorph></Allomorphs><MorphemeId>KAM</MorphemeId><Gloss>kam</Gloss></LexicalEntry>
+<LexicalEntry id="ekamb" partOfSpeech="posB"><Allomorphs><Allomorph id="akamb"><PhoneticShape>kam</PhoneticShape></Allomorph></Allomorphs><MorphemeId>KAMB</MorphemeId><Gloss>kamb</Gloss></LexicalEntry>
+<LexicalEntry id="elop" partOfSpeech="posB"><Allomorphs><Allomorph id="alop"><PhoneticShape>lop</PhoneticShape></Allomorph></Allomorphs><MorphemeId>LOP</MorphemeId><Gloss>lop</Gloss></LexicalEntry>
+<LexicalEntry id="enuk" partOfSpeech="posC"><Allomorphs><Allomorph id="anuk"><PhoneticShape>nuk</PhoneticShape></Allomorph></Allomorphs><MorphemeId>NUK</MorphemeId><Gloss>nuk</Gloss></LexicalEntry>
+<LexicalEntry id="emo" partOfSpeech="posE"><Allomorphs><Allomorph id="amo"><PhoneticShape>mo</PhoneticShape></Allomorph></Allomorphs><MorphemeId>MO</MorphemeId><Gloss>mo</Gloss></LexicalEntry>
+<LexicalEntry id="epa" partial="true"><Allomorphs><Allomorph id="apa"><PhoneticShape>pa</PhoneticShape></Allomorph></Allomorphs><MorphemeId>PA</MorphemeId><Gloss>pa</Gloss></LexicalEntry>
+</LexicalEntries></Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

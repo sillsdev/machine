@@ -1,0 +1,8 @@
+loptr	LOP.0+R.0+T.0|loptr|[POS:B]
+lopt	LOP.0+T.0|lopt|[POS:B]
+lopqtr	LOP.0+Q.0+R.0+T.0|lopqtr|[POS:B]
+loptqr	LOP.0+Q.0+R.0+T.0|loptqr|[POS:B]
+aloptr	LOP.0+P.0+R.0+T.0|aloptr|[POS:B]
+alopt	LOP.0+P.0+T.0|alopt|[POS:B]
+lopr	LOP.0+R.0|lopr|[POS:B]
+alopqtr	LOP.0+P.0+Q.0+R.0+T.0|alopqtr|[POS:B]
