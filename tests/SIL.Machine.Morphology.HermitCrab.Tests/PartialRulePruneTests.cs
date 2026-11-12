@@ -32,6 +32,7 @@ public class PartialRulePruneTests
         "cx2", // a flagged and an unflagged word differ only in NeedsPartial and must both survive
         "cx3", // lexical family and a partial rule: master returns duplicates, see the pinning test below
         "cx4", // ModifyFromInput changes the partial material
+        "cx9b", // ModifyFromInput on an unbounded part widens the node the partial rule needs
         "cx5", // InsertSimpleContext splits the partial material
         "cx6", // an infix and a copy of a part (reduplication) rearrange the partial material
         "cx7", // a compound with the non-head before the head parts
