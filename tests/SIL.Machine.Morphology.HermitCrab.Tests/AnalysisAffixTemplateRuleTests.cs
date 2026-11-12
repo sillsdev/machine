@@ -409,8 +409,11 @@ public class AnalysisAffixTemplateRuleTests : HermitCrabTestBase
         }
     }
 
+    private static IEnumerable<Trace> Flatten(Trace trace) =>
+        new[] { trace }.Concat(trace.Children.SelectMany(Flatten));
+
     [Test]
-    public void Apply_Tracing_RunsTheRulesForDetailedFailureInformation()
+    public void Apply_TracingPrunedPartial_TracesTheUnreachableRequiredSlot()
     {
         AffixTemplate template = RequiredInnerSuffixTemplate();
         Word input = Input("sagufz");
@@ -418,9 +421,49 @@ public class AnalysisAffixTemplateRuleTests : HermitCrabTestBase
         WalkResult result = Walk(template, input, RequiredSlotLookaheadMode.On, tracing: true);
         TraceManager.IsTracing = false;
 
-        Assert.That(result.RuleAttempts, Is.GreaterThan(0));
-        var root = (Trace)input.CurrentTrace;
-        Assert.That(root.Children.Count, Is.GreaterThan(2));
+        Assert.That(result.RuleAttempts, Is.EqualTo(0), "pruning stays on while tracing");
+        Trace[] failures = Flatten((Trace)input.CurrentTrace)
+            .Where(t => t.FailureReason == FailureReason.UnreachableRequiredSlot)
+            .ToArray();
+        Assert.That(failures, Has.Length.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(failures[0].Type, Is.EqualTo(TraceType.TemplateAnalysisOutput));
+            Assert.That(failures[0].Source, Is.SameAs(template));
+            Assert.That(failures[0].FailureObject, Is.SameAs(template.Slots[0]));
+            Assert.That(failures[0].Output, Is.Null);
+        });
+    }
+
+    [Test]
+    public void Apply_TracingPresentRequiredSlot_TracesNoUnreachableSlotAndKeepsTheParses()
+    {
+        AffixTemplate template = RequiredInnerSuffixTemplate();
+        Word input = Input("sagtiuz");
+
+        WalkResult traced = Walk(template, input, RequiredSlotLookaheadMode.On, tracing: true);
+        TraceManager.IsTracing = false;
+        WalkResult off = Walk(template, Input("sagtiuz"), RequiredSlotLookaheadMode.Off);
+
+        Assert.That(traced.Parses, Is.EqualTo(off.Parses));
+        Assert.That(
+            Flatten((Trace)input.CurrentTrace).Any(t => t.FailureReason == FailureReason.UnreachableRequiredSlot),
+            Is.False
+        );
+    }
+
+    [Test]
+    public void Apply_TracingAndNotTracing_GiveTheSameParsesForEveryForm()
+    {
+        AffixTemplate template = RequiredInnerSuffixTemplate();
+        foreach (string form in new[] { "sagtiuz", "sagufz", "sagttz", "sagtif", "sagu" })
+        {
+            WalkResult plain = Walk(template, Input(form), RequiredSlotLookaheadMode.On);
+            WalkResult traced = Walk(template, Input(form), RequiredSlotLookaheadMode.On, tracing: true);
+            TraceManager.IsTracing = false;
+            Assert.That(traced.Parses, Is.EqualTo(plain.Parses), form);
+            Assert.That(traced.RuleAttempts, Is.EqualTo(plain.RuleAttempts), form);
+        }
     }
 
     [Test]

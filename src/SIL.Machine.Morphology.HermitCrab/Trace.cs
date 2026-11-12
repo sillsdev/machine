@@ -208,5 +208,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         public string OutputText => _outputText ?? FormatText(Output);
 
         public FailureReason FailureReason { get; internal set; }
+
+        /// <summary>
+        /// Gets what <see cref="FailureReason"/> is about, when it has a subject: the
+        /// <see cref="AffixTemplateSlot"/> for <see cref="HermitCrab.FailureReason.UnreachableRequiredSlot"/>.
+        /// Otherwise <c>null</c>.
+        /// </summary>
+        public object FailureObject { get; internal set; }
     }
 }

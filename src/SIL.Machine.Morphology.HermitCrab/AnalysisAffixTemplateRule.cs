@@ -57,7 +57,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                         _template,
                         input,
                         false,
-                        FailureReason.NonPartialRuleProhibitedAfterFinalTemplate
+                        FailureReason.NonPartialRuleProhibitedAfterFinalTemplate,
+                        null
                     );
                 }
                 return Enumerable.Empty<Word>();
@@ -84,7 +85,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private bool RequiredSlotCannotUnapply(Word word, int lastSlot, ref int[] fired)
         {
             RequiredSlotLookaheadMode mode = _morpher.RequiredSlotLookahead;
-            if (mode == RequiredSlotLookaheadMode.Off || _morpher.TraceManager.IsTracing)
+            if (mode == RequiredSlotLookaheadMode.Off)
                 return false;
 
             long unifications = 0;
@@ -101,6 +102,16 @@ namespace SIL.Machine.Morphology.HermitCrab
                     if (mode == RequiredSlotLookaheadMode.On)
                     {
                         cannot = true;
+                        if (_morpher.TraceManager.IsTracing)
+                        {
+                            _morpher.TraceManager.EndUnapplyTemplate(
+                                _template,
+                                word,
+                                false,
+                                FailureReason.UnreachableRequiredSlot,
+                                _template.Slots[j]
+                            );
+                        }
                         break;
                     }
                     fired = fired == null ? new[] { j } : fired.Append(j).ToArray();
@@ -151,13 +162,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (!_template.Slots[i].Optional)
                 {
                     if (_morpher.TraceManager.IsTracing)
-                        _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, false, FailureReason.None);
+                        _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, false, FailureReason.None, null);
                     return;
                 }
             }
 
             if (_morpher.TraceManager.IsTracing)
-                _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, true, FailureReason.None);
+                _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, true, FailureReason.None, null);
             ReportShadow("completed-under-fired", fired, -1);
             output.Add(inWord);
         }
@@ -203,7 +214,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                                         _template,
                                         work.Item1,
                                         false,
-                                        FailureReason.None
+                                        FailureReason.None,
+                                        null
                                     );
                                 add = false;
                                 break;
@@ -217,7 +229,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                                     _template,
                                     work.Item1,
                                     true,
-                                    FailureReason.None
+                                    FailureReason.None,
+                                    null
                                 );
                             ReportShadow("completed-under-fired", work.Item3, -1);
                             outStack.Push(work.Item1);
