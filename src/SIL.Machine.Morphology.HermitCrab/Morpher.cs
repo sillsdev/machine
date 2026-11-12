@@ -455,7 +455,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                             _traceManager.Failed(
                                 Language,
                                 traceWord,
-                                FailureReason.RequiredSyntacticFeatureStruct,
+                                FailureReason.LexicalLookupFeatures,
                                 allomorph,
                                 input.SyntacticFeatureStruct
                             );
