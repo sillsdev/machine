@@ -821,44 +821,26 @@ public class MorpherTests : HermitCrabTestBase
 
     [TestCase(1)]
     [TestCase(4)]
-    public void ParseWords_PropagatesCallbackErrorsAfterAllWordsFinish(int concurrency)
+    public void ParseWords_PropagatesProgressErrors(int concurrency)
     {
         var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
-        string[] words = { "sag", "sag$", "sag", "sag" };
-        var starts = new int[words.Length];
-        var finishes = new int[words.Length];
-        var error = Assert.Throws<WordParseProgressException>(() =>
+        string[] words = { "sag", "sag", "sag", "sag" };
+        Exception error = Assert.Catch(() =>
             morpher.ParseWords(
                 words,
                 concurrency,
                 progress: (index, word, result) =>
                 {
-                    if (result == null)
-                    {
-                        Interlocked.Increment(ref starts[index]);
-                        if (index == 0)
-                            throw new InvalidOperationException("start");
-                    }
-                    else
-                    {
-                        Interlocked.Increment(ref finishes[index]);
-                        if (index == 2)
-                            throw new InvalidOperationException("finish");
-                    }
+                    if (index == 2 && result != null)
+                        throw new InvalidOperationException("finish");
                 }
             )
         );
 
-        Assert.That(error.InnerExceptions.Select(e => e.Message), Is.EquivalentTo(new[] { "start", "finish" }));
-        Assert.That(starts, Is.All.EqualTo(1));
-        Assert.That(finishes, Is.All.EqualTo(1));
-        Assert.That(error.Results.Select(r => r.SurfaceForm), Is.EqualTo(words));
-        Assert.That(error.Results[1].Error, Is.TypeOf<InvalidShapeException>());
-        foreach (int index in new[] { 0, 2, 3 })
-        {
-            Assert.That(error.Results[index].Error, Is.Null);
-            Assert.That(error.Results[index].Analyses, Is.Not.Empty);
-        }
+        if (concurrency > 1)
+            error = ((AggregateException)error).InnerExceptions.Single();
+        Assert.That(error, Is.TypeOf<InvalidOperationException>());
+        Assert.That(error.Message, Is.EqualTo("finish"));
     }
 
     [TestCase(1)]

@@ -270,9 +270,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// Do not overlap traced calls sharing a trace manager. Failed parses have empty analyses.
         /// Progress receives the input index and surface form, with a null result at the start and the
         /// completed result at the finish. It runs on parsing threads (the calling thread for serial batches),
-        /// possibly concurrently, and must be fast and thread-safe. Callback exceptions are collected and
-        /// propagated as a WordParseProgressException (an AggregateException) after all words and both notifications
-        /// have been processed; its Results property holds every word's result in input order.
+        /// possibly concurrently, and must be fast and thread-safe. Progress exceptions are not caught: they end the
+        /// batch and propagate to the caller (wrapped in an AggregateException when words run concurrently).
         /// Batch argument validation and input enumeration errors propagate to the caller.
         /// </summary>
         public IReadOnlyList<WordParseResult> ParseWords(
@@ -295,23 +294,10 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             string[] inputs = words.ToArray();
             var results = new WordParseResult[inputs.Length];
-            var callbackErrors = new ConcurrentQueue<Exception>();
-            void Notify(int index, WordParseResult result)
-            {
-                try
-                {
-                    progress?.Invoke(index, inputs[index], result);
-                }
-                catch (Exception error)
-                {
-                    callbackErrors.Enqueue(error);
-                }
-            }
-
             void Parse(int index)
             {
                 object trace = null;
-                Notify(index, null);
+                progress?.Invoke(index, inputs[index], null);
                 try
                 {
                     var analyses = ParseWord(inputs[index], out trace, guessRoot).ToList().AsReadOnly();
@@ -321,7 +307,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 {
                     results[index] = new WordParseResult(inputs[index], Array.Empty<Word>(), trace, error);
                 }
-                Notify(index, results[index]);
+                progress?.Invoke(index, inputs[index], results[index]);
             }
 
             if (_traceManager.IsTracing || maxWordConcurrency == 1)
@@ -339,11 +325,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 );
             }
 
-            IReadOnlyList<WordParseResult> ordered = Array.AsReadOnly(results);
-            if (!callbackErrors.IsEmpty)
-                throw new WordParseProgressException(ordered, callbackErrors);
-
-            return ordered;
+            return Array.AsReadOnly(results);
         }
 
         /// <summary>
