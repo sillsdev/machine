@@ -1,0 +1,180 @@
+<?xml version='1.0' encoding='utf-8'?>
+<HermitCrabInput>
+  <Language>
+    <Name>f2b-alpha-in-out-env</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="pos174">
+        <Name>***</Name>
+      </PartOfSpeech>
+      <PartOfSpeech id="pos17">
+        <Name>W</Name>
+      </PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="feat211">
+        <Name>place</Name>
+        <Symbols>
+          <Symbol id="sym99">lab</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="feat216">
+        <Name>nasal</Name>
+        <Symbols>
+          <Symbol id="sym69">+</Symbol>
+          <Symbol id="sym77">-</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <HeadFeatures />
+    <CharacterDefinitionTable id="table1">
+      <Name>***</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="char1">
+          <Representations>
+            <Representation>m</Representation>
+          </Representations>
+          <FeatureValue feature="feat211" symbolValues="sym99" />
+          <FeatureValue feature="feat216" symbolValues="sym69" />
+        </SegmentDefinition>
+        <SegmentDefinition id="char4">
+          <Representations>
+            <Representation>N</Representation>
+          </Representations>
+          <FeatureValue feature="feat216" symbolValues="sym69" />
+        </SegmentDefinition>
+        <SegmentDefinition id="char5">
+          <Representations>
+            <Representation>p</Representation>
+          </Representations>
+          <FeatureValue feature="feat216" symbolValues="sym77" />
+          <FeatureValue feature="feat211" symbolValues="sym99" />
+        </SegmentDefinition>
+        <SegmentDefinition id="char8">
+          <Representations>
+            <Representation>a</Representation>
+          </Representations>
+        </SegmentDefinition>
+      </SegmentDefinitions>
+      <BoundaryDefinitions>
+        <BoundaryDefinition id="char9">
+          <Representations>
+            <Representation>+</Representation>
+          </Representations>
+        </BoundaryDefinition>
+        <BoundaryDefinition id="char10">
+          <Representations>
+            <Representation>^0</Representation>
+            <Representation>*0</Representation>
+            <Representation>&amp;0</Representation>
+            <Representation>∅</Representation>
+          </Representations>
+        </BoundaryDefinition>
+        <BoundaryDefinition id="char11">
+          <Representations>
+            <Representation>.</Representation>
+          </Representations>
+        </BoundaryDefinition>
+      </BoundaryDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="nc1">
+        <Name>Any</Name>
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="nc6">
+        <Name>nasAny</Name>
+        <FeatureValue feature="feat216" symbolValues="sym69" />
+      </FeatureNaturalClass>
+      </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prule1" multipleApplicationOrder="simultaneous">
+        <Name>f2b-alpha-in-out-env</Name>
+        <VariableFeatures>
+          <VariableFeature id="var1" name="α" phonologicalFeature="feat211" />
+        </VariableFeatures>
+        <PhoneticInput>
+          <PhoneticSequence>
+            <SimpleContext naturalClass="nc6">
+              <AlphaVariables>
+                <AlphaVariable variableFeature="var1" />
+              </AlphaVariables>
+            </SimpleContext>
+          </PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <Segment segment="char1" /></PhoneticSequence>
+            </PhoneticOutput>
+            <Environment>
+              <RightEnvironment>
+                <PhoneticTemplate>
+                  <PhoneticSequence>
+                    <Segment segment="char5" /></PhoneticSequence>
+                </PhoneticTemplate>
+              </RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" phonologicalRules="prule1" morphologicalRules="mrule1">
+        <Name>Morphology</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrule1" requiredPartsOfSpeech="pos17" partial="true">
+            <Name>N-</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="msubrule1">
+                <MorphologicalInput>
+                  <PhoneticSequence id="msubrule1_stem">
+                    <OptionalSegmentSequence min="0" max="-1">
+                      <BoundaryMarker boundary="char10" />
+                      <BoundaryMarker boundary="char9" />
+                    </OptionalSegmentSequence>
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="nc1" />
+                    </OptionalSegmentSequence>
+                    <OptionalSegmentSequence min="0" max="-1">
+                      <BoundaryMarker boundary="char9" />
+                      <BoundaryMarker boundary="char10" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments>
+                    <PhoneticShape>N+</PhoneticShape>
+                  </InsertSegments>
+                  <CopyFromInput index="msubrule1_stem" />
+                </MorphologicalOutput>
+                <Properties>
+                  <Property name="ID">34</Property>
+                </Properties>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <Gloss>N</Gloss>
+            <Properties>
+              <Property name="ID">37</Property>
+            </Properties>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="entry1" partOfSpeech="pos17">
+            <Allomorphs>
+              <Allomorph id="allo1">
+                <PhoneticShape>p</PhoneticShape>
+                <Properties>
+                  <Property name="ID">20</Property>
+                </Properties>
+              </Allomorph>
+            </Allomorphs>
+            <Gloss>pa</Gloss>
+            <Properties>
+              <Property name="ID">19</Property>
+            </Properties>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

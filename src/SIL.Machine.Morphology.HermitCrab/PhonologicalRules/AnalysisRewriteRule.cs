@@ -165,11 +165,16 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
                     case ReapplyType.SelfOpaquing:
                         {
-                            Word data = sr.Item2.Apply(input).SingleOrDefault();
+                            Word data = input;
                             while (data != null)
                             {
-                                srApplied = true;
+                                Shape previousShape = data.Shape.Clone();
                                 data = sr.Item2.Apply(data).SingleOrDefault();
+                                if (data == null)
+                                    break;
+                                srApplied = true;
+                                if (previousShape.ValueEquals(data.Shape))
+                                    break;
                             }
                         }
                         break;
