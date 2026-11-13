@@ -154,16 +154,29 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
     }
 
     [Test]
-    public void EmptyCopyIsNeverPruned()
+    public void EmptyCopyAgainstANonEmptyCopyIsPruned()
     {
         (string first, string second) = FindIncompatibleSegments();
         Pattern<Word, ShapeNode> part = Pattern<Word, ShapeNode>.New("copy").Annotation(AnySegment).ZeroOrMore.Value;
         AffixProcessRule rule = CreateCopyRule(part);
         Word input = CreateInput(first + second);
 
-        // the split with an empty copy has nothing to compare, so only the split of two incompatible copies is removed
+        // "whole word + empty" and "empty + whole word" cannot both be copies of one input, and neither can the
+        // split of two incompatible halves
         Assert.That(AnalysisForms(false, rule, input), Is.EquivalentTo(new[] { first, first + second }));
-        Assert.That(AnalysisForms(true, rule, input), Is.EqualTo(new[] { first + second }));
+        Assert.That(AnalysisForms(true, rule, input), Is.Empty);
+    }
+
+    [Test]
+    public void EmptyCopyIsKeptWhenTheWordHasAnOptionalNode()
+    {
+        // a restored deletion could fill the empty copy, so the match stays undecidable
+        (string first, string second) = FindIncompatibleSegments();
+        Pattern<Word, ShapeNode> part = Pattern<Word, ShapeNode>.New("copy").Annotation(AnySegment).ZeroOrMore.Value;
+        AffixProcessRule rule = CreateCopyRule(part);
+        Word input = CreateInputWithOptionalSecondSegment(first + second);
+
+        Assert.That(AnalysisForms(true, rule, input), Is.EquivalentTo(AnalysisForms(false, rule, input)));
     }
 
     [TestCase(false, 3)]
