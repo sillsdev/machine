@@ -49,7 +49,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 AffixProcessRule[] partial = stratum
                     .MorphologicalRules.OfType<AffixProcessRule>()
-                    .Where(r => r.IsPartial && !r.IsTemplateRule && !r.GetIsCliticRule())
+                    .Where(FinalTemplatePartialReachability.IsSynthesisPartial)
                     .ToArray();
                 if (!partialInDeeperStratum && partial.Length > 0)
                     _material[stratum] = Inspect(stratum, partial);

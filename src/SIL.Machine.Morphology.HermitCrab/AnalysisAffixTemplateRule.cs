@@ -54,7 +54,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                         _template,
                         input,
                         false,
-                        FailureReason.NonPartialRuleProhibitedAfterFinalTemplate
+                        FailureReason.NonPartialRuleProhibitedAfterFinalTemplate,
+                        null
                     );
                 }
                 return Enumerable.Empty<Word>();
@@ -63,7 +64,10 @@ namespace SIL.Machine.Morphology.HermitCrab
             Word inWord = input.Clone();
             // The prune check above passed, so the word is partial at this template or the analysis fails.
             if (afterNonTemplate)
+            {
                 inWord.NeedsPartial = true;
+                inWord.OwedPartialTemplate = _template;
+            }
             inWord.Freeze();
 
             var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
@@ -93,13 +97,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (!_template.Slots[i].Optional)
                 {
                     if (_morpher.TraceManager.IsTracing)
-                        _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, false, FailureReason.None);
+                        _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, false, FailureReason.None, null);
                     return;
                 }
             }
 
             if (_morpher.TraceManager.IsTracing)
-                _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, true, FailureReason.None);
+                _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, true, FailureReason.None, null);
             output.Add(inWord);
         }
 
@@ -135,7 +139,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                                         _template,
                                         work.Item1,
                                         false,
-                                        FailureReason.None
+                                        FailureReason.None,
+                                        null
                                     );
                                 add = false;
                                 break;
@@ -149,7 +154,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                                     _template,
                                     work.Item1,
                                     true,
-                                    FailureReason.None
+                                    FailureReason.None,
+                                    null
                                 );
                             outStack.Push(work.Item1);
                         }

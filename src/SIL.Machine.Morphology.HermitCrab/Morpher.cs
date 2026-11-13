@@ -72,16 +72,46 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 _partialReachableTemplates = FinalTemplatePartialReachability.Compute(lang);
                 _partialLookAhead = new PartialRuleLookAhead(lang);
-                _canPruneFinalTemplates =
-                    _partialLookAhead.IsActive
-                    || lang.Strata.SelectMany(s => s.AffixTemplates)
-                        .Any(t => t.IsFinal && !_partialReachableTemplates.Contains(t));
+                // Only a final template can arm the prune, so without one nothing is tracked.
+                _canPruneFinalTemplates = lang
+                    .Strata.SelectMany(s => s.AffixTemplates)
+                    .Any(t => t.IsFinal && (_partialLookAhead.IsActive || !_partialReachableTemplates.Contains(t)));
+                _partialRules = lang
+                    .Strata.SelectMany(s =>
+                        s.MorphologicalRules.Concat(
+                            s.AffixTemplates.SelectMany(t => t.Slots).SelectMany(sl => sl.Rules)
+                        )
+                    )
+                    .OfType<AffixProcessRule>()
+                    .Where(FinalTemplatePartialReachability.IsSynthesisPartial)
+                    .Distinct()
+                    .ToList();
             }
         }
 
         private readonly HashSet<AffixTemplate> _partialReachableTemplates;
         private readonly PartialRuleLookAhead _partialLookAhead;
         private readonly bool _canPruneFinalTemplates;
+        private readonly IReadOnlyList<AffixProcessRule> _partialRules;
+
+        /// <summary>
+        /// Traces the drop of an analysis that still owes a partial rule as an unapplied
+        /// <see cref="FailureReason.OwedPartialCannotUnapply"/> template, with the partial rules as the failure
+        /// object.
+        /// </summary>
+        internal void TraceOwedPartialDropped(Word input)
+        {
+            if (_traceManager.IsTracing && input.OwedPartialTemplate != null)
+            {
+                _traceManager.EndUnapplyTemplate(
+                    input.OwedPartialTemplate,
+                    input,
+                    false,
+                    FailureReason.OwedPartialCannotUnapply,
+                    _partialRules
+                );
+            }
+        }
 
         /// <summary>
         /// Whether analysis records the template state: the prune is on, or some final template can be pruned in a
@@ -405,7 +435,10 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 // No partial rule was unapplied below the final template that followed a non-template rule.
                 if (analysisWord.NeedsPartial)
+                {
+                    TraceOwedPartialDropped(analysisWord);
                     continue;
+                }
                 foreach (Word synthesisWord in LexicalLookup(analysisWord))
                 {
                     foreach (Word alternative in synthesisWord.ExpandAlternatives())
@@ -440,7 +473,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                         {
                             analyses.TryDequeue(out Word analysisWord);
                             if (analysisWord.NeedsPartial)
+                            {
+                                TraceOwedPartialDropped(analysisWord);
                                 continue;
+                            }
                             foreach (Word synthesisWord in LexicalLookup(analysisWord))
                             {
                                 foreach (Word alternative in synthesisWord.ExpandAlternatives())

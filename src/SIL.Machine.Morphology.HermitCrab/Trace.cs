@@ -208,5 +208,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         public string OutputText => _outputText ?? FormatText(Output);
 
         public FailureReason FailureReason { get; internal set; }
+
+        /// <summary>
+        /// Gets what <see cref="FailureReason"/> is about, when it has a subject: for
+        /// <see cref="HermitCrab.FailureReason.OwedPartialCannotUnapply"/>, the partial rules (a list of
+        /// <see cref="MorphologicalRules.AffixProcessRule"/>) that the analysis owes one of. Otherwise <c>null</c>.
+        /// </summary>
+        public object FailureObject { get; internal set; }
     }
 }

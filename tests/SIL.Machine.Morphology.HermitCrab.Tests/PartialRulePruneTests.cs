@@ -32,6 +32,9 @@ public class PartialRulePruneTests
         "cx2", // a flagged and an unflagged word differ only in NeedsPartial and must both survive
         "cx3", // lexical family and a partial rule: master returns duplicates, see the pinning test below
         "cx4", // ModifyFromInput changes the partial material
+        "cx10", // no final template, so no state is tracked
+        "cx11", // the only partial rule sits in a template slot
+        "cx12", // the only partial rule is a clitic rule
         "cx9b", // ModifyFromInput on an unbounded part widens the node the partial rule needs
         "cx5", // InsertSimpleContext splits the partial material
         "cx6", // an infix and a copy of a part (reduplication) rearrange the partial material
@@ -45,6 +48,16 @@ public class PartialRulePruneTests
     private static string DataPath(string file) =>
         Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "TestData", "PartialPrune", file);
 
+    private static IEnumerable<Trace> Flatten(Trace trace)
+    {
+        yield return trace;
+        foreach (Trace child in trace.Children)
+        {
+            foreach (Trace descendant in Flatten(child))
+                yield return descendant;
+        }
+    }
+
     private static IEnumerable<TestCaseData> GrammarCases()
     {
         foreach (string grammar in Grammars)
@@ -57,11 +70,12 @@ public class PartialRulePruneTests
     private static Morpher CreateMorpher(
         string grammar,
         int maxDegreeOfParallelism,
-        Func<IHCRule, bool>? selector = null
+        Func<IHCRule, bool>? selector = null,
+        bool tracing = false
     )
     {
         Language language = XmlLanguageLoader.Load(DataPath(grammar + ".xml"));
-        var morpher = new Morpher(new TraceManager(), language, maxDegreeOfParallelism);
+        var morpher = new Morpher(new TraceManager { IsTracing = tracing }, language, maxDegreeOfParallelism);
         if (DeletionReapplied.Contains(grammar))
             morpher.DeletionReapplications = 1;
         if (selector != null)
@@ -169,5 +183,64 @@ public class PartialRulePruneTests
                 }
             )
         );
+    }
+
+    // A pruned candidate must show in a trace, not vanish: the final template that owes a partial rule, with the
+    // partial rules as the failure object.
+    [TestCase("g6", "lopqtr")]
+    [TestCase("g6b", "loptr")]
+    [TestCase("cx1b", "lopkotr")]
+    public void ParseWord_OwedPartialDropped_IsTraced(string grammar, string word)
+    {
+        foreach (int degree in new[] { 1, 0 })
+        {
+            Morpher morpher = CreateMorpher(grammar, degree, tracing: true);
+            morpher.ParseWord(word, out object root);
+            Trace[] dropped = Flatten((Trace)root)
+                .Where(t => t.FailureReason == FailureReason.OwedPartialCannotUnapply)
+                .ToArray();
+            Assert.That(dropped, Is.Not.Empty);
+            foreach (Trace t in dropped)
+            {
+                Assert.That(t.Type, Is.EqualTo(TraceType.TemplateAnalysisOutput));
+                Assert.That(t.Source, Is.InstanceOf<AffixTemplate>().With.Property("IsFinal").True);
+                Assert.That(t.Output, Is.Null);
+                Assert.That(t.FailureObject, Is.InstanceOf<IReadOnlyList<AffixProcessRule>>());
+                Assert.That((IReadOnlyList<AffixProcessRule>)t.FailureObject, Is.Not.Empty);
+            }
+        }
+    }
+
+    // Nothing arms the prune without a final template, so the analysis state must not be tracked.
+    [TestCase("cx10", false)]
+    [TestCase("cx1b", true)]
+    [TestCase("cx11", true)]
+    [TestCase("cx12", true)]
+    public void TracksFinalTemplateState_PartialRuleGrammar_OnlyWhenAFinalTemplateCanBePruned(
+        string grammar,
+        bool tracked
+    )
+    {
+        Assert.That(CreateMorpher(grammar, 1).TracksFinalTemplateState, Is.EqualTo(tracked));
+    }
+
+    // Partial rules in a template slot or clitic rules never make a word partial in synthesis, so they do not
+    // keep the final-template prune off.
+    [TestCase("cx11", "lopkmootr", 15, TestName = "SlotPartialRuleDoesNotKeepPruneOff")]
+    [TestCase("cx12", "lopkotr", 13, TestName = "CliticPartialRuleDoesNotKeepPruneOff")]
+    public void ParseWord_OnlyNonPartialWordsReachTheTemplate_Prunes(string grammar, string word, int maxCalls)
+    {
+        int calls = 0;
+        Morpher morpher = CreateMorpher(
+            grammar,
+            maxDegreeOfParallelism: 1,
+            selector: _ =>
+            {
+                calls++;
+                return true;
+            }
+        );
+        Signature(morpher, word);
+        Assert.That(calls, Is.LessThanOrEqualTo(maxCalls));
     }
 }

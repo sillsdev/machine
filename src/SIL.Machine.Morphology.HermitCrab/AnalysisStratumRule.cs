@@ -185,7 +185,10 @@ namespace SIL.Machine.Morphology.HermitCrab
         private IEnumerable<Word> ApplyMorphologicalRules(Word input)
         {
             if (_morpher.OwesImpossiblePartial(input))
+            {
+                _morpher.TraceOwedPartialDropped(input);
                 yield break;
+            }
             foreach (Word mruleOutWord in _mrulesRule.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
             {
                 switch (_stratum.MorphologicalRuleOrder)
@@ -206,7 +209,10 @@ namespace SIL.Machine.Morphology.HermitCrab
         private IEnumerable<Word> ApplyTemplates(Word input)
         {
             if (_morpher.OwesImpossiblePartial(input))
+            {
+                _morpher.TraceOwedPartialDropped(input);
                 yield break;
+            }
             foreach (Word tempOutWord in _templatesRule.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
             {
                 switch (_stratum.MorphologicalRuleOrder)
