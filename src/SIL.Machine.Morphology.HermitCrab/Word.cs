@@ -32,6 +32,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private FinalTemplateState _finalTemplateState;
         private bool _isPartial;
         private bool _needsPartial;
+        private AffixTemplate _owedPartialTemplate;
         private readonly Dictionary<string, HashSet<int>> _disjunctiveAllomorphIndices;
         private int _mruleAppCount = 0;
         private readonly IList<Word> _alternatives = new List<Word>();
@@ -99,6 +100,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _finalTemplateState = word._finalTemplateState;
             _isPartial = word._isPartial;
             _needsPartial = word._needsPartial;
+            _owedPartialTemplate = word._owedPartialTemplate;
             CurrentTrace = word.CurrentTrace;
             _disjunctiveAllomorphIndices = word._disjunctiveAllomorphIndices.ToDictionary(
                 kvp => kvp.Key,
@@ -431,6 +433,17 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 CheckFrozen();
                 _needsPartial = value;
+            }
+        }
+
+        /// <summary>The final template whose unapplication made this analysis owe a partial rule; for traces only.</summary>
+        internal AffixTemplate OwedPartialTemplate
+        {
+            get { return _owedPartialTemplate; }
+            set
+            {
+                CheckFrozen();
+                _owedPartialTemplate = value;
             }
         }
 

@@ -29,6 +29,7 @@
         AllomorphNotApplicable,
         LexicalLookupFeatures,
         UnreachableRequiredSlot,
+        OwedPartialCannotUnapply,
     }
 
     public interface ITraceManager

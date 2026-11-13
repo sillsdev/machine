@@ -70,7 +70,10 @@ namespace SIL.Machine.Morphology.HermitCrab
             Word inWord = input.Clone();
             // The prune check above passed, so the word is partial at this template or the analysis fails.
             if (afterNonTemplate)
+            {
                 inWord.NeedsPartial = true;
+                inWord.OwedPartialTemplate = _template;
+            }
             inWord.Freeze();
 
             var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
