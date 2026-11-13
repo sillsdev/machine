@@ -68,6 +68,82 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             _morphemes = new ReadOnlyObservableCollection<Morpheme>(morphemes);
             HasPartialRules = GetPartialMorphemes().Any(morpheme => !(morpheme is LexEntry));
+            if (HasPartialRules)
+            {
+                _partialReachableTemplates = FinalTemplatePartialReachability.Compute(lang);
+                _partialLookAhead = new PartialRuleLookAhead(lang);
+                // Only a final template can arm the prune, so without one nothing is tracked.
+                _canPruneFinalTemplates = lang
+                    .Strata.SelectMany(s => s.AffixTemplates)
+                    .Any(t => t.IsFinal && (_partialLookAhead.IsActive || !_partialReachableTemplates.Contains(t)));
+                _partialRules = lang
+                    .Strata.SelectMany(s =>
+                        s.MorphologicalRules.Concat(
+                            s.AffixTemplates.SelectMany(t => t.Slots).SelectMany(sl => sl.Rules)
+                        )
+                    )
+                    .OfType<AffixProcessRule>()
+                    .Where(FinalTemplatePartialReachability.IsSynthesisPartial)
+                    .Distinct()
+                    .ToList();
+            }
+        }
+
+        private readonly HashSet<AffixTemplate> _partialReachableTemplates;
+        private readonly PartialRuleLookAhead _partialLookAhead;
+        private readonly bool _canPruneFinalTemplates;
+        private readonly IReadOnlyList<AffixProcessRule> _partialRules;
+
+        /// <summary>
+        /// Traces the drop of an analysis that still owes a partial rule as an unapplied
+        /// <see cref="FailureReason.OwedPartialCannotUnapply"/> template, with the partial rules as the failure
+        /// object.
+        /// </summary>
+        internal void TraceOwedPartialDropped(Word input)
+        {
+            if (_traceManager.IsTracing && input.OwedPartialTemplate != null)
+            {
+                _traceManager.EndUnapplyTemplate(
+                    input.OwedPartialTemplate,
+                    input,
+                    false,
+                    FailureReason.OwedPartialCannotUnapply,
+                    _partialRules
+                );
+            }
+        }
+
+        /// <summary>
+        /// Whether analysis records the template state: the prune is on, or some final template can be pruned in a
+        /// grammar with partial rules. Otherwise the state would only split equivalent analyses.
+        /// </summary>
+        internal bool TracksFinalTemplateState =>
+            !HasPartialRules || AlwaysEnforceFinalTemplates || _canPruneFinalTemplates;
+
+        /// <summary>
+        /// Whether analysis may refuse to unapply a final template that follows a non-template rule. The synthesis
+        /// derivation this refuses has a non-partial rule after the final template, which is allowed only when the
+        /// word is partial there: a partial rule applied before the template. A partial rule leaves the analysis
+        /// state at none, so it never arms this. Templates no partial word can reach are pruned outright, and
+        /// others when the shape shows that no partial rule can still be unapplied. In a grammar with both partial
+        /// rules and lexical families this can drop a duplicate analysis that master returns: a family member
+        /// that replaces the root is a fresh word that forgets the pending final template. Only a duplicate is
+        /// lost, never a distinct analysis. FieldWorks never writes a family.
+        /// </summary>
+        internal bool IsFinalTemplatePrunable(AffixTemplate template, Word input)
+        {
+            if (!HasPartialRules || AlwaysEnforceFinalTemplates)
+                return true;
+            return !_partialReachableTemplates.Contains(template) || !_partialLookAhead.PartialRuleMayUnapply(input);
+        }
+
+        /// <summary>
+        /// Whether the analysis still owes a partial rule that its shape rules out for it and for anything derived
+        /// from it.
+        /// </summary>
+        internal bool OwesImpossiblePartial(Word input)
+        {
+            return input.NeedsPartial && !_partialLookAhead.PartialRuleMayUnapply(input);
         }
 
         public IEnumerable<Morpheme> GetPartialMorphemes()
@@ -103,8 +179,9 @@ namespace SIL.Machine.Morphology.HermitCrab
         public bool MergeEquivalentAnalyses { get; set; }
 
         /// <summary>
-        /// True if any morpheme other than a <see cref="LexEntry"/> is partial. Analysis may prune a final
-        /// template that follows a non-template rule only when this is false or
+        /// True if any morpheme other than a <see cref="LexEntry"/> is partial. Synthesis lets a non-template rule
+        /// follow a final template when the word or the rule is partial, so analysis prunes a final template that
+        /// follows a non-template rule only where no partial word can be involved, unless
         /// <see cref="AlwaysEnforceFinalTemplates"/> is set.
         /// </summary>
         public bool HasPartialRules { get; }
@@ -202,7 +279,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 // Guess roots when there are no results.
                 List<Word> matches = new List<Word>();
-                foreach (Word analysisWord in origAnalyses)
+                // A partial root takes no template, so the slot rule a flagged analysis owes is never applied.
+                foreach (Word analysisWord in origAnalyses.Where(w => !w.NeedsPartial))
                 {
                     var lexicalGuesses = LexicalGuess(analysisWord).Distinct();
                     foreach (Word synthesisWord in lexicalGuesses)
@@ -355,6 +433,12 @@ namespace SIL.Machine.Morphology.HermitCrab
             int alternativeCount = 0;
             foreach (Word analysisWord in analyses)
             {
+                // No partial rule was unapplied below the final template that followed a non-template rule.
+                if (analysisWord.NeedsPartial)
+                {
+                    TraceOwedPartialDropped(analysisWord);
+                    continue;
+                }
                 foreach (Word synthesisWord in LexicalLookup(analysisWord))
                 {
                     foreach (Word alternative in synthesisWord.ExpandAlternatives())
@@ -388,6 +472,11 @@ namespace SIL.Machine.Morphology.HermitCrab
                         for (int i = 0; i < range.Item2 - range.Item1; i++)
                         {
                             analyses.TryDequeue(out Word analysisWord);
+                            if (analysisWord.NeedsPartial)
+                            {
+                                TraceOwedPartialDropped(analysisWord);
+                                continue;
+                            }
                             foreach (Word synthesisWord in LexicalLookup(analysisWord))
                             {
                                 foreach (Word alternative in synthesisWord.ExpandAlternatives())

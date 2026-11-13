@@ -90,11 +90,22 @@
             ((Trace)input.CurrentTrace).Children.Add(Node(TraceType.TemplateAnalysisInput, template, input: input));
         }
 
-        public void EndUnapplyTemplate(AffixTemplate template, Word output, bool unapplied, FailureReason reason)
+        public void EndUnapplyTemplate(
+            AffixTemplate template,
+            Word output,
+            bool unapplied,
+            FailureReason reason,
+            object failureObj
+        )
         {
-            ((Trace)output.CurrentTrace).Children.Add(
-                Node(TraceType.TemplateAnalysisOutput, template, output: unapplied ? output : null, reason: reason)
+            Trace trace = Node(
+                TraceType.TemplateAnalysisOutput,
+                template,
+                output: unapplied ? output : null,
+                reason: reason
             );
+            trace.FailureObject = failureObj;
+            ((Trace)output.CurrentTrace).Children.Add(trace);
         }
 
         public void MorphologicalRuleUnapplied(IMorphologicalRule rule, int subruleIndex, Word input, Word output)

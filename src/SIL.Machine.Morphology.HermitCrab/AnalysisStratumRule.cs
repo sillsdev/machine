@@ -184,6 +184,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private IEnumerable<Word> ApplyMorphologicalRules(Word input)
         {
+            if (_morpher.OwesImpossiblePartial(input))
+            {
+                _morpher.TraceOwedPartialDropped(input);
+                yield break;
+            }
             foreach (Word mruleOutWord in _mrulesRule.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
             {
                 switch (_stratum.MorphologicalRuleOrder)
@@ -203,6 +208,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private IEnumerable<Word> ApplyTemplates(Word input)
         {
+            if (_morpher.OwesImpossiblePartial(input))
+            {
+                _morpher.TraceOwedPartialDropped(input);
+                yield break;
+            }
             foreach (Word tempOutWord in _templatesRule.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
             {
                 switch (_stratum.MorphologicalRuleOrder)
@@ -235,6 +245,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             private readonly int _nonHeadCount;
             private readonly IReadOnlyDictionary<IMorphologicalRule, int> _ruleCounts;
             private readonly FinalTemplateState _finalTemplateState;
+            private readonly bool _needsPartial;
             private readonly int _hashCode;
 
             // Freezes word.SyntacticFeatureStruct, which Word.Freeze leaves unfrozen.
@@ -253,6 +264,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _nonHeadCount = word.NonHeadCount;
                 _ruleCounts = word.UnappliedRuleCounts;
                 _finalTemplateState = word.FinalTemplateState;
+                _needsPartial = word.NeedsPartial;
 
                 _shape.Freeze();
                 _syntacticFS.Freeze();
@@ -265,6 +277,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 hash = hash * 31 + _realizationalFS.GetFrozenHashCode();
                 hash = hash * 31 + _nonHeadCount;
                 hash = hash * 31 + _finalTemplateState.GetHashCode();
+                hash = hash * 31 + (_needsPartial ? 1 : 0);
                 if (_ruleCounts != null)
                 {
                     int multisetHash = 0;
@@ -292,7 +305,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     || !_realizationalFS.ValueEquals(other._realizationalFS)
                 )
                     return false;
-                if (_finalTemplateState != other._finalTemplateState)
+                if (_finalTemplateState != other._finalTemplateState || _needsPartial != other._needsPartial)
                     return false;
                 return RuleCountsEqual(_ruleCounts, other._ruleCounts);
             }

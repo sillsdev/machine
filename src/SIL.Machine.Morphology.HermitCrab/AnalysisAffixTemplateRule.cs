@@ -41,13 +41,12 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginUnapplyTemplate(_template, input);
 
-            // Do not allow a final template to unapply if we don't need to worry about partial rules
-            // and a non-template was last unapplied.
-            if (
-                (!_morpher.HasPartialRules || _morpher.AlwaysEnforceFinalTemplates)
-                && input.FinalTemplateState == FinalTemplateState.NonTemplate
+            // In synthesis a non-template rule follows a final template only if a partial rule applied earlier.
+            bool afterNonTemplate =
+                _morpher.TracksFinalTemplateState
                 && _template.IsFinal
-            )
+                && input.FinalTemplateState == FinalTemplateState.NonTemplate;
+            if (afterNonTemplate && _morpher.IsFinalTemplatePrunable(_template, input))
             {
                 if (_morpher.TraceManager.IsTracing)
                 {
@@ -55,13 +54,20 @@ namespace SIL.Machine.Morphology.HermitCrab
                         _template,
                         input,
                         false,
-                        FailureReason.NonPartialRuleProhibitedAfterFinalTemplate
+                        FailureReason.NonPartialRuleProhibitedAfterFinalTemplate,
+                        null
                     );
                 }
                 return Enumerable.Empty<Word>();
             }
 
             Word inWord = input.Clone();
+            // The prune check above passed, so the word is partial at this template or the analysis fails.
+            if (afterNonTemplate)
+            {
+                inWord.NeedsPartial = true;
+                inWord.OwedPartialTemplate = _template;
+            }
             inWord.Freeze();
 
             var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
@@ -69,6 +75,14 @@ namespace SIL.Machine.Morphology.HermitCrab
                 ApplySlots(inWord, _rules.Count - 1, output);
             else
                 ParallelApplySlots(inWord, output);
+
+            // The output with every slot skipped did not unapply the template, so it owes nothing.
+            if (afterNonTemplate && output.Remove(inWord))
+            {
+                Word unchanged = input.Clone();
+                unchanged.Freeze();
+                output.Add(unchanged);
+            }
 
             return output;
         }
@@ -83,13 +97,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (!_template.Slots[i].Optional)
                 {
                     if (_morpher.TraceManager.IsTracing)
-                        _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, false, FailureReason.None);
+                        _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, false, FailureReason.None, null);
                     return;
                 }
             }
 
             if (_morpher.TraceManager.IsTracing)
-                _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, true, FailureReason.None);
+                _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, true, FailureReason.None, null);
             output.Add(inWord);
         }
 
@@ -125,7 +139,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                                         _template,
                                         work.Item1,
                                         false,
-                                        FailureReason.None
+                                        FailureReason.None,
+                                        null
                                     );
                                 add = false;
                                 break;
@@ -139,7 +154,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                                     _template,
                                     work.Item1,
                                     true,
-                                    FailureReason.None
+                                    FailureReason.None,
+                                    null
                                 );
                             outStack.Push(work.Item1);
                         }
