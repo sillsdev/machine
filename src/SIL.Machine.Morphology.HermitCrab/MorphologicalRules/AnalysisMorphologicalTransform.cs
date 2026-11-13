@@ -90,7 +90,14 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             {
                 GroupCapture<ShapeNode> capture = match.GroupCaptures[GetGroupName(partName, i)];
                 if (!capture.Success)
-                    return false;
+                {
+                    // an empty capture is a zero-length copy, which cannot equal a non-empty one; but a restored
+                    // deletion (an optional node) might fill it, so such a word stays undecidable
+                    if (match.Input.Shape.Any(node => node.Annotation.Optional))
+                        return false;
+                    copies.Add(new List<ShapeNode>());
+                    continue;
+                }
 
                 // an unapplied word-initial deletion sits before the capture, not inside it
                 List<ShapeNode> nodes = MorphologicalOutputAction
