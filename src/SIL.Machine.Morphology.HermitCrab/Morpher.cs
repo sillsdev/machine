@@ -32,7 +32,11 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly IList<RootAllomorph> _lexicalPatterns = new List<RootAllomorph>();
 
         public Morpher(ITraceManager traceManager, Language lang, int maxDegreeOfParallelism = 0)
+            : this(traceManager, lang, maxDegreeOfParallelism, 0) { }
+
+        public Morpher(ITraceManager traceManager, Language lang, int maxDegreeOfParallelism, int maxAlternatives)
         {
+            MaxAlternatives = maxAlternatives;
             _lang = lang;
             _traceManager = traceManager;
             // Must be set before CompileAnalysisRule: AnalysisStratumRule picks a sequential vs. parallel
@@ -60,7 +64,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             _analysisRule = lang.CompileAnalysisRule(this);
             _synthesisRule = lang.CompileSynthesisRule(this);
             MaxStemCount = 2;
-            MaxAlternatives = 0;
             MergeEquivalentAnalyses = true;
             PruneDisagreeingCopies = true;
             LexEntrySelector = entry => true;
@@ -125,8 +128,9 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <summary>
         /// MaxAlternatives limits the number of alternatives considered.
         /// If the limit is exceeded, then MaxAlternativesExceededException is thrown.
+        /// Set this value with the constructor.
         /// </summary>
-        public int MaxAlternatives { get; set; }
+        public int MaxAlternatives { get; }
 
         /// <summary>
         /// Merge analyses with equivalent state for every analysis-side rule.
@@ -160,6 +164,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// (a value of 1 compiles the sequential cascade for unordered strata). It must remain a performance
         /// knob only: nothing that changes which analyses a parse returns, or whether
         /// <see cref="MaxAlternatives"/> is exceeded, may depend on it.
+        /// <see cref="ParseWords"/> throws unless this value is 1.
         /// </summary>
         public int MaxDegreeOfParallelism { get; }
 
@@ -255,6 +260,90 @@ namespace SIL.Machine.Morphology.HermitCrab
                 return matches;
             }
             return syntheses;
+        }
+
+        /// <summary>
+        /// Eagerly parses surface forms in input order, capturing each parse's exception and trace in its result.
+        /// Requires a Morpher constructed with maxDegreeOfParallelism: 1. Tracing runs the batch serially.
+        /// Keep the Language, settings, and tracing fixed until completion; selectors and custom rules must
+        /// support concurrent calls when maxWordConcurrency is greater than 1 and tracing is disabled.
+        /// Do not overlap traced calls sharing a trace manager. Failed parses have empty analyses.
+        /// Progress receives the input index and surface form, with a null result at the start and the
+        /// completed result at the finish. It runs on parsing threads (the calling thread for serial batches),
+        /// possibly concurrently, and must be fast and thread-safe. Callback exceptions are collected and
+        /// propagated as a WordParseProgressException (an AggregateException) after all words and both notifications
+        /// have been processed; its Results property holds every word's result in input order.
+        /// Batch argument validation and input enumeration errors propagate to the caller.
+        /// </summary>
+        public IReadOnlyList<WordParseResult> ParseWords(
+            IEnumerable<string> words,
+            int maxWordConcurrency = 4,
+            bool guessRoot = false,
+            Action<int, string, WordParseResult> progress = null
+        )
+        {
+            if (words == null)
+                throw new ArgumentNullException(nameof(words));
+            if (maxWordConcurrency < 1)
+                throw new ArgumentOutOfRangeException(nameof(maxWordConcurrency));
+            if (MaxDegreeOfParallelism != 1)
+            {
+                throw new InvalidOperationException(
+                    "ParseWords requires a Morpher constructed with maxDegreeOfParallelism: 1."
+                );
+            }
+
+            string[] inputs = words.ToArray();
+            var results = new WordParseResult[inputs.Length];
+            var callbackErrors = new ConcurrentQueue<Exception>();
+            void Notify(int index, WordParseResult result)
+            {
+                try
+                {
+                    progress?.Invoke(index, inputs[index], result);
+                }
+                catch (Exception error)
+                {
+                    callbackErrors.Enqueue(error);
+                }
+            }
+
+            void Parse(int index)
+            {
+                object trace = null;
+                Notify(index, null);
+                try
+                {
+                    var analyses = ParseWord(inputs[index], out trace, guessRoot).ToList().AsReadOnly();
+                    results[index] = new WordParseResult(inputs[index], analyses, trace, null);
+                }
+                catch (Exception error)
+                {
+                    results[index] = new WordParseResult(inputs[index], Array.Empty<Word>(), trace, error);
+                }
+                Notify(index, results[index]);
+            }
+
+            if (_traceManager.IsTracing || maxWordConcurrency == 1)
+            {
+                for (int i = 0; i < inputs.Length; i++)
+                    Parse(i);
+            }
+            else
+            {
+                Parallel.For(
+                    0,
+                    inputs.Length,
+                    new ParallelOptions { MaxDegreeOfParallelism = maxWordConcurrency },
+                    Parse
+                );
+            }
+
+            IReadOnlyList<WordParseResult> ordered = Array.AsReadOnly(results);
+            if (!callbackErrors.IsEmpty)
+                throw new WordParseProgressException(ordered, callbackErrors);
+
+            return ordered;
         }
 
         /// <summary>
