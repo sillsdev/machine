@@ -179,6 +179,21 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
         Assert.That(AnalysisForms(true, rule, input), Is.EquivalentTo(AnalysisForms(false, rule, input)));
     }
 
+    [Test]
+    public void ZeroOrMoreCopyRuleAddsNoSynthesisWorkForAWordItDoesNotReduplicate()
+    {
+        // sillsdev/machine#634: the match "whole word + empty copy" used to re-run lookup and synthesis
+        string[] words = { "pit", "pʰit", "pʰut", "sagd", "sagdv" };
+        (int lookups, int syntheses) without = CountSearchWork(words);
+
+        Morphophonemic.MorphologicalRules.Add(
+            CreateCopyRule(Pattern<Word, ShapeNode>.New("copy").Annotation(AnySegment).ZeroOrMore.Value)
+        );
+
+        Assert.That(without.syntheses, Is.GreaterThan(0));
+        Assert.That(CountSearchWork(words), Is.EqualTo(without));
+    }
+
     [TestCase(false, 3)]
     [TestCase(true, 1)]
     public void RealizationalFullCopyKeepsOnlyTheSplitWhoseCopiesAgree(bool pruneCopies, int expectedOutputs)
@@ -561,6 +576,32 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
             }
         );
         return rule;
+    }
+
+    private (int Lookups, int Syntheses) CountSearchWork(string[] words)
+    {
+        var morpher = new Morpher(new TraceManager { IsTracing = true, RetainWords = false }, Language, 1);
+        int lookups = 0;
+        int syntheses = 0;
+        foreach (string word in words)
+        {
+            morpher.ParseWord(word, out object trace);
+            foreach (Trace node in Flatten((Trace)trace))
+            {
+                if (node.Type == TraceType.LexicalLookup)
+                    lookups++;
+                else if (node.Type == TraceType.WordSynthesis)
+                    syntheses++;
+            }
+        }
+        return (lookups, syntheses);
+    }
+
+    private static IEnumerable<Trace> Flatten(Trace trace)
+    {
+        yield return trace;
+        foreach (Trace descendant in trace.Children.SelectMany(Flatten))
+            yield return descendant;
     }
 
     private Morpher CreateMorpher(bool pruneCopies, int maxDegreeOfParallelism = 0)
