@@ -82,7 +82,7 @@ namespace SIL.Machine.DataStructures
         /// <summary>
         /// Finds the node that matches the specified example node.
         /// </summary>
-        /// <param name="start">The node to start searching from.</param>
+        /// <param name="start">The node to start searching from, inclusive.</param>
         /// <param name="example">The example node.</param>
         /// <param name="result">The result.</param>
         /// <returns></returns>
@@ -100,7 +100,9 @@ namespace SIL.Machine.DataStructures
         /// <summary>
         /// Finds the node that matches the specified example node.
         /// </summary>
-        /// <param name="start">The node to start searching from.</param>
+        /// <param name="start">
+        /// The node to start searching from, inclusive. A match is at or after this node in the search direction.
+        /// </param>
         /// <param name="example">The example node.</param>
         /// <param name="dir">The direction.</param>
         /// <param name="result">The result.</param>
