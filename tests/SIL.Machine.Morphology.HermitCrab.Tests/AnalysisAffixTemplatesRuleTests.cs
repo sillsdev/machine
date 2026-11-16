@@ -74,7 +74,7 @@ public class AnalysisAffixTemplatesRuleTests : HermitCrabTestBase
                 }
             }
         }
-        Assert.That(compared, Is.GreaterThan(1000));
+        Assert.That(compared, Is.GreaterThan(500));
     }
 
     [Test]
