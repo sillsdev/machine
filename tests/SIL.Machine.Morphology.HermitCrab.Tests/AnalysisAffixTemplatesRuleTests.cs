@@ -41,6 +41,7 @@ public class AnalysisAffixTemplatesRuleTests : HermitCrabTestBase
 
         var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
         {
+            RequiredSlotLookahead = RequiredSlotLookaheadMode.Off,
             RuleSelector = rule => variant != 3 || !ReferenceEquals(rule, templates[1]),
         };
         IRule<Word, ShapeNode>[] rules = templates.Select(t => t.CompileAnalysisRule(morpher)).ToArray();
@@ -80,7 +81,10 @@ public class AnalysisAffixTemplatesRuleTests : HermitCrabTestBase
     public void UntracedBatteryRunsSharedSlotBatchOnce()
     {
         var d = Suffix("d", "d");
-        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
+        {
+            RequiredSlotLookahead = RequiredSlotLookaheadMode.Off,
+        };
         IRule<Word, ShapeNode>[] rules = new[]
         {
             Template(new AffixTemplateSlot(d)),
@@ -108,7 +112,10 @@ public class AnalysisAffixTemplatesRuleTests : HermitCrabTestBase
     {
         var d = Suffix("d", "d");
         var traceManager = new TraceManager { IsTracing = tracing };
-        var morpher = new Morpher(traceManager, Language, maxDegreeOfParallelism: degree);
+        var morpher = new Morpher(traceManager, Language, maxDegreeOfParallelism: degree)
+        {
+            RequiredSlotLookahead = RequiredSlotLookaheadMode.Off,
+        };
         var shared = new AnalysisAffixTemplatesRule(
             morpher,
             new[] { Template(new AffixTemplateSlot(d)), Template(new AffixTemplateSlot(d)) }.Select(t =>
@@ -123,11 +130,35 @@ public class AnalysisAffixTemplatesRuleTests : HermitCrabTestBase
         Assert.That(d.ApplyCount, Is.EqualTo(2));
     }
 
+    [TestCase(false)]
+    [TestCase(true)]
+    public void RequiredSlotLookaheadKeepsPerTemplateWalk(bool shadow)
+    {
+        var d = Suffix("d", "d");
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
+        {
+            RequiredSlotLookahead = shadow ? RequiredSlotLookaheadMode.Shadow : RequiredSlotLookaheadMode.On,
+        };
+        var shared = new AnalysisAffixTemplatesRule(
+            morpher,
+            new[] { Template(new AffixTemplateSlot(d)), Template(new AffixTemplateSlot(d)) }.Select(t =>
+                t.CompileAnalysisRule(morpher)
+            )
+        );
+        Word input = Input("sagd");
+        input.Freeze();
+        _ = shared.Apply(input).ToArray();
+        Assert.That(d.ApplyCount, Is.EqualTo(2));
+    }
+
     [Test]
     public void SharedWalkPreservesBatteryAlternativeLimit()
     {
         var d = Suffix("d", "d");
-        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
+        {
+            RequiredSlotLookahead = RequiredSlotLookaheadMode.Off,
+        };
         IRule<Word, ShapeNode>[] rules = new[]
         {
             Template(new AffixTemplateSlot(d) { Optional = true }),
@@ -158,6 +189,7 @@ public class AnalysisAffixTemplatesRuleTests : HermitCrabTestBase
         ];
         var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
         {
+            RequiredSlotLookahead = RequiredSlotLookaheadMode.Off,
             RuleSelector = rule =>
                 !ReferenceEquals(rule, templates[2])
                     ? true
@@ -186,7 +218,10 @@ public class AnalysisAffixTemplatesRuleTests : HermitCrabTestBase
             Template(new AffixTemplateSlot(d) { Optional = optional }),
             Template(new AffixTemplateSlot(d) { Optional = optional }),
         ];
-        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
+        {
+            RequiredSlotLookahead = RequiredSlotLookaheadMode.Off,
+        };
         IRule<Word, ShapeNode>[] rules = templates.Select(t => t.CompileAnalysisRule(morpher)).ToArray();
         var own = new RuleBatch<Word, ShapeNode>(rules, false, FreezableEqualityComparer<Word>.Default);
         var shared = new AnalysisAffixTemplatesRule(morpher, rules);

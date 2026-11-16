@@ -54,11 +54,12 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public override IEnumerable<Word> Apply(Word input)
         {
-            // Use the original walk when no tail is shared, when tracing (per-template Begin/End events), for
-            // parallel slots, under an alternative limit, or if slot optionality changed after the trie was built.
+            // Use the original walk with no shared tail, while tracing (per-template events) or the look-ahead runs,
+            // for parallel slots, under an alternative limit, or if slot optionality changed after trie build.
             if (
                 !_hasSharedSlots
                 || _morpher.TraceManager.IsTracing
+                || _morpher.RequiredSlotLookahead != RequiredSlotLookaheadMode.Off
                 || _morpher.MaxDegreeOfParallelism != 1
                 || MaxAlternatives > 0
                 || !SlotsUnchanged()
