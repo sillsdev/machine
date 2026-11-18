@@ -191,6 +191,44 @@ public class LexEntryTests : HermitCrabTestBase
     }
 
     [Test]
+    public void CoOccurrenceRules()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+        // Create co-occurence rule blocking sag +d
+        // get sag root
+        var sag = Language.Strata[0].Entries.ElementAt(6);
+        // create +ed suffix
+        var edSuffix = new AffixProcessRule
+        {
+            Id = "PAST",
+            Name = "ed_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(edSuffix);
+
+        var morpher = new Morpher(TraceManager, Language);
+        IEnumerable<Word> words = morpher.ParseWord("sagd");
+        Assert.That(words.Count(), Is.EqualTo(1));
+
+        // create co-occurence rule which blocks the analysis
+        var edAllo = edSuffix.GetAllomorph(0);
+        var other1 = new List<Allomorph> { edAllo };
+        var rule1 = new AllomorphCoOccurrenceRule(ConstraintType.Exclude, other1, MorphCoOccurrenceAdjacency.Anywhere);
+        var sagAllo = sag.GetAllomorph(0);
+        sagAllo.AllomorphCoOccurrenceRules.Add(rule1);
+        Assert.That(sagAllo.IsWordInvalid(morpher, words.First()), Is.True);
+    }
+
+    [Test]
     public void AllomorphEnvironments()
     {
         CharacterDefinitionTable surfaceTable = Language.SurfaceStratum.CharacterDefinitionTable;
@@ -265,6 +303,8 @@ public class LexEntryTests : HermitCrabTestBase
 
         Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
         Assert.That(env.IsWordInvalid(word), Is.False);
+
+        headEntry.PrimaryAllomorph.Environments.Clear();
     }
 
     [Test]
