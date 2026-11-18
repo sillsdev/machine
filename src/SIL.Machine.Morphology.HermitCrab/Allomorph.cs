@@ -200,17 +200,15 @@ namespace SIL.Machine.Morphology.HermitCrab
                 }
             }
 
-            if (otherAllomorph == null && Environments.Count > 0 && Environments.All(e => e.IsWordInvalid(word.Original)))
+            if (
+                otherAllomorph == null
+                && Environments.Count > 0
+                && Environments.All(e => e.IsWordInvalid(word.Original))
+            )
             {
                 if (morpher.TraceManager.IsTracing)
                 {
-                    morpher.TraceManager.Failed(
-                        morpher.Language,
-                        word,
-                        FailureReason.Environments,
-                        this,
-                        Environments
-                    );
+                    morpher.TraceManager.Failed(morpher.Language, word, FailureReason.Environments, this, Environments);
                 }
                 return true;
             }

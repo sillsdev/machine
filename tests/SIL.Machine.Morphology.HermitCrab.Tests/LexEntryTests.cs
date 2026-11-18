@@ -235,7 +235,10 @@ public class LexEntryTests : HermitCrabTestBase
         var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem).Symbol("voc+").Value;
 
         LexEntry headEntry = Entries["32"];
-        Pattern<Word, ShapeNode> envPattern = Pattern<Word, ShapeNode>.New().Annotation(Character(surfaceTable, "p")).Value;
+        Pattern<Word, ShapeNode> envPattern = Pattern<Word, ShapeNode>
+            .New()
+            .Annotation(Character(surfaceTable, "p"))
+            .Value;
         var env = new AllomorphEnvironment(ConstraintType.Require, null, envPattern);
         headEntry.PrimaryAllomorph.Environments.Add(env);
 

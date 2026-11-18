@@ -148,7 +148,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         {
             if (allomorph.IsWordInvalid(_morpher, word))
                 return true;
-           foreach (Allomorph otherAllomorph in word.UnappliedAllomorphs)
+            foreach (Allomorph otherAllomorph in word.UnappliedAllomorphs)
             {
                 if (otherAllomorph?.IsWordInvalid(_morpher, word, allomorph) == true)
                     return true;
