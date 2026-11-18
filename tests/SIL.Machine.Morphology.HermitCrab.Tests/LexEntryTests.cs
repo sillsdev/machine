@@ -193,10 +193,11 @@ public class LexEntryTests : HermitCrabTestBase
     [Test]
     public void AllomorphEnvironments()
     {
+        CharacterDefinitionTable surfaceTable = Language.SurfaceStratum.CharacterDefinitionTable;
         var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem).Symbol("voc+").Value;
 
         LexEntry headEntry = Entries["32"];
-        Pattern<Word, ShapeNode> envPattern = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value;
+        Pattern<Word, ShapeNode> envPattern = Pattern<Word, ShapeNode>.New().Annotation(Character(surfaceTable, "p")).Value;
         var env = new AllomorphEnvironment(ConstraintType.Require, null, envPattern);
         headEntry.PrimaryAllomorph.Environments.Add(env);
 
@@ -211,7 +212,8 @@ public class LexEntryTests : HermitCrabTestBase
             Word.RootMorphID
         );
 
-        Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
+        Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.False);
+        Assert.That(env.IsWordInvalid(word), Is.True);
 
         word.RemoveMorph(nonHeadMorph);
 
@@ -223,7 +225,8 @@ public class LexEntryTests : HermitCrabTestBase
             Word.RootMorphID
         );
 
-        Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.False);
+        Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
+        Assert.That(env.IsWordInvalid(word), Is.False);
 
         headEntry.PrimaryAllomorph.Environments.Clear();
 
@@ -244,7 +247,8 @@ public class LexEntryTests : HermitCrabTestBase
             Word.RootMorphID
         );
 
-        Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
+        Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.False);
+        Assert.That(env.IsWordInvalid(word), Is.True);
 
         word.RemoveMorph(nonHeadMorph);
 
@@ -259,7 +263,8 @@ public class LexEntryTests : HermitCrabTestBase
             Word.RootMorphID
         );
 
-        Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.False);
+        Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
+        Assert.That(env.IsWordInvalid(word), Is.False);
     }
 
     [Test]

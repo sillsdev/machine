@@ -79,6 +79,37 @@ namespace SIL.Machine.Morphology.HermitCrab
             get { return _adjacency; }
         }
 
+        /// <summary>
+        /// Determine if the given allomorph makes the word invalid.
+        /// If no allomorph is given, try all of the allomorphs in UnappliedAllomorphs.
+        /// </summary>
+        public bool IsWordInvalid(Word word, Allomorph allomorph = null)
+        {
+            if (_type == ConstraintType.Exclude && _adjacency == MorphCoOccurrenceAdjacency.Anywhere)
+            {
+                if (allomorph != null)
+                {
+                    foreach (T other in _others)
+                    {
+                        if (GetMorphObject(allomorph) == other)
+                            return true;
+                    }
+                }
+                else
+                {
+                    foreach (Allomorph unappliedAllomorph in word.UnappliedAllomorphs)
+                    {
+                        foreach (T other in _others)
+                        {
+                            if (GetMorphObject(unappliedAllomorph) == other)
+                                return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
         public bool IsWordValid(T key, Word word)
         {
             if (_type == ConstraintType.Exclude)
