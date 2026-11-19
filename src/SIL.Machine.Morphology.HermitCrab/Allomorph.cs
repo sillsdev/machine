@@ -157,7 +157,12 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         internal bool CheckAnalysisEnvironments(Morpher morpher, Word word)
         {
-            if (Environments.Count > 0 && Environments.All(e => !e.IsAnalisysWordValid(word.Original)))
+            // If there is more than one character definition table, then word.Original is not safe.
+            if (
+                Environments.Count > 0
+                && morpher.Language.CharacterDefinitionTables.Count() == 1
+                && Environments.All(e => !e.IsAnalysisWordValid(word.Original))
+            )
             {
                 if (morpher.TraceManager.IsTracing)
                 {

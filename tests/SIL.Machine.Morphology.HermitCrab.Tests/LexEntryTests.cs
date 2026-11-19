@@ -273,7 +273,7 @@ public class LexEntryTests : HermitCrabTestBase
         );
 
         Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.False);
-        Assert.That(env.IsAnalisysWordValid(word), Is.False);
+        Assert.That(env.IsAnalysisWordValid(word), Is.False);
 
         word.RemoveMorph(nonHeadMorph);
 
@@ -286,7 +286,7 @@ public class LexEntryTests : HermitCrabTestBase
         );
 
         Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
-        Assert.That(env.IsAnalisysWordValid(word), Is.True);
+        Assert.That(env.IsAnalysisWordValid(word), Is.True);
 
         headEntry.PrimaryAllomorph.Environments.Clear();
 
@@ -308,7 +308,7 @@ public class LexEntryTests : HermitCrabTestBase
         );
 
         Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.False);
-        Assert.That(env.IsAnalisysWordValid(word), Is.False);
+        Assert.That(env.IsAnalysisWordValid(word), Is.False);
 
         word.RemoveMorph(nonHeadMorph);
 
@@ -324,7 +324,7 @@ public class LexEntryTests : HermitCrabTestBase
         );
 
         Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
-        Assert.That(env.IsAnalisysWordValid(word), Is.True);
+        Assert.That(env.IsAnalysisWordValid(word), Is.True);
 
         headEntry.PrimaryAllomorph.Environments.Clear();
     }
