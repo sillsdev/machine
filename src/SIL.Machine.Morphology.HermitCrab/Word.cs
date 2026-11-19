@@ -575,17 +575,17 @@ namespace SIL.Machine.Morphology.HermitCrab
             return false;
         }
 
-        internal bool CheckUnappliedCoOccurrenceRules(Morpher morpher)
+        internal bool CheckAnalysisCoOccurrenceRules(Morpher morpher)
         {
             if (
                 RootAllomorph != null
-                && !RootAllomorph.CheckCoOccurrenceRules(morpher, RootAllomorph, this, partial: true)
+                && !RootAllomorph.CheckCoOccurrenceRules(morpher, RootAllomorph, this, analysis: true)
             )
                 return false;
 
             foreach (Allomorph allomorph in UnappliedAllomorphs)
             {
-                if (allomorph != null && !allomorph.CheckCoOccurrenceRules(morpher, allomorph, this, partial: true))
+                if (allomorph != null && !allomorph.CheckCoOccurrenceRules(morpher, allomorph, this, analysis: true))
                     return false;
             }
             return true;

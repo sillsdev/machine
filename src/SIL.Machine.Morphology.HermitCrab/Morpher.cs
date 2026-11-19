@@ -499,7 +499,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     if (_traceManager.IsTracing)
                         _traceManager.SynthesizeWord(_lang, newWord);
                     newWord.Freeze();
-                    if (!newWord.CheckUnappliedCoOccurrenceRules(this))
+                    if (!newWord.CheckAnalysisCoOccurrenceRules(this))
                         continue;
                     yield return newWord;
                 }
@@ -787,7 +787,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             return new WordAnalysis(morphemes, rootMorphemeIndex, pos?.ID);
         }
 
-        public IEnumerable<Word> ApplyAnalysisAndLookup(string word)
+        internal IEnumerable<Word> ApplyAnalysisAndLookup(string word)
         {
             // convert the word to its phonetic shape
             Shape shape = _lang.SurfaceStratum.CharacterDefinitionTable.Segment(word);

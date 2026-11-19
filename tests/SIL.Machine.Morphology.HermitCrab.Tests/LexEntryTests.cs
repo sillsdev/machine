@@ -228,16 +228,23 @@ public class LexEntryTests : HermitCrabTestBase
         edSuffix.Allomorphs.First().Environments.Add(rightEnv);
         Morphophonemic.MorphologicalRules.Add(edSuffix);
 
+        var morpher = new Morpher(TraceManager, Language);
+        IEnumerable<Word> words = morpher.ApplyAnalysisAndLookup("sagd");
+        Assert.That(words, Is.Not.Empty);
+
         // create co-occurence rule which blocks the analysis
         var sagAllo = sag.GetAllomorph(0);
         var edAllo = edSuffix.GetAllomorph(0);
         var other1 = new List<Allomorph> { edAllo };
         var rule1 = new AllomorphCoOccurrenceRule(ConstraintType.Exclude, other1, MorphCoOccurrenceAdjacency.Anywhere);
         sagAllo.AllomorphCoOccurrenceRules.Add(rule1);
-
-        var morpher = new Morpher(TraceManager, Language);
-        IEnumerable<Word> words = morpher.ApplyAnalysisAndLookup("sagd");
+        words = morpher.ApplyAnalysisAndLookup("sagd");
         Assert.That(words, Is.Empty);
+
+        // Cleanup.
+        sagAllo.AllomorphCoOccurrenceRules.Clear();
+        sag.PrimaryAllomorph.Environments.Clear();
+        edSuffix.Allomorphs.First().Environments.Clear();
     }
 
     [Test]
@@ -266,7 +273,7 @@ public class LexEntryTests : HermitCrabTestBase
         );
 
         Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.False);
-        Assert.That(env.IsWordInvalid(word), Is.True);
+        Assert.That(env.IsAnalisysWordValid(word), Is.False);
 
         word.RemoveMorph(nonHeadMorph);
 
@@ -279,7 +286,7 @@ public class LexEntryTests : HermitCrabTestBase
         );
 
         Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
-        Assert.That(env.IsWordInvalid(word), Is.False);
+        Assert.That(env.IsAnalisysWordValid(word), Is.True);
 
         headEntry.PrimaryAllomorph.Environments.Clear();
 
@@ -301,7 +308,7 @@ public class LexEntryTests : HermitCrabTestBase
         );
 
         Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.False);
-        Assert.That(env.IsWordInvalid(word), Is.True);
+        Assert.That(env.IsAnalisysWordValid(word), Is.False);
 
         word.RemoveMorph(nonHeadMorph);
 
@@ -317,7 +324,7 @@ public class LexEntryTests : HermitCrabTestBase
         );
 
         Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
-        Assert.That(env.IsWordInvalid(word), Is.False);
+        Assert.That(env.IsAnalisysWordValid(word), Is.True);
 
         headEntry.PrimaryAllomorph.Environments.Clear();
     }

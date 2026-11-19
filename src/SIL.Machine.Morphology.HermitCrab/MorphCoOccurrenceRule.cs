@@ -79,23 +79,19 @@ namespace SIL.Machine.Morphology.HermitCrab
             get { return _adjacency; }
         }
 
-        /// <summary>
-        /// Check whether the word is valid for this rule.
-        /// If allomorph is not null, then we are in the middle of analysis.
-        /// Otherwise, we are at the end of synthesis.
-        /// </summary>
-        public bool IsWordValid(T key, Word word, Allomorph allomorph = null)
+        public bool IsWordValid(T key, Word word)
         {
-            if (allomorph == null)
-            {
-                var morphList = word.AllomorphsInMorphOrder.ToList();
-                if (_type == ConstraintType.Exclude)
-                    return !CoOccurs(key, word, morphList);
-                return CoOccurs(key, word, morphList);
-            }
+            var morphList = word.AllomorphsInMorphOrder.ToList();
+            if (_type == ConstraintType.Exclude)
+                return !CoOccurs(key, word, morphList);
+            return CoOccurs(key, word, morphList);
+        }
+
+        internal bool IsAnalysisWordValid(T key, Word word, Allomorph allomorph)
+        {
             if (_type == ConstraintType.Exclude && _adjacency == MorphCoOccurrenceAdjacency.Anywhere)
             {
-                var morphList = word.UnappliedAllomorphs.ToList();
+                var morphList = word.UnappliedAllomorphs.Where(morph => morph != null).ToList();
                 morphList.Add(allomorph);
                 return !CoOccurs(key, word, morphList);
             }

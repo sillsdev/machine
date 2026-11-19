@@ -85,16 +85,16 @@ namespace SIL.Machine.Morphology.HermitCrab
             return IsMatch(word, morph);
         }
 
-        internal bool IsWordInvalid(Word word)
+        internal bool IsAnalisysWordValid(Word word)
         {
             if (_type == ConstraintType.Require)
             {
                 if (_leftEnvMatcher != null && NeverMatches(_leftEnvMatcher, word))
-                    return true;
+                    return false;
                 if (_rightEnvMatcher != null && NeverMatches(_rightEnvMatcher, word))
-                    return true;
+                    return false;
             }
-            return false;
+            return true;
         }
 
         private bool NeverMatches(Matcher<Word, ShapeNode> matcher, Word word)

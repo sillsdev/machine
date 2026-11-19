@@ -95,7 +95,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
                     continue;
                 }
-                if (IsWordInvalid(input, _rule.Allomorphs[i]))
+                if (!IsAnalsysWordValid(input, _rule.Allomorphs[i]))
                 {
                     if (_morpher.TraceManager.IsTracing)
                         _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
@@ -144,15 +144,15 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             return output;
         }
 
-        private bool IsWordInvalid(Word word, AffixProcessAllomorph allomorph)
+        private bool IsAnalsysWordValid(Word word, AffixProcessAllomorph allomorph)
         {
-            if (allomorph.HasInvalidEnvironments(_morpher, word))
-                return true;
-            if (!allomorph.CheckCoOccurrenceRules(_morpher, allomorph, word, partial: true))
-                return true;
-            if (!word.CheckUnappliedCoOccurrenceRules(_morpher))
-                return true;
-            return false;
+            if (!allomorph.CheckAnalysisEnvironments(_morpher, word))
+                return false;
+            if (!allomorph.CheckCoOccurrenceRules(_morpher, allomorph, word, analysis: true))
+                return false;
+            if (!word.CheckAnalysisCoOccurrenceRules(_morpher))
+                return false;
+            return true;
         }
     }
 }
