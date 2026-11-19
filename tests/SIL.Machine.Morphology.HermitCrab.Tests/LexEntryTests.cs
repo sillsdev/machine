@@ -199,7 +199,10 @@ public class LexEntryTests : HermitCrabTestBase
         // get sag root
         LexEntry sag = Language.Strata[0].Entries.ElementAt(6);
         // create +ed suffix
-        Pattern<Word, ShapeNode> leftAnchor = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value;
+        Pattern<Word, ShapeNode> leftAnchor = Pattern<Word, ShapeNode>
+            .New()
+            .Annotation(HCFeatureSystem.LeftSideAnchor)
+            .Value;
         var leftEnv = new AllomorphEnvironment(ConstraintType.Require, leftAnchor, null);
         sag.PrimaryAllomorph.Environments.Add(leftEnv);
 
@@ -217,7 +220,10 @@ public class LexEntryTests : HermitCrabTestBase
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
             }
         );
-        Pattern<Word, ShapeNode> rightAnchor = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value;
+        Pattern<Word, ShapeNode> rightAnchor = Pattern<Word, ShapeNode>
+            .New()
+            .Annotation(HCFeatureSystem.RightSideAnchor)
+            .Value;
         var rightEnv = new AllomorphEnvironment(ConstraintType.Require, null, rightAnchor);
         edSuffix.Allomorphs.First().Environments.Add(rightEnv);
         Morphophonemic.MorphologicalRules.Add(edSuffix);
