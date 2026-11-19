@@ -85,7 +85,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             return IsMatch(word, morph);
         }
 
-        public bool IsWordInvalid(Word word)
+        internal bool IsWordInvalid(Word word)
         {
             if (_type == ConstraintType.Require)
             {
@@ -104,6 +104,11 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (matcher.IsMatch(word, node))
                     return false;
             }
+            // Check word edge (/ _ # or / # _).
+            if (matcher.IsMatch(word, word.Shape.First.Prev))
+                return false;
+            if (matcher.IsMatch(word, word.Shape.Last.Next))
+                return false;
             return true;
         }
 

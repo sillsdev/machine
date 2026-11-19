@@ -80,49 +80,33 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>
-        /// Determine if the given allomorph makes the word invalid.
-        /// If no allomorph is given, try all of the allomorphs in UnappliedAllomorphs.
+        /// Check whether the word is valid for this rule.
+        /// If allomorph is not null, then we are in the middle of analysis.
+        /// Otherwise, we are at the end of synthesis.
         /// </summary>
-        public bool IsWordInvalid(Word word, Allomorph allomorph = null)
+        public bool IsWordValid(T key, Word word, Allomorph allomorph = null)
         {
+            if (allomorph == null)
+            {
+                var morphList = word.AllomorphsInMorphOrder.ToList();
+                if (_type == ConstraintType.Exclude)
+                    return !CoOccurs(key, word, morphList);
+                return CoOccurs(key, word, morphList);
+            }
             if (_type == ConstraintType.Exclude && _adjacency == MorphCoOccurrenceAdjacency.Anywhere)
             {
-                if (allomorph != null)
-                {
-                    foreach (T other in _others)
-                    {
-                        if (GetMorphObject(allomorph) == other)
-                            return true;
-                    }
-                }
-                else
-                {
-                    foreach (Allomorph unappliedAllomorph in word.UnappliedAllomorphs)
-                    {
-                        foreach (T other in _others)
-                        {
-                            if (GetMorphObject(unappliedAllomorph) == other)
-                                return true;
-                        }
-                    }
-                }
+                var morphList = word.UnappliedAllomorphs.ToList();
+                morphList.Add(allomorph);
+                return !CoOccurs(key, word, morphList);
             }
-            return false;
-        }
-
-        public bool IsWordValid(T key, Word word)
-        {
-            if (_type == ConstraintType.Exclude)
-                return !CoOccurs(key, word);
-            return CoOccurs(key, word);
+            return true;
         }
 
         /// <summary>
         /// Determines if all of the specified morphemes co-occur with the key morpheme.
         /// </summary>
-        private bool CoOccurs(T key, Word word)
+        private bool CoOccurs(T key, Word word, List<Allomorph> morphList)
         {
-            List<Allomorph> morphList = word.AllomorphsInMorphOrder.ToList();
             List<T> others = _others.ToList();
 
             switch (_adjacency)

@@ -155,56 +155,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             return true;
         }
 
-        internal bool IsWordInvalid(Morpher morpher, Word word, Allomorph otherAllomorph = null)
+        internal bool HasInvalidEnvironments(Morpher morpher, Word word)
         {
-            if (AllomorphCoOccurrenceRules.Count > 0)
-            {
-                foreach (AllomorphCoOccurrenceRule rule in AllomorphCoOccurrenceRules)
-                {
-                    if (rule.IsWordInvalid(word, otherAllomorph))
-                    {
-                        if (morpher != null && morpher.TraceManager.IsTracing)
-                        {
-                            morpher.TraceManager.Failed(
-                                morpher.Language,
-                                word,
-                                FailureReason.AllomorphCoOccurrenceRules,
-                                this,
-                                rule
-                            );
-                        }
-                        return true;
-                    }
-                }
-            }
-
-            if (Morpheme.MorphemeCoOccurrenceRules.Count > 0)
-            {
-                foreach (MorphemeCoOccurrenceRule rule in Morpheme.MorphemeCoOccurrenceRules)
-                {
-                    // We need to check each one in turn and report any failure
-                    if (rule.IsWordInvalid(word, otherAllomorph))
-                    {
-                        if (morpher != null && morpher.TraceManager.IsTracing)
-                        {
-                            morpher.TraceManager.Failed(
-                                morpher.Language,
-                                word,
-                                FailureReason.MorphemeCoOccurrenceRules,
-                                this,
-                                rule
-                            );
-                        }
-                        return true;
-                    }
-                }
-            }
-
-            if (
-                otherAllomorph == null
-                && Environments.Count > 0
-                && Environments.All(e => e.IsWordInvalid(word.Original))
-            )
+            if (Environments.Count > 0 && Environments.All(e => e.IsWordInvalid(word.Original)))
             {
                 if (morpher.TraceManager.IsTracing)
                 {
@@ -217,11 +170,21 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         protected virtual bool CheckAllomorphConstraints(Morpher morpher, Allomorph allomorph, Word word)
         {
+            return CheckCoOccurrenceRules(morpher, allomorph, word);
+        }
+
+        internal bool CheckCoOccurrenceRules(
+            Morpher morpher,
+            Allomorph allomorph,
+            Word word,
+            bool partial = false
+        )
+        {
             if (AllomorphCoOccurrenceRules.Count > 0)
             {
                 foreach (AllomorphCoOccurrenceRule rule in AllomorphCoOccurrenceRules)
                 {
-                    if (!rule.IsWordValid(allomorph, word))
+                    if (!rule.IsWordValid(allomorph, word, partial ? allomorph : null))
                     {
                         if (morpher != null && morpher.TraceManager.IsTracing)
                         {
@@ -243,7 +206,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 foreach (MorphemeCoOccurrenceRule rule in Morpheme.MorphemeCoOccurrenceRules)
                 {
                     // We need to check each one in turn and report any failure
-                    if (!rule.IsWordValid(Morpheme, word))
+                    if (!rule.IsWordValid(Morpheme, word, partial ? allomorph : null))
                     {
                         if (morpher != null && morpher.TraceManager.IsTracing)
                         {

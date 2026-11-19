@@ -278,7 +278,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             return curRule == rule || (curRule == null && rule is CompoundingRule);
         }
 
-        public IEnumerable<Allomorph> UnappliedAllomorphs
+        internal IEnumerable<Allomorph> UnappliedAllomorphs
         {
             get { return _allomorphApps; }
         }
@@ -573,6 +573,22 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
 
             return false;
+        }
+
+        internal bool CheckUnappliedCoOccurrenceRules(Morpher morpher)
+        {
+            if (
+                RootAllomorph != null
+                && !RootAllomorph.CheckCoOccurrenceRules(morpher, RootAllomorph, this, partial: true)
+            )
+                return false;
+
+            foreach (Allomorph allomorph in UnappliedAllomorphs)
+            {
+                if (allomorph != null && !allomorph.CheckCoOccurrenceRules(morpher, allomorph, this, partial: true))
+                    return false;
+            }
+            return true;
         }
 
         internal void ResetDirty()

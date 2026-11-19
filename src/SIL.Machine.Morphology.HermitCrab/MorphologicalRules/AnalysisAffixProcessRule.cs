@@ -146,13 +146,12 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         private bool IsWordInvalid(Word word, AffixProcessAllomorph allomorph)
         {
-            if (allomorph.IsWordInvalid(_morpher, word))
+            if (allomorph.HasInvalidEnvironments(_morpher, word))
                 return true;
-            foreach (Allomorph otherAllomorph in word.UnappliedAllomorphs)
-            {
-                if (otherAllomorph?.IsWordInvalid(_morpher, word, allomorph) == true)
-                    return true;
-            }
+            if (!allomorph.CheckCoOccurrenceRules(_morpher, allomorph, word, partial: true))
+                return true;
+            if (!word.CheckUnappliedCoOccurrenceRules(_morpher))
+                return true;
             return false;
         }
     }

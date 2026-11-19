@@ -197,8 +197,12 @@ public class LexEntryTests : HermitCrabTestBase
 
         // Create co-occurence rule blocking sag +d
         // get sag root
-        var sag = Language.Strata[0].Entries.ElementAt(6);
+        LexEntry sag = Language.Strata[0].Entries.ElementAt(6);
         // create +ed suffix
+        Pattern<Word, ShapeNode> leftAnchor = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value;
+        var leftEnv = new AllomorphEnvironment(ConstraintType.Require, leftAnchor, null);
+        sag.PrimaryAllomorph.Environments.Add(leftEnv);
+
         var edSuffix = new AffixProcessRule
         {
             Id = "PAST",
@@ -213,19 +217,21 @@ public class LexEntryTests : HermitCrabTestBase
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
             }
         );
+        Pattern<Word, ShapeNode> rightAnchor = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value;
+        var rightEnv = new AllomorphEnvironment(ConstraintType.Require, null, rightAnchor);
+        edSuffix.Allomorphs.First().Environments.Add(rightEnv);
         Morphophonemic.MorphologicalRules.Add(edSuffix);
 
-        var morpher = new Morpher(TraceManager, Language);
-        IEnumerable<Word> words = morpher.ParseWord("sagd");
-        Assert.That(words.Count(), Is.EqualTo(1));
-
         // create co-occurence rule which blocks the analysis
+        var sagAllo = sag.GetAllomorph(0);
         var edAllo = edSuffix.GetAllomorph(0);
         var other1 = new List<Allomorph> { edAllo };
         var rule1 = new AllomorphCoOccurrenceRule(ConstraintType.Exclude, other1, MorphCoOccurrenceAdjacency.Anywhere);
-        var sagAllo = sag.GetAllomorph(0);
         sagAllo.AllomorphCoOccurrenceRules.Add(rule1);
-        Assert.That(sagAllo.IsWordInvalid(morpher, words.First()), Is.True);
+
+        var morpher = new Morpher(TraceManager, Language);
+        IEnumerable<Word> words = morpher.ApplyAnalysisAndLookup("sagd");
+        Assert.That(words, Is.Empty);
     }
 
     [Test]
