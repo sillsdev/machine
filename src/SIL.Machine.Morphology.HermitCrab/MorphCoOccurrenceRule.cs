@@ -87,12 +87,13 @@ namespace SIL.Machine.Morphology.HermitCrab
             return CoOccurs(key, word, morphList);
         }
 
-        internal bool IsAnalysisWordValid(T key, Word word, Allomorph allomorph)
+        internal bool IsAnalysisWordValid(T key, Word word, Allomorph newAllomorph)
         {
             if (_type == ConstraintType.Exclude && _adjacency == MorphCoOccurrenceAdjacency.Anywhere)
             {
                 var morphList = word.UnappliedAllomorphs.Where(morph => morph != null).ToList();
-                morphList.Add(allomorph);
+                if (newAllomorph != null)
+                    morphList.Add(newAllomorph);
                 return !CoOccurs(key, word, morphList);
             }
             return true;

@@ -148,9 +148,9 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         {
             if (!allomorph.CheckAnalysisEnvironments(_morpher, word))
                 return false;
-            if (!allomorph.CheckCoOccurrenceRules(_morpher, allomorph, word, analysis: true))
+            if (!allomorph.CheckCoOccurrenceRules(_morpher, allomorph, word, true, allomorph))
                 return false;
-            if (!word.CheckAnalysisCoOccurrenceRules(_morpher))
+            if (!word.CheckAnalysisCoOccurrenceRules(_morpher, allomorph))
                 return false;
             return true;
         }

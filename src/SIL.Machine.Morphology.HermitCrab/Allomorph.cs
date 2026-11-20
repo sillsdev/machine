@@ -160,7 +160,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             // If there is more than one character definition table, then word.Original is not safe.
             if (
                 Environments.Count > 0
-                && morpher.Language.CharacterDefinitionTables.Count() == 1
+                && morpher.Language.CharacterDefinitionTables.Count() < 2
                 && Environments.All(e => !e.IsAnalysisWordValid(word.Original))
             )
             {
@@ -178,7 +178,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             return CheckCoOccurrenceRules(morpher, allomorph, word);
         }
 
-        internal bool CheckCoOccurrenceRules(Morpher morpher, Allomorph allomorph, Word word, bool analysis = false)
+        internal bool CheckCoOccurrenceRules(Morpher morpher, Allomorph allomorph, Word word, bool analysis = false, Allomorph newAllomorph = null)
         {
             if (AllomorphCoOccurrenceRules.Count > 0)
             {
@@ -186,7 +186,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 {
                     if (
                         analysis
-                            ? !rule.IsAnalysisWordValid(allomorph, word, allomorph)
+                            ? !rule.IsAnalysisWordValid(allomorph, word, newAllomorph)
                             : !rule.IsWordValid(allomorph, word)
                     )
                     {
@@ -212,7 +212,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     // We need to check each one in turn and report any failure
                     if (
                         analysis
-                            ? !rule.IsAnalysisWordValid(Morpheme, word, allomorph)
+                            ? !rule.IsAnalysisWordValid(Morpheme, word, newAllomorph)
                             : !rule.IsWordValid(Morpheme, word)
                     )
                     {
