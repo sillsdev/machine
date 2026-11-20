@@ -1,12 +1,21 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.FeatureModel
 {
+    /// <remarks>
+    /// Instances are not safe for concurrent use. A failed unification writes in place and rolls back, so
+    /// overlapping <c>Unify</c>, <c>IsUnifiable</c> or <c>Subsumes</c> calls from another thread throw
+    /// <see cref="InvalidOperationException"/>; direct writes through the dictionary members are not detected.
+    /// </remarks>
     public class VariableBindings : IDictionary<string, SimpleFeatureValue>, ICloneable<VariableBindings>
     {
         private readonly Dictionary<string, SimpleFeatureValue> _varBindings;
+        private int _owner;
+        private Dictionary<string, SimpleFeatureValue> _undo;
 
         public VariableBindings()
         {
@@ -18,6 +27,39 @@ namespace SIL.Machine.FeatureModel
         {
             foreach (KeyValuePair<string, SimpleFeatureValue> kvp in varBindings._varBindings)
                 _varBindings[kvp.Key] = kvp.Value.Clone();
+        }
+
+        /// <summary>
+        /// Starts a transaction so a failed operation can be rolled back without cloning up front. The bindings
+        /// are only snapshotted if something is written. Returns false if a transaction is already open.
+        /// </summary>
+        internal bool BeginTransaction()
+        {
+            int thread = Environment.CurrentManagedThreadId;
+            int current = Interlocked.CompareExchange(ref _owner, thread, 0);
+            if (current == 0)
+                return true;
+            if (current != thread)
+                throw new InvalidOperationException("VariableBindings is not safe for concurrent use");
+            return false;
+        }
+
+        internal void EndTransaction(bool commit)
+        {
+            if (!commit && _undo != null)
+            {
+                _varBindings.Clear();
+                foreach (KeyValuePair<string, SimpleFeatureValue> kvp in _undo)
+                    _varBindings[kvp.Key] = kvp.Value;
+            }
+            _undo = null;
+            Volatile.Write(ref _owner, 0);
+        }
+
+        private void BeforeWrite()
+        {
+            if (_owner != 0 && _undo == null)
+                _undo = new Dictionary<string, SimpleFeatureValue>(_varBindings);
         }
 
         public IEnumerable<string> VariableNames
@@ -37,17 +79,20 @@ namespace SIL.Machine.FeatureModel
 
         public void Add(string variableName, SimpleFeatureValue value)
         {
+            BeforeWrite();
             _varBindings.Add(variableName, value);
         }
 
         public void Replace(VariableBindings varBindings)
         {
+            BeforeWrite();
             foreach (KeyValuePair<string, SimpleFeatureValue> varBinding in varBindings)
                 _varBindings[varBinding.Key] = varBinding.Value;
         }
 
         public bool Remove(string variableName)
         {
+            BeforeWrite();
             return _varBindings.Remove(variableName);
         }
 
@@ -73,7 +118,11 @@ namespace SIL.Machine.FeatureModel
         public SimpleFeatureValue this[string variableName]
         {
             get { return _varBindings[variableName]; }
-            set { _varBindings[variableName] = value; }
+            set
+            {
+                BeforeWrite();
+                _varBindings[variableName] = value;
+            }
         }
 
         ICollection<string> IDictionary<string, SimpleFeatureValue>.Keys
@@ -100,11 +149,13 @@ namespace SIL.Machine.FeatureModel
 
         void ICollection<KeyValuePair<string, SimpleFeatureValue>>.Add(KeyValuePair<string, SimpleFeatureValue> item)
         {
+            BeforeWrite();
             ((ICollection<KeyValuePair<string, SimpleFeatureValue>>)_varBindings).Add(item);
         }
 
         public void Clear()
         {
+            BeforeWrite();
             _varBindings.Clear();
         }
 
@@ -125,6 +176,7 @@ namespace SIL.Machine.FeatureModel
 
         bool ICollection<KeyValuePair<string, SimpleFeatureValue>>.Remove(KeyValuePair<string, SimpleFeatureValue> item)
         {
+            BeforeWrite();
             return ((ICollection<KeyValuePair<string, SimpleFeatureValue>>)_varBindings).Remove(item);
         }
 
