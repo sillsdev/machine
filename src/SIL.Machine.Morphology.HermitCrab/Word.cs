@@ -436,7 +436,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        /// <summary>The final template whose unapplication made this analysis owe a partial rule; for traces only.</summary>
+        /// <summary>The final template whose unapplication made an analysis owe a partial rule; for traces.</summary>
         internal AffixTemplate OwedPartialTemplate
         {
             get { return _owedPartialTemplate; }

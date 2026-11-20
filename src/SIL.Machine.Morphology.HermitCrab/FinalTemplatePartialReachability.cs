@@ -6,13 +6,13 @@ using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 namespace SIL.Machine.Morphology.HermitCrab
 {
     /// <summary>
-    /// Finds the affix templates that a partial word can reach in synthesis. A word is partial at a template only
-    /// if a partial affix-process rule that is neither a template-slot nor a clitic rule applied before it (a partial root takes no template), in the template's
-    /// stratum or an earlier one. Its part of speech is then whatever that rule leaves, changed by any rules
-    /// applied since. The search over-approximates: it tracks only the part-of-speech feature, treats an
-    /// unspecified or variable part of speech as every part of speech, ignores application counts, rule order,
-    /// template gating and every other feature, and lets every rule of a stratum apply any number of times. A
-    /// template it does not return can therefore never see a partial word.
+    /// Finds the affix templates that a partial word can reach in synthesis. A word is partial at a template only if a
+    /// partial affix-process rule that is neither a template-slot nor a clitic rule applied before it (a partial root
+    /// takes no template), in the template's stratum or an earlier one. Its part of speech is then whatever that rule
+    /// leaves, changed by any rules applied since. The search over-approximates: it tracks only the part-of-speech
+    /// feature, treats an unspecified or variable part of speech as every part of speech, ignores application counts,
+    /// rule order, template gating and every other feature, and lets every rule of a stratum apply any number of times.
+    /// A template it does not return can therefore never see a partial word.
     /// </summary>
     internal static class FinalTemplatePartialReachability
     {
