@@ -176,7 +176,10 @@ public class PruneDisagreeingCopiesTests : HermitCrabTestBase
         AffixProcessRule rule = CreateCopyRule(part);
         Word input = CreateInputWithOptionalSecondSegment(first + second);
 
-        Assert.That(AnalysisForms(true, rule, input), Is.EquivalentTo(AnalysisForms(false, rule, input)));
+        // the empty copy against the whole word is not pruned, so the rule still outputs the word itself
+        string[] expected = { first + second };
+        Assert.That(AnalysisForms(false, rule, input), Is.EqualTo(expected));
+        Assert.That(AnalysisForms(true, rule, input), Is.EqualTo(expected));
     }
 
     [Test]
