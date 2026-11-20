@@ -2279,6 +2279,52 @@ public class RewriteRuleTests : HermitCrabTestBase
         Assert.That(innermost.Message, Does.Contain("Quantifier"));
     }
 
+    // Rewrite environments share DeepCloneExceptBoundaries with metathesis. A boundary-only alternative must
+    // stay an empty one, so the environment still matches the boundary-free surface.
+    [TestCase(1)]
+    [TestCase(2)]
+    public void BoundaryOnlyAlternativeInEnvironment_AnalysisUndoesSynthesis(int maxDegreeOfParallelism)
+    {
+        var rule = new RewriteRule
+        {
+            Name = "t-voicing",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "t")).Value,
+        };
+        Morphophonemic.PhonologicalRules.Add(rule);
+        var alternatives = new Alternation<Word, ShapeNode>(
+            new PatternNode<Word, ShapeNode>[]
+            {
+                new Constraint<Word, ShapeNode>(Character(Table3, "+")),
+                new Constraint<Word, ShapeNode>(Character(Table3, "i")),
+            }
+        );
+        rule.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "d")).Value,
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "a")).Value,
+                RightEnvironment = new Pattern<Word, ShapeNode>(
+                    new PatternNode<Word, ShapeNode>[] { new Quantifier<Word, ShapeNode>(1, 1, alternatives) }
+                ),
+            }
+        );
+        FeatureStruct noun = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value;
+        LexEntry boundaryEntry = AddEntry("boundary", noun, Morphophonemic, "at+ka");
+        LexEntry vowelEntry = AddEntry("vowel", noun, Morphophonemic, "atika");
+
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism);
+        Assert.That(
+            morpher.GenerateWords(boundaryEntry, System.Array.Empty<Morpheme>(), new FeatureStruct()),
+            Is.EquivalentTo(new[] { "adka" })
+        );
+        Assert.That(
+            morpher.GenerateWords(vowelEntry, System.Array.Empty<Morpheme>(), new FeatureStruct()),
+            Is.EquivalentTo(new[] { "adika" })
+        );
+        AssertMorphsEqual(morpher.ParseWord("adka"), "boundary");
+        AssertMorphsEqual(morpher.ParseWord("adika"), "vowel");
+    }
+
     private static Exception Innermost(Exception ex)
     {
         while (ex.InnerException != null)

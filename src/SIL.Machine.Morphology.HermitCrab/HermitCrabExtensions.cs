@@ -26,6 +26,12 @@ namespace SIL.Machine.Morphology.HermitCrab
             return (FeatureSymbol)constraint.FeatureStruct.GetValue(HCFeatureSystem.Type);
         }
 
+        internal static bool IsBoundary(this Constraint<Word, ShapeNode> constraint)
+        {
+            return constraint.FeatureStruct.TryGetValue(HCFeatureSystem.Type, out SymbolicFeatureValue type)
+                && (FeatureSymbol)type == HCFeatureSystem.Boundary;
+        }
+
         internal static FeatureStruct AntiFeatureStruct(this FeatureStruct fs)
         {
             // TODO: handle reentrance properly
@@ -140,16 +146,15 @@ namespace SIL.Machine.Morphology.HermitCrab
             return output;
         }
 
+        // Analysis filters boundaries out. A boundary-only alternative stays as an empty group, so the alternation
+        // still matches. Shared by metathesis, rewrite environments, CopyFromInput and ModifyFromInput.
         internal static IEnumerable<PatternNode<Word, ShapeNode>> DeepCloneExceptBoundaries(
             this IEnumerable<PatternNode<Word, ShapeNode>> nodes
         )
         {
             foreach (PatternNode<Word, ShapeNode> node in nodes)
             {
-                if (
-                    node is Constraint<Word, ShapeNode> constraint
-                    && (constraint.FeatureStruct.IsEmpty || constraint.Type() != HCFeatureSystem.Boundary)
-                )
+                if (node is Constraint<Word, ShapeNode> constraint && !constraint.IsBoundary())
                 {
                     yield return constraint.Clone();
                     continue;
@@ -157,11 +162,16 @@ namespace SIL.Machine.Morphology.HermitCrab
 
                 if (node is Alternation<Word, ShapeNode> alternation)
                 {
-                    var newAlteration = new Alternation<Word, ShapeNode>(
-                        alternation.Children.DeepCloneExceptBoundaries()
-                    );
-                    if (newAlteration.Children.Count > 0)
-                        yield return newAlteration;
+                    var newAlternation = new Alternation<Word, ShapeNode>();
+                    foreach (PatternNode<Word, ShapeNode> alternative in alternation.Children)
+                    {
+                        PatternNode<Word, ShapeNode> clone = new[] { alternative }
+                            .DeepCloneExceptBoundaries()
+                            .SingleOrDefault();
+                        newAlternation.Children.Add(clone ?? new Group<Word, ShapeNode>());
+                    }
+                    if (newAlternation.Children.Count > 0)
+                        yield return newAlternation;
                     continue;
                 }
 
@@ -179,7 +189,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                         quantifier.MinOccur,
                         quantifier.MaxOccur,
                         quantifier.Children.DeepCloneExceptBoundaries().SingleOrDefault()
-                    );
+                    )
+                    {
+                        IsGreedy = quantifier.IsGreedy,
+                    };
                     if (newQuantifier.Children.Count > 0)
                         yield return newQuantifier;
                     continue;
