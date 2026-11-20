@@ -16,6 +16,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly RuleBatch<Word, ShapeNode> _templatesRule;
         private readonly Stratum _stratum;
         private readonly Morpher _morpher;
+        private int _maxAlternatives;
 
         public AnalysisStratumRule(Morpher morpher, Stratum stratum)
         {
@@ -29,47 +30,45 @@ namespace SIL.Machine.Morphology.HermitCrab
                 false,
                 FreezableEqualityComparer<Word>.Default
             );
-            _mrulesRule = CreateMorphologicalRules(
-                stratum.MorphologicalRules.Select(mrule => CompileMorphologicalRule(mrule, morpher)).Reverse()
-            );
-        }
-
-        private RuleCascade<Word, ShapeNode> CreateMorphologicalRules(IEnumerable<IRule<Word, ShapeNode>> rules)
-        {
-            switch (_stratum.MorphologicalRuleOrder)
+            _mrulesRule = null;
+            IEnumerable<IRule<Word, ShapeNode>> mrules = stratum
+                .MorphologicalRules.Select(mrule => CompileMorphologicalRule(mrule, morpher))
+                .Reverse();
+            switch (stratum.MorphologicalRuleOrder)
             {
                 case MorphologicalRuleOrder.Linear:
                     // Use PermutationRuleCascade instead of LinearRuleCascade
                     // because morphological rules should be considered optional
                     // during unapplication (they are obligatory during application,
                     // but we don't know they have been applied during unapplication).
-                    return new PermutationRuleCascade<Word, ShapeNode>(
-                        rules,
+                    _mrulesRule = new PermutationRuleCascade<Word, ShapeNode>(
+                        mrules,
                         true,
                         FreezableEqualityComparer<Word>.Default
                     );
+                    break;
                 case MorphologicalRuleOrder.Unordered:
-                    if (_morpher.MaxDegreeOfParallelism == 1)
+                    if (morpher.MaxDegreeOfParallelism == 1)
                     {
-                        return new CombinationRuleCascade<Word, ShapeNode>(
-                            rules,
+                        _mrulesRule = new CombinationRuleCascade<Word, ShapeNode>(
+                            mrules,
                             true,
                             FreezableEqualityComparer<Word>.Default
                         );
                     }
                     else
                     {
-                        return new ParallelCombinationRuleCascade<Word, ShapeNode>(
-                            rules,
+                        _mrulesRule = new ParallelCombinationRuleCascade<Word, ShapeNode>(
+                            mrules,
                             true,
                             FreezableEqualityComparer<Word>.Default
                         )
                         {
-                            MaxDegreeOfParallelism = _morpher.MaxDegreeOfParallelism,
+                            MaxDegreeOfParallelism = morpher.MaxDegreeOfParallelism,
                         };
                     }
+                    break;
             }
-            return null;
         }
 
         private IRule<Word, ShapeNode> CompileAffixTemplate(AffixTemplate template, Morpher morpher)
@@ -108,34 +107,25 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
+        public int MaxAlternatives
+        {
+            get { return _maxAlternatives; }
+            set
+            {
+                _maxAlternatives = value;
+                _mrulesRule.MaxAlternatives = value;
+                _templatesRule.MaxAlternatives = value;
+            }
+        }
+
         public IEnumerable<Word> Apply(Word input)
         {
-            // Standalone stratum application is uncapped.
             int alternativeCount = 0;
-            return Apply(input, ref alternativeCount, false);
+            return Apply(input, ref alternativeCount);
         }
 
         internal IEnumerable<Word> Apply(Word input, ref int alternativeCount)
         {
-            return Apply(input, ref alternativeCount, true);
-        }
-
-        private IEnumerable<Word> Apply(Word input, ref int alternativeCount, bool enforceLimit)
-        {
-            int maxAlternatives = enforceLimit ? _morpher.MaxAlternatives : 0;
-            RuleCascade<Word, ShapeNode> morphologicalRules = _mrulesRule;
-            RuleBatch<Word, ShapeNode> templates = _templatesRule;
-            if (maxAlternatives > 0)
-            {
-                // Limits belong to this invocation; compiled child rules remain shared and read-only.
-                morphologicalRules = CreateMorphologicalRules(_mrulesRule.Rules);
-                morphologicalRules.MaxAlternatives = maxAlternatives;
-                templates = new RuleBatch<Word, ShapeNode>(_templatesRule.Rules, false, _templatesRule.Comparer)
-                {
-                    MaxAlternatives = maxAlternatives,
-                };
-            }
-
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginUnapplyStratum(_stratum, input);
 
@@ -154,8 +144,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 wordCache = new Dictionary<AnalysisMergeKey, Word>();
 
             // AnalysisStratumRule.Apply should cover the inverse of SynthesisStratumRule.Apply.
-            IEnumerable<Word> mruleOutWords = ApplyTemplates(input, morphologicalRules, templates)
-                .Concat(ApplyMorphologicalRules(input, morphologicalRules, templates));
+            IEnumerable<Word> mruleOutWords = ApplyTemplates(input).Concat(ApplyMorphologicalRules(input));
             Debug.Assert(mruleOutWords != null);
 
             var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default) { input };
@@ -164,7 +153,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             foreach (Word mruleOutWord in mruleOutWords)
             {
                 alternativeCount++;
-                if (maxAlternatives > 0 && alternativeCount > maxAlternatives)
+                if (_maxAlternatives > 0 && alternativeCount > _maxAlternatives)
                 {
                     // Stops before full enumeration because ApplyTemplates and ApplyMorphologicalRules use yield return.
                     throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
@@ -193,15 +182,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             return output;
         }
 
-        private IEnumerable<Word> ApplyMorphologicalRules(
-            Word input,
-            RuleCascade<Word, ShapeNode> morphologicalRules,
-            RuleBatch<Word, ShapeNode> templates
-        )
+        private IEnumerable<Word> ApplyMorphologicalRules(Word input)
         {
-            foreach (
-                Word mruleOutWord in morphologicalRules.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default)
-            )
+            foreach (Word mruleOutWord in _mrulesRule.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
             {
                 switch (_stratum.MorphologicalRuleOrder)
                 {
@@ -210,7 +193,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         break;
 
                     case MorphologicalRuleOrder.Unordered:
-                        foreach (Word tempOutWord in ApplyTemplates(mruleOutWord, morphologicalRules, templates))
+                        foreach (Word tempOutWord in ApplyTemplates(mruleOutWord))
                             yield return tempOutWord;
                         yield return mruleOutWord;
                         break;
@@ -218,18 +201,14 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        private IEnumerable<Word> ApplyTemplates(
-            Word input,
-            RuleCascade<Word, ShapeNode> morphologicalRules,
-            RuleBatch<Word, ShapeNode> templates
-        )
+        private IEnumerable<Word> ApplyTemplates(Word input)
         {
-            foreach (Word tempOutWord in templates.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
+            foreach (Word tempOutWord in _templatesRule.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
             {
                 switch (_stratum.MorphologicalRuleOrder)
                 {
                     case MorphologicalRuleOrder.Linear:
-                        foreach (Word outWord in ApplyMorphologicalRules(tempOutWord, morphologicalRules, templates))
+                        foreach (Word outWord in ApplyMorphologicalRules(tempOutWord))
                             yield return outWord;
                         if (!FreezableEqualityComparer<Word>.Default.Equals(input, tempOutWord))
                             yield return tempOutWord;
@@ -238,9 +217,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     case MorphologicalRuleOrder.Unordered:
                         if (!FreezableEqualityComparer<Word>.Default.Equals(input, tempOutWord))
                         {
-                            foreach (
-                                Word outWord in ApplyMorphologicalRules(tempOutWord, morphologicalRules, templates)
-                            )
+                            foreach (Word outWord in ApplyMorphologicalRules(tempOutWord))
                                 yield return outWord;
                             yield return tempOutWord;
                         }
