@@ -2279,9 +2279,8 @@ public class RewriteRuleTests : HermitCrabTestBase
         Assert.That(innermost.Message, Does.Contain("Quantifier"));
     }
 
-    // Analysis drops boundaries from a rewrite environment (shared with metathesis through
-    // DeepCloneExceptBoundaries). An alternative that held only a boundary stays as an empty alternative, so
-    // the environment still matches the surface, where the boundary is gone.
+    // Rewrite environments share DeepCloneExceptBoundaries with metathesis. A boundary-only alternative must
+    // stay an empty alternative, so the environment still matches the surface, where the boundary is gone.
     [TestCase(1)]
     [TestCase(2)]
     public void BoundaryOnlyAlternativeInEnvironment_AnalysisUndoesSynthesis(int maxDegreeOfParallelism)
