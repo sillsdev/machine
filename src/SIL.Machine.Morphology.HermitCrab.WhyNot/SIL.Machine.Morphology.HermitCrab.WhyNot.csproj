@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<RootNamespace>SIL.Machine.Morphology.HermitCrab.WhyNot</RootNamespace>
+		<AssemblyName>hc-whynot</AssemblyName>
+		<Description>Reports why the HermitCrab parser rejects an intended analysis of a word.</Description>
+		<PackageId>SIL.Machine.Morphology.HermitCrab.WhyNot</PackageId>
+		<IsPackable>false</IsPackable>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
+	</PropertyGroup>
+
+	<Import Project="../AssemblyInfo.props" />
+
+	<ItemGroup>
+		<ProjectReference Include="..\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj" />
+	</ItemGroup>
+
+</Project>
