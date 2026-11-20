@@ -2280,7 +2280,7 @@ public class RewriteRuleTests : HermitCrabTestBase
     }
 
     // Rewrite environments share DeepCloneExceptBoundaries with metathesis. A boundary-only alternative must
-    // stay an empty alternative, so the environment still matches the surface, where the boundary is gone.
+    // stay an empty one, so the environment still matches the boundary-free surface.
     [TestCase(1)]
     [TestCase(2)]
     public void BoundaryOnlyAlternativeInEnvironment_AnalysisUndoesSynthesis(int maxDegreeOfParallelism)
