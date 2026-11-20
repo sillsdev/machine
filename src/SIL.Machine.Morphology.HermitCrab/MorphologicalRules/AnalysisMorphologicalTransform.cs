@@ -60,7 +60,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         /// to a valid analysis. An optional segment (an unapplied deletion) stands for any number of segments
         /// it unifies with, because <see cref="Morpher.DeletionReapplications"/> can restore fewer segments
         /// than were deleted, so copies disagree only if no such choice lines them up. A part the rule
-        /// modifies, or a copy with an optional node that is not a segment, is never reported as disagreeing.
+        /// modifies, a copy with an optional node that is not a segment, and an empty copy in a word with any
+        /// optional node (a restored deletion might fill it) are never reported as disagreeing.
         /// </summary>
         internal bool HasDisagreeingCopies(Match<Word, ShapeNode> match)
         {
@@ -90,7 +91,14 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             {
                 GroupCapture<ShapeNode> capture = match.GroupCaptures[GetGroupName(partName, i)];
                 if (!capture.Success)
-                    return false;
+                {
+                    // an empty capture is a zero-length copy, which cannot equal a non-empty one; but a restored
+                    // deletion (an optional node) might fill it, so such a word stays undecidable
+                    if (match.Input.Shape.Any(node => node.Annotation.Optional))
+                        return false;
+                    copies.Add(new List<ShapeNode>());
+                    continue;
+                }
 
                 // an unapplied word-initial deletion sits before the capture, not inside it
                 List<ShapeNode> nodes = MorphologicalOutputAction
