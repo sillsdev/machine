@@ -191,12 +191,73 @@ public class LexEntryTests : HermitCrabTestBase
     }
 
     [Test]
+    public void CoOccurrenceRules()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+        // Create co-occurence rule blocking sag +d
+        // get sag root
+        LexEntry sag = Language.Strata[0].Entries.ElementAt(6);
+        // create +ed suffix
+        Pattern<Word, ShapeNode> leftAnchor = Pattern<Word, ShapeNode>
+            .New()
+            .Annotation(HCFeatureSystem.LeftSideAnchor)
+            .Value;
+        var leftEnv = new AllomorphEnvironment(ConstraintType.Require, leftAnchor, null);
+        sag.PrimaryAllomorph.Environments.Add(leftEnv);
+
+        var edSuffix = new AffixProcessRule
+        {
+            Id = "PAST",
+            Name = "ed_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
+            }
+        );
+        Pattern<Word, ShapeNode> rightAnchor = Pattern<Word, ShapeNode>
+            .New()
+            .Annotation(HCFeatureSystem.RightSideAnchor)
+            .Value;
+        var rightEnv = new AllomorphEnvironment(ConstraintType.Require, null, rightAnchor);
+        edSuffix.Allomorphs.First().Environments.Add(rightEnv);
+        Morphophonemic.MorphologicalRules.Add(edSuffix);
+
+        var morpher = new Morpher(TraceManager, Language);
+        IEnumerable<Word> words = morpher.ApplyAnalysisAndLookup("sagd");
+        Assert.That(words, Is.Not.Empty);
+
+        // create co-occurence rule which blocks the analysis
+        var sagAllo = sag.GetAllomorph(0);
+        var edAllo = edSuffix.GetAllomorph(0);
+        var other1 = new List<Allomorph> { edAllo };
+        var rule1 = new AllomorphCoOccurrenceRule(ConstraintType.Exclude, other1, MorphCoOccurrenceAdjacency.Anywhere);
+        sagAllo.AllomorphCoOccurrenceRules.Add(rule1);
+        words = morpher.ApplyAnalysisAndLookup("sagd");
+        Assert.That(words, Is.Empty);
+
+        // Cleanup.
+        sagAllo.AllomorphCoOccurrenceRules.Clear();
+        sag.PrimaryAllomorph.Environments.Clear();
+        edSuffix.Allomorphs.First().Environments.Clear();
+    }
+
+    [Test]
     public void AllomorphEnvironments()
     {
+        CharacterDefinitionTable surfaceTable = Language.SurfaceStratum.CharacterDefinitionTable;
         var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem).Symbol("voc+").Value;
 
         LexEntry headEntry = Entries["32"];
-        Pattern<Word, ShapeNode> envPattern = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value;
+        Pattern<Word, ShapeNode> envPattern = Pattern<Word, ShapeNode>
+            .New()
+            .Annotation(Character(surfaceTable, "p"))
+            .Value;
         var env = new AllomorphEnvironment(ConstraintType.Require, null, envPattern);
         headEntry.PrimaryAllomorph.Environments.Add(env);
 
@@ -211,7 +272,8 @@ public class LexEntryTests : HermitCrabTestBase
             Word.RootMorphID
         );
 
-        Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
+        Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.False);
+        Assert.That(env.IsAnalysisWordValid(word), Is.False);
 
         word.RemoveMorph(nonHeadMorph);
 
@@ -223,7 +285,8 @@ public class LexEntryTests : HermitCrabTestBase
             Word.RootMorphID
         );
 
-        Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.False);
+        Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
+        Assert.That(env.IsAnalysisWordValid(word), Is.True);
 
         headEntry.PrimaryAllomorph.Environments.Clear();
 
@@ -244,7 +307,8 @@ public class LexEntryTests : HermitCrabTestBase
             Word.RootMorphID
         );
 
-        Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
+        Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.False);
+        Assert.That(env.IsAnalysisWordValid(word), Is.False);
 
         word.RemoveMorph(nonHeadMorph);
 
@@ -259,7 +323,10 @@ public class LexEntryTests : HermitCrabTestBase
             Word.RootMorphID
         );
 
-        Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.False);
+        Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
+        Assert.That(env.IsAnalysisWordValid(word), Is.True);
+
+        headEntry.PrimaryAllomorph.Environments.Clear();
     }
 
     [Test]

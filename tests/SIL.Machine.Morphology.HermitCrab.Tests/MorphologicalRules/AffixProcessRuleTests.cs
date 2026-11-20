@@ -1283,6 +1283,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
                 .EqualTo(head => head.Feature("pers").EqualTo("3"))
                 .Value,
         };
+        CharacterDefinitionTable surfaceTable = Language.SurfaceStratum.CharacterDefinitionTable;
         sSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
@@ -1293,12 +1294,12 @@ public class AffixProcessRuleTests : HermitCrabTestBase
                     new AllomorphEnvironment(
                         ConstraintType.Require,
                         null,
-                        Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "a")).Value
+                        Pattern<Word, ShapeNode>.New().Annotation(Character(surfaceTable, "a")).Value
                     ),
                     new AllomorphEnvironment(
                         ConstraintType.Require,
                         null,
-                        Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "ɯ")).Value
+                        Pattern<Word, ShapeNode>.New().Annotation(Character(surfaceTable, "ɯ")).Value
                     ),
                 },
             }
@@ -2098,6 +2099,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         string env2
     )
     {
+        CharacterDefinitionTable surfaceTable = Language.SurfaceStratum.CharacterDefinitionTable;
         FeatureStruct any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
         var sSuffix = new AffixProcessRule
         {
@@ -2118,7 +2120,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
                     new AllomorphEnvironment(
                         ConstraintType.Require,
                         null,
-                        Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, env)).Value
+                        Pattern<Word, ShapeNode>.New().Annotation(Character(surfaceTable, env)).Value
                     )
                 );
             }

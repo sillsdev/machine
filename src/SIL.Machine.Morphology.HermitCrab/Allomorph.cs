@@ -155,13 +155,46 @@ namespace SIL.Machine.Morphology.HermitCrab
             return true;
         }
 
+        internal bool CheckAnalysisEnvironments(Morpher morpher, Word word)
+        {
+            // If there is more than one character definition table, then word.Original is not safe.
+            if (
+                Environments.Count > 0
+                && morpher.Language.CharacterDefinitionTables.Count() < 2
+                && Environments.All(e => !e.IsAnalysisWordValid(word.Original))
+            )
+            {
+                if (morpher.TraceManager.IsTracing)
+                {
+                    morpher.TraceManager.Failed(morpher.Language, word, FailureReason.Environments, this, Environments);
+                }
+                return false;
+            }
+            return true;
+        }
+
         protected virtual bool CheckAllomorphConstraints(Morpher morpher, Allomorph allomorph, Word word)
+        {
+            return CheckCoOccurrenceRules(morpher, allomorph, word);
+        }
+
+        internal bool CheckCoOccurrenceRules(
+            Morpher morpher,
+            Allomorph allomorph,
+            Word word,
+            bool analysis = false,
+            Allomorph newAllomorph = null
+        )
         {
             if (AllomorphCoOccurrenceRules.Count > 0)
             {
                 foreach (AllomorphCoOccurrenceRule rule in AllomorphCoOccurrenceRules)
                 {
-                    if (!rule.IsWordValid(allomorph, word))
+                    if (
+                        analysis
+                            ? !rule.IsAnalysisWordValid(allomorph, word, newAllomorph)
+                            : !rule.IsWordValid(allomorph, word)
+                    )
                     {
                         if (morpher != null && morpher.TraceManager.IsTracing)
                         {
@@ -183,7 +216,11 @@ namespace SIL.Machine.Morphology.HermitCrab
                 foreach (MorphemeCoOccurrenceRule rule in Morpheme.MorphemeCoOccurrenceRules)
                 {
                     // We need to check each one in turn and report any failure
-                    if (!rule.IsWordValid(Morpheme, word))
+                    if (
+                        analysis
+                            ? !rule.IsAnalysisWordValid(Morpheme, word, newAllomorph)
+                            : !rule.IsWordValid(Morpheme, word)
+                    )
                     {
                         if (morpher != null && morpher.TraceManager.IsTracing)
                         {

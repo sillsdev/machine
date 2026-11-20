@@ -95,6 +95,12 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
                     continue;
                 }
+                if (!IsAnalysisWordValid(input, _rule.Allomorphs[i]))
+                {
+                    if (_morpher.TraceManager.IsTracing)
+                        _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
+                    continue;
+                }
                 bool unapplied = false;
                 foreach (Word outWord in _rules[i].Apply(input).RemoveDuplicates())
                 {
@@ -136,6 +142,17 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
             }
             return output;
+        }
+
+        private bool IsAnalysisWordValid(Word word, AffixProcessAllomorph allomorph)
+        {
+            if (!allomorph.CheckAnalysisEnvironments(_morpher, word))
+                return false;
+            if (!allomorph.CheckCoOccurrenceRules(_morpher, allomorph, word, true, allomorph))
+                return false;
+            if (!word.CheckAnalysisCoOccurrenceRules(_morpher, allomorph))
+                return false;
+            return true;
         }
     }
 }

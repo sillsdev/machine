@@ -33,6 +33,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private bool _isPartial;
         private readonly Dictionary<string, HashSet<int>> _disjunctiveAllomorphIndices;
         private int _mruleAppCount = 0;
+        private Word _original;
         private readonly IList<Word> _alternatives = new List<Word>();
 
         public Word(RootAllomorph rootAllomorph, FeatureStruct realizationalFS)
@@ -277,6 +278,11 @@ namespace SIL.Machine.Morphology.HermitCrab
             return curRule == rule || (curRule == null && rule is CompoundingRule);
         }
 
+        internal IEnumerable<Allomorph> UnappliedAllomorphs
+        {
+            get { return _allomorphApps; }
+        }
+
         internal bool IsAllomorphApplicable(Allomorph allomorph)
         {
             if (_mruleAppIndex < 0)
@@ -464,6 +470,16 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         internal Word Source { get; set; }
 
+        internal Word Original
+        {
+            get
+            {
+                if (_original == null)
+                    _original = Source == null ? this : Source.Original;
+                return _original;
+            }
+        }
+
         internal IList<Word> Alternatives
         {
             get { return _alternatives; }
@@ -557,6 +573,25 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
 
             return false;
+        }
+
+        internal bool CheckAnalysisCoOccurrenceRules(Morpher morpher, Allomorph newAllomorph = null)
+        {
+            if (
+                RootAllomorph != null
+                && !RootAllomorph.CheckCoOccurrenceRules(morpher, RootAllomorph, this, true, newAllomorph)
+            )
+                return false;
+
+            foreach (Allomorph allomorph in UnappliedAllomorphs)
+            {
+                if (
+                    allomorph != null
+                    && !allomorph.CheckCoOccurrenceRules(morpher, allomorph, this, true, newAllomorph)
+                )
+                    return false;
+            }
+            return true;
         }
 
         internal void ResetDirty()
