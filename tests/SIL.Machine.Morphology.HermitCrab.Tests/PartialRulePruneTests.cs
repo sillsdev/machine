@@ -160,6 +160,33 @@ public class PartialRulePruneTests
         Assert.That(calls, Is.LessThanOrEqualTo(maxCalls));
     }
 
+    // The partial rules sit only in the shallow stratum, which analysis reaches first. A word in the deep stratum
+    // has nothing left that could unapply one, so the look-ahead must say so.
+    [Test]
+    public void PartialRuleMayUnapply_NoPartialRuleInTheStratumOrDeeper_IsFalse()
+    {
+        Language language = XmlLanguageLoader.Load(DataPath("g6b.xml"));
+        Stratum deep = language.Strata[0];
+        Stratum shallow = language.Strata[1];
+        foreach (
+            AffixProcessRule partial in deep
+                .MorphologicalRules.OfType<AffixProcessRule>()
+                .Where(r => r.IsPartial)
+                .ToArray()
+        )
+        {
+            deep.MorphologicalRules.Remove(partial);
+            shallow.MorphologicalRules.Add(partial);
+        }
+        var lookAhead = new PartialRuleLookAhead(language);
+
+        var inDeep = new Word(deep, deep.CharacterDefinitionTable.Segment("loq"));
+        var inShallow = new Word(shallow, shallow.CharacterDefinitionTable.Segment("loq"));
+
+        Assert.That(lookAhead.PartialRuleMayUnapply(inDeep), Is.False);
+        Assert.That(lookAhead.PartialRuleMayUnapply(inShallow), Is.True);
+    }
+
     // The look-ahead assumes unapplying a rule copies input nodes and adds only inserted or rebuilt ones. Weigh a
     // new output action type there before listing it here.
     [Test]

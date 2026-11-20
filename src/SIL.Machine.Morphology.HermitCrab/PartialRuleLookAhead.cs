@@ -42,6 +42,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private readonly Dictionary<Stratum, StratumMaterial> _material = new Dictionary<Stratum, StratumMaterial>();
 
+        // Strata with no partial rule in them or in any deeper stratum: nothing there can unapply one.
+        private readonly HashSet<Stratum> _withoutPartialRules = new HashSet<Stratum>();
+
         public PartialRuleLookAhead(Language lang)
         {
             bool partialInDeeperStratum = false;
@@ -53,16 +56,20 @@ namespace SIL.Machine.Morphology.HermitCrab
                     .ToArray();
                 if (!partialInDeeperStratum && partial.Length > 0)
                     _material[stratum] = Inspect(stratum, partial);
+                else if (!partialInDeeperStratum)
+                    _withoutPartialRules.Add(stratum);
                 partialInDeeperStratum |= partial.Length > 0;
             }
         }
 
         /// <summary>
-        /// False when no partial rule can be unapplied to this word or to anything analysis derives from it in
-        /// its stratum.
+        /// False when no partial rule can be unapplied to this word or to anything analysis derives from it: the
+        /// stratum and the deeper ones have none, or the shape has no room for the one that analysis reaches first.
         /// </summary>
         public bool PartialRuleMayUnapply(Word input)
         {
+            if (_withoutPartialRules.Contains(input.Stratum))
+                return false;
             if (!_material.TryGetValue(input.Stratum, out StratumMaterial material) || material == null)
                 return true;
             ShapeNode[] nodes = input.Shape.Where(n => n.Annotation.Type() == HCFeatureSystem.Segment).ToArray();
