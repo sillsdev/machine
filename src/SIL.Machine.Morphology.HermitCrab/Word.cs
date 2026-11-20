@@ -585,7 +585,10 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             foreach (Allomorph allomorph in UnappliedAllomorphs)
             {
-                if (allomorph != null && !allomorph.CheckCoOccurrenceRules(morpher, allomorph, this, true, newAllomorph))
+                if (
+                    allomorph != null
+                    && !allomorph.CheckCoOccurrenceRules(morpher, allomorph, this, true, newAllomorph)
+                )
                     return false;
             }
             return true;

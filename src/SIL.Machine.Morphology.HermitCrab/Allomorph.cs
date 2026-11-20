@@ -178,7 +178,13 @@ namespace SIL.Machine.Morphology.HermitCrab
             return CheckCoOccurrenceRules(morpher, allomorph, word);
         }
 
-        internal bool CheckCoOccurrenceRules(Morpher morpher, Allomorph allomorph, Word word, bool analysis = false, Allomorph newAllomorph = null)
+        internal bool CheckCoOccurrenceRules(
+            Morpher morpher,
+            Allomorph allomorph,
+            Word word,
+            bool analysis = false,
+            Allomorph newAllomorph = null
+        )
         {
             if (AllomorphCoOccurrenceRules.Count > 0)
             {
