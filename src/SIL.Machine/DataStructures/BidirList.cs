@@ -240,7 +240,7 @@ namespace SIL.Machine.DataStructures
 
         public bool Find(TNode example, Direction dir, out TNode result)
         {
-            return Find(
+            return FindCore(
                 dir == Direction.LeftToRight ? _begin.GetNext(_begin.Levels - 1) : _end.GetPrev(_end.Levels - 1),
                 example,
                 dir,
@@ -248,7 +248,23 @@ namespace SIL.Machine.DataStructures
             );
         }
 
+        /// <summary>
+        /// Finds the first matching node at or after <paramref name="start"/> in the specified direction.
+        /// On a miss, the result is at or after <paramref name="start"/> in that direction.
+        /// </summary>
         public bool Find(TNode start, TNode example, Direction dir, out TNode result)
+        {
+            int comparison = _comparer.Compare(start, example);
+            if (comparison == 0 || (dir == Direction.LeftToRight ? comparison > 0 : comparison < 0))
+            {
+                result = start;
+                return comparison == 0;
+            }
+
+            return FindCore(start, example, dir, out result);
+        }
+
+        private bool FindCore(TNode start, TNode example, Direction dir, out TNode result)
         {
             TNode cur =
                 dir == Direction.LeftToRight ? start.GetPrev(start.Levels - 1) : start.GetNext(start.Levels - 1);
@@ -264,8 +280,13 @@ namespace SIL.Machine.DataStructures
                         break;
                     if (res == 0)
                     {
-                        result = next;
-                        return true;
+                        if (i == 0)
+                        {
+                            result = next;
+                            return true;
+                        }
+
+                        break;
                     }
                     cur = next;
                     next = dir == Direction.LeftToRight ? cur.GetNext(i) : cur.GetPrev(i);
