@@ -7,8 +7,9 @@ using SIL.ObjectModel;
 namespace SIL.Machine.FeatureModel
 {
     /// <remarks>
-    /// Instances are not safe for concurrent use; a failed unification writes in place and rolls back, so
-    /// overlapping use from another thread throws <see cref="InvalidOperationException"/>.
+    /// Instances are not safe for concurrent use. A failed unification writes in place and rolls back, so
+    /// overlapping <c>Unify</c>, <c>IsUnifiable</c> or <c>Subsumes</c> calls from another thread throw
+    /// <see cref="InvalidOperationException"/>; direct writes through the dictionary members are not detected.
     /// </remarks>
     public class VariableBindings : IDictionary<string, SimpleFeatureValue>, ICloneable<VariableBindings>
     {
