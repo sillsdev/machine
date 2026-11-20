@@ -146,6 +146,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             return output;
         }
 
+        // Analysis filters boundaries out, so patterns it matches against the surface drop them. An alternative
+        // that holds only a boundary stays as an empty group, so the alternation still matches where it did. Shared
+        // by metathesis, rewrite-subrule environments, CopyFromInput and ModifyFromInput.
         internal static IEnumerable<PatternNode<Word, ShapeNode>> DeepCloneExceptBoundaries(
             this IEnumerable<PatternNode<Word, ShapeNode>> nodes
         )
