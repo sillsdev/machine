@@ -211,8 +211,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         /// <summary>
         /// Gets what <see cref="FailureReason"/> is about, when it has a subject: the
-        /// <see cref="AffixTemplateSlot"/> for <see cref="HermitCrab.FailureReason.UnreachableRequiredSlot"/>.
-        /// Otherwise <c>null</c>.
+        /// <see cref="AffixTemplateSlot"/> for <see cref="HermitCrab.FailureReason.UnreachableRequiredSlot"/>, or the
+        /// partial rules (a list of <see cref="MorphologicalRules.AffixProcessRule"/>) that the analysis owes one of
+        /// for <see cref="HermitCrab.FailureReason.OwedPartialCannotUnapply"/>. Otherwise <c>null</c>.
         /// </summary>
         public object FailureObject { get; internal set; }
     }
