@@ -3,3 +3,5 @@
 *.props
 *.targets
 *.xml
+/conformance/
+/conformance.tmp-*/

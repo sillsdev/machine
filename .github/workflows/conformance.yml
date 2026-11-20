@@ -1,0 +1,84 @@
+name: Conformance
+
+on:
+  push:
+    branches:
+      - "**"
+    paths:
+      - "conformance.commit"
+      - "src/SIL.Machine/**"
+      - "src/SIL.Machine.Morphology.HermitCrab*/**"
+      - "tests/SIL.Machine.Morphology.HermitCrab.Tests/**"
+      - ".github/workflows/conformance.yml"
+  pull_request:
+    paths:
+      - "conformance.commit"
+      - "src/SIL.Machine/**"
+      - "src/SIL.Machine.Morphology.HermitCrab*/**"
+      - "tests/SIL.Machine.Morphology.HermitCrab.Tests/**"
+      - ".github/workflows/conformance.yml"
+
+jobs:
+  conformance:
+    name: Conformance suite
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            10.0.x
+
+      # Building the runner clones sillsdev/fieldworks-parser-conformance into conformance/ at the commit in
+      # conformance.commit; see EnsureConformanceSuite.targets.
+      #
+      # Release, because edge-cases/deep-optional-affix-nesting has a 15 s wall-clock budget that Debug uses
+      # most of on a small runner. Built once; every step below runs the built runner.
+      - name: Build the runner
+        run: dotnet build -c Release src/SIL.Machine.Morphology.HermitCrab.Conformance/SIL.Machine.Morphology.HermitCrab.Conformance.csproj
+
+      # Every fixture's words.yaml must match what the C# engine produces, in process, including the fixtures
+      # with a budget_ms.
+      - name: Run conformance self-check
+        run: >-
+          dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance --
+          --fixtures conformance --include-pathological
+
+      # The suite's stress fixtures (conformance/stress) must agree with the engine too.
+      - name: Run stress self-check
+        if: always()
+        run: >-
+          dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance --
+          --fixtures conformance/stress --include-pathological
+
+      # The suite's generated manifest must match a fresh computation, and every grammar and words.yaml must
+      # validate against the suite's DTD and schema.
+      - name: Check the suite manifest
+        if: always()
+        run: >-
+          dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance --
+          --fixtures conformance --check-manifest
+
+      # Exits 1 on an uncovered construct, on a dead rule (exercised by zero words) missing from
+      # conformance/dead-rules-allowed.tsv, on an allowed rule some word now exercises, and when the suite's
+      # coverage.csv or rules.csv is stale. It writes nothing; the suite owns both files.
+      - name: Run coverage report
+        if: always()
+        run: >-
+          dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance --
+          --fixtures conformance --coverage-report
+
+      # A pin that is not on the suite's main could be lost when that branch is deleted.
+      - name: Check the pinned commit is on the suite's main
+        if: always()
+        run: |
+          pin="$(tr -d '[:space:]' < conformance.commit)"
+          git -C conformance fetch --quiet origin main
+          if ! git -C conformance merge-base --is-ancestor "$pin" origin/main; then
+            echo "::error file=conformance.commit::$pin is not an ancestor of origin/main in the conformance suite"
+            exit 1
+          fi
