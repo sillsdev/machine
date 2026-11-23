@@ -10,7 +10,7 @@ internal class HCContext(Language language, TextWriter outWriter)
 
     public void Compile()
     {
-        _morpher = new Morpher(new TraceManager(), _language);
+        _morpher = new Morpher(new TraceManager { RetainWords = false }, _language);
     }
 
     public Language Language
