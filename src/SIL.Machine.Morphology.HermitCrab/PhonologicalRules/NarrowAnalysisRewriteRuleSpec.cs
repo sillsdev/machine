@@ -30,16 +30,34 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             }
             else
             {
-                Pattern.Children.AddRange(subrule.Rhs.Children.CloneItems());
+                // The matcher skips optional nodes and boundaries, so the matched RHS nodes need not be
+                // adjacent; each is recovered from its own group capture, which a quantifier may leave empty.
+                int i = 0;
+                foreach (PatternNode<Word, ShapeNode> node in subrule.Rhs.Children)
+                {
+                    Pattern.Children.Add(new Group<Word, ShapeNode>("target" + i) { Children = { node.Clone() } });
+                    i++;
+                }
             }
             Pattern.Freeze();
 
             SubruleSpecs.Add(new AnalysisRewriteSubruleSpec(matcherSettings, subrule, Unapply));
         }
 
+        private ShapeNode GetTargetNode(Match<Word, ShapeNode> targetMatch, int i)
+        {
+            if (i >= _targetCount)
+                return null;
+            GroupCapture<ShapeNode> capture = targetMatch.GroupCaptures["target" + i];
+            return capture.Success ? capture.Range.GetStart(targetMatch.Matcher.Direction) : null;
+        }
+
         private void Unapply(Match<Word, ShapeNode> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
         {
             ShapeNode curNode = IsTargetEmpty ? range.Start : range.End;
+            ShapeNode targetNode = GetTargetNode(targetMatch, 0);
+            int targetPos = 0;
+            bool zipper = true;
             foreach (
                 Constraint<Word, ShapeNode> constraint in _analysisRhs.Children.CastToConstraints(
                     "The target (left-hand side) of a rewrite rule"
@@ -49,14 +67,34 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 FeatureStruct fs = constraint.FeatureStruct.Clone();
                 if (varBindings != null)
                     fs.ReplaceVariables(varBindings);
-                curNode = targetMatch.Input.Shape.AddAfter(curNode, fs, true);
+                if (
+                    zipper
+                    && targetNode != null
+                    && constraint.Type() == HCFeatureSystem.Segment
+                    && targetNode.Type() == HCFeatureSystem.Segment
+                    && !fs.HasVariables // This can be removed when Union is fixed.
+                    && !targetNode.Annotation.FeatureStruct.HasVariables
+                )
+                {
+                    // Union fs into the existing node's feature structure.
+                    targetNode.Annotation.FeatureStruct.Union(fs);
+                    targetPos++;
+                    targetNode = GetTargetNode(targetMatch, targetPos);
+                }
+                else
+                {
+                    // Add an optional node for fs.
+                    curNode = targetMatch.Input.Shape.AddAfter(curNode, fs, true);
+                    zipper = false;
+                }
             }
 
-            curNode = range.Start;
-            for (int i = 0; i < _targetCount; i++)
+            // Make the rest of the existing nodes optional.
+            for (int i = targetPos; i < _targetCount; i++)
             {
-                curNode.Annotation.Optional = true;
-                curNode = curNode.Next;
+                ShapeNode node = GetTargetNode(targetMatch, i);
+                if (node != null)
+                    node.Annotation.Optional = true;
             }
         }
     }

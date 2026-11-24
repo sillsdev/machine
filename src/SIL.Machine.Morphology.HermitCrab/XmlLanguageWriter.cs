@@ -636,6 +636,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             if (!affixProcessRule.Blockable)
                 ruleElem.Add(new XAttribute("blockable", "false"));
+            if (affixProcessRule.IsCliticRule != null)
+                ruleElem.Add(new XAttribute("isCliticRule", affixProcessRule.IsCliticRule == true ? "true" : "false"));
 
             if (affixProcessRule.MaxApplicationCount != 1)
                 ruleElem.Add(new XAttribute("multipleApplication", affixProcessRule.MaxApplicationCount));
@@ -761,6 +763,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             if (!realRule.Blockable)
                 ruleElem.Add(new XAttribute("blockable", "false"));
+            if (realRule.IsCliticRule != null)
+                ruleElem.Add(new XAttribute("isCliticRule", realRule.IsCliticRule == true ? "true" : "false"));
 
             ruleElem.Add(new XElement("Name", Normalize(realRule.Name)));
 

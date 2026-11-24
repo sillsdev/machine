@@ -18,6 +18,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 {
     public class Morpher : IMorphologicalAnalyzer, IMorphologicalGenerator
     {
+        internal bool EdgePrefilterEnabled { get; set; } = true;
+
+        // Called from analysis threads, so a handler must be thread-safe.
+        internal Action EdgePrefilterRejected { get; set; }
+
         private readonly Language _lang;
         private readonly IRule<Word, ShapeNode> _analysisRule;
         private readonly IRule<Word, ShapeNode> _synthesisRule;
@@ -25,13 +30,13 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly ITraceManager _traceManager;
         private readonly ReadOnlyObservableCollection<Morpheme> _morphemes;
         private readonly IList<RootAllomorph> _lexicalPatterns = new List<RootAllomorph>();
-        private long _memoHits;
-        private long _nogoodHits;
-        private long _templateMemoHits;
-        private long _templateNogoodHits;
 
         public Morpher(ITraceManager traceManager, Language lang, int maxDegreeOfParallelism = 0)
+            : this(traceManager, lang, maxDegreeOfParallelism, 0) { }
+
+        public Morpher(ITraceManager traceManager, Language lang, int maxDegreeOfParallelism, int maxAlternatives)
         {
+            MaxAlternatives = maxAlternatives;
             _lang = lang;
             _traceManager = traceManager;
             // Must be set before CompileAnalysisRule: AnalysisStratumRule picks a sequential vs. parallel
@@ -59,13 +64,13 @@ namespace SIL.Machine.Morphology.HermitCrab
             _analysisRule = lang.CompileAnalysisRule(this);
             _synthesisRule = lang.CompileSynthesisRule(this);
             MaxStemCount = 2;
-            MaxAlternatives = 0;
             MergeEquivalentAnalyses = true;
+            PruneDisagreeingCopies = true;
             LexEntrySelector = entry => true;
             RuleSelector = rule => true;
 
             _morphemes = new ReadOnlyObservableCollection<Morpheme>(morphemes);
-            IsPartial = GetPartialMorphemes().Count() > 0;
+            HasPartialRules = GetPartialMorphemes().Any(morpheme => !(morpheme is LexEntry));
         }
 
         public IEnumerable<Morpheme> GetPartialMorphemes()
@@ -86,24 +91,59 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public int DeletionReapplications { get; set; }
 
+        /// <summary>
+        /// Whether affix template walks drop partials in which a required slot can no longer unapply because
+        /// the material it inserts is absent. See <see cref="RequiredSlotMaterial"/>.
+        /// </summary>
+        internal RequiredSlotLookaheadMode RequiredSlotLookahead { get; set; } = RequiredSlotLookaheadMode.On;
+
+        /// <summary>
+        /// Enable required-slot pruning during affix template analysis. On by default, also while
+        /// <see cref="ITraceManager.IsTracing"/> is set: each pruned partial is traced as
+        /// <see cref="FailureReason.UnreachableRequiredSlot"/> with the slot. Set it before parsing; changing it
+        /// during a parse alters how much is pruned, not the analyses returned.
+        /// </summary>
+        public bool PruneRequiredSlots
+        {
+            get { return RequiredSlotLookahead != RequiredSlotLookaheadMode.Off; }
+            set { RequiredSlotLookahead = value ? RequiredSlotLookaheadMode.On : RequiredSlotLookaheadMode.Off; }
+        }
+
+        /// <summary>
+        /// Called in <see cref="RequiredSlotLookaheadMode.Shadow"/> with a kind and the template and slot it is about:
+        /// "fired" (the test is true for a required slot), "violated" (a rule of a fired slot then unapplied under
+        /// that partial) and "completed-under-fired" (the template walk completed with a fired slot on its path).
+        /// Any "violated" or "completed-under-fired" is a soundness failure.
+        /// </summary>
+        internal Action<string, AffixTemplate, int> RequiredSlotShadow { get; set; }
+
+        /// <summary>
+        /// Called after each required-slot check that unified, with the number of unifications it performed.
+        /// Null unless a diagnostic sets it; it may be called from several threads.
+        /// </summary>
+        internal Action<long> RequiredSlotCheckObserver { get; set; }
+
         public int MaxStemCount { get; set; }
 
         /// <summary>
         /// MaxAlternatives limits the number of alternatives considered.
         /// If the limit is exceeded, then MaxAlternativesExceededException is thrown.
+        /// Set this value with the constructor.
         /// </summary>
-        public int MaxAlternatives { get; set; }
+        public int MaxAlternatives { get; }
 
         /// <summary>
-        /// Merge analyses that are equivalent for every analysis-side rule (see <see cref="AnalysisStateKey"/>).
+        /// Merge analyses with equivalent state for every analysis-side rule.
         /// Merged analyses will be expanded if lexical lookup succeeds.
         /// </summary>
         public bool MergeEquivalentAnalyses { get; set; }
 
         /// <summary>
-        /// A Morpher is partial if any of the elements are partial.
+        /// True if any morpheme other than a <see cref="LexEntry"/> is partial. Analysis may prune a final
+        /// template that follows a non-template rule only when this is false or
+        /// <see cref="AlwaysEnforceFinalTemplates"/> is set.
         /// </summary>
-        public bool IsPartial { get; }
+        public bool HasPartialRules { get; }
 
         /// <summary>
         /// Enforce final templates even if some of the morphemes were partial.
@@ -111,15 +151,20 @@ namespace SIL.Machine.Morphology.HermitCrab
         public bool AlwaysEnforceFinalTemplates { get; set; }
 
         /// <summary>
-        /// Caps the concurrency used within a single parse or generation -- analysis cascade,
-        /// affix-template unapplication and synthesis alike. A value of 1 runs the work fully
-        /// sequentially, and is the only configuration eligible for the analysis-cascade memo (see
-        /// <see cref="MemoizedCombinationRuleCascade"/>). The default of 0, like any value below 1, leaves
-        /// concurrency unbounded. Constructor-only, because it determines how the analysis rules compile.
-        /// <para>
-        /// This must remain a pure performance knob: nothing that changes which analyses a parse returns
-        /// may be gated on it, or the memoized and unmemoized configurations stop being comparable.
-        /// </para>
+        /// When unapplying an affix-process or compounding rule that copies a part more than once
+        /// (reduplication), skip matches whose copies cannot unify segment by segment. Such a match can never
+        /// survive synthesis, so this removes only doomed analyses. On by default, including while tracing.
+        /// </summary>
+        public bool PruneDisagreeingCopies { get; set; }
+
+        /// <summary>
+        /// Caps concurrency within a parse or generation, including the analysis cascade, affix-template
+        /// unapplication, and synthesis. A value of 1 runs the work sequentially; values below 1 leave
+        /// concurrency unbounded. This is constructor-only because it determines how the analysis rules compile
+        /// (a value of 1 compiles the sequential cascade for unordered strata). It must remain a performance
+        /// knob only: nothing that changes which analyses a parse returns, or whether
+        /// <see cref="MaxAlternatives"/> is exceeded, may depend on it.
+        /// <see cref="ParseWords"/> throws unless this value is 1.
         /// </summary>
         public int MaxDegreeOfParallelism { get; }
 
@@ -136,24 +181,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 MaxDegreeOfParallelism = MaxDegreeOfParallelism >= 1 ? MaxDegreeOfParallelism : uncappedDegree,
             };
-        }
-
-        /// <summary>
-        /// Memo-hit totals over the parses this Morpher has completed; a parse that throws discards its
-        /// counts. Per-Morpher rather than per-process so one test's counts cannot leak into another's.
-        /// </summary>
-        internal long MemoHits => Interlocked.Read(ref _memoHits);
-        internal long NogoodHits => Interlocked.Read(ref _nogoodHits);
-        internal long TemplateMemoHits => Interlocked.Read(ref _templateMemoHits);
-        internal long TemplateNogoodHits => Interlocked.Read(ref _templateNogoodHits);
-
-        // Interlocked because one Morpher may be parsing on several threads at once.
-        private void AccumulateMemoDiagnostics(AnalysisScope scope)
-        {
-            Interlocked.Add(ref _memoHits, scope.MemoHits);
-            Interlocked.Add(ref _nogoodHits, scope.NogoodHits);
-            Interlocked.Add(ref _templateMemoHits, scope.TemplateMemoHits);
-            Interlocked.Add(ref _templateNogoodHits, scope.TemplateNogoodHits);
         }
 
         public Func<LexEntry, bool> LexEntrySelector { get; set; }
@@ -187,10 +214,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             Shape shape = _lang.SurfaceStratum.CharacterDefinitionTable.Segment(word);
 
             var input = new Word(_lang.SurfaceStratum, shape);
-            // Installing a scope is what enables the memo. Never while tracing: traces must stay
-            // byte-identical to the unmemoized engine.
-            AnalysisScope scope = !_traceManager.IsTracing && MaxDegreeOfParallelism == 1 ? new AnalysisScope() : null;
-            input.AnalysisScope = scope;
             input.Freeze();
             if (_traceManager.IsTracing)
                 _traceManager.AnalyzeWord(_lang, input);
@@ -198,8 +221,6 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             // Unapply rules
             var analyses = new ConcurrentQueue<Word>(_analysisRule.Apply(input));
-            if (scope != null)
-                AccumulateMemoDiagnostics(scope);
 
 #if OUTPUT_ANALYSES
             var lines = new List<string>();
@@ -239,6 +260,72 @@ namespace SIL.Machine.Morphology.HermitCrab
                 return matches;
             }
             return syntheses;
+        }
+
+        /// <summary>
+        /// Eagerly parses surface forms in input order, capturing each parse's exception and trace in its result.
+        /// Requires a Morpher constructed with maxDegreeOfParallelism: 1. Tracing runs the batch serially.
+        /// Keep the Language, settings, and tracing fixed until completion; selectors and custom rules must
+        /// support concurrent calls when maxWordConcurrency is greater than 1 and tracing is disabled.
+        /// Do not overlap traced calls sharing a trace manager. Failed parses have empty analyses.
+        /// Progress receives the input index and surface form, with a null result at the start and the
+        /// completed result at the finish. It runs on parsing threads (the calling thread for serial batches),
+        /// possibly concurrently, and must be fast and thread-safe. Progress exceptions are not caught: they end the
+        /// batch and propagate to the caller (wrapped in an AggregateException when words run concurrently).
+        /// Batch argument validation and input enumeration errors propagate to the caller.
+        /// </summary>
+        public IReadOnlyList<WordParseResult> ParseWords(
+            IEnumerable<string> words,
+            int maxWordConcurrency = 4,
+            bool guessRoot = false,
+            Action<int, string, WordParseResult> progress = null
+        )
+        {
+            if (words == null)
+                throw new ArgumentNullException(nameof(words));
+            if (maxWordConcurrency < 1)
+                throw new ArgumentOutOfRangeException(nameof(maxWordConcurrency));
+            if (MaxDegreeOfParallelism != 1)
+            {
+                throw new InvalidOperationException(
+                    "ParseWords requires a Morpher constructed with maxDegreeOfParallelism: 1."
+                );
+            }
+
+            string[] inputs = words.ToArray();
+            var results = new WordParseResult[inputs.Length];
+            void Parse(int index)
+            {
+                object trace = null;
+                progress?.Invoke(index, inputs[index], null);
+                try
+                {
+                    var analyses = ParseWord(inputs[index], out trace, guessRoot).ToList().AsReadOnly();
+                    results[index] = new WordParseResult(inputs[index], analyses, trace, null);
+                }
+                catch (Exception error)
+                {
+                    results[index] = new WordParseResult(inputs[index], Array.Empty<Word>(), trace, error);
+                }
+                progress?.Invoke(index, inputs[index], results[index]);
+            }
+
+            if (_traceManager.IsTracing || maxWordConcurrency == 1)
+            {
+                for (int i = 0; i < inputs.Length; i++)
+                    Parse(i);
+            }
+            else
+            {
+                Parallel.For(
+                    0,
+                    inputs.Length,
+                    new ParallelOptions { MaxDegreeOfParallelism = maxWordConcurrency },
+                    Parse
+                );
+            }
+
+            return Array.AsReadOnly(results);
         }
 
         /// <summary>
@@ -436,30 +523,49 @@ namespace SIL.Machine.Morphology.HermitCrab
             return matches.Distinct(FreezableEqualityComparer<Word>.Default);
         }
 
+        internal IEnumerable<Word> SynthesizeWord(Word input)
+        {
+            return _synthesisRule.Apply(input).Where(IsWordValid);
+        }
+
         internal IEnumerable<RootAllomorph> SearchRootAllomorphs(Stratum stratum, Shape shape)
         {
             RootAllomorphTrie alloSearcher = _allomorphTries[stratum];
             return alloSearcher.Search(shape).Distinct();
         }
 
-        private IEnumerable<Word> LexicalLookup(Word input)
+        internal IEnumerable<Word> LexicalLookup(Word input)
         {
             if (_traceManager.IsTracing)
                 _traceManager.LexicalLookup(input.Stratum, input);
-            foreach (
-                LexEntry entry in SearchRootAllomorphs(input.Stratum, input.Shape)
-                    .Select(allo => allo.Morpheme)
-                    .Cast<LexEntry>()
-                    .Where(LexEntrySelector)
-                    .Distinct()
-            )
+            foreach (RootAllomorph allomorph in SearchRootAllomorphs(input.Stratum, input.Shape))
             {
-                foreach (RootAllomorph allomorph in entry.Allomorphs)
+                if ((allomorph.Morpheme is LexEntry entry) && LexEntrySelector(entry))
                 {
+                    if (
+                        entry.SyntacticFeatureStruct != null
+                        && !entry.SyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct)
+                    )
+                    { // Lookup fails because syntactic features don't match.
+                        if (_traceManager.IsTracing)
+                        {
+                            Word traceWord = input.Clone();
+                            traceWord.RootAllomorph = allomorph;
+                            traceWord.Freeze();
+                            _traceManager.SynthesizeWord(_lang, traceWord);
+                            // the Failed trace must follow a SynthesizeWord trace
+                            // to avoid problems in the next iteration of the loop.
+                            _traceManager.Failed(
+                                Language,
+                                traceWord,
+                                FailureReason.LexicalLookupFeatures,
+                                allomorph,
+                                input.SyntacticFeatureStruct
+                            );
+                        }
+                        continue;
+                    }
                     Word newWord = input.Clone();
-                    // Synthesis never reads the memo, and keeping the reference would pin both tables for
-                    // as long as the caller holds the returned words.
-                    newWord.AnalysisScope = null;
                     newWord.RootAllomorph = allomorph;
                     if (_traceManager.IsTracing)
                         _traceManager.SynthesizeWord(_lang, newWord);
@@ -512,8 +618,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                             SyntacticFeatureStruct = input.SyntacticFeatureStruct,
                             Stratum = input.Stratum,
                         };
-                        // Don't update Morpher.IsPartial even if lexEntry.IsPartial is true.
-                        // We don't mind if final templates are filtered during analysis in this case.
                         lexEntry.Allomorphs.Add(root);
                         // Point the root allomorph to the lexical pattern in FieldWorks.
                         if (lexicalPattern.Morpheme != null)
@@ -534,8 +638,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                         }
                         // Create a new word that uses the root allomorph.
                         Word newWord = input.Clone();
-                        // Synthesis never reads the memo; see LexicalLookup.
-                        newWord.AnalysisScope = null;
                         newWord.RootAllomorph = root;
                         if (_traceManager.IsTracing)
                             _traceManager.SynthesizeWord(_lang, newWord);
@@ -811,6 +913,21 @@ namespace SIL.Machine.Morphology.HermitCrab
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Does this stratum block final templates?
+        /// </summary>
+        internal bool IsBlockingStratum(Stratum stratum)
+        {
+            if (stratum.PhonologicalRules.Count > 0)
+                return true;
+            for (int i = _lang.Strata.Count - 1; i >= 0; i--)
+            {
+                if (RuleSelector(_lang.Strata[i]))
+                    return stratum == _lang.Strata[i];
+            }
+            return false;
         }
     }
 }

@@ -42,7 +42,8 @@ namespace SIL.Machine.Rules
             {
                 MaxDegreeOfParallelism = MaxDegreeOfParallelism >= 1 ? MaxDegreeOfParallelism : -1,
             };
-            var output = new ConcurrentStack<TData>();
+            // A set, so MaxAlternatives counts distinct results as the sequential cascade does.
+            var output = new ConcurrentDictionary<TData, byte>(Comparer);
             var from = new ConcurrentStack<Tuple<TData, HashSet<int>>>();
             from.Push(Tuple.Create(input, !MultipleApplication ? new HashSet<int>() : null));
             var to = new ConcurrentStack<Tuple<TData, HashSet<int>>>();
@@ -65,8 +66,11 @@ namespace SIL.Machine.Rules
                                     TData[] results = ApplyRule(Rules[i], i, work.Item1).ToArray();
                                     if (results.Length > 0)
                                     {
-                                        output.PushRange(results);
-                                        CheckMaxAlternatives(Interlocked.Add(ref alternativeCount, results.Length));
+                                        foreach (TData result in results)
+                                        {
+                                            if (output.TryAdd(result, 0))
+                                                CheckMaxAlternatives(Interlocked.Increment(ref alternativeCount));
+                                        }
 
                                         Tuple<TData, HashSet<int>>[] workItems = results
                                             .Where(res => !Comparer.Equals(work.Item1, res))
@@ -97,7 +101,7 @@ namespace SIL.Machine.Rules
                 to = temp;
             }
 
-            return output.Distinct(Comparer);
+            return output.Keys;
         }
     }
 }

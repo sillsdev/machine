@@ -76,8 +76,7 @@ public class MorpherTests : HermitCrabTestBase
         );
         Morphophonemic.MorphologicalRules.Add(gSuffix);
 
-        var morpher = new Morpher(TraceManager, Language);
-        morpher.MaxAlternatives = 1;
+        var morpher = new Morpher(TraceManager, Language, 0, 1);
 
         Assert.Throws<MaxAlternativesExceededException>(() => morpher.AnalyzeWord("sagd"));
     }
@@ -536,8 +535,7 @@ public class MorpherTests : HermitCrabTestBase
         return shape.GetNodes(shape.Range).ToList();
     }
 
-    // A compounding rule and a commuting PAST prefix as peers in one Unordered cascade, so an equal
-    // AnalysisStateKey can be re-arrived at by different unapplication orders.
+    // Keeps compound and affix unapplication on the same unordered cascade.
     private void AddCompoundingAndPrefixRules()
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
@@ -577,60 +575,21 @@ public class MorpherTests : HermitCrabTestBase
     [Test]
     public void ParseWord_SingleThreaded_MatchesParallel_WithCompounding()
     {
-        // MaxDegreeOfParallelism must be a pure no-op on results, independent of the memo it gates.
+        // Both rule types exercise the sequential and parallel cascade paths.
         AddCompoundingAndPrefixRules();
 
-        var parallel = new Morpher(TraceManager, Language);
-        var singleThreaded = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
-
-        foreach (string word in new[] { "pʰutdidat", "pʰutdat" })
-        {
-            List<Word> singleResult = singleThreaded.ParseWord(word).ToList();
-            List<Word> parallelResult = parallel.ParseWord(word).ToList();
-            Assert.That(
-                singleResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal),
-                Is.EqualTo(parallelResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal)),
-                $"single-threaded parse of '{word}' must match the parallel parse"
-            );
-        }
+        string[] words = { "pʰutdidat", "pʰutdat" };
+        AssertSingleThreadedMatchesParallel(words);
+        // Absolute, so a bug that empties both sides identically is still caught. pʰutdidat has no parse here,
+        // so only pʰutdat (two compound analyses) is compared non-trivially.
+        Assert.That(new Morpher(TraceManager, Language).ParseWord("pʰutdat"), Is.Not.Empty);
     }
 
     [Test]
-    public void ParseWord_MemoOnMatchesMemoOff_HitCounterGuarded_WithCompounding()
+    public void ParseWord_SingleThreaded_MatchesParallel_ForSelfOpaquingSimultaneousEpenthesis()
     {
-        // The standing acceptance gate: analysis-set equality between the memoized sequential cascade and
-        // the unmemoized parallel default, kept non-vacuous by the hit-counter assertion at the end.
-        AddCompoundingAndPrefixRules();
-
-        var memoOff = new Morpher(TraceManager, Language);
-        var memoOn = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
-
-        foreach (string word in new[] { "pʰutdidat", "pʰutdat" })
-        {
-            List<Word> onResult = memoOn.ParseWord(word).ToList();
-            List<Word> offResult = memoOff.ParseWord(word).ToList();
-            Assert.That(
-                onResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal),
-                Is.EqualTo(offResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal)),
-                $"memo-on parse of '{word}' must be analysis-set identical to memo-off"
-            );
-        }
-        TestContext.Out.WriteLine($"positive hits: {memoOn.MemoHits}, nogood hits: {memoOn.NogoodHits}");
-        Assert.That(
-            memoOn.MemoHits + memoOn.NogoodHits,
-            Is.GreaterThan(0),
-            "the memo must actually have hit (positive or nogood) at least once on this grammar -- "
-                + "otherwise this test cannot distinguish a working memo from a no-op one"
-        );
-    }
-
-    [Test]
-    public void ParseWord_MemoOnMatchesMemoOff_ForSelfOpaquingSimultaneousEpenthesis()
-    {
-        // Guards the memo against a Simultaneous-mode epenthesis rule, which AnalysisRewriteRule compiles
-        // as ReapplyType.SelfOpaquing -- a repeat-until-fixpoint loop, and the one rule shape whose
-        // interaction with the nogood cache has a suspected (never reproduced) bug elsewhere. Known gap:
-        // no available fixture drives the loop past a single iteration, so two or more remains untested.
+        // AnalysisRewriteRule compiles a Simultaneous-mode epenthesis rule as ReapplyType.SelfOpaquing, a
+        // repeat-until-fixpoint loop. No fixture here drives the loop past one iteration.
         var highVowel = FeatureStruct
             .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
@@ -658,189 +617,497 @@ public class MorpherTests : HermitCrabTestBase
             }
         );
 
-        var memoOff = new Morpher(TraceManager, Language);
-        var memoOn = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
-
-        foreach (string word in new[] { "buibui", "bubu", "bibu" })
-        {
-            List<Word> onResult = memoOn.ParseWord(word).ToList();
-            List<Word> offResult = memoOff.ParseWord(word).ToList();
-            Assert.That(
-                onResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal),
-                Is.EqualTo(offResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal)),
-                $"memo-on parse of '{word}' must be analysis-set identical to memo-off"
-            );
-        }
-        // Pinned as an absolute value, not just on-vs-off, so a bug affecting both sides identically
-        // (both wrongly returning empty, say) is still caught.
-        Assert.That(memoOn.ParseWord("buibui").Count(), Is.EqualTo(1));
+        AssertSingleThreadedMatchesParallel("buibui", "bubu", "bibu");
+        // Absolute, so a bug that empties both sides identically is still caught.
+        Assert.That(new Morpher(TraceManager, Language).ParseWord("buibui").Count(), Is.EqualTo(1));
     }
 
     [Test]
-    public void ParseWord_MemoOnMatchesMemoOff_HitCounterGuarded_WithAffixTemplate()
+    public void ParseWord_SingleThreaded_MatchesParallel_WithAffixTemplate()
     {
-        // Two commuting prefixes, not one: a single rule unapplies only once, so no key would ever be
-        // re-arrived at and the template memo would never fire. Unapplying di-then-gu or gu-then-di
-        // reaches the same key by a different trail order, which is what makes the second one replay.
-        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        AddAffixTemplateAndCommutingPrefixes();
 
-        var edSuffix = new AffixProcessRule
-        {
-            Id = "TPAST",
-            Name = "template_ed_suffix",
-            Gloss = "PAST",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-        };
-        edSuffix.Allomorphs.Add(
-            new AffixProcessAllomorph
-            {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
-            }
-        );
-        var verbTemplate = new AffixTemplate
-        {
-            Name = "verb_template",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-        };
-        verbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix) { Optional = true });
-        Morphophonemic.AffixTemplates.Add(verbTemplate);
-
-        var diPrefix = new AffixProcessRule
-        {
-            Id = "TDI",
-            Name = "template_di_prefix",
-            Gloss = "DI",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-        };
-        diPrefix.Allomorphs.Add(
-            new AffixProcessAllomorph
-            {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new InsertSegments(Table3, "di+"), new CopyFromInput("1") },
-            }
-        );
-        Morphophonemic.MorphologicalRules.Add(diPrefix);
-
-        var guPrefix = new AffixProcessRule
-        {
-            Id = "TGU",
-            Name = "template_gu_prefix",
-            Gloss = "GU",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-        };
-        guPrefix.Allomorphs.Add(
-            new AffixProcessAllomorph
-            {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new InsertSegments(Table3, "gu+"), new CopyFromInput("1") },
-            }
-        );
-        Morphophonemic.MorphologicalRules.Add(guPrefix);
-
-        var memoOff = new Morpher(TraceManager, Language);
-        var memoOn = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
-
-        foreach (string word in new[] { "digusagd", "disagd", "gusagd", "sagd", "sag" })
-        {
-            List<Word> onResult = memoOn.ParseWord(word).ToList();
-            List<Word> offResult = memoOff.ParseWord(word).ToList();
-            Assert.That(
-                onResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal),
-                Is.EqualTo(offResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal)),
-                $"memo-on parse of '{word}' must be analysis-set identical to memo-off"
-            );
-        }
-        TestContext.Out.WriteLine(
-            $"template positive hits: {memoOn.TemplateMemoHits}, "
-                + $"template nogood hits: {memoOn.TemplateNogoodHits}"
-        );
-        // The graft's effect on final signatures is invisible through synthesis, which re-derives rule
-        // orderings anyway, so this counter -- not the equality assertions above -- is what proves the
-        // memoized path was exercised at all.
-        Assert.That(
-            memoOn.TemplateMemoHits + memoOn.TemplateNogoodHits,
-            Is.GreaterThan(0),
-            "the template memo must actually have hit (positive or nogood) at least once on this "
-                + "grammar -- otherwise this test cannot distinguish a working memo from a no-op one"
-        );
+        AssertSingleThreadedMatchesParallel("digusagd", "disagd", "gusagd", "sagd", "sag");
+        Assert.That(new Morpher(TraceManager, Language).ParseWord("digusagd"), Is.Not.Empty);
     }
 
     [Test]
-    public void ParseWord_MemoOnMatchesMemoOff_OnLinearStratumWithAffixTemplate()
+    public void ParseWord_SingleThreaded_MatchesParallel_OnLinearStratumWithAffixTemplate()
     {
-        // Every other memo test runs on Unordered strata, leaving Linear -- MorphologicalRuleOrder's
-        // default -- with no end-to-end equivalence gate. AnalysisStratumRuleTests covers the exclusion
-        // that keeps the memo off this path; this covers the results it produces.
-        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
-
-        var edSuffix = new AffixProcessRule
-        {
-            Id = "TPAST",
-            Name = "template_ed_suffix",
-            Gloss = "PAST",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-        };
-        edSuffix.Allomorphs.Add(
-            new AffixProcessAllomorph
-            {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
-            }
-        );
-        var verbTemplate = new AffixTemplate
-        {
-            Name = "verb_template",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-        };
-        verbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix) { Optional = true });
-        Morphophonemic.AffixTemplates.Add(verbTemplate);
-
-        var diPrefix = new AffixProcessRule
-        {
-            Id = "TDI",
-            Name = "template_di_prefix",
-            Gloss = "DI",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-        };
-        diPrefix.Allomorphs.Add(
-            new AffixProcessAllomorph
-            {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new InsertSegments(Table3, "di+"), new CopyFromInput("1") },
-            }
-        );
-        Morphophonemic.MorphologicalRules.Add(diPrefix);
-
-        var guPrefix = new AffixProcessRule
-        {
-            Id = "TGU",
-            Name = "template_gu_prefix",
-            Gloss = "GU",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-        };
-        guPrefix.Allomorphs.Add(
-            new AffixProcessAllomorph
-            {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new InsertSegments(Table3, "gu+"), new CopyFromInput("1") },
-            }
-        );
-        Morphophonemic.MorphologicalRules.Add(guPrefix);
-
+        AddAffixTemplateAndCommutingPrefixes();
         SetRuleOrder(MorphologicalRuleOrder.Linear);
-        var memoOff = new Morpher(TraceManager, Language);
-        var memoOn = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
 
-        foreach (string word in new[] { "digusagd", "disagd", "gusagd", "sagd", "sag" })
+        AssertSingleThreadedMatchesParallel("digusagd", "gudisagd", "disagd", "gusagd", "sagd", "sag");
+        // With the Linear order the di and gu prefixes apply only in rule order, so gudisagd parses and
+        // digusagd has no parse. The parity check on digusagd is only an empty-equals-empty comparison.
+        var parallel = new Morpher(TraceManager, Language);
+        Assert.That(parallel.ParseWord("digusagd"), Is.Empty);
+        foreach (string word in new[] { "gudisagd", "disagd", "gusagd", "sagd", "sag" })
+            Assert.That(parallel.ParseWord(word), Is.Not.Empty, $"'{word}' must parse");
+    }
+
+    [TestCase(MorphologicalRuleOrder.Unordered, 0)]
+    [TestCase(MorphologicalRuleOrder.Unordered, 100)]
+    [TestCase(MorphologicalRuleOrder.Linear, 0)]
+    [TestCase(MorphologicalRuleOrder.Linear, 100)]
+    public void ParseWords_PreservesInputOrderAndSingleWordAnalysisSets(MorphologicalRuleOrder ruleOrder, int limit)
+    {
+        AddAffixTemplateAndCommutingPrefixes();
+        SetRuleOrder(ruleOrder);
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1, maxAlternatives: limit);
+        string[] words = { "gudisagd", "sag", "digusagd", "sagt", "disagd", "sag" };
+        string[][] expected = words
+            .Select(w => morpher.ParseWord(w).Select(BatchAnalysisSignature).ToArray())
+            .ToArray();
+
+        foreach (int concurrency in new[] { 1, 4 })
         {
-            List<Word> onResult = memoOn.ParseWord(word).ToList();
-            List<Word> offResult = memoOff.ParseWord(word).ToList();
+            IReadOnlyList<WordParseResult> results = morpher.ParseWords(words, concurrency);
+
+            Assert.That(results.Select(r => r.SurfaceForm), Is.EqualTo(words));
+            for (int i = 0; i < words.Length; i++)
+            {
+                Assert.That(results[i].Error, Is.Null);
+                Assert.That(results[i].Trace, Is.Null);
+                Assert.That(results[i].Analyses.Select(BatchAnalysisSignature), Is.EquivalentTo(expected[i]));
+            }
+            Assert.That(results[1].Analyses, Is.Not.Empty);
+        }
+    }
+
+    [Test]
+    public void MaxAlternatives_HasNoSetter()
+    {
+        Assert.That(typeof(Morpher).GetProperty(nameof(Morpher.MaxAlternatives))!.SetMethod, Is.Null);
+    }
+
+    [TestCase(MorphologicalRuleOrder.Unordered, 0)]
+    [TestCase(MorphologicalRuleOrder.Unordered, 1)]
+    [TestCase(MorphologicalRuleOrder.Unordered, 2)]
+    [TestCase(MorphologicalRuleOrder.Linear, 0)]
+    [TestCase(MorphologicalRuleOrder.Linear, 1)]
+    [TestCase(MorphologicalRuleOrder.Linear, 2)]
+    public void ParseWord_MaxAlternativesIsFixedForEachMorpher(MorphologicalRuleOrder ruleOrder, int degree)
+    {
+        AddAffixTemplateAndCommutingPrefixes();
+        SetRuleOrder(ruleOrder);
+        var morpher = new Morpher(TraceManager, Language, degree);
+        string[] expected = morpher.ParseWord("gudisagd").Select(BatchAnalysisSignature).ToArray();
+        Assert.That(expected, Is.Not.Empty);
+
+        foreach (int limit in new[] { 1, 100, 1, 0 })
+        {
+            morpher = new Morpher(TraceManager, Language, degree, limit);
+            Assert.That(morpher.MaxAlternatives, Is.EqualTo(limit));
+            if (limit == 1)
+                Assert.Throws<MaxAlternativesExceededException>(() => morpher.ParseWord("gudisagd"));
+            else
+                Assert.That(morpher.ParseWord("gudisagd").Select(BatchAnalysisSignature), Is.EquivalentTo(expected));
+        }
+    }
+
+    [Test]
+    public void CompileAnalysisRule_DirectStratumInvocationRemainsUncapped()
+    {
+        AddAffixTemplateAndCommutingPrefixes();
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1, maxAlternatives: 1);
+        IRule<Word, ShapeNode> rule = Morphophonemic.CompileAnalysisRule(morpher);
+        var input = new Word(Morphophonemic, Table3.Segment("gudisagd"));
+        input.Freeze();
+
+        Assert.That(rule.Apply(input), Is.Not.Empty);
+        Assert.Throws<MaxAlternativesExceededException>(() => morpher.ParseWord("gudisagd"));
+    }
+
+    [Test]
+    public void ParseWords_MatchesSingleWordAnalysisSetsWithCompounding()
+    {
+        AddCompoundingAndPrefixRules();
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        string[] words = { "pʰutdidat", "pʰutdat", "pʰutdat" };
+
+        foreach (int concurrency in new[] { 1, 4 })
+        {
+            IReadOnlyList<WordParseResult> results = morpher.ParseWords(words, concurrency);
+            Assert.That(results.Select(r => r.SurfaceForm), Is.EqualTo(words));
+            for (int i = 0; i < words.Length; i++)
+            {
+                Assert.That(results[i].Error, Is.Null);
+                Assert.That(
+                    results[i].Analyses.Select(BatchAnalysisSignature),
+                    Is.EquivalentTo(morpher.ParseWord(words[i]).Select(BatchAnalysisSignature))
+                );
+            }
+            Assert.That(results[1].Analyses, Has.Count.EqualTo(2));
+        }
+    }
+
+    [TestCase(2)]
+    [TestCase(4)]
+    public void ParseWords_UsesBoundedWordConcurrency(int concurrency)
+    {
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        using var entered = new CountdownEvent(concurrency);
+        int calls = 0;
+        int active = 0;
+        int peak = 0;
+        object sync = new();
+        morpher.LexEntrySelector = _ =>
+        {
+            int current = Interlocked.Increment(ref active);
+            try
+            {
+                lock (sync)
+                    peak = Math.Max(peak, current);
+                if (Interlocked.Increment(ref calls) <= concurrency)
+                    entered.Signal();
+                if (!entered.Wait(TimeSpan.FromSeconds(10)))
+                    throw new TimeoutException("The requested word workers did not enter lexical lookup.");
+                return true;
+            }
+            finally
+            {
+                Interlocked.Decrement(ref active);
+            }
+        };
+        string[] words = Enumerable.Repeat("sag", 8).ToArray();
+
+        IReadOnlyList<WordParseResult> results =
+            concurrency == 4 ? morpher.ParseWords(words) : morpher.ParseWords(words, concurrency);
+
+        Assert.That(results.Select(r => r.Error), Is.All.Null);
+        Assert.That(results.Select(r => r.Analyses.Count), Is.All.GreaterThan(0));
+        Assert.That(peak, Is.EqualTo(concurrency));
+    }
+
+    [TestCase(1)]
+    [TestCase(2)]
+    [TestCase(4)]
+    public void ParseWords_ReportsProgressInOrderWithinConcurrencyLimit(int concurrency)
+    {
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        string[] words = { "sag", "sag$", "sagt", "sag", "sag", "sag" };
+        var events = new List<(int Index, string Word, WordParseResult Result)>();
+        object sync = new();
+        int active = 0;
+        int peak = 0;
+        IReadOnlyList<WordParseResult> results = morpher.ParseWords(
+            words,
+            concurrency,
+            progress: (index, word, result) =>
+            {
+                lock (sync)
+                {
+                    events.Add((index, word, result));
+                    active += result == null ? 1 : -1;
+                    peak = Math.Max(peak, active);
+                }
+            }
+        );
+
+        Assert.That(events, Has.Count.EqualTo(words.Length * 2));
+        Assert.That(active, Is.Zero);
+        Assert.That(peak, Is.InRange(1, concurrency));
+        for (int i = 0; i < words.Length; i++)
+        {
+            var perWord = events.Where(e => e.Index == i).ToArray();
+            Assert.That(perWord, Has.Length.EqualTo(2));
+            Assert.That(perWord.Select(e => e.Word), Is.EqualTo(new[] { words[i], words[i] }));
+            Assert.That(perWord[0].Result, Is.Null);
+            Assert.That(perWord[1].Result, Is.SameAs(results[i]));
+        }
+        Assert.That(results[1].Error, Is.TypeOf<InvalidShapeException>());
+    }
+
+    [TestCase(1)]
+    [TestCase(4)]
+    public void ParseWords_PropagatesProgressErrors(int concurrency)
+    {
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        string[] words = { "sag", "sag", "sag", "sag" };
+        Exception error = Assert.Catch(() =>
+            morpher.ParseWords(
+                words,
+                concurrency,
+                progress: (index, word, result) =>
+                {
+                    if (index == 2 && result != null)
+                        throw new InvalidOperationException("finish");
+                }
+            )
+        );
+
+        if (concurrency > 1)
+            error = ((AggregateException)error).InnerExceptions.Single();
+        Assert.That(error, Is.TypeOf<InvalidOperationException>());
+        Assert.That(error.Message, Is.EqualTo("finish"));
+    }
+
+    [TestCase(1)]
+    [TestCase(4)]
+    public void ParseWords_CapturesInvalidShapesWithoutLosingOtherResults(int concurrency)
+    {
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        string[] words = { "sag", "sag$", "sagt", "sag" };
+
+        IReadOnlyList<WordParseResult> results = morpher.ParseWords(words, concurrency);
+
+        Assert.That(results.Select(r => r.SurfaceForm), Is.EqualTo(words));
+        Assert.That(results[1].Error, Is.TypeOf<InvalidShapeException>());
+        Assert.That(results[1].Analyses, Is.Empty);
+        Assert.That(results[1].Trace, Is.Null);
+        Assert.That(results[2].Error, Is.Null);
+        Assert.That(results[2].Analyses, Is.Empty);
+        foreach (int index in new[] { 0, 3 })
+        {
+            Assert.That(results[index].Error, Is.Null);
+            Assert.That(results[index].Analyses, Is.Not.Empty);
+        }
+    }
+
+    [TestCase(1)]
+    [TestCase(4)]
+    public void ParseWords_CapturesMaxAlternativesPerWord(int concurrency)
+    {
+        AddAffixTemplateAndCommutingPrefixes();
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1, maxAlternatives: 1);
+
+        IReadOnlyList<WordParseResult> results = morpher.ParseWords(
+            new[] { "gudisagd", "sag", "digusagd", "sag" },
+            concurrency
+        );
+
+        foreach (int index in new[] { 0, 2 })
+        {
+            Assert.That(results[index].Error, Is.TypeOf<MaxAlternativesExceededException>());
+            Assert.That(results[index].Analyses, Is.Empty);
+        }
+        foreach (int index in new[] { 1, 3 })
+        {
+            Assert.That(results[index].Error, Is.Null);
+            Assert.That(results[index].Analyses, Is.Not.Empty);
+        }
+
+        Assert.That(morpher.MaxAlternatives, Is.EqualTo(1));
+        Assert.That(
+            morpher.ParseWords(new[] { "gudisagd" }, concurrency)[0].Error,
+            Is.TypeOf<MaxAlternativesExceededException>()
+        );
+        var unlimited = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        Assert.That(unlimited.ParseWords(new[] { "gudisagd" }, concurrency)[0].Analyses, Is.Not.Empty);
+    }
+
+    [TestCase(-1)]
+    [TestCase(0)]
+    [TestCase(2)]
+    public void ParseWords_RequiresSequentialMorpher(int degree)
+    {
+        var morpher = new Morpher(TraceManager, Language, degree);
+
+        var error = Assert.Throws<InvalidOperationException>(() => morpher.ParseWords(new[] { "sag" }));
+
+        Assert.That(error!.Message, Does.Contain("maxDegreeOfParallelism: 1"));
+        Assert.That(morpher.ParseWord("sag"), Is.Not.Empty);
+    }
+
+    [Test]
+    public void ParseWords_ValidatesBatchArguments()
+    {
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+
+        Assert.Throws<ArgumentNullException>(() => morpher.ParseWords(null!));
+        Assert.Throws<ArgumentOutOfRangeException>(() => morpher.ParseWords(new[] { "sag" }, 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => morpher.ParseWords(new[] { "sag" }, -1));
+        Assert.That(morpher.ParseWords(Array.Empty<string>()), Is.Empty);
+    }
+
+    [Test]
+    public void ParseWords_EnumeratesInputOnceAndPropagatesEnumerationErrors()
+    {
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+        int enumerations = 0;
+        IEnumerable<string> Inputs()
+        {
+            enumerations++;
+            yield return "sag";
+            yield return "sag";
+        }
+        var error = new InvalidOperationException("Input enumeration failed.");
+        IEnumerable<string> BrokenInputs()
+        {
+            yield return "sag";
+            throw error;
+        }
+
+        Assert.That(morpher.ParseWords(Inputs()), Has.Count.EqualTo(2));
+        Assert.That(enumerations, Is.EqualTo(1));
+        Assert.That(
+            Assert.Throws<InvalidOperationException>(() => morpher.ParseWords(BrokenInputs())),
+            Is.SameAs(error)
+        );
+    }
+
+    [Test]
+    public void ParseWords_GuessesRootsWhenRequested()
+    {
+        var naturalClass = new NaturalClass(new FeatureStruct()) { Name = "BatchAny" };
+        Morphophonemic.CharacterDefinitionTable.AddNaturalClass(naturalClass);
+        LexEntry pattern = AddEntry("batch_pattern", new FeatureStruct(), Morphophonemic, "[BatchAny]*");
+        try
+        {
+            var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+            string[] words = { "gag", "sag", "gug" };
+            Assert.That(morpher.ParseWords(words)[0].Analyses, Is.Empty);
+
+            foreach (int concurrency in new[] { 1, 4 })
+            {
+                IReadOnlyList<WordParseResult> results = morpher.ParseWords(words, concurrency, guessRoot: true);
+                for (int i = 0; i < words.Length; i++)
+                {
+                    Assert.That(results[i].Error, Is.Null);
+                    Assert.That(results[i].Analyses, Is.Not.Empty);
+                    Assert.That(
+                        results[i].Analyses.Select(BatchAnalysisSignature),
+                        Is.EquivalentTo(morpher.ParseWord(words[i], out _, true).Select(BatchAnalysisSignature))
+                    );
+                }
+                Assert.That(results[0].Analyses.All(w => w.RootAllomorph.Guessed), Is.True);
+            }
+        }
+        finally
+        {
+            Morphophonemic.Entries.Remove(pattern);
+            Entries.Remove("batch_pattern");
+        }
+    }
+
+    [Test]
+    public void ParseWords_TracingRunsOnCallingThreadAndRetainsPerWordTraces()
+    {
+        AddAffixTemplateAndCommutingPrefixes();
+        TraceManager.IsTracing = true;
+        try
+        {
+            var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+            var error = new InvalidOperationException("First parse failed.");
+            int callingThread = Environment.CurrentManagedThreadId;
+            int offThreadCalls = 0;
+            int calls = 0;
+            morpher.RuleSelector = _ =>
+            {
+                if (Environment.CurrentManagedThreadId != callingThread)
+                    Interlocked.Increment(ref offThreadCalls);
+                if (Interlocked.Increment(ref calls) == 1)
+                    throw error;
+                return true;
+            };
+
+            IReadOnlyList<WordParseResult> results = morpher.ParseWords(new[] { "sag", "digusagd", "sag" }, 4);
+
+            Assert.That(offThreadCalls, Is.Zero);
+            Assert.That(results[0].Error, Is.SameAs(error));
+            Assert.That(results[0].Analyses, Is.Empty);
+            Assert.That(results.Select(r => r.Trace), Is.All.InstanceOf<Trace>());
+            Assert.That(results.Select(r => r.Trace).Distinct().Count(), Is.EqualTo(3));
+            foreach (int index in new[] { 1, 2 })
+            {
+                Assert.That(results[index].Error, Is.Null);
+                Assert.That(results[index].Analyses, Is.Not.Empty);
+                Assert.That(
+                    results[index].Analyses.Select(BatchAnalysisSignature),
+                    Is.EquivalentTo(morpher.ParseWord(results[index].SurfaceForm).Select(BatchAnalysisSignature))
+                );
+            }
+        }
+        finally
+        {
+            TraceManager.IsTracing = false;
+        }
+    }
+
+    private string BatchAnalysisSignature(Word word)
+    {
+        static string AllomorphKey(Allomorph allomorph) => $"{allomorph.Morpheme.Id}:{allomorph.Index}";
+        return string.Join(
+            "|",
+            new[]
+            {
+                AllomorphKey(word.RootAllomorph),
+                string.Join(",", word.MorphologicalRules.Select(r => r.Name)),
+                string.Join(",", word.Allomorphs.Select(AllomorphKey).OrderBy(s => s, StringComparer.Ordinal)),
+                string.Join(",", word.AllomorphsInMorphOrder.Select(AllomorphKey)),
+                word.Shape.ToString(Language.SurfaceStratum.CharacterDefinitionTable, false),
+                word.SyntacticFeatureStruct.ToString(),
+                word.RealizationalFeatureStruct.ToString(),
+            }
+        );
+    }
+
+    private void AssertSingleThreadedMatchesParallel(params string[] words)
+    {
+        var parallel = new Morpher(TraceManager, Language);
+        var singleThreaded = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+
+        foreach (string word in words)
+        {
+            List<Word> singleResult = singleThreaded.ParseWord(word).ToList();
+            List<Word> parallelResult = parallel.ParseWord(word).ToList();
             Assert.That(
-                onResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal),
-                Is.EqualTo(offResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal)),
-                $"Linear-stratum parse of '{word}' must be analysis-set identical with and without the memo"
+                singleResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal),
+                Is.EqualTo(parallelResult.Select(WordAnalysisSignature).OrderBy(s => s, StringComparer.Ordinal)),
+                $"single-threaded parse of '{word}' must match the parallel parse"
             );
+        }
+    }
+
+    // Two prefixes that commute on an Unordered stratum, so one word is reached by more than one unapplication
+    // order. On a Linear stratum they apply only in rule order, so only gudisagd parses.
+    private void AddAffixTemplateAndCommutingPrefixes()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var verb = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value;
+
+        var edSuffix = new AffixProcessRule
+        {
+            Id = "TPAST",
+            Name = "template_ed_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = verb,
+        };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
+            }
+        );
+        var verbTemplate = new AffixTemplate { Name = "verb_template", RequiredSyntacticFeatureStruct = verb };
+        verbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix) { Optional = true });
+        Morphophonemic.AffixTemplates.Add(verbTemplate);
+
+        foreach (
+            (string id, string name, string gloss, string prefix) in new[]
+            {
+                ("TDI", "template_di_prefix", "DI", "di+"),
+                ("TGU", "template_gu_prefix", "GU", "gu+"),
+            }
+        )
+        {
+            var prefixRule = new AffixProcessRule
+            {
+                Id = id,
+                Name = name,
+                Gloss = gloss,
+                RequiredSyntacticFeatureStruct = verb,
+            };
+            prefixRule.Allomorphs.Add(
+                new AffixProcessAllomorph
+                {
+                    Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                    Rhs = { new InsertSegments(Table3, prefix), new CopyFromInput("1") },
+                }
+            );
+            Morphophonemic.MorphologicalRules.Add(prefixRule);
         }
     }
 
@@ -863,6 +1130,10 @@ public class MorpherTests : HermitCrabTestBase
                 $"a parallelism cap must not change the analysis set for '{word}'"
             );
         }
+
+        // Absolute, so a bug that empties both capped and unbounded results identically is still caught.
+        // pʰutdidat has no parse here, so only pʰutdat (two analyses) is compared non-trivially.
+        Assert.That(unbounded.ParseWord("pʰutdat"), Is.Not.Empty);
     }
 
     [Test]
@@ -901,11 +1172,91 @@ public class MorpherTests : HermitCrabTestBase
         });
     }
 
-    // What the memo gates compare, instead of object equality: a replayed Word is not field-for-field
-    // identical to a freshly-computed one. MorphemesInApplicationOrder is the load-bearing part, since it
-    // walks the trail and non-heads that ReplayOnto rewrites; AllomorphsInMorphOrder alone would miss a
-    // broken graft, walking only Shape annotations that ReplayOnto never touches. The root distinguishes
-    // analyses that share a morpheme sequence but not a lexical entry.
+    [Test]
+    public void LexicalLookup_OnlyUsesAllomorphsInSearchRootAllomorphs()
+    {
+        LexEntry entry = AddEntry("lookup", FeatureStruct.New().Value, Morphophonemic, "pup");
+        var sibling = new RootAllomorph(new Segments(Table3, "fuf", true));
+        entry.Allomorphs.Add(sibling);
+        var morpher = new Morpher(TraceManager, Language);
+
+        var input = new Word(Morphophonemic, Table3.Segment("fuf"));
+        Word[] results = morpher.LexicalLookup(input).ToArray();
+
+        Assert.That(results, Has.Length.EqualTo(1));
+        Assert.That(results[0].RootAllomorph, Is.SameAs(sibling));
+    }
+
+    [Test]
+    public void ParseWord_OnlyUsesAllomorphsInSearchRootAllomorphs()
+    {
+        var highFrontUnrndVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Symbol("low-")
+            .Symbol("back-")
+            .Symbol("round-")
+            .Value;
+        var highVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Value;
+        var cons = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons+")
+            .Value;
+
+        var rewriteRule = new RewriteRule
+        {
+            Name = "rewriteRule",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value,
+        };
+        Allophonic.PhonologicalRules.Add(rewriteRule);
+        rewriteRule.Subrules.Add(
+            new RewriteSubrule { LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value }
+        );
+
+        LexEntry entry = AddEntry("BU", FeatureStruct.New().Value, Morphophonemic, "buii");
+        var sibling = new RootAllomorph(new Segments(Table3, "bui", true));
+        sibling.Environments.Add(
+            new AllomorphEnvironment(
+                ConstraintType.Require,
+                null,
+                Pattern<Word, ShapeNode>.New().Annotation(cons).Value
+            )
+        );
+        entry.Allomorphs.Add(sibling);
+        Morphophonemic.Entries.Add(entry);
+
+        var morpher = new Morpher(TraceManager, Language);
+        var result = morpher.ParseWord("bu").ToArray();
+        Assert.That(result, Is.Empty);
+    }
+
+    [Test]
+    public void LexicalLookup_FiltersAllomorphsByEntrySyntacticFeatureStruct()
+    {
+        FeatureStruct noun = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value;
+        FeatureStruct verb = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value;
+        LexEntry nounEntry = AddEntry("nounLookup", noun, Morphophonemic, "tup");
+        LexEntry verbEntry = AddEntry("verbLookup", verb, Morphophonemic, "tup");
+        var morpher = new Morpher(TraceManager, Language);
+
+        var input = new Word(Morphophonemic, Table3.Segment("tup")) { SyntacticFeatureStruct = verb };
+        Word[] results = morpher.LexicalLookup(input).ToArray();
+
+        Assert.That(results, Has.Length.EqualTo(1));
+        Assert.That(results[0].RootAllomorph, Is.SameAs(verbEntry.PrimaryAllomorph));
+    }
+
+    // Include allomorph identity, application order, and root identity in result comparisons.
     internal static string WordAnalysisSignature(Word word)
     {
         return string.Join("+", word.AllomorphsInMorphOrder.Select(a => a.Morpheme.Id))

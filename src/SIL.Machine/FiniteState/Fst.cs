@@ -426,7 +426,7 @@ namespace SIL.Machine.FiniteState
             return true;
         }
 
-        private int ResultCompare(FstResult<TData, TOffset> x, FstResult<TData, TOffset> y)
+        internal int ResultCompare(FstResult<TData, TOffset> x, FstResult<TData, TOffset> y)
         {
             int compare = x.Priority.CompareTo(y.Priority);
             if (compare != 0)

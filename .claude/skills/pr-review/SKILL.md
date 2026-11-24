@@ -69,6 +69,11 @@ Every earlier finding has a status when this is done.
 Anchor it on the line. Two problems on one line are two comments. A reviewer
 scrolling the diff should meet each point where it applies.
 
+A defect the PR shares with the `sillsdev/machine.py` code it ports or matches
+is an **upstream** defect, not a finding: it gets its own fix, ported between
+the repos, apart from this PR. Confirm it in the Python source, post no comment
+on the diff, and name it in the summary's upstream line.
+
 Number findings `F1`, `F2`, ... in the order you post them, and put the number
 right after the keyword, so a reply or a later review can refer to one without
 quoting it. Not `#1`: GitHub links that to issue 1. Numbers are stable - a
@@ -78,6 +83,10 @@ withdrawn finding keeps its number, and a later round continues the sequence.
 
 After the keyword and number, the first sentence names the defect. Evidence
 second, fix third, if it fits.
+
+Write for an author who has not traced the code you traced. The first sentence
+says, in plain words, what a caller sees go wrong; then the smallest input,
+with what comes out against what should.
 
 ```
 Minor: F1. Ordinal comparison missing: `marker.IndexOf(":")` is
@@ -126,6 +135,9 @@ confirm `Unverified`; an unverified concern is never Critical.
 - Reproduce before you report. The environment can build and test: a finding you
   tried and failed to reproduce is worth more than one you only reasoned about.
 - A coverage percentage is not evidence that a changed line is tested.
+- Build, format, and test status come from the CI build: cite
+  `gh pr checks <n>`, and call a check still running pending. The review leaves
+  `local_check.sh` to CI and does not count it as unverified.
 
 ## 5. Close with five lines
 
@@ -135,8 +147,13 @@ confirm `Unverified`; an unverified concern is never Critical.
 4. What you ran, and its result.
 5. What you could not verify.
 
+Each line is a sentence or two. The candidates you dropped stay out of it.
+
 Say which public API, target framework, package, or parity contract with
 `sillsdev/machine.py` changed, or `None verified`.
+
+When there are upstream defects, add one line, `Upstream in sillsdev/machine.py,
+not this PR:`, naming each with its Python file and the visible effect.
 
 Then mark every finding in the thread, earlier rounds included, by number:
 **new**, **open**, **addressed**, **accepted** (the author keeps it knowingly),
@@ -156,5 +173,10 @@ containing `Reviewed at`; leave its other comments, such as replies to an
 ```
 gh api graphql -F id=<node_id> -f query='mutation($id: ID!) { minimizeComment(input: {subjectId: $id, classifier: OUTDATED}) { minimizedComment { isMinimized } } }'
 ```
+
+A round with no new finding and no finding whose status changed is quiet. In
+place of the five lines its summary is the single line
+`No new findings. Reviewed at <head-sha>`, and the earlier summary stays
+visible.
 
 For an adversarial second pass, apply `docs/review/devils-advocate.md`.

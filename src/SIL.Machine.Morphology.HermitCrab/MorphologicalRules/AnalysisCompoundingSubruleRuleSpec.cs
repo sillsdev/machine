@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
@@ -13,7 +14,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             : base(subrule.HeadLhs.Concat(subrule.NonHeadLhs), subrule.Rhs)
         {
             _subrule = subrule;
-            Pattern.Acceptable = match => _subrule.HeadLhs.Any(part => IsPartCaptured(match, part.Name));
+            Func<Match<Word, ShapeNode>, bool> copyAgreement = CopyAgreementCheck;
+            Pattern.Acceptable = match =>
+                _subrule.HeadLhs.Any(part => IsPartCaptured(match, part.Name))
+                && (copyAgreement == null || copyAgreement(match));
             Pattern.Freeze();
         }
 

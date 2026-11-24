@@ -62,6 +62,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             // do not allow a non-partial rule to apply unless the input is partial
             if (
                 !_rule.IsTemplateRule
+                && !_rule.GetIsCliticRule()
                 && (input.IsLastAppliedRuleFinal ?? false)
                 && ((!input.IsPartial && !_rule.IsPartial) || _morpher.AlwaysEnforceFinalTemplates)
             )
@@ -83,6 +84,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             // only allow a non-partial rule to apply unless the input is partial
             if (
                 !_rule.IsTemplateRule
+                && !_rule.GetIsCliticRule()
                 && input.IsLastAppliedRuleFinal.HasValue
                 && !input.IsLastAppliedRuleFinal.Value
                 && !input.IsPartial
@@ -183,7 +185,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     foreach (Feature obligFeature in _rule.ObligatorySyntacticFeatures)
                         outWord.ObligatorySyntacticFeatures.Add(obligFeature);
 
-                    if (!_rule.IsTemplateRule)
+                    if (!_rule.IsTemplateRule && !_rule.GetIsCliticRule())
                     {
                         if (_rule.IsPartial)
                             outWord.IsPartial = true;
@@ -194,20 +196,37 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     outWord.MorphologicalRuleApplied(_rule, appliedAllomorphIndices);
                     appliedAllomorphIndices.Add(i);
 
-                    if (_rule.Blockable && outWord.CheckBlocking(out Word newWord))
+                    if (input.IsAllomorphApplicable(allo))
                     {
-                        if (_morpher.TraceManager.IsTracing)
-                            _morpher.TraceManager.Blocked(_rule, newWord);
-                        outWord = newWord;
-                    }
-                    else
-                    {
-                        outWord.Freeze();
-                    }
+                        if (_rule.Blockable && outWord.CheckBlocking(out Word newWord))
+                        {
+                            if (_morpher.TraceManager.IsTracing)
+                                _morpher.TraceManager.Blocked(_rule, newWord);
+                            outWord = newWord;
+                        }
+                        else
+                        {
+                            outWord.Freeze();
+                        }
 
-                    if (_morpher.TraceManager.IsTracing)
-                        _morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
-                    output.Add(outWord);
+                        if (_morpher.TraceManager.IsTracing)
+                            _morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
+                        output.Add(outWord);
+
+                        // Allomorphs after the recorded one can never yield output, so the loop ends there.
+                        if (input.CurrentRecordedAllomorph == allo)
+                            break;
+                    }
+                    else if (_morpher.TraceManager.IsTracing)
+                    {
+                        _morpher.TraceManager.MorphologicalRuleNotApplied(
+                            _rule,
+                            i,
+                            input,
+                            FailureReason.AllomorphNotApplicable,
+                            null
+                        );
+                    }
 
                     // return all word syntheses that match subrules that are constrained by environments,
                     // HC violates the disjunctive property of allomorphs here because it cannot check the

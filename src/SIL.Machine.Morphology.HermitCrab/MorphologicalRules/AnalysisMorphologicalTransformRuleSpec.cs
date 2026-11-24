@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
@@ -14,6 +15,25 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             IList<MorphologicalOutputAction> rhs
         )
             : base(lhs, rhs) { }
+
+        /// <summary>
+        /// The morpher whose <see cref="Morpher.PruneDisagreeingCopies"/> setting governs pruning; unset means none.
+        /// </summary>
+        internal Morpher PruningMorpher { get; set; }
+
+        /// <summary>
+        /// The acceptance predicate that prunes matches whose copies cannot agree, or null when no part repeats and
+        /// there is nothing to check (the matcher builds a Match for every candidate it tests).
+        /// </summary>
+        internal Func<Match<Word, ShapeNode>, bool> CopyAgreementCheck
+        {
+            get { return HasRepeatedParts ? CopiesMayAgree : (Func<Match<Word, ShapeNode>, bool>)null; }
+        }
+
+        private bool CopiesMayAgree(Match<Word, ShapeNode> match)
+        {
+            return PruningMorpher == null || !PruningMorpher.PruneDisagreeingCopies || !HasDisagreeingCopies(match);
+        }
 
         public bool IsApplicable(Word input)
         {

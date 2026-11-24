@@ -110,6 +110,27 @@ jobs:
           name: nuget-package
           path: artifacts/*.nupkg
 
+  publish:
+    name: Publish NuGet packages
+    needs: create_package
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    # The nuget.org policy trusts only the nuget environment, which accepts v* tags alone.
+    environment: nuget
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: nuget-package
+          path: artifacts
+
+      - name: NuGet login
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
       - name: Push
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: dotnet nuget push artifacts\*.nupkg -n -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push "artifacts/*.nupkg" -n -k ${{ steps.nuget-login.outputs.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json

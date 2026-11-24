@@ -94,8 +94,9 @@ dotnet csharpier format .
 
 `local_check.sh` restores, checks CSharpier formatting, builds Release, and tests;
 `--agent-strict` adds the blocking comment-hygiene scan. Fix any failure before
-proceeding. Report the test results plainly (pass/fail counts); don't claim success if
-anything failed.
+proceeding, then report its last line, `local_check: PASSED` or
+`local_check: FAILED (<steps>)`. A test count is not a pass: the build or CSharpier can
+fail above it.
 
 ## Step 6 - Commit, push, open PR (pause first)
 

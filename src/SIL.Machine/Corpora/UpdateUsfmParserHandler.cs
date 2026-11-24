@@ -58,7 +58,7 @@ namespace SIL.Machine.Corpora
         private readonly UpdateUsfmMarkerBehavior _embedBehavior;
         private readonly UpdateUsfmMarkerBehavior _styleBehavior;
         private readonly HashSet<string> _preserveParagraphStyles;
-        private readonly Stack<UsfmUpdateBlock> _updateBlocks;
+        private readonly Stack<UsfmUpdateBlockBuilder> _updateBlocks;
         private readonly Stack<IUsfmUpdateBlockHandler> _updateBlockHandlers;
         private readonly List<(int, string)> _remarks;
         private readonly Stack<bool> _replace;
@@ -89,7 +89,7 @@ namespace SIL.Machine.Corpora
             _updateRowsVersification = GetRowsVersification(rows);
             _tokens = new List<UsfmToken>();
             _updatedText = new List<UsfmToken>();
-            _updateBlocks = new Stack<UsfmUpdateBlock>();
+            _updateBlocks = new Stack<UsfmUpdateBlockBuilder>();
             _embedTokens = new List<UsfmToken>();
             _idText = idText;
             _replace = new Stack<bool>();
@@ -137,7 +137,7 @@ namespace SIL.Machine.Corpora
             }
 
             CollectReadonlyTokens(state);
-            _updateBlocks.Push(new UsfmUpdateBlock());
+            _updateBlocks.Push(new UsfmUpdateBlockBuilder());
             var startBookTokens = new List<UsfmToken>();
             if (_idText != null)
                 startBookTokens.Add(new UsfmToken(_idText + " "));
@@ -150,7 +150,7 @@ namespace SIL.Machine.Corpora
         {
             UseUpdatedText();
             PopNewTokens();
-            UsfmUpdateBlock updateBlock = _updateBlocks.Pop();
+            UsfmUpdateBlock updateBlock = _updateBlocks.Pop().Build();
             _tokens.AddRange(updateBlock.GetTokens());
 
             base.EndBook(state, marker);
@@ -296,7 +296,13 @@ namespace SIL.Machine.Corpora
         public override void EndNote(UsfmParserState state, string marker, bool closed)
         {
             if (closed)
-                CollectUpdatableTokens(state);
+            {
+                // Mirror StartNote: an embed in a duplicate verse is dropped, end marker included.
+                if (DuplicateVerse)
+                    SkipUpdatableTokens(state);
+                else
+                    CollectUpdatableTokens(state);
+            }
             base.EndNote(state, marker, closed);
         }
 
@@ -334,21 +340,26 @@ namespace SIL.Machine.Corpora
             bool closed
         )
         {
-            // strip out char-style markers in verses that are being replaced
-            if (CurrentTextType == ScriptureTextType.Embed)
+            // An implicitly closed character style has no end marker of its own, so the token at
+            // state.Index belongs to whatever closed it. Leave it for the callback that handles it.
+            if (closed)
             {
-                CollectUpdatableTokens(state);
-            }
-            else
-            {
-                ReplaceWithNewTokens(state);
-                if (_styleBehavior == UpdateUsfmMarkerBehavior.Strip)
+                // strip out char-style markers in verses that are being replaced
+                if (CurrentTextType == ScriptureTextType.Embed)
                 {
-                    SkipUpdatableTokens(state);
+                    CollectUpdatableTokens(state);
                 }
                 else
                 {
-                    CollectUpdatableTokens(state);
+                    ReplaceWithNewTokens(state);
+                    if (_styleBehavior == UpdateUsfmMarkerBehavior.Strip)
+                    {
+                        SkipUpdatableTokens(state);
+                    }
+                    else
+                    {
+                        CollectUpdatableTokens(state);
+                    }
                 }
             }
 
@@ -508,12 +519,9 @@ namespace SIL.Machine.Corpora
             return tokenizer.Detokenize(tokens);
         }
 
-        private (IReadOnlyList<string> RowTexts, Dictionary<string, object> Metadata) AdvanceRows(
-            IReadOnlyList<ScriptureRef> segScrRefs
-        )
+        private List<UsfmUpdateBlockRow> AdvanceRows(IReadOnlyList<ScriptureRef> segScrRefs)
         {
-            var rowTexts = new List<string>();
-            Dictionary<string, object> rowMetadata = null;
+            var blockRows = new List<UsfmUpdateBlockRow>();
             int sourceIndex = 0;
 
             // handle the special case of verse 0, which although first in the rows,
@@ -547,8 +555,9 @@ namespace SIL.Machine.Corpora
                     {
                         // source and row match
                         // grab the text - both source and row will be incremented in due time...
-                        rowTexts.Add(text);
-                        rowMetadata = metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                        blockRows.Add(
+                            new UsfmUpdateBlockRow(text, metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
+                        );
                         break;
                     }
                 }
@@ -558,7 +567,7 @@ namespace SIL.Machine.Corpora
                     _verseRowIndex++;
                 }
             }
-            return (rowTexts, rowMetadata);
+            return blockRows;
         }
 
         private void CollectUpdatableTokens(UsfmParserState state)
@@ -667,26 +676,28 @@ namespace SIL.Machine.Corpora
 
         private void StartUpdateBlock(IReadOnlyList<ScriptureRef> scriptureRefs)
         {
-            (IReadOnlyList<string> rowTexts, Dictionary<string, object> metadata) = AdvanceRows(scriptureRefs);
-            _updateBlocks.Push(
-                new UsfmUpdateBlock(scriptureRefs, metadata: metadata ?? new Dictionary<string, object>())
-            );
-            PushUpdatedText(rowTexts.Select(t => new UsfmToken(t + " ")));
+            List<UsfmUpdateBlockRow> blockRows = AdvanceRows(scriptureRefs);
+            _updateBlocks.Push(new UsfmUpdateBlockBuilder(scriptureRefs, blockRows));
+            PushUpdatedText(blockRows.Select(row => new UsfmToken(row.Text + " ")));
         }
 
         private void EndUpdateBlock(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs)
         {
             UseUpdatedText();
             PopNewTokens();
-            UsfmUpdateBlock updateBlock = _updateBlocks.Pop();
-            updateBlock.UpdateRefs(scriptureRefs);
+            UsfmUpdateBlockBuilder updateBlockBuilder = _updateBlocks.Pop();
+            updateBlockBuilder.UpdateRefs(scriptureRefs);
 
             // Strip off any non-verse paragraphs that are at the end of the update block
             var paraElems = new List<UsfmUpdateBlockElement>();
-            while (updateBlock.Elements.Count > 0 && IsNonverseParagraph(state, updateBlock.Elements.Last()))
+            while (
+                updateBlockBuilder.Elements.Count > 0 && IsNonverseParagraph(state, updateBlockBuilder.Elements.Last())
+            )
             {
-                paraElems.Add(updateBlock.Pop());
+                paraElems.Add(updateBlockBuilder.Pop());
             }
+
+            UsfmUpdateBlock updateBlock = updateBlockBuilder.Build();
 
             foreach (IUsfmUpdateBlockHandler handler in _updateBlockHandlers)
             {

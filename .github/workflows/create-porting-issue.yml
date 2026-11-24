@@ -10,10 +10,12 @@ permissions:
 
 jobs:
   create-port-issue:
-    # Porting is the default. The no porting label opts a PR out.
+    # Porting is the default. The no porting label opts a PR out, and so does Hermit Crab:
+    # machine.py has no HermitCrab to port to.
     if: |
       github.event.pull_request.merged == true &&
-      !contains(github.event.pull_request.labels.*.name, 'no porting')
+      !contains(github.event.pull_request.labels.*.name, 'no porting') &&
+      !contains(github.event.pull_request.labels.*.name, 'Hermit Crab')
     runs-on: ubuntu-latest
 
     steps:

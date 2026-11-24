@@ -1504,4 +1504,54 @@ public class MatcherTests : PhoneticTestsBase
         Assert.That(matches.Length, Is.EqualTo(1));
         Assert.That(matches[0].Range.IsEmpty, Is.True);
     }
+
+    // Lazy preference must not depend on direction: a pattern matched right-to-left on the reversed string, with its
+    // elements in reversed (text) order, must give the mirror image of the left-to-right matches.
+    [TestCase("any C? V??", "mn", new[] { "0-2" })]
+    [TestCase("any C? V??", "mamamn", new[] { "0-2", "2-4", "4-6" })]
+    public void Matches_LazyAndGreedyMix_RightToLeftMirrorsLeftToRight(string elements, string text, string[] expected)
+    {
+        string[] ltrElements = elements.Split(' ');
+        string[] rtlElements = ltrElements.Reverse().ToArray();
+        string reversedText = new string(text.Reverse().ToArray());
+
+        string[] ltr = MatchRanges(ltrElements, text, Direction.LeftToRight);
+        string[] rtl = MatchRanges(rtlElements, reversedText, Direction.RightToLeft)
+            .Select(r =>
+            {
+                string[] parts = r.Split('-');
+                return $"{text.Length - int.Parse(parts[1])}-{text.Length - int.Parse(parts[0])}";
+            })
+            .ToArray();
+
+        Assert.That(ltr, Is.EqualTo(expected));
+        Assert.That(rtl, Is.EqualTo(expected));
+    }
+
+    private string[] MatchRanges(string[] elements, string text, Direction dir)
+    {
+        var nodes = new List<PatternNode<AnnotatedStringData, int>>();
+        foreach (string element in elements)
+        {
+            string name = element.TrimEnd('?');
+            FeatureStruct fs = name switch
+            {
+                "V" => FeatureStruct.New(PhoneticFeatSys).Symbol(Seg).Symbol("syl+").Value,
+                "C" => FeatureStruct.New(PhoneticFeatSys).Symbol(Seg).Symbol("syl-").Value,
+                _ => FeatureStruct.New(PhoneticFeatSys).Symbol(Seg).Value,
+            };
+            var constraint = new Constraint<AnnotatedStringData, int>(fs);
+            if (element.EndsWith("??"))
+                nodes.Add(new Quantifier<AnnotatedStringData, int>(0, 1, constraint) { IsGreedy = false });
+            else if (element.EndsWith("?"))
+                nodes.Add(new Quantifier<AnnotatedStringData, int>(0, 1, constraint));
+            else
+                nodes.Add(constraint);
+        }
+        var matcher = new Matcher<AnnotatedStringData, int>(
+            new Pattern<AnnotatedStringData, int>(nodes),
+            new MatcherSettings<int> { Direction = dir }
+        );
+        return matcher.Matches(CreateStringData(text)).Select(m => $"{m.Range.Start}-{m.Range.End}").ToArray();
+    }
 }

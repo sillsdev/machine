@@ -32,7 +32,8 @@ namespace SIL.Machine.Rules
 
         public override IEnumerable<TData> Apply(TData input)
         {
-            var output = new ConcurrentStack<TData>();
+            // A set, so MaxAlternatives counts distinct results as the sequential cascade does.
+            var output = new ConcurrentDictionary<TData, byte>(Comparer);
             var from = new ConcurrentStack<Tuple<TData, int>>();
             from.Push(Tuple.Create(input, 0));
             var to = new ConcurrentStack<Tuple<TData, int>>();
@@ -52,8 +53,11 @@ namespace SIL.Machine.Rules
                                 TData[] results = ApplyRule(Rules[i], i, work.Item1).ToArray();
                                 if (results.Length > 0)
                                 {
-                                    output.PushRange(results);
-                                    CheckMaxAlternatives(Interlocked.Add(ref alternativeCount, results.Length));
+                                    foreach (TData result in results)
+                                    {
+                                        if (output.TryAdd(result, 0))
+                                            CheckMaxAlternatives(Interlocked.Increment(ref alternativeCount));
+                                    }
 
                                     Tuple<TData, int>[] workItems = results
                                         .Where(res => !MultipleApplication || !Comparer.Equals(work.Item1, res))
@@ -78,7 +82,7 @@ namespace SIL.Machine.Rules
                 to = temp;
             }
 
-            return output.Distinct(Comparer);
+            return output.Keys;
         }
     }
 }
