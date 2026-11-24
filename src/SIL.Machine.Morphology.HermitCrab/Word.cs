@@ -503,29 +503,51 @@ namespace SIL.Machine.Morphology.HermitCrab
             var alternatives = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
             HashSet<Word> originals = Source?.ExpandAlternatives();
             // Update the alternatives of Source with any changes made since Source.
-            if (originals == null || originals.Count < 2)
+            if (originals == null)
             {
                 // Special case.
                 alternatives.Add(this);
-            }
-            else if (Source.MorphologicalRuleUnapplicationCount > MorphologicalRuleUnapplicationCount)
-            {
-                // This word is a simplification of Source, and so it should be skipped.
-                alternatives.AddRange(originals);
             }
             else
             {
                 foreach (Word original in originals)
                 {
                     Word alternative = original.Clone();
-                    alternative._shape = this.Shape;
-                    // Add new rules to alternative.
-                    int mr_start = Source == null ? 0 : Source._mruleApps.Count();
-                    for (int i = mr_start; i < _mruleApps.Count(); i++)
-                        alternative.MorphologicalRuleUnapplied(_mruleApps[i], _allomorphApps[i]);
-                    int nh_start = Source == null ? 0 : Source._nonHeadApps.Count();
-                    for (int i = nh_start; i < _nonHeadApps.Count(); i++)
-                        alternative.NonHeadUnapplied(_nonHeadApps[i]);
+                    alternative._shape = Shape;
+                    if (_mruleApps.Count() < Source._mruleApps.Count())
+                    {
+                        // Add rules back that got popped.
+                        for (int i = _mruleApps.Count(); i < Source._mruleApps.Count(); i++)
+                        {
+                            alternative.MorphologicalRuleUnapplied(Source._mruleApps[i], Source._allomorphApps[i]);
+                        }
+                    }
+                    else
+                    {
+                        // Add rules that got applied since Source.
+                        int mr_count = Source == null ? 0 : Source._mruleApps.Count();
+                        for (int i = mr_count; i < _mruleApps.Count(); i++)
+                        {
+                            alternative.MorphologicalRuleUnapplied(_mruleApps[i], _allomorphApps[i]);
+                        }
+                    }
+                    if (_nonHeadApps.Count() < Source._nonHeadApps.Count())
+                    {
+                        // Add rules back that got popped.
+                        for (int i = _nonHeadApps.Count(); i < Source._nonHeadApps.Count(); i++)
+                        {
+                            alternative.NonHeadUnapplied(Source._nonHeadApps[i]);
+                        }
+                    }
+                    else
+                    {
+                        // Add rules that got applied since Source.
+                        int mr_count = Source == null ? 0 : Source._nonHeadApps.Count();
+                        for (int i = mr_count; i < _nonHeadApps.Count(); i++)
+                        {
+                            alternative.NonHeadUnapplied(_nonHeadApps[i]);
+                        }
+                    }
                     // Add changes to feature structures to alternative.
                     if (!_realizationalFS.ValueEquals(Source._realizationalFS))
                     {

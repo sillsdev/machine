@@ -77,6 +77,14 @@ namespace SIL.Machine.Morphology.HermitCrab
             else
                 ParallelApplySlots(inWord, output, fired);
 
+            if (_morpher.MergeEquivalentAnalyses)
+            {
+                foreach (Word word in output)
+                {
+                    word.Source = input;
+                }
+            }
+
             return output;
         }
 

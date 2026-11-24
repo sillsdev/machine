@@ -154,22 +154,37 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 foreach (Word result in results)
                 {
+                    Word newResult = result;
                     if (mergeEquivalentAnalyses)
                     {
-                        var key = new AnalysisMergeKey(result);
-                        Word canonicalWord = keyCache.GetOrAdd(key, result);
-                        if (!canonicalWord.ValueEquals(result))
+                        if (newResult.Shape.Count < newResult.Source.Shape.Count)
                         {
-                            canonicalWord.Alternatives.Add(result);
+                            // Pop newly added rules.
+                            newResult = result.Clone();
+                            for (
+                                int i = newResult.Source.MorphologicalRuleUnapplicationCount;
+                                i < newResult.MorphologicalRuleUnapplicationCount;
+                                i++
+                            )
+                            {
+                                newResult.PopUnapplied();
+                            }
+                            newResult.Freeze();
+                        }
+                        var key = new AnalysisMergeKey(newResult);
+                        Word canonicalWord = keyCache.GetOrAdd(key, newResult);
+                        if (!canonicalWord.ValueEquals(newResult))
+                        {
+                            canonicalWord.Alternatives.Add(newResult);
                             continue;
                         }
                     }
                     else
                     {
                         // Skip intermediate sources from phonological rules, templates, and morphological rules.
-                        result.Source = origInput;
-                        Word canonicalWord = wordCache.GetOrAdd(result, result);
-                        if (canonicalWord != result)
+                        newResult.Source = origInput;
+                        Word canonicalWord = wordCache.GetOrAdd(newResult, newResult);
+                        if (canonicalWord != newResult)
                             continue;
                     }
 
@@ -177,7 +192,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     if (_maxAlternatives > 0 && localAlternativeCount > _maxAlternatives)
                         throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
 
-                    yield return result;
+                    yield return newResult;
                 }
             }
 
