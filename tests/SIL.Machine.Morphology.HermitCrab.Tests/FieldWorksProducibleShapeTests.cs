@@ -809,12 +809,7 @@ public sealed class FieldWorksProducibleShapeTests
 
         Assert.That(
             found,
-            Is.EqualTo(
-                new[]
-                {
-                    "compounding-rule crZero uses @multipleApplication=0, which HCLoader never writes",
-                }
-            )
+            Is.EqualTo(new[] { "compounding-rule crZero uses @multipleApplication=0, which HCLoader never writes" })
         );
     }
 
