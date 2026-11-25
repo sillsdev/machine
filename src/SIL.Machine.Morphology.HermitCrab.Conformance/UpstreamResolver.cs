@@ -77,6 +77,9 @@ public sealed class UpstreamResolver(
         string? checkout = Environment.GetEnvironmentVariable(CheckoutEnvironmentVariable);
         if (string.IsNullOrWhiteSpace(checkout))
         {
+            // Set HC_MACHINE_CHECKOUT when the runner is copied elsewhere: discovery can find a different tree, in which
+            // case a head it lacks resolves to pending (skip), never satisfied. HEAD may also differ from the compiled
+            // binary after a stale build.
             for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir != null; dir = dir.Parent)
             {
                 string dotGit = Path.Combine(dir.FullName, ".git");

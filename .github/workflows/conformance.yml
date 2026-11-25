@@ -26,6 +26,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -47,6 +49,8 @@ jobs:
         run: >-
           dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance --
           --fixtures conformance --include-pathological
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       # The suite's stress fixtures (conformance/stress) must agree with the engine too.
       - name: Run stress self-check
@@ -54,6 +58,8 @@ jobs:
         run: >-
           dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance --
           --fixtures conformance/stress --include-pathological
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       # The suite's generated manifest must match a fresh computation, and every grammar and words.yaml must
       # validate against the suite's DTD and schema.
@@ -62,6 +68,8 @@ jobs:
         run: >-
           dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance --
           --fixtures conformance --check-manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       # Exits 1 on an uncovered construct, on a dead rule (exercised by zero words) missing from
       # conformance/dead-rules-allowed.tsv, on an allowed rule some word now exercises, and when the suite's
@@ -71,6 +79,8 @@ jobs:
         run: >-
           dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance --
           --fixtures conformance --coverage-report
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       # A pin that is not on the suite's main could be lost when that branch is deleted.
       - name: Check the pinned commit is on the suite's main
