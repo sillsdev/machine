@@ -28,6 +28,7 @@ public static class WordsYamlLoader
         "expect_crash",
         "fieldworks_producible",
         "fieldworks_producible_notes",
+        "upstream",
         "morpher",
         "words",
         "variants",
@@ -42,6 +43,14 @@ public static class WordsYamlLoader
         "MergeAnalyses",
         "MakePartialsFinal",
         "GuessRoots",
+    };
+    private static readonly HashSet<string> UpstreamKeys = new(StringComparer.Ordinal)
+    {
+        "ref",
+        "kind",
+        "head",
+        "affects",
+        "note",
     };
     private static readonly HashSet<string> WordKeys = new(StringComparer.Ordinal)
     {
@@ -180,6 +189,9 @@ public static class WordsYamlLoader
             );
         }
 
+        if (map.TryGetValue("upstream", out YamlNode upstreamNode))
+            ParseUpstream(upstreamNode, doc, path);
+
         if (map.TryGetValue("morpher", out YamlNode morpherNode))
             ParseMorpher(morpherNode, doc.Morpher, path);
 
@@ -205,6 +217,45 @@ public static class WordsYamlLoader
         }
 
         return doc;
+    }
+
+    private static void ParseUpstream(YamlNode node, WordsYaml doc, string path)
+    {
+        if (node is not YamlSequenceNode entries || entries.Children.Count == 0)
+            throw new WordsYamlException(path, "front matter.upstream: expected a non-empty sequence");
+        foreach (YamlNode entryNode in entries.Children)
+        {
+            if (entryNode is not YamlMappingNode entryMap)
+                throw new WordsYamlException(path, "each 'upstream' entry must be a mapping");
+            Dictionary<string, YamlNode> fields = RequireMapping(entryMap, UpstreamKeys, path, "upstream[]");
+            string reference = RequireScalar(fields, "ref", path, "upstream[]");
+            string kind = RequireScalar(fields, "kind", path, "upstream[]");
+            string affects = RequireScalar(fields, "affects", path, "upstream[]");
+            string head = fields.ContainsKey("head") ? RequireScalar(fields, "head", path, "upstream[]") : "";
+            if (!UpstreamResolver.TryParseRef(reference, out string repo, out _))
+            {
+                throw new WordsYamlException(
+                    path,
+                    $"upstream[]: ref '{reference}' is not owner/repo#number or jira:KEY-123"
+                );
+            }
+            if (kind is not ("pr" or "issue"))
+                throw new WordsYamlException(path, $"upstream[]: kind must be 'pr' or 'issue', got '{kind}'");
+            if (affects is not ("engine" or "loader"))
+            {
+                throw new WordsYamlException(
+                    path,
+                    $"upstream[]: affects must be 'engine' or 'loader', got '{affects}'"
+                );
+            }
+            if (kind == "pr" && (head.Length != 40 || !head.All(c => c is >= '0' and <= '9' or >= 'a' and <= 'f')))
+                throw new WordsYamlException(path, $"upstream[] {reference}: a pr needs a full 40-hex 'head'");
+            if (repo == "jira" && kind != "issue")
+                throw new WordsYamlException(path, $"upstream[] {reference}: a Jira key is an issue");
+            doc.Upstream.Add(
+                new UpstreamEntry(reference, kind, head, affects, RequireScalar(fields, "note", path, "upstream[]"))
+            );
+        }
     }
 
     private static void ParseVariants(YamlNode node, WordsYaml doc, string path)

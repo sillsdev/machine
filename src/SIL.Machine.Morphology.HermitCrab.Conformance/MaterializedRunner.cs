@@ -19,6 +19,9 @@ public class FixtureResult
     public FixtureOutcome Outcome;
     public string Reason = "";
     public long ElapsedMs;
+
+    /// <summary>Skipped because an <c>affects: engine</c> upstream entry is not satisfied by this build.</summary>
+    public bool UpstreamPending;
     public List<WordResult> WordResults = new();
 }
 

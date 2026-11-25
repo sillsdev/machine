@@ -38,7 +38,18 @@ public sealed class FieldWorksProducibleShapeTests
         List<Fixture> fixtures = DiscoverProducible();
         Assert.That(fixtures, Has.Count.GreaterThanOrEqualTo(25));
 
+        // A fixture with an open `affects: loader` upstream entry is allowed the shape it cites: HCLoader lacks it
+        // only until that FieldWorks change lands. Offline counts as open.
+        var upstream = UpstreamResolver.CreateDefault();
         string[] offences = fixtures
+            .Where(fixture =>
+            {
+                if (!upstream.AllowsNeverShape(fixture.Words.Upstream, out string note))
+                    return true;
+                if (note.Length > 0)
+                    TestContext.Out.WriteLine($"{fixture.Id}: never-written shapes allowed: {note}");
+                return false;
+            })
             .SelectMany(fixture => FindUnproducibleShapes(fixture.GrammarPath).Select(o => $"{fixture.Id}: {o}"))
             .OrderBy(line => line, StringComparer.Ordinal)
             .ToArray();

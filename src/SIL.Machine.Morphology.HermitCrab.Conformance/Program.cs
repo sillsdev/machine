@@ -190,6 +190,15 @@ internal class Program
             }
         }
 
+        FixtureResult[] upstreamSkips = report.Results.Where(r => r.UpstreamPending).ToArray();
+        if (upstreamSkips.Length > 0)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"{upstreamSkips.Length} run(s) skipped for unsatisfied upstream changes:");
+            foreach (FixtureResult result in upstreamSkips)
+                Console.WriteLine($"  {result.FixtureId}: {result.Reason}");
+        }
+
         Console.WriteLine();
         Console.WriteLine(
             $"totals: {report.Passed} runs passed, {report.Failed} failed, {report.Skipped} skipped "

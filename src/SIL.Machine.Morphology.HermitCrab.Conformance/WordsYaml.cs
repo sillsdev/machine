@@ -26,6 +26,9 @@ public class WordsYaml
     /// offending construct(s) and cites the HCLoader evidence grounding the verdict.</summary>
     public string FieldworksProducibleNotes = "";
 
+    /// <summary>The <c>upstream:</c> entries: issues or pull requests this fixture's expectations depend on.</summary>
+    public List<UpstreamEntry> Upstream { get; } = new();
+
     /// <summary>The <c>morpher:</c> block; empty when absent, meaning the engine constructor defaults.</summary>
     public MorpherSettings Morpher { get; } = new();
 

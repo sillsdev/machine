@@ -40,9 +40,11 @@ public static class Runner
         bool includePathological,
         IReadOnlySet<string> engineCapabilities,
         bool propose,
-        TextWriter proposeOutput
+        TextWriter proposeOutput,
+        UpstreamResolver upstream = null
     )
     {
+        upstream ??= UpstreamResolver.CreateDefault();
         var report = new RunReport();
         report.FixtureCount = fixtures.Count;
         foreach (Fixture fixture in fixtures)
@@ -55,7 +57,8 @@ public static class Runner
                     includePathological,
                     engineCapabilities,
                     propose,
-                    proposeOutput
+                    proposeOutput,
+                    upstream
                 );
                 if (result == null)
                     report.ExcludedPathologicalCount++;
@@ -72,7 +75,8 @@ public static class Runner
         bool includePathological,
         IReadOnlySet<string> engineCapabilities,
         bool propose,
-        TextWriter proposeOutput
+        TextWriter proposeOutput,
+        UpstreamResolver upstream
     )
     {
         string runId = run.Name == "default" ? fixture.Id : $"{fixture.Id} [variant {run.Name}]";
@@ -98,6 +102,10 @@ public static class Runner
         bool isPathological = fixture.Words.BudgetMs.HasValue;
         if (isPathological && !includePathological)
             return null;
+
+        FixtureResult upstreamSkip = UpstreamSkip(fixture, runId, upstream);
+        if (upstreamSkip != null)
+            return upstreamSkip;
 
         List<string> missingCapabilities = fixture.Words.Requires.Where(r => !engineCapabilities.Contains(r)).ToList();
         if (missingCapabilities.Count > 0)
@@ -166,6 +174,22 @@ public static class Runner
         }
 
         return result;
+    }
+
+    /// <summary>A SKIPPED result when the fixture has an <c>affects: engine</c> upstream entry this build does not
+    /// satisfy, else null. Such a fixture's expectations come from a change this build lacks.</summary>
+    private static FixtureResult UpstreamSkip(Fixture fixture, string runId, UpstreamResolver upstream)
+    {
+        string reason = upstream.SkipReason(fixture.Words);
+        return reason.Length == 0
+            ? null
+            : new FixtureResult
+            {
+                FixtureId = runId,
+                Outcome = FixtureOutcome.Skipped,
+                Reason = reason,
+                UpstreamPending = true,
+            };
     }
 
     // Mirrors MaterializedRunner.RunWithBudget's watchdog shape (see that method's doc comment) -- a
@@ -391,8 +415,14 @@ public static class Runner
 
     // ---- Adapter mode: materialize onto disk + reuse MaterializedRunner/AdapterEngine, unmodified. ----
 
-    public static RunReport RunAdapter(List<Fixture> fixtures, IEngine engine, bool includePathological)
+    public static RunReport RunAdapter(
+        List<Fixture> fixtures,
+        IEngine engine,
+        bool includePathological,
+        UpstreamResolver upstream = null
+    )
     {
+        upstream ??= UpstreamResolver.CreateDefault();
         var report = new RunReport();
         report.FixtureCount = fixtures.Count;
         // One call over every run of every fixture, so an expect_crash fixture has an ordinary fixture to use
@@ -404,6 +434,16 @@ public static class Runner
             {
                 foreach (WordRun run in fixture.Words.Runs)
                 {
+                    FixtureResult upstreamSkip = UpstreamSkip(
+                        fixture,
+                        run.Name == "default" ? fixture.Id : $"{fixture.Id} [variant {run.Name}]",
+                        upstream
+                    );
+                    if (upstreamSkip != null)
+                    {
+                        report.Results.Add(upstreamSkip);
+                        continue;
+                    }
                     try
                     {
                         materialized.Add(FixtureMaterializer.Materialize(fixture, run));
