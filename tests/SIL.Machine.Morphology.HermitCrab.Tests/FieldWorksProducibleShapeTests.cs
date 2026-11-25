@@ -792,6 +792,7 @@ public sealed class FieldWorksProducibleShapeTests
     [Test]
     public void TheCheckFindsAMaximumApplicationCountHcLoaderCannotSet()
     {
+        // FieldWorks PR #1263 made derivational multipleApplication 2..9 writable, so mrTwice is no longer flagged.
         string[] found = Scan(
             """
             <Stratum morphologicalRuleOrder="unordered">
@@ -812,7 +813,6 @@ public sealed class FieldWorksProducibleShapeTests
                 new[]
                 {
                     "compounding-rule crZero uses @multipleApplication=0, which HCLoader never writes",
-                    "derivational-rule mrTwice uses @multipleApplication=2, which HCLoader never writes",
                 }
             )
         );
