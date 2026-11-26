@@ -142,5 +142,40 @@ namespace SIL.Machine.FeatureModel
         {
             return new VariableBindings(this);
         }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(this, obj))
+                return true;
+
+            if (!(obj is VariableBindings other) || _varBindings.Count != other._varBindings.Count)
+                return false;
+
+            foreach (KeyValuePair<string, SimpleFeatureValue> binding in _varBindings)
+            {
+                SimpleFeatureValue otherValue;
+                if (!other._varBindings.TryGetValue(binding.Key, out otherValue))
+                    return false;
+
+                if (binding.Value == null ? otherValue != null : !binding.Value.ValueEquals(otherValue))
+                    return false;
+            }
+
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = 17;
+            foreach (KeyValuePair<string, SimpleFeatureValue> binding in _varBindings)
+            {
+                int bindingHashCode = binding.Key.GetHashCode();
+                if (binding.Value != null)
+                    bindingHashCode = bindingHashCode * 31 + binding.Value.ToString().GetHashCode();
+                hashCode += bindingHashCode;
+            }
+
+            return hashCode;
+        }
     }
 }
