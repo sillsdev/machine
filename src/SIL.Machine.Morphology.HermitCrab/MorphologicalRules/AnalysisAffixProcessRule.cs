@@ -96,7 +96,16 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     continue;
                 }
                 bool unapplied = false;
-                foreach (Word outWord in _rules[i].Apply(input).RemoveDuplicates())
+                foreach (
+                    Word outWord in ShapeMatchTable.Match(
+                        input.MatchTable,
+                        _rule,
+                        i,
+                        _rules[i],
+                        input,
+                        _morpher.ShapeMatched
+                    )
+                )
                 {
                     // the paths Out writes describe this rule's output, not the stem it applied to, so they are
                     // stripped rather than carried backwards; what is left must unify with Required

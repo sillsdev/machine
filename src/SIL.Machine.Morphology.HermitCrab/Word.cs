@@ -76,12 +76,15 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         protected Word(Word word)
+            : this(word, word._shape.Clone()) { }
+
+        private Word(Word word, Shape shape)
         {
             _allomorphs = new Dictionary<string, Allomorph>(word._allomorphs);
             Stratum = word.Stratum;
             Source = word;
             // Don't copy Alternatives.
-            _shape = word._shape.Clone();
+            _shape = shape;
             _rootAllomorph = word._rootAllomorph;
             SyntacticFeatureStruct = word.SyntacticFeatureStruct.Clone();
             RealizationalFeatureStruct = word.RealizationalFeatureStruct.Clone();
@@ -98,6 +101,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _finalTemplateState = word._finalTemplateState;
             _isPartial = word._isPartial;
             CurrentTrace = word.CurrentTrace;
+            MatchTable = word.MatchTable;
             _disjunctiveAllomorphIndices = word._disjunctiveAllomorphIndices.ToDictionary(
                 kvp => kvp.Key,
                 kvp => new HashSet<int>(kvp.Value)
@@ -619,6 +623,19 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             return new Word(this);
         }
+
+        /// <summary>
+        /// A clone that takes the given shape instead of a copy of this word's. A frozen shape may be shared.
+        /// </summary>
+        internal Word CloneWithShape(Shape shape)
+        {
+            return new Word(this, shape);
+        }
+
+        /// <summary>
+        /// The per-parse table of rule matches this word's clones share; null when the table is off.
+        /// </summary>
+        internal ShapeMatchTable MatchTable { get; set; }
 
         public override string ToString()
         {

@@ -50,7 +50,16 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             for (int i = 0; i < _rules.Count; i++)
             {
                 bool unapplied = false;
-                foreach (Word outWord in _rules[i].Apply(input).RemoveDuplicates())
+                foreach (
+                    Word outWord in ShapeMatchTable.Match(
+                        input.MatchTable,
+                        _rule,
+                        i,
+                        _rules[i],
+                        input,
+                        _morpher.ShapeMatched
+                    )
+                )
                 {
                     outWord.RealizationalFeatureStruct = realFS;
                     outWord.FinalTemplateState = FinalTemplateState.None;

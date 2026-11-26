@@ -23,6 +23,16 @@ namespace SIL.Machine.Morphology.HermitCrab
         // Called from analysis threads, so a handler must be thread-safe.
         internal Action EdgePrefilterRejected { get; set; }
 
+        /// <summary>
+        /// Whether each parse keeps a table of what every affix rule gives on each shape it reaches. Results and
+        /// trace events do not depend on it; it exists so tests can compare a run with and without the table.
+        /// </summary>
+        internal bool ShapeMatchTableEnabled { get; set; } = true;
+
+        // Called whenever an affix rule's pattern is matched against a shape, from analysis threads, so a handler
+        // must be thread-safe.
+        internal Action<IMorphologicalRule, Word> ShapeMatched { get; set; }
+
         private readonly Language _lang;
         private readonly IRule<Word, ShapeNode> _analysisRule;
         private readonly IRule<Word, ShapeNode> _synthesisRule;
@@ -214,6 +224,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             Shape shape = _lang.SurfaceStratum.CharacterDefinitionTable.Segment(word);
 
             var input = new Word(_lang.SurfaceStratum, shape);
+            if (ShapeMatchTableEnabled)
+                input.MatchTable = new ShapeMatchTable();
             input.Freeze();
             if (_traceManager.IsTracing)
                 _traceManager.AnalyzeWord(_lang, input);
