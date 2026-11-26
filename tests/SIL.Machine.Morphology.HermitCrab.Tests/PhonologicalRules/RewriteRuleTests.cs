@@ -1933,9 +1933,10 @@ public class RewriteRuleTests : HermitCrabTestBase
         CreateDeletionRule("rule1", "a");
         CreateDeletionRule("rule2", "u");
         CreateDeletionRule("rule3", "i");
-        var morpher = new Morpher(TraceManager, Language);
-        var word = morpher.ApplyAnalysis("bb").Last();
+        var morpher = new Morpher(TraceManager, Language, 1);
+        Word word = morpher.ApplyAnalysis("bb").Last();
         Assert.That(word.ToString(), Is.EqualTo(target));
+        AssertMorphsEqual(morpher.ParseWord("sg"), "32");
     }
 
     [Test]
