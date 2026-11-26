@@ -856,6 +856,18 @@ namespace SIL.Machine.Morphology.HermitCrab
             return new WordAnalysis(morphemes, rootMorphemeIndex, pos?.ID);
         }
 
+        internal IEnumerable<Word> ApplyAnalysis(string word)
+        {
+            // convert the word to its phonetic shape
+            Shape shape = _lang.SurfaceStratum.CharacterDefinitionTable.Segment(word);
+
+            var input = new Word(_lang.SurfaceStratum, shape);
+            input.Freeze();
+
+            // Unapply rules
+            return new ConcurrentQueue<Word>(_analysisRule.Apply(input));
+        }
+
         public IReadOnlyObservableCollection<IMorpheme> Morphemes
         {
             get { return _morphemes; }
