@@ -10,7 +10,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
     /// <summary>
     /// What each affix or realizational rule allomorph gives on each shape one <see cref="Morpher.ParseWord(string)"/>
     /// reaches. Matching an allomorph's pattern reads the input's <see cref="Shape"/> and nothing else, so the
-    /// output shapes are a function of (rule, allomorph, shape) and are computed once per parse; every caller still
+    /// output shapes are a function of (rule, allomorph, shape) and are computed once per parse, by whichever thread reaches a key first; every caller still
     /// runs its own per-path gates and builds its own output words. An empty row records "no match". Compounding
     /// rules are not stored here: their match also reads the non-head root.
     /// </summary>
@@ -41,7 +41,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 + _shape.GetFrozenHashCode();
         }
 
-        private readonly ConcurrentDictionary<Key, Shape[]> _rows = new ConcurrentDictionary<Key, Shape[]>();
+        private readonly ConcurrentDictionary<Key, Lazy<Shape[]>> _rows =
+            new ConcurrentDictionary<Key, Lazy<Shape[]>>();
 
         /// <summary>
         /// Returns the words the pattern rule gives on the input, in the order and with the duplicates removed
@@ -61,16 +62,33 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 return Compute(rule, patternRule, input, matched);
 
             var key = new Key(rule, allomorph, input.Shape);
-            if (table._rows.TryGetValue(key, out Shape[] shapes))
-                return shapes.Select(shape => input.CloneWithShape(shape)).ToList();
-
-            List<Word> words = Compute(rule, patternRule, input, matched);
-            // a frozen shape is never mutated, so every word built from this row may share it
-            foreach (Word word in words)
-                word.Shape.Freeze();
-            table._rows.TryAdd(key, words.Select(word => word.Shape).ToArray());
-            return words;
+            List<Word> computed = null;
+            // the first thread to reach a key computes its row; any other thread waits for it instead of repeating
+            // the match
+            Lazy<Shape[]> row = table._rows.GetOrAdd(
+                key,
+                _ => new Lazy<Shape[]>(() =>
+                {
+                    computed = Compute(rule, patternRule, input, matched);
+                    // a frozen shape is never mutated, so every word built from this row may share it
+                    foreach (Word word in computed)
+                        word.Shape.Freeze();
+                    return computed.Select(word => word.Shape).ToArray();
+                })
+            );
+            Shape[] shapes = row.Value;
+            if (computed != null)
+                return computed;
+            return shapes.Select(shape => input.CloneWithShape(shape)).ToList();
         }
+
+        /// <summary>
+        /// Drops every stored row. Words clone the table's reference, so a parse clears it once its analysis is done
+        /// to keep the returned words from holding the rows.
+        /// </summary>
+        public int RowCount => _rows.Count;
+
+        public void Clear() => _rows.Clear();
 
         private static List<Word> Compute(
             IMorphologicalRule rule,

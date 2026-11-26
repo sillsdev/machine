@@ -70,6 +70,21 @@ public class ShapeMatchTableTests : HermitCrabTestBase
         Assert.That(on.Trace, Is.EqualTo(off.Trace), "trace events");
     }
 
+    [Test]
+    public void ReturnedWords_DoNotRetainTheTableRows()
+    {
+        var morpher = new Morpher(
+            new TraceManager(),
+            XmlLanguageLoader.Load(GrammarPath(4)),
+            maxDegreeOfParallelism: 1
+        );
+        Word[] results = morpher.ParseWord("katitm").ToArray();
+
+        Assert.That(results, Is.Not.Empty);
+        Assert.That(results.Select(w => w.MatchTable), Is.All.Not.Null, "the words still share the table");
+        Assert.That(results.Select(w => w.MatchTable.RowCount), Is.All.EqualTo(0), "but it holds no rows");
+    }
+
     [TestCase(2)]
     [TestCase(4)]
     [TestCase(8)]

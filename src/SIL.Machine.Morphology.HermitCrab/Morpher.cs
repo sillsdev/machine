@@ -233,6 +233,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             // Unapply rules
             var analyses = new ConcurrentQueue<Word>(_analysisRule.Apply(input));
+            // synthesis never reads the table, and every returned word shares it through its clones
+            input.MatchTable?.Clear();
 
 #if OUTPUT_ANALYSES
             var lines = new List<string>();
