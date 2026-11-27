@@ -1937,6 +1937,20 @@ public class RewriteRuleTests : HermitCrabTestBase
         Word word = morpher.ApplyAnalysis("bb").Last();
         Assert.That(word.ToString(), Is.EqualTo(target));
         AssertMorphsEqual(morpher.ParseWord("sg"), "32");
+
+        // Test with epenthesis rule.
+        var rule4 = new RewriteRule { Name = "rule4"};
+        Morphophonemic.PhonologicalRules.Add(rule4);
+        rule4.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "o")).Value,
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Value,
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Value,
+            }
+        );
+        morpher = new Morpher(TraceManager, Language, 1);
+        AssertMorphsEqual(morpher.ParseWord("sog"), "32");
     }
 
     [Test]
