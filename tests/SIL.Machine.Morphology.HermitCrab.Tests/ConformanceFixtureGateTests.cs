@@ -141,6 +141,18 @@ public sealed class ConformanceFixtureGateTests
         var declared = CoverageReport
             .LoadConstructChecklist(Path.Combine(root, "constructs.txt"))
             .ToHashSet(StringComparer.Ordinal);
+        // The child levels of the behaviour-label vocabulary: the first column of each labels.tsv line.
+        string childLabels = Path.Combine(root, "labels.tsv");
+        if (File.Exists(childLabels))
+        {
+            declared.UnionWith(
+                File.ReadLines(childLabels)
+                    .Where(line =>
+                        line.Trim().Length > 0 && !line.TrimStart().StartsWith("#", StringComparison.Ordinal)
+                    )
+                    .Select(line => line.Split('\t')[0].Trim())
+            );
+        }
 
         string[] unknown = Discover()
             .SelectMany(fixture => fixture.Words.Words)
@@ -153,7 +165,7 @@ public sealed class ConformanceFixtureGateTests
         Assert.That(
             unknown,
             Is.Empty,
-            $"add these to constructs.txt or fix the tag:\n  {string.Join("\n  ", unknown)}"
+            $"add these to constructs.txt or labels.tsv or fix the tag:\n  {string.Join("\n  ", unknown)}"
         );
     }
 
