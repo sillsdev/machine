@@ -77,6 +77,11 @@ public sealed class WordsYamlGeneratedNoParseTests
         "generated_no_parse:\n  - alphabet: [a, b, c, d, e, f, g, h, i, j]\n    max_length: 6\n    note: n\n",
         "100000"
     )]
+    [TestCase("generated_no_parse:\n  - alphabet: [a, b]\n    max_length: 4000000\n    note: n\n", "100000")]
+    [TestCase(
+        "generated_no_parse:\n  - alphabet: [a, b]\n    min_length: 4000000\n    max_length: 4000001\n    note: n\n",
+        "100000"
+    )]
     public void ABadRuleIsRefused(string frontMatter, string expected)
     {
         var ex = Assert.Throws<WordsYamlException>(() => Load(frontMatter));

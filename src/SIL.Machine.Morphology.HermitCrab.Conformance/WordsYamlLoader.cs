@@ -254,16 +254,24 @@ public static class WordsYamlLoader
             var exercises = new List<string>();
             AppendScalarList(fields, "exercises", exercises, path, "generated_no_parse rule");
 
+            // Exact integer arithmetic with an early exit: a power above the limit means the rule reaches at least that
+            // many words by length minLength at the latest, so it is refused before anything can overflow.
             long space = 0;
-            for (int length = minLength; length <= maxLength; length++)
+            long power = 1;
+            for (int length = 1; length <= maxLength; length++)
             {
-                space += (long)Math.Pow(alphabet.Count, length);
+                power *= alphabet.Count;
+                if (power > MaxGeneratedSpace)
+                {
+                    throw new WordsYamlException(path, $"generated_no_parse rule spans more than {MaxGeneratedSpace} words");
+                }
+                if (length >= minLength)
+                {
+                    space += power;
+                }
                 if (space > MaxGeneratedSpace)
                 {
-                    throw new WordsYamlException(
-                        path,
-                        $"generated_no_parse rule spans more than {MaxGeneratedSpace} words"
-                    );
+                    throw new WordsYamlException(path, $"generated_no_parse rule spans more than {MaxGeneratedSpace} words");
                 }
             }
 
