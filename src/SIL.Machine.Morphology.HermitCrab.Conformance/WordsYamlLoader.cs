@@ -29,8 +29,22 @@ public static class WordsYamlLoader
         "fieldworks_producible_notes",
         "morpher",
         "words",
+        "generated_no_parse",
         "variants",
     };
+
+    // The keys of one generated_no_parse rule (the suite's PROTOCOL.md section 13).
+    private static readonly HashSet<string> GeneratedNoParseKeys = new(StringComparer.Ordinal)
+    {
+        "alphabet",
+        "min_length",
+        "max_length",
+        "note",
+        "exercises",
+    };
+
+    // The suite's limit on the words one generated_no_parse rule may span.
+    private const long MaxGeneratedSpace = 100_000;
 
     // The morpher: block's keys are FieldWorks <ParserParameters><HC> element names (HCParser.LoadParser),
     // limited to the settings whose only effect is which analyses a parse returns.
@@ -175,6 +189,9 @@ public static class WordsYamlLoader
         foreach (YamlNode wordNode in wordsSeq.Children)
             doc.Words.Add(ParseWord(wordNode, path));
 
+        if (map.TryGetValue("generated_no_parse", out YamlNode generatedNode))
+            ExpandGeneratedNoParse(generatedNode, doc, path);
+
         if (map.TryGetValue("variants", out YamlNode variantsNode))
             ParseVariants(variantsNode, doc, path);
 
@@ -189,6 +206,92 @@ public static class WordsYamlLoader
         }
 
         return doc;
+    }
+
+    /// <summary>
+    /// Appends the no-parse words a <c>generated_no_parse</c> rule list expands to, exactly as the suite's
+    /// <c>scripts/suite.py expand</c> does (PROTOCOL.md section 13): rules in file order, lengths ascending, the
+    /// alphabet's order within a length with its first entry varying slowest. A word already listed, or produced
+    /// by an earlier rule, is skipped. Every generated word is an <c>expect_fail</c> word carrying the rule's note.
+    /// </summary>
+    private static void ExpandGeneratedNoParse(YamlNode node, WordsYaml doc, string path)
+    {
+        if (node is not YamlSequenceNode rules || rules.Children.Count == 0)
+            throw new WordsYamlException(path, "front matter.generated_no_parse: expected a non-empty sequence");
+        var seen = new HashSet<string>(doc.Words.Select(w => w.Word), StringComparer.Ordinal);
+        foreach (YamlNode ruleNode in rules.Children)
+        {
+            if (ruleNode is not YamlMappingNode ruleMap)
+                throw new WordsYamlException(path, "each 'generated_no_parse' entry must be a mapping");
+            Dictionary<string, YamlNode> fields = RequireMapping(
+                ruleMap,
+                GeneratedNoParseKeys,
+                path,
+                "generated_no_parse rule"
+            );
+            var alphabet = new List<string>();
+            AppendScalarList(fields, "alphabet", alphabet, path, "generated_no_parse rule");
+            if (
+                alphabet.Count == 0
+                || alphabet.Any(a => a.Length == 0)
+                || alphabet.Distinct().Count() != alphabet.Count
+            )
+            {
+                throw new WordsYamlException(
+                    path,
+                    "generated_no_parse rule: 'alphabet' must be a non-empty list of distinct non-empty strings"
+                );
+            }
+            int minLength = fields.TryGetValue("min_length", out YamlNode minNode)
+                ? ParseCount(minNode, 1, path, "generated_no_parse rule.min_length")
+                : 1;
+            if (!fields.TryGetValue("max_length", out YamlNode maxNode))
+                throw new WordsYamlException(path, "generated_no_parse rule: missing required key 'max_length'");
+            int maxLength = ParseCount(maxNode, 1, path, "generated_no_parse rule.max_length");
+            if (minLength > maxLength)
+                throw new WordsYamlException(path, "generated_no_parse rule: min_length exceeds max_length");
+            string note = RequireScalar(fields, "note", path, "generated_no_parse rule");
+            var exercises = new List<string>();
+            AppendScalarList(fields, "exercises", exercises, path, "generated_no_parse rule");
+
+            long space = 0;
+            for (int length = minLength; length <= maxLength; length++)
+            {
+                space += (long)Math.Pow(alphabet.Count, length);
+                if (space > MaxGeneratedSpace)
+                {
+                    throw new WordsYamlException(
+                        path,
+                        $"generated_no_parse rule spans more than {MaxGeneratedSpace} words"
+                    );
+                }
+            }
+
+            for (int length = minLength; length <= maxLength; length++)
+            {
+                var index = new int[length];
+                while (true)
+                {
+                    string text = string.Concat(index.Select(i => alphabet[i]));
+                    if (seen.Add(text))
+                    {
+                        var entry = new WordEntry
+                        {
+                            Word = text,
+                            Note = note,
+                            ExpectFail = true,
+                        };
+                        entry.Exercises.AddRange(exercises);
+                        doc.Words.Add(entry);
+                    }
+                    int place = length - 1;
+                    while (place >= 0 && ++index[place] == alphabet.Count)
+                        index[place--] = 0;
+                    if (place < 0)
+                        break;
+                }
+            }
+        }
     }
 
     private static void ParseVariants(YamlNode node, WordsYaml doc, string path)
