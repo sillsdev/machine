@@ -29,6 +29,10 @@ public class WordsYaml
     /// <summary>The <c>upstream:</c> entries: issues or pull requests this fixture's expectations depend on.</summary>
     public List<UpstreamEntry> Upstream { get; } = new();
 
+    /// <summary>The suite's <c>status.yaml</c> rows for this test case (whole-case and per-word); filled by
+    /// <see cref="Fixture.DiscoverAll"/>. Whole-case rows also appear in <see cref="Upstream"/>.</summary>
+    public List<StatusException> Exceptions { get; } = new();
+
     /// <summary>The <c>morpher:</c> block; empty when absent, meaning the engine constructor defaults.</summary>
     public MorpherSettings Morpher { get; } = new();
 

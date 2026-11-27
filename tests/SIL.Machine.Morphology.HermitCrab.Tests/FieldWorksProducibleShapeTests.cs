@@ -29,7 +29,7 @@ public sealed class FieldWorksProducibleShapeTests
         string root = ConformanceSuite.Root();
         var fixtures = Fixture.DiscoverAll(root);
         fixtures.AddRange(Fixture.DiscoverAll(Path.Combine(root, "stress")));
-        return fixtures.Where(fixture => fixture.Words.FieldworksProducible == true).ToList();
+        return fixtures.Where(fixture => fixture.Words.FieldworksProducible != false).ToList();
     }
 
     [Test]

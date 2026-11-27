@@ -206,13 +206,10 @@ internal class Program
         );
     }
 
-    /// <summary>Verifies the suite's checked-in fixture manifest byte for byte against a fresh computation, after
-    /// validating every grammar against the DTD and every words.yaml against its schema. The suite owns the
-    /// manifest and writes it with its own generator, so this never writes.</summary>
+    /// <summary>Generates the fixture manifest in memory after validating every grammar against the DTD and every
+    /// words.yaml against its schema, and checks the manifest's invariants. Nothing is committed or written.</summary>
     private static int RunCheckManifest(string suiteRoot)
     {
-        string relative = ConformanceManifestGenerator.ManifestRelativePath;
-        string path = Path.Combine(suiteRoot, relative.Replace('/', Path.DirectorySeparatorChar));
         string dtd = Path.Combine(suiteRoot, ConformanceManifestGenerator.DtdRelativePath);
         string wordsSchema = Path.Combine(
             suiteRoot,
@@ -231,7 +228,7 @@ internal class Program
             return 2;
         }
 
-        // Validate every fixture before comparing, so a rejected one is named rather than reported as stale.
+        // Validate every fixture before generating, so a rejected one is named.
         foreach (ManifestFixture fixture in corpus.Fixtures)
         {
             IReadOnlyList<string> messages;
@@ -269,27 +266,38 @@ internal class Program
             return 2;
         }
 
-        string json = ManifestJson.Serialize(corpus) + "\n";
-        if (!File.Exists(path))
+        // The manifest is derived, not committed: this run generates it and checks its invariants.
+        string json = ManifestJson.Serialize(corpus);
+        if (!string.Equals(json, ManifestJson.Serialize(ConformanceManifestGenerator.Generate(suiteRoot)), StringComparison.Ordinal))
         {
-            Console.Error.WriteLine($"{path} is missing; regenerate it in the suite with scripts/generate_manifest.py");
+            Console.Error.WriteLine("the manifest is not deterministic: two generations of the same suite differ");
             return 1;
         }
-
-        if (!string.Equals(File.ReadAllText(path).ReplaceLineEndings("\n"), json, StringComparison.Ordinal))
+        string[] ids = corpus.Fixtures.Select(f => f.FixtureId).ToArray();
+        if (ids.Distinct(StringComparer.Ordinal).Count() != ids.Length || !ids.SequenceEqual(ids.OrderBy(i => i, StringComparer.Ordinal)))
         {
-            Console.Error.WriteLine($"{path} is stale; regenerate it in the suite with scripts/generate_manifest.py");
+            Console.Error.WriteLine("the manifest's fixture ids must be unique and in ordinal order");
             return 1;
         }
+        foreach (ManifestFixture fixture in corpus.Fixtures)
+        {
+            foreach (string relativePath in new[] { fixture.GrammarPath, fixture.WordsPath })
+            {
+                if (!File.Exists(Path.Combine(suiteRoot, relativePath.Replace('/', Path.DirectorySeparatorChar))))
+                {
+                    Console.Error.WriteLine($"{fixture.FixtureId}: the manifest names '{relativePath}', which does not exist");
+                    return 1;
+                }
+            }
+        }
 
-        Console.WriteLine($"{path} is current ({corpus.Fixtures.Count} fixtures)");
+        Console.WriteLine($"manifest generated and valid ({corpus.Fixtures.Count} fixtures)");
         return 0;
     }
 
     private const string OutOfScopeConstruct = "Tracing (TraceType)";
 
-    /// <summary>Recomputes coverage.csv and rules.csv without touching the fixtures root, then returns 1 if the
-    /// suite's checked-in copies are stale, an in-scope construct has no coverage, a blocked_by label is not a
+    /// <summary>Recomputes coverage.csv and rules.csv without touching the fixtures root, then returns 1 if an in-scope construct has no coverage, a blocked_by label is not a
     /// grammar rule id, a rule no word exercises is missing from <c>dead-rules-allowed.tsv</c>, or an allowed rule
     /// is no longer dead; 0 otherwise. The suite owns both CSVs, so they are written only into
     /// <paramref name="coverageOutput"/>, never into the fixtures root.</summary>
@@ -313,19 +321,7 @@ internal class Program
             Console.WriteLine();
             Console.WriteLine("coverage report");
             Console.WriteLine("===============");
-            foreach (string name in new[] { "coverage.csv", "rules.csv" })
-            {
-                string checkedIn = Path.Combine(fixturesRoot, name);
-                bool current =
-                    File.Exists(checkedIn)
-                    && string.Equals(
-                        File.ReadAllText(checkedIn).ReplaceLineEndings("\n"),
-                        File.ReadAllText(Path.Combine(scratch, name)).ReplaceLineEndings("\n"),
-                        StringComparison.Ordinal
-                    );
-                Console.WriteLine($"{checkedIn} is {(current ? "current" : "STALE or missing")}");
-                failed |= !current;
-            }
+            Console.WriteLine("coverage.csv and rules.csv are generated for this run; the suite does not commit them");
 
             if (coverageOutput != null)
             {
@@ -445,7 +441,7 @@ internal class Program
                                                 requires more is skipped.
               --include-pathological           Also run fixtures with a budget_ms (excluded by default).
               --coverage-report                Print a coverage report instead of running fixtures;
-                                                exits 1 on a stale coverage.csv or rules.csv, an
+                                                exits 1 on an
                                                 uncovered construct or an unallowed dead rule. Writes
                                                 nothing under --fixtures.
               --coverage-output <dir>          With --coverage-report, also write the fresh
@@ -453,9 +449,9 @@ internal class Program
                                                 outside --fixtures (a clone of the suite).
               --constructs <path>              Construct checklist file for --coverage-report
                                                 (default: <fixtures>/constructs.txt).
-              --check-manifest                 Check the suite's generated/hc-conformance-manifest.v2.json against
-                                                a fresh computation, and every grammar and words.yaml against the
-                                                suite's DTD and schema. Writes nothing.
+              --check-manifest                 Generate the manifest in memory and check its invariants, and every
+                                                grammar and words.yaml against the suite's DTD and schema. Writes
+                                                nothing.
               --propose                        Self-check only: on a signature mismatch, print the words.yaml
                                                 patch that would reconcile it. Never writes any file.
             """
