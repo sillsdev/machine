@@ -1941,7 +1941,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         // Test with epenthesis rule.
         Morphophonemic.PhonologicalRules.Clear();
         CreateDeletionRule("rule1", "a");
-        var rule4 = new RewriteRule { Name = "rule4"};
+        var rule4 = new RewriteRule { Name = "rule4" };
         Morphophonemic.PhonologicalRules.Add(rule4);
         rule4.Subrules.Add(
             new RewriteSubrule
