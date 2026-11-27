@@ -263,7 +263,10 @@ public static class WordsYamlLoader
                 power *= alphabet.Count;
                 if (power > MaxGeneratedSpace)
                 {
-                    throw new WordsYamlException(path, $"generated_no_parse rule spans more than {MaxGeneratedSpace} words");
+                    throw new WordsYamlException(
+                        path,
+                        $"generated_no_parse rule spans more than {MaxGeneratedSpace} words"
+                    );
                 }
                 if (length >= minLength)
                 {
@@ -271,7 +274,10 @@ public static class WordsYamlLoader
                 }
                 if (space > MaxGeneratedSpace)
                 {
-                    throw new WordsYamlException(path, $"generated_no_parse rule spans more than {MaxGeneratedSpace} words");
+                    throw new WordsYamlException(
+                        path,
+                        $"generated_no_parse rule spans more than {MaxGeneratedSpace} words"
+                    );
                 }
             }
 
