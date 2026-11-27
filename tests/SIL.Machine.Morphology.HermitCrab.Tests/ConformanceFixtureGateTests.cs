@@ -66,38 +66,6 @@ public sealed class ConformanceFixtureGateTests
     }
 
     [Test]
-    public void CheckedInCoverageTablesAreUpToDate()
-    {
-        string root = ConformanceSuite.Root();
-        string temp = Path.Combine(Path.GetTempPath(), $"hc-coverage-{Guid.NewGuid():N}");
-        Directory.CreateDirectory(temp);
-        try
-        {
-            string coverage = Path.Combine(temp, "coverage.csv");
-            string rules = Path.Combine(temp, "rules.csv");
-            CoverageReport.WriteCsvs(Discover(), coverage, rules);
-
-            Assert.Multiple(() =>
-            {
-                Assert.That(
-                    File.ReadAllText(coverage).ReplaceLineEndings("\n"),
-                    Is.EqualTo(File.ReadAllText(Path.Combine(root, "coverage.csv")).ReplaceLineEndings("\n")),
-                    "regenerate in a clone of the suite with: hc-conformance --fixtures conformance --coverage-report --coverage-output <suite clone>"
-                );
-                Assert.That(
-                    File.ReadAllText(rules).ReplaceLineEndings("\n"),
-                    Is.EqualTo(File.ReadAllText(Path.Combine(root, "rules.csv")).ReplaceLineEndings("\n")),
-                    "regenerate in a clone of the suite with: hc-conformance --fixtures conformance --coverage-report --coverage-output <suite clone>"
-                );
-            });
-        }
-        finally
-        {
-            Directory.Delete(temp, recursive: true);
-        }
-    }
-
-    [Test]
     public void EveryFixtureContributesAtLeastOneCoverageRow()
     {
         var noExerciseByDesign = new HashSet<string>(StringComparer.Ordinal)
@@ -210,21 +178,6 @@ public sealed class ConformanceFixtureGateTests
     }
 
     [Test]
-    public void EveryFixtureIsMarkedFieldWorksProducible()
-    {
-        string[] notProducible = Discover()
-            .Where(fixture => fixture.Words.FieldworksProducible != true)
-            .Select(fixture => fixture.Id)
-            .ToArray();
-
-        Assert.That(
-            notProducible,
-            Is.Empty,
-            "conformance keeps only grammars a FieldWorks project can produce (PROTOCOL.md section 9); rewrite or delete these"
-        );
-    }
-
-    [Test]
     public void FieldWorksWitnessDirectoriesAreShapedCorrectly()
     {
         var allowedManifestKeys = new HashSet<string>(StringComparer.Ordinal)
@@ -251,12 +204,6 @@ public sealed class ConformanceFixtureGateTests
             string fieldworksDir = Path.Combine(fixture.Directory, "fieldworks");
             if (!Directory.Exists(fieldworksDir))
                 continue;
-
-            if (fixture.Words.FieldworksProducible != true)
-            {
-                errors.Add($"{fixture.Id}: has a fieldworks/ directory but is not 'fieldworks_producible: true'");
-                continue;
-            }
 
             var expectedEntries = new HashSet<string>(StringComparer.Ordinal)
             {

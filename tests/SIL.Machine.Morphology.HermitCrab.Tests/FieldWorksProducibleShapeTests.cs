@@ -7,8 +7,8 @@ using SIL.Machine.Morphology.HermitCrab.Conformance;
 namespace SIL.Machine.Morphology.HermitCrab;
 
 /// <summary>
-/// A fixture flagged <c>fieldworks_producible: true</c> must not use a grammar shape HCLoader never
-/// writes. The flag is authored, so these checks can only prove it wrong. Most of the checks come from the
+/// Every test case must not use a grammar shape HCLoader never
+/// writes (the suite carries only FieldWorks-producible grammars, ADR 0004). Most of the checks come from the
 /// census table <c>conformance/fieldworks-writable-shapes.tsv</c>, which says per rule kind which DTD members
 /// HCLoader writes; <see cref="FieldWorksWritableShapes"/> reads it. The checks written here are the ones a
 /// table row cannot say: a <c>linear</c> stratum that holds rules or templates, and a partial stem entry
@@ -29,7 +29,7 @@ public sealed class FieldWorksProducibleShapeTests
         string root = ConformanceSuite.Root();
         var fixtures = Fixture.DiscoverAll(root);
         fixtures.AddRange(Fixture.DiscoverAll(Path.Combine(root, "stress")));
-        return fixtures.Where(fixture => fixture.Words.FieldworksProducible == true).ToList();
+        return fixtures;
     }
 
     [Test]
@@ -57,7 +57,7 @@ public sealed class FieldWorksProducibleShapeTests
         Assert.That(
             offences,
             Is.Empty,
-            "these fixtures are flagged fieldworks_producible but use a shape HCLoader never writes; "
+            "these test cases use a shape HCLoader never writes; "
                 + "rewrite the grammar and re-run the oracle, or delete the fixture:\n  "
                 + string.Join("\n  ", offences)
         );

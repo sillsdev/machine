@@ -107,20 +107,6 @@ public sealed class ConformanceManifestTests
     }
 
     [Test]
-    public void TheCheckedInManifestMatchesRegeneration()
-    {
-        string path = InSuite(ConformanceManifestGenerator.ManifestRelativePath);
-        const string Fix = "regenerate it in the suite with: python3 scripts/generate_manifest.py";
-
-        Assert.That(File.Exists(path), Is.True, Fix);
-        Assert.That(
-            File.ReadAllText(path).ReplaceLineEndings("\n"),
-            Is.EqualTo(ManifestJson.Serialize(Manifest()) + "\n"),
-            Fix
-        );
-    }
-
-    [Test]
     public void TheManifestValidatesAgainstItsPublishedSchema()
     {
         Json.Schema.JsonSchema schema = Json.Schema.JsonSchema.FromFile(

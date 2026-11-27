@@ -20,14 +20,15 @@ public class WordsYaml
     /// <summary>Edge-cases only: this fixture's ground truth is a crash, not a signature.</summary>
     public bool ExpectCrash;
 
-    public bool? FieldworksProducible;
-
-    /// <summary>Required and non-empty when <see cref="FieldworksProducible"/> is false: names the
-    /// offending construct(s) and cites the HCLoader evidence grounding the verdict.</summary>
+    /// <summary>Free-text note on the FieldWorks round trip; the suite's scope is FieldWorks-producible only (ADR 0004).</summary>
     public string FieldworksProducibleNotes = "";
 
-    /// <summary>The <c>upstream:</c> entries: issues or pull requests this fixture's expectations depend on.</summary>
+    /// <summary>The whole-test-case <c>status.yaml</c> rows as upstream entries: issues or pull requests this test case's expectations depend on.</summary>
     public List<UpstreamEntry> Upstream { get; } = new();
+
+    /// <summary>The suite's <c>status.yaml</c> rows for this test case (whole-case and per-word); filled by
+    /// <see cref="Fixture.DiscoverAll"/>. Whole-case rows also appear in <see cref="Upstream"/>.</summary>
+    public List<StatusException> Exceptions { get; } = new();
 
     /// <summary>The <c>morpher:</c> block; empty when absent, meaning the engine constructor defaults.</summary>
     public MorpherSettings Morpher { get; } = new();
