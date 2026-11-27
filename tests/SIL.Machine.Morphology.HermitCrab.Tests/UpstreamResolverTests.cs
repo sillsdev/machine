@@ -224,11 +224,9 @@ public sealed class UpstreamResolverTests
         Directory.CreateDirectory(target);
         foreach (string file in Directory.GetFiles(source))
             File.Copy(file, Path.Combine(target, Path.GetFileName(file)));
-        string wordsPath = Path.Combine(target, "words.yaml");
         File.WriteAllText(
-            wordsPath,
-            $"upstream:\n  - ref: sillsdev/machine#615\n    kind: pr\n    head: {Head}\n    affects: engine\n    note: x\n"
-                + File.ReadAllText(wordsPath)
+            Path.Combine(root, "status.yaml"),
+            $"version: 1\nexceptions:\n  - case: edge-cases/tagged\n    kind: pending-upstream\n    ref: sillsdev/machine#615\n    ref_type: pr\n    head: {Head}\n    affects: engine\n    reason: x\n"
         );
         try
         {

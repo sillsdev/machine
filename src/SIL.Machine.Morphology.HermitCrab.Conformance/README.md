@@ -52,17 +52,15 @@ Do this when the suite has a change machine should run, and for no other reason.
    checks under "Before you push".
 4. Commit `conformance.commit` with a message that says what is now true, for example "Run the conformance suite at
    `<short sha>`, which adds the `<name>` fixture".
-5. If `--check-manifest` or `--coverage-report` reports one of the suite's own files as stale, that is a defect in the
+5. If `--check-manifest` or `--coverage-report` reports a derived file that does not hold its invariants, that is a defect in the
    suite. Fix it there and bump to that commit. Do not patch it in `conformance/`.
 
-## Regenerating what the suite owns
+## What the suite derives
 
-The suite checks in files that are computed from its fixtures. The runner only checks them.
-
-- The manifest: in a clone of the suite, `python3 scripts/generate_manifest.py`. Machine's `--check-manifest` must agree
-  with it byte for byte.
-- `coverage.csv` and `rules.csv`: `<hc> --fixtures conformance --coverage-report --coverage-output <clone of the suite>`
-  writes fresh copies into the clone. The output directory may not be inside `--fixtures`.
+The suite commits only authored files. The manifest, `coverage.csv` and `rules.csv` are derived: in a clone of the suite,
+`python3 scripts/suite.py generate` writes them into an untracked `generated/`, and `--check-manifest` and `--coverage-report`
+generate and check them in memory. `<hc> --fixtures conformance --coverage-report --coverage-output <dir>` writes the same
+CSVs; the output directory may not be inside `--fixtures`. Exceptions are rows in the suite's `status.yaml`.
 - The expected rows for a new or changed fixture: `<hc> --fixtures <suite clone> --include-pathological --propose` prints
   the `words.yaml` patch for each mismatch and writes nothing. Read every row against the rules before accepting it. The
   `batch` command of `src/SIL.Machine.Morphology.HermitCrab.Tool` records the same signatures for a word list.

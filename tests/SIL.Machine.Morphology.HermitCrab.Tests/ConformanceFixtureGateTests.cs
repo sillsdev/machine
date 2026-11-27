@@ -178,21 +178,6 @@ public sealed class ConformanceFixtureGateTests
     }
 
     [Test]
-    public void EveryFixtureIsMarkedFieldWorksProducible()
-    {
-        string[] notProducible = Discover()
-            .Where(fixture => fixture.Words.FieldworksProducible == false)
-            .Select(fixture => fixture.Id)
-            .ToArray();
-
-        Assert.That(
-            notProducible,
-            Is.Empty,
-            "conformance keeps only grammars a FieldWorks project can produce (PROTOCOL.md section 9); rewrite or delete these"
-        );
-    }
-
-    [Test]
     public void FieldWorksWitnessDirectoriesAreShapedCorrectly()
     {
         var allowedManifestKeys = new HashSet<string>(StringComparer.Ordinal)
@@ -219,12 +204,6 @@ public sealed class ConformanceFixtureGateTests
             string fieldworksDir = Path.Combine(fixture.Directory, "fieldworks");
             if (!Directory.Exists(fieldworksDir))
                 continue;
-
-            if (fixture.Words.FieldworksProducible == false)
-            {
-                errors.Add($"{fixture.Id}: has a fieldworks/ directory but is not 'fieldworks_producible: true'");
-                continue;
-            }
 
             var expectedEntries = new HashSet<string>(StringComparer.Ordinal)
             {
