@@ -1939,6 +1939,8 @@ public class RewriteRuleTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("sg"), "32");
 
         // Test with epenthesis rule.
+        Morphophonemic.PhonologicalRules.Clear();
+        CreateDeletionRule("rule1", "a");
         var rule4 = new RewriteRule { Name = "rule4"};
         Morphophonemic.PhonologicalRules.Add(rule4);
         rule4.Subrules.Add(
