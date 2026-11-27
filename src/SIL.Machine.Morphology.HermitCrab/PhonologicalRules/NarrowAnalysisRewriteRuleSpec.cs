@@ -15,7 +15,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             Pattern<Word, ShapeNode> lhs,
             RewriteSubrule subrule
         )
-            : base(subrule.Rhs.IsEmpty)
+            : base(subrule.Rhs.IsEmpty, true)
         {
             _analysisRhs = lhs;
             _targetCount = subrule.Rhs.Children.Count;

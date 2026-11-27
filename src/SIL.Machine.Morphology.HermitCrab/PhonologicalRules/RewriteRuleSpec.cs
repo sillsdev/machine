@@ -11,12 +11,14 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         private readonly Pattern<Word, ShapeNode> _pattern;
         private readonly List<RewriteSubruleSpec> _subruleSpecs;
         private readonly bool _isTargetEmpty;
+        private readonly bool _removeRedundantDeletionMatches;
 
-        protected RewriteRuleSpec(bool isTargetEmpty)
+        protected RewriteRuleSpec(bool isTargetEmpty, bool removeRedundantDeletionMatches = false)
         {
             _pattern = new Pattern<Word, ShapeNode>();
             _subruleSpecs = new List<RewriteSubruleSpec>();
             _isTargetEmpty = isTargetEmpty;
+            _removeRedundantDeletionMatches = isTargetEmpty && removeRedundantDeletionMatches;
         }
 
         public Pattern<Word, ShapeNode> Pattern
@@ -87,6 +89,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 );
                 if (leftEnvMatch == null || leftEnvMatch.Success)
                 {
+                    if (RedundantMatch(subruleSpec.LeftEnvironmentMatcher, match.Input, leftNode, varBindings))
+                    {
+                        // The current match is redundant with the match before leftNode.
+                        continue;
+                    }
                     if (leftEnvMatch != null && leftEnvMatch.VariableBindings != null)
                         varBindings = leftEnvMatch.VariableBindings;
 
@@ -97,6 +104,20 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                     );
                     if (rightEnvMatch == null || rightEnvMatch.Success)
                     {
+                        if (
+                            RedundantMatch(subruleSpec.RightEnvironmentMatcher, match.Input, rightNode, varBindings)
+                            && !RedundantMatch(
+                                subruleSpec.LeftEnvironmentMatcher,
+                                match.Input,
+                                rightNode,
+                                match.VariableBindings
+                            )
+                        )
+                        {
+                            // The current match is redundant with the match after rightNode,
+                            // and the match after rightNode is not redundant with this one.
+                            continue;
+                        }
                         if (rightEnvMatch != null && rightEnvMatch.VariableBindings != null)
                             varBindings = rightEnvMatch.VariableBindings;
 
@@ -111,6 +132,32 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             }
 
             subruleMatch = null;
+            return false;
+        }
+
+        private bool RedundantMatch(
+            Matcher<Word, ShapeNode> matcher,
+            Word input,
+            ShapeNode node,
+            VariableBindings varBindings
+        )
+        {
+            if (_removeRedundantDeletionMatches && matcher != null && node.Annotation.Optional)
+            {
+                try
+                {
+                    node.Annotation.Optional = false;
+                    Match<Word, ShapeNode> match = matcher.Match(input, node, varBindings);
+                    if (match == null || !match.Success)
+                    {
+                        return true;
+                    }
+                }
+                finally
+                {
+                    node.Annotation.Optional = true;
+                }
+            }
             return false;
         }
     }

@@ -1894,6 +1894,67 @@ public class RewriteRuleTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("aba"), "39", "40");
     }
 
+    [TestCase(true, true, "ba?u?i?b")]
+    [TestCase(true, false, "ba?u?i?b")]
+    [TestCase(false, true, "bi?u?a?b")]
+    [TestCase(false, false, "ba?u?a?i?a?u?a?b")]
+    public void CascadedDeletionRules(bool left, bool right, string target)
+    {
+        FeatureStruct cons = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons+")
+            .Symbol("voc-")
+            .Value;
+        FeatureStruct anySegment = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Value;
+        void CreateDeletionRule(string name, string insert)
+        {
+            var rule = new RewriteRule
+            {
+                Name = name,
+                Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, insert)).Value,
+            };
+            Morphophonemic.PhonologicalRules.Add(rule);
+            rule.Subrules.Add(
+                new RewriteSubrule
+                {
+                    LeftEnvironment = left
+                        ? Pattern<Word, ShapeNode>.New().Annotation(cons).Value
+                        : Pattern<Word, ShapeNode>.New().Annotation(anySegment).Value,
+                    RightEnvironment = right
+                        ? Pattern<Word, ShapeNode>.New().Annotation(cons).Value
+                        : Pattern<Word, ShapeNode>.New().Annotation(anySegment).Value,
+                }
+            );
+        }
+        CreateDeletionRule("rule1", "a");
+        CreateDeletionRule("rule2", "u");
+        CreateDeletionRule("rule3", "i");
+        var morpher = new Morpher(TraceManager, Language, 1);
+        Word word = morpher.ApplyAnalysis("bb").Last();
+        Assert.That(word.ToString(), Is.EqualTo(target));
+        AssertMorphsEqual(morpher.ParseWord("sg"), "32");
+
+        // Test with epenthesis rule.
+        Morphophonemic.PhonologicalRules.Clear();
+        CreateDeletionRule("rule1", "a");
+        var rule4 = new RewriteRule { Name = "rule4" };
+        Morphophonemic.PhonologicalRules.Add(rule4);
+        rule4.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "o")).Value,
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Value,
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Value,
+            }
+        );
+        morpher = new Morpher(TraceManager, Language, 1);
+        AssertMorphsEqual(morpher.ParseWord("sog"), "32");
+    }
+
     [Test]
     public void DisjunctiveRules()
     {
