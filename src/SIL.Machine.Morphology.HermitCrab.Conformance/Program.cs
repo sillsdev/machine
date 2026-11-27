@@ -268,13 +268,22 @@ internal class Program
 
         // The manifest is derived, not committed: this run generates it and checks its invariants.
         string json = ManifestJson.Serialize(corpus);
-        if (!string.Equals(json, ManifestJson.Serialize(ConformanceManifestGenerator.Generate(suiteRoot)), StringComparison.Ordinal))
+        if (
+            !string.Equals(
+                json,
+                ManifestJson.Serialize(ConformanceManifestGenerator.Generate(suiteRoot)),
+                StringComparison.Ordinal
+            )
+        )
         {
             Console.Error.WriteLine("the manifest is not deterministic: two generations of the same suite differ");
             return 1;
         }
         string[] ids = corpus.Fixtures.Select(f => f.FixtureId).ToArray();
-        if (ids.Distinct(StringComparer.Ordinal).Count() != ids.Length || !ids.SequenceEqual(ids.OrderBy(i => i, StringComparer.Ordinal)))
+        if (
+            ids.Distinct(StringComparer.Ordinal).Count() != ids.Length
+            || !ids.SequenceEqual(ids.OrderBy(i => i, StringComparer.Ordinal))
+        )
         {
             Console.Error.WriteLine("the manifest's fixture ids must be unique and in ordinal order");
             return 1;
@@ -285,7 +294,9 @@ internal class Program
             {
                 if (!File.Exists(Path.Combine(suiteRoot, relativePath.Replace('/', Path.DirectorySeparatorChar))))
                 {
-                    Console.Error.WriteLine($"{fixture.FixtureId}: the manifest names '{relativePath}', which does not exist");
+                    Console.Error.WriteLine(
+                        $"{fixture.FixtureId}: the manifest names '{relativePath}', which does not exist"
+                    );
                     return 1;
                 }
             }

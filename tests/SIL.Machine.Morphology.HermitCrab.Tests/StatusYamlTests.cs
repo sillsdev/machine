@@ -68,7 +68,10 @@ public sealed class StatusYamlTests
         string root = MiniSuite(Row().Replace("edge-cases/tagged", "edge-cases/missing"));
         try
         {
-            Assert.That(() => Fixture.DiscoverAll(root), Throws.TypeOf<WordsYamlException>().With.Message.Contain("names no test case"));
+            Assert.That(
+                () => Fixture.DiscoverAll(root),
+                Throws.TypeOf<WordsYamlException>().With.Message.Contain("names no test case")
+            );
         }
         finally
         {
@@ -82,9 +85,15 @@ public sealed class StatusYamlTests
         string root = MiniSuite(Row("    word: nonexistent\n    intended: R0\n"));
         try
         {
-            Assert.That(() => Fixture.DiscoverAll(root), Throws.TypeOf<WordsYamlException>().With.Message.Contain("has no word"));
+            Assert.That(
+                () => Fixture.DiscoverAll(root),
+                Throws.TypeOf<WordsYamlException>().With.Message.Contain("has no word")
+            );
             File.WriteAllText(Path.Combine(root, "status.yaml"), Row("    word: x\n"));
-            Assert.That(() => StatusYamlLoader.LoadIfPresent(root), Throws.TypeOf<WordsYamlException>().With.Message.Contain("intended"));
+            Assert.That(
+                () => StatusYamlLoader.LoadIfPresent(root),
+                Throws.TypeOf<WordsYamlException>().With.Message.Contain("intended")
+            );
         }
         finally
         {
@@ -98,9 +107,15 @@ public sealed class StatusYamlTests
         string root = MiniSuite(Row("    surprise: 1\n"));
         try
         {
-            Assert.That(() => StatusYamlLoader.LoadIfPresent(root), Throws.TypeOf<WordsYamlException>().With.Message.Contain("unknown key"));
+            Assert.That(
+                () => StatusYamlLoader.LoadIfPresent(root),
+                Throws.TypeOf<WordsYamlException>().With.Message.Contain("unknown key")
+            );
             File.WriteAllText(Path.Combine(root, "status.yaml"), Row().Replace("pending-upstream", "aspirational"));
-            Assert.That(() => StatusYamlLoader.LoadIfPresent(root), Throws.TypeOf<WordsYamlException>().With.Message.Contain("kind must be"));
+            Assert.That(
+                () => StatusYamlLoader.LoadIfPresent(root),
+                Throws.TypeOf<WordsYamlException>().With.Message.Contain("kind must be")
+            );
         }
         finally
         {
