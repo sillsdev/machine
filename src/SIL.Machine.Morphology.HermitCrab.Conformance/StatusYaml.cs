@@ -75,10 +75,12 @@ public static class StatusYamlLoader
                     throw new WordsYamlException(path, "each exception must be a mapping");
                 StatusException row = ParseRow(Keys(rowMap, RowKeys, path, "exceptions[]"), path);
                 if (!seen.Add((row.Case, row.Word + "\0" + row.Upstream.Ref)))
+                {
                     throw new WordsYamlException(
                         path,
                         $"duplicate exception for {row.Case} {row.Word} {row.Upstream.Ref}"
                     );
+                }
                 result.Add(row);
             }
             return result;
@@ -103,15 +105,19 @@ public static class StatusYamlLoader
         string intended = row.ContainsKey("intended") ? Scalar(row, "intended", path, Context) : "";
 
         if (kind is not (StatusException.ReferenceDefect or StatusException.PendingUpstream))
+        {
             throw new WordsYamlException(
                 path,
                 $"{testCase}: kind must be 'reference-defect' or 'pending-upstream', got '{kind}'"
             );
+        }
         if (!UpstreamResolver.TryParseRef(reference, out string repo, out _))
+        {
             throw new WordsYamlException(
                 path,
                 $"{testCase}: ref '{reference}' is not owner/repo#number or jira:KEY-123"
             );
+        }
         if (refType is not ("pr" or "issue"))
             throw new WordsYamlException(path, $"{testCase}: ref_type must be 'pr' or 'issue', got '{refType}'");
         if (affects is not ("engine" or "loader"))
@@ -124,10 +130,12 @@ public static class StatusYamlLoader
         if (repo == "jira" && refType != "issue")
             throw new WordsYamlException(path, $"{testCase}: a Jira key is an issue");
         if (word.Length != 0 && intended.Length == 0)
+        {
             throw new WordsYamlException(
                 path,
                 $"{testCase} {word}: a word exception records the intended answer in 'intended'"
             );
+        }
         if (word.Length == 0 && intended.Length != 0)
             throw new WordsYamlException(path, $"{testCase}: 'intended' belongs to a word exception");
 
@@ -154,10 +162,12 @@ public static class StatusYamlLoader
             if (entry.Key is not YamlScalarNode key || key.Value == null)
                 throw new WordsYamlException(path, $"{context}: mapping keys must be plain scalars");
             if (!allowed.Contains(key.Value))
+            {
                 throw new WordsYamlException(
                     path,
                     $"{context}: unknown key '{key.Value}' (allowed: {string.Join(", ", allowed.OrderBy(k => k, StringComparer.Ordinal))})"
                 );
+            }
             if (!map.TryAdd(key.Value, entry.Value))
                 throw new WordsYamlException(path, $"{context}: duplicate key '{key.Value}'");
         }
