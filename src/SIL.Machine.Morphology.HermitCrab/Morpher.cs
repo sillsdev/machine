@@ -570,6 +570,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                     if (_traceManager.IsTracing)
                         _traceManager.SynthesizeWord(_lang, newWord);
                     newWord.Freeze();
+                    if (!newWord.CheckAnalysisCoOccurrenceRules(this))
+                        continue;
                     yield return newWord;
                 }
             }
@@ -854,6 +856,24 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             FeatureSymbol pos = result.SyntacticFeatureStruct.PartsOfSpeech().FirstOrDefault();
             return new WordAnalysis(morphemes, rootMorphemeIndex, pos?.ID);
+        }
+
+        internal IEnumerable<Word> ApplyAnalysisAndLookup(string word)
+        {
+            // convert the word to its phonetic shape
+            Shape shape = _lang.SurfaceStratum.CharacterDefinitionTable.Segment(word);
+
+            var input = new Word(_lang.SurfaceStratum, shape);
+            input.Freeze();
+
+            // Unapply rules
+            foreach (Word analysis in _analysisRule.Apply(input))
+            {
+                foreach (Word lexicalWord in LexicalLookup(analysis))
+                {
+                    yield return lexicalWord;
+                }
+            }
         }
 
         public IReadOnlyObservableCollection<IMorpheme> Morphemes

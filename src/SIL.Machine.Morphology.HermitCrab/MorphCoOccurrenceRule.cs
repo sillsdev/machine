@@ -81,17 +81,29 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public bool IsWordValid(T key, Word word)
         {
+            var morphList = word.AllomorphsInMorphOrder.ToList();
             if (_type == ConstraintType.Exclude)
-                return !CoOccurs(key, word);
-            return CoOccurs(key, word);
+                return !CoOccurs(key, word, morphList);
+            return CoOccurs(key, word, morphList);
+        }
+
+        internal bool IsAnalysisWordValid(T key, Word word, Allomorph newAllomorph)
+        {
+            if (_type == ConstraintType.Exclude && _adjacency == MorphCoOccurrenceAdjacency.Anywhere)
+            {
+                var morphList = word.UnappliedAllomorphs.Where(morph => morph != null).ToList();
+                if (newAllomorph != null)
+                    morphList.Add(newAllomorph);
+                return !CoOccurs(key, word, morphList);
+            }
+            return true;
         }
 
         /// <summary>
         /// Determines if all of the specified morphemes co-occur with the key morpheme.
         /// </summary>
-        private bool CoOccurs(T key, Word word)
+        private bool CoOccurs(T key, Word word, List<Allomorph> morphList)
         {
-            List<Allomorph> morphList = word.AllomorphsInMorphOrder.ToList();
             List<T> others = _others.ToList();
 
             switch (_adjacency)
